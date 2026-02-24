@@ -1,18 +1,21 @@
 const { Pool } = require('pg');
 
-if (!process.env.DATABASE_URL) {
-  console.warn('⚠️  DATABASE_URL não configurado! Defina essa variável no Railway.');
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.warn('⚠️  DATABASE_URL não configurado!');
 }
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost/dummy',
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  connectionTimeoutMillis: 5000,
+  connectionString: connectionString || 'postgresql://localhost/dummy',
+  // Always use SSL when DATABASE_URL is set (Railway requires it)
+  ssl: connectionString ? { rejectUnauthorized: false } : false,
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000,
 });
 
 pool.on('error', (err) => {
   console.error('Erro no pool PostgreSQL:', err.message);
-  // DO NOT crash the process — let individual requests handle the error
 });
 
 module.exports = pool;
