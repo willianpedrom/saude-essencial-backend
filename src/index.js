@@ -3,6 +3,8 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -10,23 +12,9 @@ const PORT = process.env.PORT || 3001;
 // ─── Security middleware ───
 app.use(helmet());
 
-// CORS – allow all origins in development, restrict in production
-const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    'http://localhost:8080',
-    'http://localhost:3000',
-    'https://web-production-9eaa6.up.railway.app',
-].filter(Boolean);
-
+// CORS – permissivo para facilitar desenvolvimento
 app.use(cors({
-    origin: (origin, cb) => {
-        // Allow requests with no origin (curl, Postman, mobile apps)
-        if (!origin) return cb(null, true);
-        if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
-            return cb(null, true);
-        }
-        cb(new Error('CORS not allowed for: ' + origin));
-    },
+    origin: true, // aceita qualquer origem
     credentials: true,
 }));
 
@@ -34,7 +22,7 @@ app.use(cors({
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 500 });
 app.use('/api', limiter);
 
-// Health check (before any other middleware, never crashes)
+// Health check (nunca crasha)
 app.get('/health', (req, res) => res.json({
     status: 'ok',
     ts: new Date(),
@@ -42,9 +30,9 @@ app.get('/health', (req, res) => res.json({
     env: process.env.NODE_ENV,
 }));
 
-// Stripe webhook needs raw body — mount BEFORE express.json()
+// Stripe webhook – precisa do raw body ANTES do express.json()
 const assinaturaRoutes = require('./routes/assinatura');
-app.use('/api/assinatura/webhook', assinaturaRoutes);
+app.use('/api/assinatura/webhook', express.raw({ type: 'application/json' }), assinaturaRoutes);
 
 // JSON body parser
 app.use(express.json({ limit: '2mb' }));
@@ -65,10 +53,28 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Erro interno do servidor.', message: err.message });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+// ─── Auto-migration: cria tabelas se não existirem ───
+async function runMigration() {
+    if (!process.env.DATABASE_URL) {
+        console.warn('⚠️  DATABASE_URL não configurado. Banco de dados desativado.');
+        return;
+    }
+    try {
+        const pool = require('./db/pool');
+        const sql = fs.readFileSync(path.join(__dirname, 'db/schema.sql'), 'utf-8');
+        await pool.query(sql);
+        console.log('✅ Schema do banco de dados verificado/criado com sucesso!');
+    } catch (err) {
+        console.error('❌ Erro na migração:', err.message);
+    }
+}
+
+// ─── Start ───
+app.listen(PORT, '0.0.0.0', async () => {
     console.log(`🚀 Saúde Essencial API rodando na porta ${PORT}`);
     console.log(`📦 DATABASE_URL: ${process.env.DATABASE_URL ? 'configurado ✅' : 'NÃO configurado ❌'}`);
     console.log(`🔑 JWT_SECRET: ${process.env.JWT_SECRET ? 'configurado ✅' : 'NÃO configurado ❌'}`);
+    await runMigration();
 });
 
 module.exports = app;
