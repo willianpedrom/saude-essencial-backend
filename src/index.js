@@ -8,7 +8,7 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const VERSION = '1.5';
+const VERSION = '1.8';
 
 // ─── Security ───
 app.use(helmet());
@@ -20,6 +20,22 @@ app.get('/health', (req, res) => res.json({
     status: 'ok', version: VERSION, ts: new Date(),
     db: !!process.env.DATABASE_URL, env: process.env.NODE_ENV,
 }));
+
+// DB diagnostic endpoint
+app.get('/debug-db', async (req, res) => {
+    const url = process.env.DATABASE_URL || '';
+    const masked = url.replace(/:([^@]+)@/, ':***@');
+    let testResult = 'not tested';
+    try {
+        const pool = require('./db/pool');
+        await pool.query('SELECT 1 as ok');
+        testResult = 'connection OK ✅';
+    } catch (err) {
+        testResult = err.message;
+    }
+    res.json({ url: masked, testResult });
+});
+
 
 // Stripe webhook — raw body BEFORE json parser
 app.use('/api/assinatura/webhook',
