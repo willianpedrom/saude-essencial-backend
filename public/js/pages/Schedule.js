@@ -183,16 +183,28 @@ export async function renderFollowup(router) {
     if (!followup.dueDateTime) return;
     const fireAt = new Date(followup.dueDateTime).getTime();
     const now = Date.now();
-    const delay = fireAt - now;
-    if (delay <= 0 || delay > 7 * 24 * 60 * 60 * 1000) return; // only within 7 days
-    setTimeout(() => {
-      if (Notification.permission === 'granted' && document.visibilityState === 'visible') {
-        new Notification('⏰ Follow-up: ' + clientName, {
-          body: followup.note,
-          icon: '/favicon.ico',
-        });
-      }
-    }, delay);
+    const MAX_DELAY = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+    // 3 reminder points: 1 day, 1 hour, 10 minutes before
+    const reminders = [
+      { offset: 24 * 60 * 60 * 1000, label: '1 dia antes ⏰', body: `Oi ${clientName}, amanhã entraremos em contato! Fique de olho no WhatsApp. 💚` },
+      { offset: 60 * 60 * 1000, label: '1 hora antes ⏰', body: `Oi ${clientName}, em 1 hora vou entrar em contato com você! 💚` },
+      { offset: 10 * 60 * 1000, label: '10 min antes ⏰', body: `Oi ${clientName}, em 10 minutos falarei com você! Prepare-se. 💚` },
+    ];
+
+    reminders.forEach(({ offset, label, body }) => {
+      const delay = fireAt - offset - now;
+      if (delay <= 0 || delay > MAX_DELAY) return;
+      setTimeout(() => {
+        if (Notification.permission === 'granted') {
+          new Notification(`${label} — ${clientName}`, {
+            body,
+            icon: '/favicon.ico',
+            tag: `fu-${followup.id}-${offset}`, // prevent duplicates
+          });
+        }
+      }, delay);
+    });
   }
 
   function makeGoogleCalendarUrl(followup, clientName) {
@@ -211,15 +223,11 @@ export async function renderFollowup(router) {
 
   function makeWhatsAppUrl(followup, client) {
     const phone = (client?.phone || client?.telefone || '').replace(/\D/g, '');
-    const consultant = auth.current;
-    const nome = consultant?.nome || 'Consultora';
     const clientName = client?.name || client?.nome || 'você';
-    const dateStr = followup.dueDateTime
-      ? new Date(followup.dueDateTime).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' })
-      : '';
 
+    // Short, direct message as requested
     const msg = encodeURIComponent(
-      `Olá ${clientName}! 💚\n\nSou ${nome}, sua consultora de Saúde Essencial.\n\nEstou entrando em contato para acompanhar como você está se sentindo após nossa última conversa. 🌿\n\n${followup.note ? `📝 Assunto: ${followup.note}\n\n` : ''}${dateStr ? `📅 Retorno programado: ${dateStr}\n\n` : ''}Qualquer dúvida, estou à disposição!`
+      `Oi ${clientName}, combinamos que eu entraria em contato hoje com você. Lembra? Podemos conversar agora? 💚`
     );
     return phone
       ? `https://wa.me/55${phone}?text=${msg}`
