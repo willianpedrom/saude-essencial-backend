@@ -29,14 +29,14 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
   <div class="app-layout">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-logo" id="sidebar-logo">
-        <div class="sidebar-logo-mark">Saúde <span>Essencial</span></div>
-        <div class="sidebar-logo-sub">Consultoras de Bem-estar</div>
+        <div class="sidebar-logo-mark">Gota <span>Essencial</span></div>
+        <div class="sidebar-logo-sub">Plataforma de Consultoras</div>
       </div>
       <div class="sidebar-user" id="sidebar-user-btn" style="cursor:pointer" title="Meu Perfil">
         <div class="sidebar-avatar">
           ${consultant?.foto_url
       ? `<img src="${consultant.foto_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" />`
-      : '🌿'}
+      : '💧'}
         </div>
         <div>
           <div class="sidebar-user-name">${firstName}</div>

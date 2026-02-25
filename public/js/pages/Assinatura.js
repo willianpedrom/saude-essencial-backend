@@ -2,57 +2,57 @@ import { store } from '../store.js';
 import { toast } from '../utils.js';
 
 const PLANOS = [
-    {
-        id: 'starter',
-        nome: 'Starter',
-        preco: 'R$ 47',
-        periodo: '/mês',
-        icon: '🌱',
-        cor: '#4CAF50',
-        recursos: [
-            'Até 30 clientes',
-            'Anamnese completa',
-            'Dashboard com métricas',
-            'Links de cadastro',
-            'Suporte por e-mail',
-        ],
-    },
-    {
-        id: 'pro',
-        nome: 'Pro',
-        preco: 'R$ 97',
-        periodo: '/mês',
-        icon: '🌿',
-        cor: '#2196F3',
-        destaque: true,
-        recursos: [
-            'Até 100 clientes',
-            'Tudo do Starter',
-            'Agendamentos e follow-up',
-            'Relatórios detalhados',
-            'Suporte prioritário',
-        ],
-    },
-    {
-        id: 'premium',
-        nome: 'Premium',
-        preco: 'R$ 197',
-        periodo: '/mês',
-        icon: '✨',
-        cor: '#9C27B0',
-        recursos: [
-            'Clientes ilimitados',
-            'Tudo do Pro',
-            'Múltiplos usuários',
-            'API de integração',
-            'Suporte VIP 24h',
-        ],
-    },
+  {
+    id: 'starter',
+    nome: 'Starter',
+    preco: 'R$ 47',
+    periodo: '/mês',
+    icon: '🌱',
+    cor: '#4CAF50',
+    recursos: [
+      'Até 30 clientes',
+      'Anamnese completa',
+      'Dashboard com métricas',
+      'Links de cadastro',
+      'Suporte por e-mail',
+    ],
+  },
+  {
+    id: 'pro',
+    nome: 'Pro',
+    preco: 'R$ 97',
+    periodo: '/mês',
+    icon: '💧',
+    cor: '#2196F3',
+    destaque: true,
+    recursos: [
+      'Até 100 clientes',
+      'Tudo do Starter',
+      'Agendamentos e follow-up',
+      'Relatórios detalhados',
+      'Suporte prioritário',
+    ],
+  },
+  {
+    id: 'premium',
+    nome: 'Premium',
+    preco: 'R$ 197',
+    periodo: '/mês',
+    icon: '✨',
+    cor: '#9C27B0',
+    recursos: [
+      'Clientes ilimitados',
+      'Tudo do Pro',
+      'Múltiplos usuários',
+      'API de integração',
+      'Suporte VIP 24h',
+    ],
+  },
 ];
 
 export function renderAssinatura(router) {
-    const app = document.getElementById('app');
-    app.innerHTML = `
+  const app = document.getElementById('app');
+  app.innerHTML = `
     <div style="min-height:100vh;background:var(--bg-dark);padding:2rem 1rem">
       <div style="max-width:900px;margin:0 auto">
         <div style="text-align:center;margin-bottom:3rem">
@@ -116,24 +116,24 @@ export function renderAssinatura(router) {
     </div>
   `;
 
-    document.getElementById('voltar-link').addEventListener('click', e => {
-        e.preventDefault();
-        router.navigate('/dashboard');
-    });
+  document.getElementById('voltar-link').addEventListener('click', e => {
+    e.preventDefault();
+    router.navigate('/dashboard');
+  });
 
-    app.querySelectorAll('.btn-assinar').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const plano = btn.dataset.plano;
-            btn.disabled = true;
-            btn.textContent = 'Redirecionando...';
-            try {
-                const { url } = await store.checkout(plano);
-                window.location.href = url;
-            } catch (err) {
-                toast('Erro ao iniciar pagamento: ' + err.message, 'error');
-                btn.disabled = false;
-                btn.textContent = `Assinar ${plano.charAt(0).toUpperCase() + plano.slice(1)}`;
-            }
-        });
+  app.querySelectorAll('.btn-assinar').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const plano = btn.dataset.plano;
+      btn.disabled = true;
+      btn.textContent = 'Redirecionando...';
+      try {
+        const { url } = await store.checkout(plano);
+        window.location.href = url;
+      } catch (err) {
+        toast('Erro ao iniciar pagamento: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = `Assinar ${plano.charAt(0).toUpperCase() + plano.slice(1)}`;
+      }
     });
+  });
 }

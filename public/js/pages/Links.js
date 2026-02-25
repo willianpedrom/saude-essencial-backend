@@ -105,7 +105,7 @@ export async function renderLinks(router) {
       btn.addEventListener('click', () => {
         const nome = consultant?.nome || 'Consultora';
         const msg = encodeURIComponent(
-          `Olá! 💚 Sou ${nome}, consultora de saúde natural.\n\nPara montar seu protocolo personalizado de bem-estar, preencha a avaliação pelo link:\n\n${btn.dataset.whatsapp}\n\nLeva apenas ~5 minutos e o protocolo é gerado automaticamente! 🌿`
+          `Olá! 💧 Sou ${nome}, consultora da Gota Essencial.\n\nPara montar seu protocolo personalizado de óleos essenciais, preencha a avaliação pelo link:\n\n${btn.dataset.whatsapp}\n\nLeva apenas ~5 minutos e o protocolo é gerado automaticamente! 💧`
         );
         window.open(`https://wa.me/?text=${msg}`, '_blank');
       });
