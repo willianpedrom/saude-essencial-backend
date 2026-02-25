@@ -82,3 +82,7 @@ CREATE INDEX IF NOT EXISTS idx_anamneses_consultora   ON anamneses(consultora_id
 CREATE INDEX IF NOT EXISTS idx_anamneses_token        ON anamneses(token_publico);
 CREATE INDEX IF NOT EXISTS idx_agendamentos_consultora ON agendamentos(consultora_id);
 CREATE INDEX IF NOT EXISTS idx_assinaturas_consultora ON assinaturas(consultora_id);
+
+-- Migrations (idempotent — safe to run multiple times)
+ALTER TABLE clientes ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'active';
+

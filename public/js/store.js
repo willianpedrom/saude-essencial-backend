@@ -50,9 +50,9 @@ export function clientToApi(data) {
         nome: data.name || data.nome || '',
         email: data.email || '',
         telefone: data.phone || data.telefone || '',
-        data_nascimento: data.birthdate || data.data_nascimento || null,
+        data_nascimento: (data.birthdate || data.data_nascimento) || null,
         cidade: data.city || data.cidade || '',
-        observacoes: data.notes || data.observacoes || '',
+        notas: data.notes || data.notas || data.observacoes || '',
         status: data.status || 'active',
     };
 }
