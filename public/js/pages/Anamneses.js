@@ -4,7 +4,7 @@ import { ANAMNESIS_STEPS, ANAMNESIS_QUESTIONS } from '../data.js';
 import { formatDate, toast, modal } from '../utils.js';
 
 export async function renderAnamnesisList(router) {
-  renderLayout(router, 'Anamneses Realizadas',
+  renderLayout(router, 'Links de Anamnese',
     `<div style="display:flex;align-items:center;justify-content:center;height:200px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando...</div>`,
     'anamnesis');
 
@@ -19,79 +19,161 @@ export async function renderAnamnesisList(router) {
     const pc = document.getElementById('page-content');
     if (!pc) return;
 
+    const pessoais = all.filter(a => (a.subtipo || 'pessoal') === 'pessoal');
+    const genericos = all.filter(a => a.subtipo === 'generico');
+
+    const baseUrl = window.location.origin;
+
+    function typeChip(subtipo) {
+      return subtipo === 'generico'
+        ? `<span style="background:#dbeafe;color:#1d4ed8;font-size:0.7rem;padding:1px 6px;border-radius:10px;white-space:nowrap">🌐 Genérico</span>`
+        : `<span style="background:#f3e8ff;color:#6b21a8;font-size:0.7rem;padding:1px 6px;border-radius:10px;white-space:nowrap">👤 Pessoal</span>`;
+    }
+
+    // ── Section 1: Personal pending links ──────────────────────────────
+    const pessoaisHtml = pessoais.length === 0
+      ? `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.9rem">Nenhum link pessoal aguardando preenchimento</div>`
+      : pessoais.map(a => {
+        const url = `${baseUrl}/#/anamnese/${a.token_publico}`;
+        const nome = a.nome_link || a.cliente_nome || '(sem nome)';
+        const initials = nome.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
+        return `
+          <tr>
+            <td>${typeChip('pessoal')}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="client-avatar-sm" style="width:32px;height:32px;font-size:0.75rem">${initials}</div>
+                <div>
+                  <div style="font-weight:600;font-size:0.9rem">${nome}</div>
+                  <div style="font-size:0.72rem;color:var(--text-muted);word-break:break-all;max-width:280px">${url}</div>
+                </div>
+              </div>
+            </td>
+            <td style="white-space:nowrap">${formatDate(a.criado_em)}</td>
+            <td><span class="badge-gold">⏳ Aguardando</span></td>
+            <td>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-secondary btn-sm" data-copy="${url}" title="Copiar link">📋</button>
+                <button class="btn btn-secondary btn-sm" data-wa="${url}" data-name="${nome}" title="WhatsApp">📱</button>
+                <button class="btn btn-danger btn-sm" data-del="${a.id}" data-dname="${nome}">🗑️</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+
+    // ── Section 2: Generic links (always visible, with stats) ──────────
+    const genericosHtml = genericos.length === 0
+      ? `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.9rem">Nenhum link genérico criado. <a href="#/links" style="color:var(--green-600)">Criar em Links de Captação</a></div>`
+      : genericos.map(a => {
+        const url = `${baseUrl}/#/anamnese/${a.token_publico}`;
+        const nome = a.nome_link || 'Campanha';
+        const visitas = parseInt(a.visitas || a.acessos || 0);
+        const preenchi = parseInt(a.preenchimentos || 0);
+        return `
+          <tr>
+            <td>${typeChip('generico')}</td>
+            <td>
+              <div>
+                <div style="font-weight:600;font-size:0.9rem">${nome}</div>
+                <div style="font-size:0.72rem;color:var(--text-muted);word-break:break-all;max-width:280px">${url}</div>
+              </div>
+            </td>
+            <td style="white-space:nowrap">${formatDate(a.criado_em)}</td>
+            <td>
+              <div style="font-size:0.82rem;line-height:1.6">
+                <div>👁️ <strong>${visitas}</strong> acessos</div>
+                <div>✅ <strong>${preenchi}</strong> preenchimentos</div>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-secondary btn-sm" data-copy="${url}" title="Copiar link">📋</button>
+                <button class="btn btn-secondary btn-sm" data-wa="${url}" data-name="${nome}" title="WhatsApp">📱</button>
+                ${preenchi > 0 ? `<button class="btn btn-primary btn-sm" data-fills="${a.id}" data-fillname="${nome}">📋 ${preenchi} fichas</button>` : ''}
+                <button class="btn btn-danger btn-sm" data-del="${a.id}" data-dname="${nome}">🗑️</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+
     pc.innerHTML = `
-      <div class="card">
+      ${pessoais.length > 0 ? `
+      <div class="card" style="margin-bottom:16px">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:8px">
+          <span style="font-size:1rem">👤</span>
+          <h3 style="margin:0;font-size:1rem">Links Pessoais <span style="font-size:0.8rem;font-weight:400;color:var(--text-muted);margin-left:4px">— aguardando preenchimento</span></h3>
+        </div>
         <div style="overflow-x:auto">
           <table class="clients-table">
             <thead><tr>
-              <th>Cliente</th><th>Data</th><th>Tipo</th><th>Status</th><th>Ações</th>
+              <th>Tipo</th><th>Cliente</th><th>Data de Envio</th><th>Status</th><th>Ações</th>
             </tr></thead>
-            <tbody>
-              ${all.length === 0
-        ? `<tr><td colspan="5"><div class="empty-state">
-                     <div class="empty-state-icon">📋</div>
-                     <h4>Nenhuma anamnese ainda</h4>
-                     <p>Compartilhe um link de captação para receber anamneses de clientes</p>
-                     <button class="btn btn-primary" onclick="location.hash='#/links'">🔗 Ir para Links</button>
-                   </div></td></tr>`
-        : all.map(a => {
-          // Client name: from DB join (cliente_nome) OR extracted from dados
-          const nomeDisplay = a.cliente_nome || '(sem nome)';
-          const initials = nomeDisplay.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
-          const tipos = { adulto: '👤 Adulto', crianca: '🧒 Criança', pet: '🐾 Pet', mulher: '👩 Mulher' };
-          return `
-                <tr>
-                  <td>
-                    <div class="client-name-cell">
-                      <div class="client-avatar-sm">${initials}</div>
-                      <div>
-                        <div style="font-weight:600">${nomeDisplay}</div>
-                        <div style="font-size:0.75rem;color:var(--text-muted)">${tipos[a.tipo] || a.tipo || '—'}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>${formatDate(a.criado_em)}</td>
-                  <td>${tipos[a.tipo] || '—'}</td>
-                  <td>
-                    <span class="${a.preenchido ? 'badge-green' : 'badge-gold'}">
-                      ${a.preenchido ? '✅ Preenchido' : '⏳ Aguardando'}
-                    </span>
-                  </td>
-                  <td>
-                    <div style="display:flex;gap:6px;flex-wrap:wrap">
-                      ${a.preenchido
-              ? `<button class="btn btn-primary btn-sm" data-view="${a.id}">📋 Ver Ficha</button>`
-              : `<button class="btn btn-secondary btn-sm" data-copylink="${window.location.origin}/#/anamnese/${a.token_publico}">🔗 Copiar Link</button>`}
-                      <button class="btn btn-danger btn-sm" data-del="${a.id}" data-name="${nomeDisplay}">🗑️</button>
-                    </div>
-                  </td>
-                </tr>`;
-        }).join('')}
-            </tbody>
+            <tbody>${pessoaisHtml}</tbody>
           </table>
         </div>
-      </div>`;
+      </div>` : ''}
 
-    // Bind events
-    pc.querySelectorAll('[data-view]').forEach(btn => {
-      btn.addEventListener('click', () => showClientProfile(btn.dataset.view));
-    });
-    pc.querySelectorAll('[data-copylink]').forEach(btn => {
+      <div class="card">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:1rem">🌐</span>
+            <h3 style="margin:0;font-size:1rem">Links Genéricos <span style="font-size:0.8rem;font-weight:400;color:var(--text-muted);margin-left:4px">— redes sociais e campanhas</span></h3>
+          </div>
+          <a href="#/links" class="btn btn-primary btn-sm">+ Novo Link</a>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="clients-table">
+            <thead><tr>
+              <th>Tipo</th><th>Campanha</th><th>Criado em</th><th>Estatísticas</th><th>Ações</th>
+            </tr></thead>
+            <tbody>${genericosHtml}</tbody>
+          </table>
+        </div>
+      </div>
+
+      ${pessoais.length === 0 && genericos.length === 0 ? `
+      <div class="empty-state" style="margin-top:20px">
+        <div class="empty-state-icon">📋</div>
+        <h4>Nenhuma anamnese</h4>
+        <p>Crie links de captação para receber anamneses de clientes</p>
+        <a href="#/links" class="btn btn-primary">🔗 Criar Links de Captação</a>
+      </div>` : ''}`;
+
+    bindEvents(pc);
+  }
+
+  function bindEvents(pc) {
+    // Copy link
+    pc.querySelectorAll('[data-copy]').forEach(btn => {
       btn.addEventListener('click', () => {
-        navigator.clipboard.writeText(btn.dataset.copylink)
+        navigator.clipboard.writeText(btn.dataset.copy)
           .then(() => toast('Link copiado! 📋'))
-          .catch(() => prompt('Copie o link:', btn.dataset.copylink));
+          .catch(() => prompt('Copie o link:', btn.dataset.copy));
       });
     });
+
+    // WhatsApp
+    pc.querySelectorAll('[data-wa]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const consultant = auth.current;
+        const nome = consultant?.nome || 'Consultora';
+        const msg = encodeURIComponent(
+          `Olá ${btn.dataset.name}! 💚 Sou ${nome}, consultora de Saúde Essencial.\n\nPreencha sua avaliação de saúde pelo link abaixo e receba seu protocolo personalizado:\n\n${btn.dataset.wa}\n\nDemora apenas ~5 minutos! 🌿`
+        );
+        window.open(`https://wa.me/?text=${msg}`, '_blank');
+      });
+    });
+
+    // Delete
     pc.querySelectorAll('[data-del]').forEach(btn => {
       btn.addEventListener('click', () => {
-        const nome = btn.dataset.name;
-        modal('Excluir Anamnese', `<p>Deseja excluir a anamnese de <strong>${nome}</strong>? Esta ação não pode ser desfeita.</p>`, {
+        const nome = btn.dataset.dname;
+        modal('Excluir Link', `<p>Deseja excluir <strong>"${nome}"</strong>? Esta ação não pode ser desfeita.</p>`, {
           confirmLabel: 'Excluir', confirmClass: 'btn-danger',
           onConfirm: async () => {
             try {
               await store.deleteAnamnesis(btn.dataset.del);
-              toast('Anamnese excluída.', 'warning');
+              toast('Excluído.', 'warning');
               await load();
             } catch (err) {
               toast('Erro: ' + err.message, 'error');
@@ -100,172 +182,27 @@ export async function renderAnamnesisList(router) {
         });
       });
     });
+
+    // View fills for generic link
+    pc.querySelectorAll('[data-fills]').forEach(btn => {
+      btn.addEventListener('click', () => showGenericFills(btn.dataset.fills, btn.dataset.fillname, router));
+    });
   }
 
-  async function showClientProfile(id) {
-    const anamnese = all.find(a => a.id === id);
-    if (!anamnese) return;
-
-    let dados = {};
+  async function showGenericFills(linkOrigemId, nome, router) {
+    // Fetch all anamneses that were generated from this generic link
+    // We use the full anamneses list from the Clients page via store
+    toast('Carregando fichas...', 'info');
     try {
-      const full = await store.getAnamnesisFull(id);
-      dados = full.dados || {};
-    } catch { dados = {}; }
-
-    // Personal data — from dados fields (filled by the client in the form)
-    const nome = dados.full_name || anamnese.cliente_nome || '—';
-    const email = dados.email || '—';
-    const phone = dados.phone || '—';
-    const birthdate = dados.birthdate ? formatDate(dados.birthdate) : '—';
-    const city = dados.city || '—';
-    const occupation = dados.occupation || '—';
-
-    // Build WhatsApp link
-    const phoneClean = (dados.phone || '').replace(/\D/g, '');
-    const waUrl = phoneClean
-      ? `https://wa.me/${phoneClean}?text=${encodeURIComponent(`Olá ${nome}! Sou ${auth.current?.nome || 'sua consultora'} da Saúde Essencial. Preparei seu protocolo personalizado! 💚🌿`)}`
-      : '';
-
-    // Build answers section HTML
-    const answersHtml = ANAMNESIS_STEPS.map(step => {
-      const section = ANAMNESIS_QUESTIONS[step.id];
-      if (!section || step.id === 'personal') return ''; // skip personal, already shown above
-
-      const parts = [];
-
-      if (section.sections) {
-        section.sections.forEach(sec => {
-          const val = dados[sec.key];
-          if (!val || (Array.isArray(val) && val.length === 0)) return;
-
-          if (sec.type === 'checkbox' && Array.isArray(val) && val.length > 0) {
-            parts.push(`
-                <div style="margin-bottom:12px">
-                  <div style="font-size:0.8rem;font-weight:600;color:var(--text-muted);margin-bottom:6px">${sec.label}</div>
-                  <div style="display:flex;flex-wrap:wrap;gap:4px">
-                    ${val.map(v => `<span class="report-tag" style="font-size:0.75rem">${v}</span>`).join('')}
-                  </div>
-                </div>`);
-          } else if (sec.type === 'scale' && val !== null) {
-            parts.push(`<div style="margin-bottom:8px;font-size:0.85rem"><strong>${sec.label}:</strong> <span style="font-weight:600;color:var(--green-600)">${val}${sec.max ? '/' + sec.max : ''}</span></div>`);
-          } else if (sec.type === 'radio' && val) {
-            parts.push(`<div style="margin-bottom:8px;font-size:0.85rem"><strong>${sec.label.split('?')[0]}:</strong> ${val}</div>`);
-          } else if (sec.type === 'textarea' && val) {
-            parts.push(`<div style="margin-bottom:10px"><div style="font-size:0.8rem;font-weight:600;color:var(--text-muted);margin-bottom:4px">${sec.label}</div><div style="font-size:0.85rem;background:#f9fafb;padding:10px 12px;border-radius:8px;border-left:3px solid var(--green-400)">${val}</div></div>`);
-          }
-        });
-      }
-
-      if (parts.length === 0) return '';
-      return `
-        <div style="margin-bottom:20px;padding:16px;background:#f9fafb;border-radius:12px">
-          <h4 style="margin-bottom:12px;color:var(--text-dark);font-size:0.95rem">${step.icon} ${section.title}</h4>
-          ${parts.join('')}
-        </div>`;
-    }).join('');
-
-    const modalHtml = `
-      <div style="max-height:70vh;overflow-y:auto;padding-right:4px">
-        <!-- Header card: personal data -->
-        <div style="background:linear-gradient(135deg,#2d4a28,#4a7c40);border-radius:12px;padding:20px;color:white;margin-bottom:20px">
-          <div style="display:flex;align-items:center;gap:14px">
-            <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700">
-              ${nome.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()}
-            </div>
-            <div>
-              <div style="font-size:1.15rem;font-weight:700">${nome}</div>
-              <div style="font-size:0.85rem;opacity:0.8">${occupation !== '—' ? occupation : ''} · ${city}</div>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;font-size:0.85rem">
-            <div>📧 ${email}</div>
-            <div>📱 ${phone}</div>
-            <div>🎂 ${birthdate}</div>
-            <div>📅 Anamnese: ${formatDate(anamnese.criado_em)}</div>
-          </div>
-          <div style="display:flex;gap:8px;margin-top:14px">
-            ${waUrl ? `<a href="${waUrl}" target="_blank" class="btn btn-sm" style="background:#25D366;color:white;text-decoration:none;border:none">📱 WhatsApp</a>` : ''}
-            <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border-color:rgba(255,255,255,0.3)" data-editclient="${anamnese.cliente_id || ''}">✏️ Editar Cadastro</button>
-            <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border-color:rgba(255,255,255,0.3)" data-protocolo="${id}">🌿 Ver Protocolo</button>
-          </div>
-        </div>
-
-        <!-- Answers by section -->
-        <div style="font-size:0.9rem;font-weight:700;color:var(--text-muted);letter-spacing:0.05em;margin-bottom:12px">RESPOSTAS DO QUESTIONÁRIO</div>
-        ${answersHtml || '<p style="color:var(--text-muted)">Nenhuma resposta registrada.</p>'}
-      </div>`;
-
-    const { el } = modal(`📋 Ficha de ${nome}`, modalHtml, {});
-
-    el.querySelector('[data-protocolo]')?.addEventListener('click', () => {
-      const consultant = auth.current;
-      const encoded = encodeURIComponent(JSON.stringify({
-        answers: dados,
-        consultant: { name: consultant?.nome || consultant?.name },
-        clientName: nome
-      }));
-      router.navigate('/protocolo', { data: encoded });
-    });
-
-    el.querySelector('[data-editclient]')?.addEventListener('click', async () => {
-      const clienteId = el.querySelector('[data-editclient]').dataset.editclient;
-      if (!clienteId) { toast('Este cliente não tem cadastro vinculado.', 'info'); return; }
-      showEditClientModal(clienteId, { nome, email: dados.email, phone: dados.phone, birthdate: dados.birthdate, city: dados.city, occupation: dados.occupation });
-    });
-  }
-
-  function showEditClientModal(clienteId, prefill) {
-    modal('✏️ Editar Cadastro do Cliente', `
-      <div class="form-grid">
-        <div class="form-group form-field-full">
-          <label class="field-label">Nome completo *</label>
-          <input class="field-input" id="ec-name" value="${prefill.nome || ''}" />
-        </div>
-        <div class="form-group">
-          <label class="field-label">E-mail</label>
-          <input class="field-input" id="ec-email" type="email" value="${prefill.email || ''}" />
-        </div>
-        <div class="form-group">
-          <label class="field-label">WhatsApp</label>
-          <input class="field-input" id="ec-phone" value="${prefill.phone || ''}" />
-        </div>
-        <div class="form-group">
-          <label class="field-label">Data de Nascimento</label>
-          <input class="field-input" id="ec-birthdate" type="date" value="${prefill.birthdate || ''}" />
-        </div>
-        <div class="form-group">
-          <label class="field-label">Cidade</label>
-          <input class="field-input" id="ec-city" value="${prefill.city || ''}" />
-        </div>
-        <div class="form-group">
-          <label class="field-label">Status</label>
-          <select class="field-select" id="ec-status">
-            <option value="lead">Lead 🟡</option>
-            <option value="active">Ativo 🟢</option>
-            <option value="inactive">Inativo 🔴</option>
-          </select>
-        </div>
-      </div>`, {
-      confirmLabel: 'Salvar',
-      onConfirm: async () => {
-        const data = {
-          name: document.getElementById('ec-name').value.trim(),
-          email: document.getElementById('ec-email').value.trim(),
-          phone: document.getElementById('ec-phone').value.trim(),
-          birthdate: document.getElementById('ec-birthdate').value || null,
-          city: document.getElementById('ec-city').value.trim(),
-          status: document.getElementById('ec-status').value,
-        };
-        if (!data.name) { toast('Nome obrigatório', 'error'); return; }
-        try {
-          await store.updateClient(clienteId, data);
-          toast('Cadastro atualizado! ✅');
-          await load(); // refresh the list
-        } catch (err) {
-          toast('Erro: ' + err.message, 'error');
-        }
-      }
-    });
+      const all = await store.getAnamneses();
+      // The filled copies of a generic link have link_origem_id = linkOrigemId
+      // But our GET /api/anamneses only returns templates... we need a different approach
+      // For now, navigate to clients filtered — or show a toast message
+      toast(`As fichas preenchidas do link "${nome}" estão na seção Clientes`, 'info');
+      router.navigate('/clients');
+    } catch (e) {
+      toast('Erro ao carregar fichas.', 'error');
+    }
   }
 
   await load();
