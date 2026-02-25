@@ -199,7 +199,24 @@ export async function renderClients(router) {
 
   function showClientModal(client = null) {
     const id = client?.id;
-    modal(client ? 'Editar Cliente' : 'Novo Cliente', `
+
+    // Banner shown only for existing clients — allows opening their anamnese
+    const anamneseBanner = client ? `
+      <div id="anamnese-banner" style="display:flex;align-items:center;justify-content:space-between;
+        background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border:1px solid #a5d6a7;
+        border-radius:10px;padding:12px 16px;margin-bottom:18px;cursor:pointer">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.3rem">📋</span>
+          <div>
+            <div style="font-weight:600;color:#2d4a28;font-size:0.9rem">Ficha de Anamnese</div>
+            <div style="font-size:0.78rem;color:#4a7c40">Clique para ver todas as respostas do questionário</div>
+          </div>
+        </div>
+        <span style="color:#4a7c40;font-size:1.1rem">›</span>
+      </div>` : '';
+
+    const { el } = modal(client ? 'Editar Cliente' : 'Novo Cliente', `
+      ${anamneseBanner}
       <div class="form-grid">
         <div class="form-group form-field-full">
           <label class="field-label">Nome completo *</label>
@@ -224,9 +241,9 @@ export async function renderClients(router) {
         <div class="form-group">
           <label class="field-label">Status</label>
           <select class="field-select" id="m-status">
-            <option value="lead" ${client?.status === 'lead' ? 'selected' : ''}>Lead</option>
-            <option value="active" ${client?.status === 'active' ? 'selected' : ''}>Ativo</option>
-            <option value="inactive" ${client?.status === 'inactive' ? 'selected' : ''}>Inativo</option>
+            <option value="lead" ${client?.status === 'lead' ? 'selected' : ''}>Lead 🟡</option>
+            <option value="active" ${(client?.status === 'active' || !client?.status) ? 'selected' : ''}>Ativo 🟢</option>
+            <option value="inactive" ${client?.status === 'inactive' ? 'selected' : ''}>Inativo 🔴</option>
           </select>
         </div>
         <div class="form-group form-field-full">
@@ -254,6 +271,13 @@ export async function renderClients(router) {
           toast('Erro: ' + err.message, 'error');
         }
       }
+    });
+
+    // Anamnese banner click handler
+    el?.querySelector('#anamnese-banner')?.addEventListener('click', () => {
+      // Close this modal, then open anamnese view
+      el.querySelector('[data-close]')?.click();
+      setTimeout(() => showAnamneseModal(client, router), 200);
     });
   }
 
