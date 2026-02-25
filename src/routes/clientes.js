@@ -12,7 +12,8 @@ router.use(auth, checkSub);
 router.get('/', async (req, res) => {
     try {
         const { rows } = await pool.query(
-            `SELECT id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, ativo, status, criado_em
+            `SELECT id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, ativo, status,
+                    pipeline_stage, pipeline_notas, criado_em
        FROM clientes
        WHERE consultora_id = $1 AND ativo = TRUE
        ORDER BY nome ASC`,
@@ -77,6 +78,30 @@ router.put('/:id', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erro ao atualizar cliente.' });
+    }
+});
+
+// PATCH /api/clientes/:id/stage
+router.patch('/:id/stage', async (req, res) => {
+    const { stage, notas } = req.body;
+    const VALID_STAGES = ['lead_captado', 'primeiro_contato', 'interesse_confirmado',
+        'protocolo_apresentado', 'proposta_enviada', 'negociando', 'primeira_compra', 'perdido'];
+    if (!stage || !VALID_STAGES.includes(stage)) {
+        return res.status(400).json({ error: 'Estágio inválido.' });
+    }
+    try {
+        const { rows } = await pool.query(
+            `UPDATE clientes
+         SET pipeline_stage=$1, pipeline_notas=COALESCE($2, pipeline_notas), atualizado_em=NOW()
+         WHERE id=$3 AND consultora_id=$4
+         RETURNING id, nome, pipeline_stage, pipeline_notas`,
+            [stage, notas || null, req.params.id, req.consultora.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Cliente não encontrado.' });
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao atualizar estágio.' });
     }
 });
 

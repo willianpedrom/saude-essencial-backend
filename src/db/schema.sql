@@ -103,3 +103,6 @@ UPDATE consultoras SET role = 'admin'
   WHERE criado_em = (SELECT MIN(criado_em) FROM consultoras)
     AND (role IS NULL OR role = 'user');
 
+
+ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS pipeline_stage  VARCHAR(40) DEFAULT 'lead_captado';
+ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS pipeline_notas  TEXT;
