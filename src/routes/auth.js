@@ -114,7 +114,9 @@ router.post('/login', async (req, res, next) => {
 router.get('/me', authMiddleware, async (req, res, next) => {
     try {
         const { rows } = await pool.query(
-            'SELECT id, nome, email, telefone, slug, foto_url, criado_em FROM consultoras WHERE id = $1',
+            `SELECT id, nome, email, telefone, slug, foto_url,
+              endereco, bio, instagram, youtube, facebook, linkedin, criado_em
+             FROM consultoras WHERE id = $1`,
             [req.consultora.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });
@@ -133,4 +135,45 @@ router.get('/me', authMiddleware, async (req, res, next) => {
     }
 });
 
+// GET /api/auth/profile — same as /me but explicit
+router.get('/profile', authMiddleware, async (req, res, next) => {
+    try {
+        const { rows } = await pool.query(
+            `SELECT id, nome, email, telefone, slug, foto_url,
+              endereco, bio, instagram, youtube, facebook, linkedin
+             FROM consultoras WHERE id = $1`,
+            [req.consultora.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Perfil não encontrado.' });
+        return res.json(rows[0]);
+    } catch (err) {
+        return next(err);
+    }
+});
+
+// PUT /api/auth/profile — update profile fields
+router.put('/profile', authMiddleware, async (req, res, next) => {
+    const { nome, telefone, endereco, bio, foto_url, instagram, youtube, facebook, linkedin } = req.body;
+    try {
+        const { rows } = await pool.query(
+            `UPDATE consultoras
+             SET nome=$1, telefone=$2, endereco=$3, bio=$4, foto_url=$5,
+                 instagram=$6, youtube=$7, facebook=$8, linkedin=$9,
+                 atualizado_em=NOW()
+             WHERE id=$10
+             RETURNING id, nome, email, telefone, slug, foto_url,
+                       endereco, bio, instagram, youtube, facebook, linkedin`,
+            [nome, telefone || null, endereco || null, bio || null, foto_url || null,
+                instagram || null, youtube || null, facebook || null, linkedin || null,
+                req.consultora.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });
+        return res.json({ success: true, consultora: rows[0] });
+    } catch (err) {
+        console.error('Erro no PUT /profile:', err.message);
+        return next(err);
+    }
+});
+
 module.exports = router;
+

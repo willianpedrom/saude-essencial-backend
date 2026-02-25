@@ -162,4 +162,9 @@ export const store = {
     /* ---- ASSINATURA ---- */
     getAssinatura() { return api('GET', '/api/assinatura/status'); },
     checkout(plano) { return api('POST', '/api/assinatura/checkout', { plano }); },
+
+    /* ---- PROFILE ---- */
+    getProfile() { return api('GET', '/api/auth/profile'); },
+    updateProfile(data) { return api('PUT', '/api/auth/profile', data); },
 };
+

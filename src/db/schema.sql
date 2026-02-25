@@ -84,9 +84,15 @@ CREATE INDEX IF NOT EXISTS idx_agendamentos_consultora ON agendamentos(consultor
 CREATE INDEX IF NOT EXISTS idx_assinaturas_consultora ON assinaturas(consultora_id);
 
 -- Migrations (idempotent — safe to run multiple times)
-ALTER TABLE clientes  ADD COLUMN IF NOT EXISTS status         VARCHAR(30) DEFAULT 'active';
-ALTER TABLE anamneses ADD COLUMN IF NOT EXISTS subtipo        VARCHAR(20) DEFAULT 'pessoal';
-ALTER TABLE anamneses ADD COLUMN IF NOT EXISTS nome_link      TEXT;
-ALTER TABLE anamneses ADD COLUMN IF NOT EXISTS acessos        INT         DEFAULT 0;
-ALTER TABLE anamneses ADD COLUMN IF NOT EXISTS link_origem_id UUID        REFERENCES anamneses(id) ON DELETE SET NULL;
+ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS status         VARCHAR(30) DEFAULT 'active';
+ALTER TABLE anamneses   ADD COLUMN IF NOT EXISTS subtipo        VARCHAR(20) DEFAULT 'pessoal';
+ALTER TABLE anamneses   ADD COLUMN IF NOT EXISTS nome_link      TEXT;
+ALTER TABLE anamneses   ADD COLUMN IF NOT EXISTS acessos        INT         DEFAULT 0;
+ALTER TABLE anamneses   ADD COLUMN IF NOT EXISTS link_origem_id UUID        REFERENCES anamneses(id) ON DELETE SET NULL;
+ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS endereco       TEXT;
+ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS bio            TEXT;
+ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS instagram      TEXT;
+ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS youtube        TEXT;
+ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS facebook       TEXT;
+ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS linkedin       TEXT;
 

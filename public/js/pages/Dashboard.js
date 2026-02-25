@@ -21,6 +21,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
     { id: 'followup', icon: '💬', label: 'Follow-up' },
     { id: 'testimonials', icon: '⭐', label: 'Depoimentos' },
     { id: 'purchases', icon: '🛒', label: 'Compras' },
+    { id: 'profile', icon: '👤', label: 'Meu Perfil' },
   ];
   if (auth.isAdmin) navItems.push({ id: 'admin', icon: '⚙️', label: 'Administração' });
 
@@ -31,8 +32,12 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
         <div class="sidebar-logo-mark">Saúde <span>Essencial</span></div>
         <div class="sidebar-logo-sub">Consultoras de Bem-estar</div>
       </div>
-      <div class="sidebar-user">
-        <div class="sidebar-avatar">🌿</div>
+      <div class="sidebar-user" id="sidebar-user-btn" style="cursor:pointer" title="Meu Perfil">
+        <div class="sidebar-avatar">
+          ${consultant?.foto_url
+      ? `<img src="${consultant.foto_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" />`
+      : '🌿'}
+        </div>
         <div>
           <div class="sidebar-user-name">${firstName}</div>
           <div class="sidebar-user-role">${auth.isAdmin ? 'Administradora' : 'Consultora'}</div>
@@ -74,6 +79,10 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
     auth.logout();
     toast('Até logo! 👋', 'info');
     router.navigate('/');
+  });
+
+  document.getElementById('sidebar-user-btn')?.addEventListener('click', () => {
+    router.navigate('/profile');
   });
 
   return document.getElementById('page-content');
