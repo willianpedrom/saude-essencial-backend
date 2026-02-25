@@ -2,6 +2,8 @@ import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { formatDate, getInitials, toast, modal } from '../utils.js';
 
+let cachedAnamneses = null; // lazy-load once per session
+
 export async function renderClients(router) {
   const nome = (auth.current?.nome || auth.current?.name || 'Consultora');
 
@@ -53,7 +55,8 @@ export async function renderClients(router) {
           <td>${c.city || '—'}</td>
           <td><span class="status-badge status-${c.status || 'active'}">${{ active: 'Ativo', lead: 'Lead', inactive: 'Inativo' }[c.status] || 'Ativo'}</span></td>
           <td>
-            <div style="display:flex;gap:6px">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-secondary btn-sm" data-action="anamnese" data-id="${c.id}" title="Ver anamnese">📋</button>
               <button class="btn btn-secondary btn-sm" data-action="edit" data-id="${c.id}">✏️</button>
               <button class="btn btn-danger btn-sm" data-action="delete" data-id="${c.id}">🗑️</button>
             </div>
@@ -69,7 +72,7 @@ export async function renderClients(router) {
     const pc = document.getElementById('page-content');
     if (!pc) return;
     pc.querySelectorAll('[data-action]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const client = clients.find(c => c.id === btn.dataset.id);
         if (btn.dataset.action === 'edit') showClientModal(client);
         if (btn.dataset.action === 'delete') {
@@ -82,7 +85,76 @@ export async function renderClients(router) {
             }
           });
         }
+        if (btn.dataset.action === 'anamnese') {
+          showAnamneseModal(client, router);
+        }
       });
+    });
+  }
+
+  async function showAnamneseModal(client, router) {
+    // Lazy-load anamneses
+    if (!cachedAnamneses) {
+      cachedAnamneses = await store.getAnamneses().catch(() => []);
+    }
+    const clientAnam = cachedAnamneses.filter(a =>
+      a.cliente_id === client.id || a.cliente_nome === client.name
+    );
+    if (clientAnam.length === 0) {
+      modal('Anamneses de ' + client.name, `
+        <div class="empty-state" style="padding:20px 0">
+          <div class="empty-state-icon">📋</div>
+          <h4>Nenhuma anamnese encontrada</h4>
+          <p>Este cliente ainda não preencheu a ficha de anamnese.</p>
+        </div>`);
+      return;
+    }
+    const a = clientAnam[0]; // most recent
+    const dados = await store.getAnamnesisFull(a.id).then(r => r.dados || {}).catch(() => ({}));
+    const symptoms = [
+      ...(dados.general_symptoms || []),
+      ...(dados.emotional_symptoms || []),
+      ...(dados.digestive_symptoms || []),
+      ...(dados.sleep_symptoms || []),
+    ];
+    const { el } = modal('📋 Anamnese — ' + client.name, `
+      <div style="max-height:400px;overflow-y:auto">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+          <div style="font-size:0.85rem"><strong>E-mail:</strong> ${client.email || '—'}</div>
+          <div style="font-size:0.85rem"><strong>WhatsApp:</strong> ${client.phone || '—'}</div>
+          <div style="font-size:0.85rem"><strong>Nascimento:</strong> ${formatDate(client.birthdate)}</div>
+          <div style="font-size:0.85rem"><strong>Cidade:</strong> ${client.city || '—'}</div>
+        </div>
+        <div style="margin-bottom:12px">
+          <strong style="font-size:0.85rem">Queixa principal:</strong>
+          <p style="font-size:0.85rem;color:var(--text-body);margin-top:4px">${dados.main_complaint || '—'}</p>
+        </div>
+        <div style="margin-bottom:12px">
+          <strong style="font-size:0.85rem">Sintomas relatados:</strong>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+            ${symptoms.slice(0, 12).map(s => `<span class="report-tag" style="font-size:0.72rem">${s}</span>`).join('') || '—'}
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <strong style="font-size:0.85rem">Objetivos:</strong>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+            ${(dados.goals || []).map(g => `<span class="report-tag" style="font-size:0.72rem;background:#dcfce7;color:#166534">${g}</span>`).join('') || '—'}
+          </div>
+        </div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px">
+          Preenchida em: ${formatDate(a.criado_em)}
+        </div>
+      </div>`, {
+      confirmLabel: '🌿 Ver Protocolo',
+      onConfirm: () => {
+        const consultant = auth.current;
+        const encoded = encodeURIComponent(JSON.stringify({
+          answers: dados,
+          consultant: { name: consultant?.nome || consultant?.name },
+          clientName: client.name
+        }));
+        router.navigate('/protocolo', { data: encoded });
+      }
     });
   }
 

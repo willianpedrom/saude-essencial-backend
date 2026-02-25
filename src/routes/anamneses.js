@@ -109,7 +109,7 @@ router.get('/', async (req, res) => {
     try {
         const { rows } = await pool.query(
             `SELECT a.id, a.tipo, a.preenchido, a.token_publico, a.criado_em,
-              c.nome AS cliente_nome
+              a.cliente_id, c.nome AS cliente_nome
        FROM anamneses a
        LEFT JOIN clientes c ON c.id = a.cliente_id
        WHERE a.consultora_id = $1
@@ -122,6 +122,7 @@ router.get('/', async (req, res) => {
         res.status(500).json({ error: 'Erro ao buscar anamneses.' });
     }
 });
+
 
 // GET /api/anamneses/:id
 router.get('/:id', async (req, res) => {
