@@ -11,9 +11,22 @@ const PORT = process.env.PORT || 3001;
 const VERSION = '1.8';
 
 // ─── Security ───
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            scriptSrcAttr: ["'unsafe-inline'"],   // allow onclick="..." in templates
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+            imgSrc: ["'self'", "data:"],
+            connectSrc: ["'self'"],
+        },
+    },
+}));
 app.use(cors({ origin: true, credentials: true }));
 app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 500 }));
+
 
 // Health check (no DB, never fails)
 app.get('/health', (req, res) => res.json({
