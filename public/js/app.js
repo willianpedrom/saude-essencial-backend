@@ -15,6 +15,7 @@ import { renderReport } from './pages/Report.js';
 import { renderAnamnesisList } from './pages/Anamneses.js';
 import { renderAssinatura } from './pages/Assinatura.js';
 import { renderProfile } from './pages/Profile.js';
+import { renderAdmin } from './pages/Admin.js';
 
 // Boot
 auth.init();
@@ -51,6 +52,7 @@ const router = new Router({
     '/purchases': guard(() => renderPurchases(router)),
     '/assinatura': guard(() => renderAssinatura(router)),
     '/profile': guard(() => renderProfile(router)),
+    '/admin': guard(() => renderAdmin(router)),
 
     // Public routes (no auth required)
     '/anamnese/:token': ({ token }) => renderPublicAnamnesis(router, token),

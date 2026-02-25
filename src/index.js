@@ -65,6 +65,7 @@ app.use('/api/clientes', require('./routes/clientes'));
 app.use('/api/anamneses', require('./routes/anamneses'));
 app.use('/api/agendamentos', require('./routes/agendamentos'));
 app.use('/api/assinatura', require('./routes/assinatura'));
+app.use('/api/admin', require('./routes/admin'));
 
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '../public')));

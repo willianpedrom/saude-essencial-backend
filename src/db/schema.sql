@@ -95,4 +95,9 @@ ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS instagram      TEXT;
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS youtube        TEXT;
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS facebook       TEXT;
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS linkedin       TEXT;
+ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS role           VARCHAR(20) DEFAULT 'user';
+-- Auto-promote the first registered consultora to admin
+UPDATE consultoras SET role = 'admin'
+  WHERE criado_em = (SELECT MIN(criado_em) FROM consultoras)
+    AND (role IS NULL OR role = 'user');
 
