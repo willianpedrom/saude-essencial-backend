@@ -51,6 +51,7 @@ export async function renderClients(router) {
             <div style="font-size:0.75rem;color:var(--text-muted)">${c.email || ''}</div></div>
           </div></td>
           <td>${c.phone || '—'}</td>
+          <td>${c.genero === 'masculino' ? '♂ Masc.' : '♀ Fem.'}</td>
           <td>${formatDate(c.birthdate) || '—'}</td>
           <td>${c.city || '—'}</td>
           <td><span class="status-badge status-${c.status || 'active'}">${{ active: 'Ativo', lead: 'Lead', inactive: 'Inativo' }[c.status] || 'Ativo'}</span></td>
@@ -174,7 +175,7 @@ export async function renderClients(router) {
           <div style="overflow-x:auto">
             <table class="clients-table">
               <thead><tr>
-                <th>Cliente</th><th>WhatsApp</th><th>Nascimento</th><th>Cidade</th><th>Status</th><th>Ações</th>
+                <th>Cliente</th><th>WhatsApp</th><th>Gênero</th><th>Nascimento</th><th>Cidade</th><th>Status</th><th>Ações</th>
               </tr></thead>
               <tbody id="clients-tbody"></tbody>
             </table>
@@ -235,6 +236,13 @@ export async function renderClients(router) {
           <input class="field-input" id="m-city" value="${client?.city || ''}" />
         </div>
         <div class="form-group">
+          <label class="field-label">Gênero</label>
+          <select class="field-select" id="m-genero">
+            <option value="feminino" ${(!client?.genero || client?.genero === 'feminino') ? 'selected' : ''}>♀ Feminino</option>
+            <option value="masculino" ${client?.genero === 'masculino' ? 'selected' : ''}>♂ Masculino</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label class="field-label">Status</label>
           <select class="field-select" id="m-status">
             <option value="lead" ${client?.status === 'lead' ? 'selected' : ''}>Lead 🟡</option>
@@ -255,6 +263,7 @@ export async function renderClients(router) {
           phone: document.getElementById('m-phone').value.trim(),
           birthdate: document.getElementById('m-birthdate').value,
           city: document.getElementById('m-city').value.trim(),
+          genero: document.getElementById('m-genero').value,
           status: document.getElementById('m-status').value,
           notes: document.getElementById('m-notes').value.trim(),
         };

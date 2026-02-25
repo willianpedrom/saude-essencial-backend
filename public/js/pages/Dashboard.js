@@ -40,7 +40,9 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
         </div>
         <div>
           <div class="sidebar-user-name">${firstName}</div>
-          <div class="sidebar-user-role">${auth.isAdmin ? 'Administradora' : 'Consultora'}</div>
+          <div class="sidebar-user-role">${auth.isAdmin
+      ? (consultant?.genero === 'masculino' ? 'Administrador' : 'Administradora')
+      : (consultant?.genero === 'masculino' ? 'Consultor' : 'Consultora')}</div>
         </div>
       </div>
       <nav class="sidebar-nav">

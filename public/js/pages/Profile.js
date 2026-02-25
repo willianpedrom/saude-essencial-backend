@@ -3,29 +3,29 @@ import { renderLayout } from './Dashboard.js';
 import { toast } from '../utils.js';
 
 export async function renderProfile(router) {
-    renderLayout(router, 'Meu Perfil',
-        `<div style="display:flex;align-items:center;justify-content:center;height:200px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando perfil...</div>`,
-        'profile');
+  renderLayout(router, 'Meu Perfil',
+    `<div style="display:flex;align-items:center;justify-content:center;height:200px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando perfil...</div>`,
+    'profile');
 
-    let profile = {};
-    try {
-        profile = await store.getProfile();
-    } catch {
-        profile = auth.current || {};
-    }
+  let profile = {};
+  try {
+    profile = await store.getProfile();
+  } catch {
+    profile = auth.current || {};
+  }
 
-    function getInitials(nome) {
-        return (nome || '').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
-    }
+  function getInitials(nome) {
+    return (nome || '').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
+  }
 
-    function render() {
-        const pc = document.getElementById('page-content');
-        if (!pc) return;
+  function render() {
+    const pc = document.getElementById('page-content');
+    if (!pc) return;
 
-        const fotoSrc = profile.foto_url || '';
-        const initials = getInitials(profile.nome);
+    const fotoSrc = profile.foto_url || '';
+    const initials = getInitials(profile.nome);
 
-        pc.innerHTML = `
+    pc.innerHTML = `
       <div style="max-width:700px;margin:0 auto">
 
         <!-- Photo + Name header card -->
@@ -39,8 +39,8 @@ export async function renderProfile(router) {
                 background:linear-gradient(135deg,#2d4a28,#4a7c40);cursor:pointer;position:relative"
                 title="Clique para alterar foto">
                 ${fotoSrc
-                ? `<img id="avatar-img" src="${fotoSrc}" style="width:100%;height:100%;object-fit:cover" />`
-                : `<span id="avatar-initials" style="font-size:2rem;font-weight:700;color:white">${initials}</span>`}
+        ? `<img id="avatar-img" src="${fotoSrc}" style="width:100%;height:100%;object-fit:cover" />`
+        : `<span id="avatar-initials" style="font-size:2rem;font-weight:700;color:white">${initials}</span>`}
                 <div style="position:absolute;bottom:0;right:0;background:var(--green-600);border-radius:50%;
                   width:28px;height:28px;display:flex;align-items:center;justify-content:center;
                   border:2px solid white;font-size:0.75rem">✏️</div>
@@ -95,6 +95,13 @@ export async function renderProfile(router) {
                   <label class="field-label">Bio / Apresentação</label>
                   <textarea class="field-textarea" id="p-bio" rows="3" placeholder="Conte um pouco sobre você e sua missão como consultora...">${profile.bio || ''}</textarea>
                 </div>
+                <div class="form-group">
+                  <label class="field-label">Gênero</label>
+                  <select class="field-select" id="p-genero">
+                    <option value="feminino" ${(!profile.genero || profile.genero === 'feminino') ? 'selected' : ''}>♀ Feminino</option>
+                    <option value="masculino" ${profile.genero === 'masculino' ? 'selected' : ''}>♂ Masculino</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -137,96 +144,97 @@ export async function renderProfile(router) {
         </form>
       </div>`;
 
-        bindEvents(pc);
-    }
+    bindEvents(pc);
+  }
 
-    function bindEvents(pc) {
-        // Photo file upload
-        const avatarDisplay = pc.querySelector('#avatar-display');
-        const fotoInput = pc.querySelector('#foto-input');
+  function bindEvents(pc) {
+    // Photo file upload
+    const avatarDisplay = pc.querySelector('#avatar-display');
+    const fotoInput = pc.querySelector('#foto-input');
 
-        avatarDisplay?.addEventListener('click', () => fotoInput?.click());
+    avatarDisplay?.addEventListener('click', () => fotoInput?.click());
 
-        fotoInput?.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            if (file.size > 500 * 1024) {
-                toast('Imagem muito grande. Use uma imagem menor que 500KB.', 'warning');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                profile.foto_url = evt.target.result;
-                // Update preview immediately
-                avatarDisplay.innerHTML = `<img src="${profile.foto_url}" style="width:100%;height:100%;object-fit:cover" />
+    fotoInput?.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 500 * 1024) {
+        toast('Imagem muito grande. Use uma imagem menor que 500KB.', 'warning');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        profile.foto_url = evt.target.result;
+        // Update preview immediately
+        avatarDisplay.innerHTML = `<img src="${profile.foto_url}" style="width:100%;height:100%;object-fit:cover" />
                   <div style="position:absolute;bottom:0;right:0;background:var(--green-600);border-radius:50%;
                     width:28px;height:28px;display:flex;align-items:center;justify-content:center;
                     border:2px solid white;font-size:0.75rem">✏️</div>`;
-            };
-            reader.readAsDataURL(file);
-        });
+      };
+      reader.readAsDataURL(file);
+    });
 
-        // URL toggle
-        pc.querySelector('#foto-url-toggle')?.addEventListener('click', () => {
-            const wrap = pc.querySelector('#foto-url-wrap');
-            wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
-        });
+    // URL toggle
+    pc.querySelector('#foto-url-toggle')?.addEventListener('click', () => {
+      const wrap = pc.querySelector('#foto-url-wrap');
+      wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+    });
 
-        pc.querySelector('#foto-url-btn')?.addEventListener('click', () => {
-            const url = pc.querySelector('#foto-url-input')?.value?.trim();
-            if (!url) return;
-            profile.foto_url = url;
-            avatarDisplay.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover"
+    pc.querySelector('#foto-url-btn')?.addEventListener('click', () => {
+      const url = pc.querySelector('#foto-url-input')?.value?.trim();
+      if (!url) return;
+      profile.foto_url = url;
+      avatarDisplay.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover"
               onerror="this.parentElement.innerHTML='<span style=\\'font-size:2rem;font-weight:700;color:white\\'>${getInitials(profile.nome)}</span>'" />
               <div style="position:absolute;bottom:0;right:0;background:var(--green-600);border-radius:50%;
                 width:28px;height:28px;display:flex;align-items:center;justify-content:center;
                 border:2px solid white;font-size:0.75rem">✏️</div>`;
-            toast('Foto atualizada! Salve o perfil para confirmar.');
-        });
+      toast('Foto atualizada! Salve o perfil para confirmar.');
+    });
 
-        // Cancel
-        pc.querySelector('#btn-cancel')?.addEventListener('click', () => router.navigate('/dashboard'));
+    // Cancel
+    pc.querySelector('#btn-cancel')?.addEventListener('click', () => router.navigate('/dashboard'));
 
-        // Form submit
-        pc.querySelector('#profile-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = pc.querySelector('#btn-save');
-            btn.disabled = true;
-            btn.textContent = '⏳ Salvando...';
+    // Form submit
+    pc.querySelector('#profile-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = pc.querySelector('#btn-save');
+      btn.disabled = true;
+      btn.textContent = '⏳ Salvando...';
 
-            const data = {
-                nome: pc.querySelector('#p-nome')?.value?.trim(),
-                telefone: pc.querySelector('#p-telefone')?.value?.trim(),
-                endereco: pc.querySelector('#p-endereco')?.value?.trim(),
-                bio: pc.querySelector('#p-bio')?.value?.trim(),
-                foto_url: profile.foto_url || null,
-                instagram: pc.querySelector('#p-instagram')?.value?.trim(),
-                youtube: pc.querySelector('#p-youtube')?.value?.trim(),
-                facebook: pc.querySelector('#p-facebook')?.value?.trim(),
-                linkedin: pc.querySelector('#p-linkedin')?.value?.trim(),
-            };
+      const data = {
+        nome: pc.querySelector('#p-nome')?.value?.trim(),
+        telefone: pc.querySelector('#p-telefone')?.value?.trim(),
+        endereco: pc.querySelector('#p-endereco')?.value?.trim(),
+        bio: pc.querySelector('#p-bio')?.value?.trim(),
+        genero: pc.querySelector('#p-genero')?.value || 'feminino',
+        foto_url: profile.foto_url || null,
+        instagram: pc.querySelector('#p-instagram')?.value?.trim(),
+        youtube: pc.querySelector('#p-youtube')?.value?.trim(),
+        facebook: pc.querySelector('#p-facebook')?.value?.trim(),
+        linkedin: pc.querySelector('#p-linkedin')?.value?.trim(),
+      };
 
-            if (!data.nome) {
-                toast('Nome obrigatório', 'error');
-                btn.disabled = false;
-                btn.textContent = '💾 Salvar Perfil';
-                return;
-            }
+      if (!data.nome) {
+        toast('Nome obrigatório', 'error');
+        btn.disabled = false;
+        btn.textContent = '💾 Salvar Perfil';
+        return;
+      }
 
-            try {
-                await store.updateProfile(data);
-                // Update auth cache
-                if (auth.current) auth.current.nome = data.nome;
-                toast('Perfil salvo com sucesso! ✅');
-                profile = { ...profile, ...data };
-                render(); // re-render with updated data
-            } catch (err) {
-                toast('Erro ao salvar: ' + err.message, 'error');
-                btn.disabled = false;
-                btn.textContent = '💾 Salvar Perfil';
-            }
-        });
-    }
+      try {
+        await store.updateProfile(data);
+        // Update auth cache
+        if (auth.current) auth.current.nome = data.nome;
+        toast('Perfil salvo com sucesso! ✅');
+        profile = { ...profile, ...data };
+        render(); // re-render with updated data
+      } catch (err) {
+        toast('Erro ao salvar: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = '💾 Salvar Perfil';
+      }
+    });
+  }
 
-    render();
+  render();
 }

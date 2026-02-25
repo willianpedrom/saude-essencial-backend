@@ -42,6 +42,7 @@ export function normalizeClient(c) {
         city: c.cidade || c.city || '',
         notes: c.observacoes || c.notes || '',
         status: c.status || 'active',
+        genero: c.genero || 'feminino',
     };
 }
 
@@ -54,6 +55,7 @@ export function clientToApi(data) {
         cidade: data.city || data.cidade || '',
         notas: data.notes || data.notas || data.observacoes || '',
         status: data.status || 'active',
+        genero: data.genero || 'feminino',
     };
 }
 
