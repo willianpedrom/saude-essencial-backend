@@ -8,21 +8,20 @@ export async function renderAnamnesisList(router) {
     'anamnesis');
 
   try {
-    const [clients, anamneses] = await Promise.all([
-      store.getClients().catch(() => []),
-      store.getAnamneses().catch(() => []),
-    ]);
-
+    const anamneses = await store.getAnamneses().catch(() => []);
+    // API returns: { id, tipo, preenchido, token_publico, criado_em, cliente_nome }
     const sorted = [...anamneses].sort((a, b) =>
-      new Date(b.created_at || b.createdAt || 0) - new Date(a.created_at || a.createdAt || 0)
+      new Date(b.criado_em || 0) - new Date(a.criado_em || 0)
     );
+
+    const baseUrl = window.location.origin;
 
     const html = `
     <div class="card">
       <div style="overflow-x:auto">
         <table class="clients-table">
           <thead><tr>
-            <th>Cliente</th><th>Data</th><th>Queixas</th><th>Origem</th><th>Ação</th>
+            <th>Cliente</th><th>Data</th><th>Tipo</th><th>Status</th><th>Ação</th>
           </tr></thead>
           <tbody>
             ${sorted.length === 0
@@ -33,30 +32,21 @@ export async function renderAnamnesisList(router) {
                      <button class="btn btn-primary" onclick="location.hash='#/links'">🔗 Criar Link de Anamnese</button>
                    </div></td></tr>`
         : sorted.map(a => {
-          const clienteId = a.cliente_id || a.clienteId || a.clientId;
-          const c = clients.find(cl => cl.id === clienteId);
-          const dados = a.dados || a.answers || {};
-          const symptoms = [
-            ...(dados.queixas_principais || dados.general_symptoms || []),
-            ...(dados.emotional_symptoms || []),
-          ].slice(0, 3);
-          const createdAt = a.created_at || a.createdAt;
+          const clienteNome = a.cliente_nome || 'Cliente externo';
+          const preenchido = a.preenchido;
+          const tipos = { adulto: '👤 Adulto', crianca: '🧒 Criança', pet: '🐾 Pet', mulher: '👩 Mulher' };
           return `<tr>
                       <td><div class="client-name-cell">
-                        <div class="client-avatar-sm">${(c?.name || c?.nome || 'C')[0]}</div>
-                        <div>
-                          <div style="font-weight:600">${c?.name || c?.nome || 'Cliente externo'}</div>
-                          <div style="font-size:0.75rem;color:var(--text-muted)">${c?.email || dados.email || ''}</div>
-                        </div>
+                        <div class="client-avatar-sm">${clienteNome[0].toUpperCase()}</div>
+                        <div><div style="font-weight:600">${clienteNome}</div></div>
                       </div></td>
-                      <td>${formatDate(createdAt)}</td>
-                      <td><div style="display:flex;flex-wrap:wrap;gap:4px">
-                        ${symptoms.map(s => `<span class="report-tag" style="font-size:0.72rem">${s}</span>`).join('')
-            || '<span style="color:var(--text-muted);font-size:0.8rem">—</span>'}
-                      </div></td>
-                      <td><span class="badge-green">${a.link_token ? 'Link' : 'Manual'}</span></td>
+                      <td>${formatDate(a.criado_em)}</td>
+                      <td>${tipos[a.tipo] || a.tipo || '—'}</td>
+                      <td><span class="${preenchido ? 'badge-green' : 'badge-gold'}">${preenchido ? '✅ Preenchido' : '⏳ Aguardando'}</span></td>
                       <td>
-                        <button class="btn btn-primary btn-sm" data-view="${a.id}">Ver Protocolo</button>
+                        ${preenchido
+              ? `<button class="btn btn-primary btn-sm" data-view="${a.id}">Ver Protocolo</button>`
+              : `<button class="btn btn-secondary btn-sm" data-copy-link="${baseUrl}/#/anamnese/${a.token_publico}">🔗 Copiar Link</button>`}
                       </td>
                     </tr>`;
         }).join('')}
@@ -68,23 +58,36 @@ export async function renderAnamnesisList(router) {
     const pc = document.getElementById('page-content');
     if (pc) pc.innerHTML = html;
 
-    document.querySelectorAll('[data-view]').forEach(btn => {
+    // Copy link buttons
+    document.querySelectorAll('[data-copy-link]').forEach(btn => {
       btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(btn.dataset.copyLink)
+          .then(() => toast('Link copiado! 📋'))
+          .catch(() => prompt('Copie:', btn.dataset.copyLink));
+      });
+    });
+
+    // View protocol buttons
+    document.querySelectorAll('[data-view]').forEach(btn => {
+      btn.addEventListener('click', async () => {
         const anamnesis = sorted.find(a => a.id === btn.dataset.view);
-        if (!anamnesis) return;
-        const clienteId = anamnesis.cliente_id || anamnesis.clienteId;
-        const c = clients.find(cl => cl.id === clienteId);
-        const consultant = auth.current;
-        const encoded = encodeURIComponent(JSON.stringify({
-          answers: anamnesis.dados || anamnesis.answers || {},
-          consultant: {
-            id: consultant.id,
-            name: consultant.nome || consultant.name,
-            phone: consultant.telefone || consultant.phone,
-          },
-          clientName: c?.name || c?.nome || 'Cliente'
-        }));
-        router.navigate('/protocolo', { data: encoded });
+        if (!anamnesis || !anamnesis.preenchido) return;
+        try {
+          const full = await store.getAnamnesisFull(anamnesis.id);
+          const consultant = auth.current;
+          const encoded = encodeURIComponent(JSON.stringify({
+            answers: full.dados || {},
+            consultant: {
+              id: consultant.id,
+              name: consultant.nome || consultant.name,
+              phone: consultant.telefone || consultant.phone,
+            },
+            clientName: anamnesis.cliente_nome || 'Cliente'
+          }));
+          router.navigate('/protocolo', { data: encoded });
+        } catch (err) {
+          toast('Erro ao carregar protocolo: ' + err.message, 'error');
+        }
       });
     });
 

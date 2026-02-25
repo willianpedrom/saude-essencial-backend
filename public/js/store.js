@@ -133,6 +133,7 @@ export const store = {
         const list = await api('GET', '/api/anamneses');
         return Array.isArray(list) ? list : [];
     },
+    getAnamnesisFull(id) { return api('GET', `/api/anamneses/${id}`); },
     createAnamnesis(data) { return api('POST', '/api/anamneses', data); },
     deleteAnamnesis(id) { return api('DELETE', `/api/anamneses/${id}`); },
     getPublicAnamnesis(token) { return api('GET', `/api/anamneses/public/${token}`); },
