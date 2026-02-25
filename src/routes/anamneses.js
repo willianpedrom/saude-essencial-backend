@@ -194,6 +194,25 @@ router.get('/', async (req, res) => {
 });
 
 
+// GET /api/anamneses/cliente/:clienteId  — all anamneses for a specific client
+// IMPORTANT: must be registered BEFORE /:id to avoid route collision
+router.get('/cliente/:clienteId', async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            `SELECT id, tipo, subtipo, dados, preenchido, criado_em, nome_link
+             FROM anamneses
+             WHERE cliente_id = $1 AND consultora_id = $2
+               AND preenchido = TRUE
+             ORDER BY criado_em DESC`,
+            [req.params.clienteId, req.consultora.id]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao buscar anamneses do cliente.' });
+    }
+});
+
 // GET /api/anamneses/:id  (full record including dados)
 router.get('/:id', async (req, res) => {
     try {
@@ -208,6 +227,7 @@ router.get('/:id', async (req, res) => {
         res.status(500).json({ error: 'Erro ao buscar anamnese.' });
     }
 });
+
 
 // POST /api/anamneses  (consultora creates a link)
 router.post('/', async (req, res) => {

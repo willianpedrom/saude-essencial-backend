@@ -134,6 +134,7 @@ export const store = {
         return Array.isArray(list) ? list : [];
     },
     getAnamnesisFull(id) { return api('GET', `/api/anamneses/${id}`); },
+    getClientAnamneses(clienteId) { return api('GET', `/api/anamneses/cliente/${clienteId}`); },
     createAnamnesis(data) { return api('POST', '/api/anamneses', data); },
     deleteAnamnesis(id) { return api('DELETE', `/api/anamneses/${id}`); },
     getPublicAnamnesis(token) { return api('GET', `/api/anamneses/public/${token}`); },

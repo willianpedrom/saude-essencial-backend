@@ -93,14 +93,9 @@ export async function renderClients(router) {
   }
 
   async function showAnamneseModal(client, router) {
-    // Lazy-load anamneses
-    if (!cachedAnamneses) {
-      cachedAnamneses = await store.getAnamneses().catch(() => []);
-    }
-    const clientAnam = cachedAnamneses.filter(a =>
-      a.cliente_id === client.id || a.cliente_nome === client.name
-    );
-    if (clientAnam.length === 0) {
+    // Fetch anamneses directly by client ID (includes filled generic copies)
+    const anamneses = await store.getClientAnamneses(client.id).catch(() => []);
+    if (anamneses.length === 0) {
       modal('Anamneses de ' + client.name, `
         <div class="empty-state" style="padding:20px 0">
           <div class="empty-state-icon">📋</div>
@@ -109,8 +104,8 @@ export async function renderClients(router) {
         </div>`);
       return;
     }
-    const a = clientAnam[0]; // most recent
-    const dados = await store.getAnamnesisFull(a.id).then(r => r.dados || {}).catch(() => ({}));
+    const a = anamneses[0]; // most recent filled
+    const dados = a.dados || {};
     const symptoms = [
       ...(dados.general_symptoms || []),
       ...(dados.emotional_symptoms || []),
@@ -157,6 +152,7 @@ export async function renderClients(router) {
       }
     });
   }
+
 
   function buildPage() {
     const pc = document.getElementById('page-content');
