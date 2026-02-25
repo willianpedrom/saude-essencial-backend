@@ -106,3 +106,35 @@ UPDATE consultoras SET role = 'admin'
 
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS pipeline_stage  VARCHAR(40) DEFAULT 'lead_captado';
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS pipeline_notas  TEXT;
+
+-- Etiquetas personalizadas por consultora
+CREATE TABLE IF NOT EXISTS etiquetas (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  consultora_id UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+  nome          VARCHAR(100) NOT NULL,
+  cor           VARCHAR(20) DEFAULT '#3b82f6',
+  criado_em     TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Depoimentos (enviados por link público ou registrados manualmente)
+CREATE TABLE IF NOT EXISTS depoimentos (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  consultora_id   UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+  cliente_nome    VARCHAR(200) NOT NULL,
+  cliente_email   VARCHAR(200),
+  texto           TEXT NOT NULL,
+  nota            SMALLINT DEFAULT 5,
+  aprovado        BOOLEAN DEFAULT FALSE,
+  origem          VARCHAR(20) DEFAULT 'manual',
+  criado_em       TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Relação N:N entre depoimentos e etiquetas
+CREATE TABLE IF NOT EXISTS depoimentos_etiquetas (
+  depoimento_id UUID REFERENCES depoimentos(id) ON DELETE CASCADE,
+  etiqueta_id   UUID REFERENCES etiquetas(id) ON DELETE CASCADE,
+  PRIMARY KEY (depoimento_id, etiqueta_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_depoimentos_consultora ON depoimentos(consultora_id);
+CREATE INDEX IF NOT EXISTS idx_etiquetas_consultora   ON etiquetas(consultora_id);

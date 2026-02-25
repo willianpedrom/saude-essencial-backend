@@ -11,14 +11,23 @@ router.use(auth, checkSub);
 // GET /api/clientes
 router.get('/', async (req, res) => {
     try {
-        const { rows } = await pool.query(
-            `SELECT id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, ativo, status,
-                    pipeline_stage, pipeline_notas, criado_em
-       FROM clientes
-       WHERE consultora_id = $1 AND ativo = TRUE
-       ORDER BY nome ASC`,
-            [req.consultora.id]
-        );
+        // Permite filtrar por status (?ativo=true ou ?ativo=false). Se não passar, retorna todos.
+        let queryStr = `
+            SELECT id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, ativo, status,
+                   pipeline_stage, pipeline_notas, criado_em
+            FROM clientes
+            WHERE consultora_id = $1
+        `;
+        const queryParams = [req.consultora.id];
+        
+        if (req.query.ativo !== undefined) {
+            queryStr += ` AND ativo = $2`;
+            queryParams.push(req.query.ativo === 'true');
+        }
+
+        queryStr += ` ORDER BY nome ASC`;
+
+        const { rows } = await pool.query(queryStr, queryParams);
         res.json(rows);
     } catch (err) {
         console.error(err);
