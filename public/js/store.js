@@ -3,7 +3,7 @@
    Sistema Saúde Essencial CRM
    ============================================================ */
 
-export const API_URL = window.SE_API_URL || 'http://localhost:3001';
+export const API_URL = window.SE_API_URL || '';
 
 // ── HTTP helper ──────────────────────────────────────────────
 export async function api(method, path, body = null) {
@@ -21,13 +21,40 @@ export async function api(method, path, body = null) {
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-        // If subscription expired, redirect to subscription page
         if (res.status === 403 && data.code === 'SUBSCRIPTION_REQUIRED') {
             window.dispatchEvent(new CustomEvent('subscription:required'));
         }
         throw new Error(data.error || `Erro ${res.status}`);
     }
     return data;
+}
+
+// ── Field name normalizers ───────────────────────────────────
+// API uses snake_case (nome, telefone, data_nascimento...)
+// Frontend uses camelCase (name, phone, birthdate...)
+export function normalizeClient(c) {
+    if (!c) return c;
+    return {
+        ...c,
+        name: c.nome || c.name || '',
+        phone: c.telefone || c.phone || '',
+        birthdate: c.data_nascimento || c.birthdate || '',
+        city: c.cidade || c.city || '',
+        notes: c.observacoes || c.notes || '',
+        status: c.status || 'active',
+    };
+}
+
+export function clientToApi(data) {
+    return {
+        nome: data.name || data.nome || '',
+        email: data.email || '',
+        telefone: data.phone || data.telefone || '',
+        data_nascimento: data.birthdate || data.data_nascimento || null,
+        cidade: data.city || data.cidade || '',
+        observacoes: data.notes || data.observacoes || '',
+        status: data.status || 'active',
+    };
 }
 
 // ── Auth ─────────────────────────────────────────────────────
@@ -75,30 +102,60 @@ export const auth = {
 
     get current() { return this._current; },
     get isLoggedIn() { return !!this._current; },
+    get isAdmin() { return this._current?.role === 'admin'; },
 };
 
-// ── Store (API wrappers) ──────────────────────────────────────
+// ── Store (API wrappers — all return Promises) ───────────────
 export const store = {
     /* ---- CLIENTS ---- */
-    getClients() { return api('GET', '/api/clientes'); },
-    addClient(data) { return api('POST', '/api/clientes', data); },
-    updateClient(id, data) { return api('PUT', `/api/clientes/${id}`, data); },
-    deleteClient(id) { return api('DELETE', `/api/clientes/${id}`); },
+    async getClients(_cid) {
+        const list = await api('GET', '/api/clientes');
+        return (Array.isArray(list) ? list : []).map(normalizeClient);
+    },
+    async addClient(_cid, data) {
+        const body = data ? clientToApi(data) : clientToApi(_cid); // allow 1 or 2 args
+        const res = await api('POST', '/api/clientes', body);
+        return normalizeClient(res);
+    },
+    async updateClient(_cidOrId, idOrData, data) {
+        // Support both (cid, id, data) and (id, data) signatures
+        const [id, payload] = data !== undefined ? [idOrData, data] : [_cidOrId, idOrData];
+        const res = await api('PUT', `/api/clientes/${id}`, clientToApi(payload));
+        return normalizeClient(res);
+    },
+    async deleteClient(_cidOrId, id) {
+        const actualId = id !== undefined ? id : _cidOrId;
+        return api('DELETE', `/api/clientes/${actualId}`);
+    },
 
     /* ---- ANAMNESES ---- */
-    getAnamneses() { return api('GET', '/api/anamneses'); },
+    async getAnamneses(_cid) {
+        const list = await api('GET', '/api/anamneses');
+        return Array.isArray(list) ? list : [];
+    },
     createAnamnesis(data) { return api('POST', '/api/anamneses', data); },
     deleteAnamnesis(id) { return api('DELETE', `/api/anamneses/${id}`); },
-
-    // Public (no auth)
     getPublicAnamnesis(token) { return api('GET', `/api/anamneses/public/${token}`); },
     submitAnamnesis(token, dados) { return api('PUT', `/api/anamneses/public/${token}`, { dados }); },
 
     /* ---- AGENDAMENTOS ---- */
-    getAgendamentos() { return api('GET', '/api/agendamentos'); },
+    async getAgendamentos(_cid) {
+        const list = await api('GET', '/api/agendamentos');
+        return Array.isArray(list) ? list : [];
+    },
+    getSchedule(_cid) { return this.getAgendamentos(_cid); },
     addAgendamento(data) { return api('POST', '/api/agendamentos', data); },
     updateAgendamento(id, data) { return api('PUT', `/api/agendamentos/${id}`, data); },
     deleteAgendamento(id) { return api('DELETE', `/api/agendamentos/${id}`); },
+
+    /* ---- NOT YET IN BACKEND — return empty arrays ---- */
+    getFollowups(_cid) { return Promise.resolve([]); },
+    getTestimonials(_cid) { return Promise.resolve([]); },
+    getPurchases(_cid) { return Promise.resolve([]); },
+    addPurchase(_cid, _data) { return Promise.resolve({}); },
+
+    /* ---- STATS (computed client-side) ---- */
+    async getStats(_cid) { return {}; }, // will compute in Dashboard
 
     /* ---- ASSINATURA ---- */
     getAssinatura() { return api('GET', '/api/assinatura/status'); },
