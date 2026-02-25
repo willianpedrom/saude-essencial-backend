@@ -53,8 +53,15 @@ app.use('/api/anamneses', require('./routes/anamneses'));
 app.use('/api/agendamentos', require('./routes/agendamentos'));
 app.use('/api/assinatura', require('./routes/assinatura'));
 
-// 404
-app.use((req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, '../public')));
+
+// SPA fallback — all non-API routes serve index.html
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+
 
 // Central error handler — catches next(err) from async routes
 app.use((err, req, res, next) => {
