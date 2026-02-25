@@ -28,23 +28,78 @@ router.get('/public/:token', async (req, res) => {
 // PUT /api/anamneses/public/:token  (client submits form)
 router.put('/public/:token', async (req, res) => {
     const { dados } = req.body;
+    const client = await pool.connect();
     try {
-        const { rows } = await pool.query(
+        await client.query('BEGIN');
+
+        // 1. Update anamnesis with dados and get consultora_id
+        const { rows: aRows } = await client.query(
             `UPDATE anamneses
-       SET dados = $1, preenchido = TRUE, atualizado_em = NOW()
-       WHERE token_publico = $2 AND preenchido = FALSE
-       RETURNING id`,
+             SET dados = $1, preenchido = TRUE, atualizado_em = NOW()
+             WHERE token_publico = $2 AND preenchido = FALSE
+             RETURNING id, consultora_id`,
             [dados, req.params.token]
         );
-        if (rows.length === 0) {
+        if (aRows.length === 0) {
+            await client.query('ROLLBACK');
             return res.status(409).json({ error: 'Formulário já foi preenchido ou não encontrado.' });
         }
-        res.json({ success: true, id: rows[0].id });
+
+        const anamnese_id = aRows[0].id;
+        const consultora_id = aRows[0].consultora_id;
+
+        // 2. Extract personal data from form answers
+        const nome = dados.full_name || dados.nome || 'Cliente';
+        const email = dados.email || null;
+        const telefone = dados.phone || dados.telefone || null;
+        const data_nasc = dados.birthdate || dados.data_nascimento || null;
+        const cidade = dados.city || dados.cidade || null;
+
+        // 3. Upsert client — if email already exists for this consultora, reuse it
+        let clienteId = null;
+        if (email) {
+            const { rows: existing } = await client.query(
+                `SELECT id FROM clientes WHERE email = $1 AND consultora_id = $2 LIMIT 1`,
+                [email, consultora_id]
+            );
+            if (existing.length > 0) {
+                clienteId = existing[0].id;
+                // Update lead info if not already active
+                await client.query(
+                    `UPDATE clientes SET nome=$1, telefone=$2, data_nascimento=$3, cidade=$4,
+                     status=CASE WHEN status='lead' THEN 'lead' ELSE status END
+                     WHERE id=$5`,
+                    [nome, telefone, data_nasc, cidade, clienteId]
+                );
+            }
+        }
+        if (!clienteId) {
+            const { rows: cRows } = await client.query(
+                `INSERT INTO clientes (consultora_id, nome, email, telefone, data_nascimento, cidade, status)
+                 VALUES ($1, $2, $3, $4, $5, $6, 'lead')
+                 RETURNING id`,
+                [consultora_id, nome, email, telefone, data_nasc, cidade]
+            );
+            clienteId = cRows[0].id;
+        }
+
+        // 4. Link anamnesis to the client
+        await client.query(
+            `UPDATE anamneses SET cliente_id = $1 WHERE id = $2`,
+            [clienteId, anamnese_id]
+        );
+
+        await client.query('COMMIT');
+        res.json({ success: true, id: anamnese_id, cliente_id: clienteId });
     } catch (err) {
+        await client.query('ROLLBACK');
         console.error(err);
         res.status(500).json({ error: 'Erro ao salvar anamnese.' });
+    } finally {
+        client.release();
     }
 });
+
 
 // ─── PRIVATE ROUTES (auth + subscription required) ────────────────────────
 router.use(auth, checkSub);
