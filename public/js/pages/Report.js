@@ -1,40 +1,40 @@
 import { analyzeAnamnesis, PROTOCOLS } from '../data.js';
 
 export function renderReport(router, dataParam) {
-    const app = document.getElementById('app');
-    let payload;
-    try {
-        payload = JSON.parse(decodeURIComponent(dataParam || '{}'));
-    } catch {
-        app.innerHTML = `<div class="report-page"><div class="report-card" style="text-align:center;padding:60px">
+  const app = document.getElementById('app');
+  let payload;
+  try {
+    payload = JSON.parse(decodeURIComponent(dataParam || '{}'));
+  } catch {
+    app.innerHTML = `<div class="report-page"><div class="report-card" style="text-align:center;padding:60px">
       <div style="font-size:3rem">😕</div><h2>Erro ao gerar protocolo</h2></div></div>`;
-        return;
-    }
+    return;
+  }
 
-    const { answers = {}, consultant = {}, clientName = 'você' } = payload;
-    const analysis = analyzeAnamnesis(answers);
-    const firstName = clientName.split(' ')[0] || 'você';
+  const { answers = {}, consultant = {}, clientName = 'você' } = payload;
+  const analysis = analyzeAnamnesis(answers);
+  const firstName = clientName.split(' ')[0] || 'você';
 
-    const emotionalMessages = [
-        `${firstName}, você deu um passo incrível ao cuidar de si mesma hoje. 💚`,
-        `Cada sintoma que você compartilhou aqui é uma mensagem que seu corpo está enviando — e agora temos as ferramentas certas para respondê-la.`,
-        `A natureza tem respostas poderosas para tudo o que você está sentindo. Este protocolo foi criado especialmente para você, com base nas suas respostas.`,
-        `Você não precisa mais carregar isso sozinha.`,
-    ];
+  const emotionalMessages = [
+    `${firstName}, você deu um passo incrível ao cuidar de si mesma hoje. 💚`,
+    `Cada sintoma que você compartilhou aqui é uma mensagem que seu corpo está enviando — e agora temos as ferramentas certas para respondê-la.`,
+    `A natureza tem respostas poderosas para tudo o que você está sentindo. Este protocolo foi criado especialmente para você, com base nas suas respostas.`,
+    `Você não precisa mais carregar isso sozinha.`,
+  ];
 
-    const mainSymptoms = analysis.mainSymptoms.slice(0, 5);
-    const protocols = analysis.protocols.slice(0, 4);
+  const mainSymptoms = analysis.mainSymptoms.slice(0, 5);
+  const protocols = analysis.protocols.slice(0, 4);
 
-    const whatsappMsg = encodeURIComponent(
-        `Olá, ${consultant.name || 'consultora'}! 🌿\n\nAcabei de preencher a anamnese e adorei o meu protocolo personalizado!\n\nMeu nome é ${clientName} e gostaria de saber mais sobre como começar.\n\n💚 Estou pronta para transformar minha saúde!`
-    );
-    const phone = consultant.phone || '';
+  const whatsappMsg = encodeURIComponent(
+    `Olá, ${consultant.name || 'consultora'}! 🌿\n\nAcabei de preencher a anamnese e adorei o meu protocolo personalizado!\n\nMeu nome é ${clientName} e gostaria de saber mais sobre como começar.\n\n💚 Estou pronta para transformar minha saúde!`
+  );
+  const phone = consultant.phone || '';
 
-    app.innerHTML = `
+  app.innerHTML = `
   <div class="report-page">
     <div class="report-card">
       <div class="report-header">
-        <div style="font-size:2rem;margin-bottom:8px">🌿</div>
+        <div style="font-size:2rem;margin-bottom:8px">💧</div>
         <h1>Seu Protocolo Personalizado</h1>
         <p>Baseado na sua avaliação de saúde natural exclusiva</p>
         <div class="report-name-badge">Para: ${clientName}</div>
@@ -138,7 +138,7 @@ export function renderReport(router, dataParam) {
           <div class="rcf-avatar">${consultant.photo || '🌿'}</div>
           <div>
             <div class="rcf-name">${consultant.name || 'Consultora'}</div>
-            <div class="rcf-role">Consultora de Saúde Natural · Saúde Essencial</div>
+            <div class="rcf-role">Consultora de Saúde Natural · Gota Essencial</div>
           </div>
         </div>
         ${phone ? `<div class="rcf-contact">📱 +${phone}</div>` : ''}
@@ -154,12 +154,12 @@ export function renderReport(router, dataParam) {
     }
   </style>`;
 
-    // Animate bars after render
-    setTimeout(() => {
-        document.querySelectorAll('.score-bar-inner').forEach(bar => {
-            const w = bar.style.width;
-            bar.style.width = '0';
-            setTimeout(() => { bar.style.width = w; }, 100);
-        });
-    }, 200);
+  // Animate bars after render
+  setTimeout(() => {
+    document.querySelectorAll('.score-bar-inner').forEach(bar => {
+      const w = bar.style.width;
+      bar.style.width = '0';
+      setTimeout(() => { bar.style.width = w; }, 100);
+    });
+  }, 200);
 }

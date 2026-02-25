@@ -9,7 +9,7 @@ export async function renderPublicAnamnesis(router, token) {
   app.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:1.2rem;color:#4a4a4a">
       <div style="text-align:center">
-        <div style="font-size:3rem;margin-bottom:16px">🌿</div>
+        <div style="font-size:3rem;margin-bottom:16px">💧</div>
         <div>Carregando sua avaliação de saúde...</div>
       </div>
     </div>`;
@@ -40,7 +40,7 @@ export async function renderPublicAnamnesis(router, token) {
     return;
   }
 
-  const consultoraNome = anamneseData.consultora_nome || 'Consultora Saúde Essencial';
+  const consultoraNome = anamneseData.consultora_nome || 'Consultora Gota Essencial';
   let currentStep = 0;
   const answers = {};
 
@@ -58,10 +58,10 @@ export async function renderPublicAnamnesis(router, token) {
       </div>
 
       <div class="anamnesis-consultant-card">
-        <div class="consultant-avatar">🌿</div>
+        <div class="consultant-avatar">💧</div>
         <div class="consultant-info">
           <h3>${consultoraNome}</h3>
-          <p>Consultora de Saúde Natural · Saúde Essencial</p>
+          <p>Consultora de Saúde Natural · Gota Essencial</p>
         </div>
       </div>
 
@@ -87,7 +87,7 @@ export async function renderPublicAnamnesis(router, token) {
         ? `<button class="btn btn-secondary" id="btn-prev" style="background:rgba(255,255,255,0.1);color:white;border-color:rgba(255,255,255,0.2)">← Anterior</button>`
         : '<div></div>'}
           <button class="btn btn-gold btn-lg" id="btn-next">
-            ${isLast ? '🌿 Gerar Meu Protocolo' : 'Próximo →'}
+            ${isLast ? '💧 Gerar Meu Protocolo' : 'Próximo →'}
           </button>
         </div>
       </div>
@@ -229,7 +229,7 @@ export async function renderPublicAnamnesis(router, token) {
 
     } catch (err) {
       toast('Erro ao enviar: ' + err.message, 'error');
-      if (btn) { btn.disabled = false; btn.textContent = '🌿 Gerar Meu Protocolo'; }
+      if (btn) { btn.disabled = false; btn.textContent = '💧 Gerar Meu Protocolo'; }
     }
   }
 

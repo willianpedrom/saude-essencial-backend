@@ -11,8 +11,8 @@ export function renderLogin(router) {
     </div>
     <div class="auth-card">
       <div class="auth-logo">
-        <div class="auth-logo-icon">🌿</div>
-        <div class="auth-brand">Saúde <span>Essencial</span></div>
+        <div class="auth-logo-icon">💧</div>
+        <div class="auth-brand">Gota <span>Essencial</span></div>
         <div class="auth-tagline">Plataforma de Consultoras</div>
       </div>
       <div class="auth-tabs">
@@ -85,7 +85,7 @@ export function renderLogin(router) {
     btn.textContent = 'Entrando...';
     try {
       await auth.login(email, senha);
-      toast('Bem-vinda de volta! 🌿', 'success');
+      toast('Bem-vinda de volta! 💧', 'success');
       router.navigate('/dashboard');
     } catch (err) {
       errEl.textContent = err.message || 'E-mail ou senha incorretos.';
@@ -108,7 +108,7 @@ export function renderLogin(router) {
     btn.textContent = 'Criando conta...';
     try {
       await auth.register(nome, email, senha, telefone);
-      toast('Conta criada! 14 dias grátis ativados 🌿', 'success');
+      toast('Conta criada! 14 dias grátis ativados 💧', 'success');
       router.navigate('/dashboard');
     } catch (err) {
       errEl.textContent = err.message || 'Erro ao criar conta.';

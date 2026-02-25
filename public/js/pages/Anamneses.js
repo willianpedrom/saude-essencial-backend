@@ -158,7 +158,7 @@ export async function renderAnamnesisList(router) {
         const consultant = auth.current;
         const nome = consultant?.nome || 'Consultora';
         const msg = encodeURIComponent(
-          `Olá ${btn.dataset.name}! 💚 Sou ${nome}, consultora de Saúde Essencial.\n\nPreencha sua avaliação de saúde pelo link abaixo e receba seu protocolo personalizado:\n\n${btn.dataset.wa}\n\nDemora apenas ~5 minutos! 🌿`
+          `Olá ${btn.dataset.name}! 💧 Sou ${nome}, consultora de Gota Essencial.\n\nPreencha sua avaliação de saúde pelo link abaixo e receba seu protocolo personalizado:\n\n${btn.dataset.wa}\n\nDemora apenas ~5 minutos! 💧`
         );
         window.open(`https://wa.me/?text=${msg}`, '_blank');
       });
