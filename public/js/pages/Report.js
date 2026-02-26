@@ -27,10 +27,12 @@ export function renderReport(router, dataParam) {
   const mainSymptoms = analysis.mainSymptoms.slice(0, 5);
   const protocols = analysis.protocols.slice(0, 4);
 
+  const isMasc = cTitle === 'Consultor';
   const whatsappMsg = encodeURIComponent(
-    `Olá, ${consultant.name || 'consultora'}! 🌿\n\nAcabei de preencher a anamnese e adorei o meu protocolo personalizado!\n\nMeu nome é ${clientName} e gostaria de saber mais sobre como começar.\n\n💚 Estou pronta para transformar minha saúde!`
+    `Olá, ${consultant.name?.split(' ')[0] || cTitle}! 🌿\n\nAcabei de preencher a anamnese e adorei o meu protocolo personalizado!\n\nMeu nome é ${clientName} e gostaria de saber mais sobre como começar.\n\n💚 Estou pront${isMasc ? 'o' : 'a'} para transformar minha saúde!`
   );
-  const phone = consultant.phone || '';
+  const phone = (consultant.phone || '').replace(/\D/g, '');
+  const waPhone = phone.startsWith('55') ? phone : `55${phone}`;
 
   app.innerHTML = `
   <div class="report-page">
@@ -112,8 +114,8 @@ export function renderReport(router, dataParam) {
             Você merece viver com mais saúde, energia e leveza.
           </h3>
           <p style="color:var(--text-muted);font-size:0.9rem;max-width:480px;margin:0 auto">
-            ${consultant.name || `Seu ${cTitle.toLowerCase()}`} está pront${cTitle === 'Consultor' ? 'o' : 'a'} para guiar você nesta transformação. 
-            El${cTitle === 'Consultor' ? 'e' : 'a'} é especialist${cTitle === 'Consultor' ? 'a' : 'a'} em terapias naturais e vai te ajudar a implementar este protocolo com segurança e cuidado.
+            ${consultant.name || `Seu ${cTitle.toLowerCase()}`} está pront${isMasc ? 'o' : 'a'} para guiar você nesta transformação. 
+            El${isMasc ? 'e' : 'a'} é especialista em terapias naturais e vai te ajudar a implementar este protocolo com segurança e cuidado.
           </p>
           <p style="color:var(--text-muted);font-size:0.88rem;margin-top:10px;font-style:italic">
             "Este é o primeiro dia do resto da sua vida mais saudável. Dê o próximo passo agora." 🌿
@@ -121,16 +123,16 @@ export function renderReport(router, dataParam) {
         </div>
 
         <!-- WhatsApp CTA -->
-        <a class="report-cta" href="https://wa.me/${phone}?text=${whatsappMsg}" target="_blank">
+        <a class="report-cta" href="https://wa.me/${waPhone}?text=${whatsappMsg}" target="_blank">
           <div class="report-cta-icon">💬</div>
           <div class="report-cta-text">
-            <strong>Falar com ${consultant.name?.split(' ')[0] || `meu(inha) ${cTitle.toLowerCase()}`} no WhatsApp</strong>
+            <strong>Falar com ${consultant.name?.split(' ')[0] || `${isMasc ? 'meu' : 'minha'} ${cTitle.toLowerCase()}`} no WhatsApp</strong>
             <span>Quero começar meu protocolo personalizado agora!</span>
           </div>
         </a>
 
         <div style="text-align:center;margin-top:16px;color:var(--text-muted);font-size:0.8rem">
-          Precisa salvar ou imprimir este protocolo? <a href="javascript:window.print()" style="color:var(--green-600)">Clique aqui para imprimir</a>
+          Precisa salvar ou imprimir este protocolo? <a href="#" onclick="window.print();return false" style="color:var(--green-600)">Clique aqui para imprimir</a>
         </div>
       </div>
 
