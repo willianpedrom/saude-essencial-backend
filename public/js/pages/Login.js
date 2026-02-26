@@ -28,7 +28,10 @@ export function renderLogin(router) {
         </div>
         <div class="form-group">
           <label class="form-label">Senha</label>
-          <input class="form-input" type="password" id="login-password" placeholder="••••••••" required />
+          <div style="position:relative">
+            <input class="form-input" type="password" id="login-password" placeholder="••••••••" required style="padding-right:44px" />
+            <button type="button" class="toggle-pw" data-target="login-password" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:0.5;padding:4px 6px" title="Mostrar senha">👁️</button>
+          </div>
         </div>
         <div class="auth-error" id="login-error"></div>
         <button class="btn-auth" type="submit" id="login-btn">Acessar minha área ✦</button>
@@ -60,7 +63,10 @@ export function renderLogin(router) {
         </div>
         <div class="form-group">
           <label class="form-label">Senha</label>
-          <input class="form-input" type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6"/>
+          <div style="position:relative">
+            <input class="form-input" type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6" style="padding-right:44px" />
+            <button type="button" class="toggle-pw" data-target="reg-password" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:0.5;padding:4px 6px" title="Mostrar senha">👁️</button>
+          </div>
         </div>
         <div class="auth-error" id="reg-error"></div>
         <button class="btn-auth" type="submit" id="reg-btn">Criar minha conta ✦</button>
@@ -70,6 +76,18 @@ export function renderLogin(router) {
       </form>
     </div>
   </div>`;
+
+  // Toggle show/hide password
+  app.querySelectorAll('.toggle-pw').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = document.getElementById(btn.dataset.target);
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      btn.textContent = isHidden ? '🙈' : '👁️';
+      btn.title = isHidden ? 'Ocultar senha' : 'Mostrar senha';
+      btn.style.opacity = isHidden ? '0.8' : '0.5';
+    });
+  });
 
   // Tab switching
   app.querySelectorAll('.auth-tab, [data-tab-link]').forEach(el => {
