@@ -54,7 +54,7 @@ export async function renderClients(router) {
           <td>${c.genero === 'masculino' ? '♂ Masc.' : '♀ Fem.'}</td>
           <td>${formatDate(c.birthdate) || '—'}</td>
           <td>${c.city || '—'}</td>
-          <td><span class="status-badge status-${c.status || 'active'}">${{ active: 'Ativo', lead: 'Lead', inactive: 'Inativo' }[c.status] || 'Ativo'}</span></td>
+          <td><span class="status-badge status-${c.status || 'active'}">${{ active: 'Ativo', inactive: 'Inativo' }[c.status] || 'Ativo'}</span></td>
           <td>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <button class="btn btn-secondary btn-sm" data-action="anamnese" data-id="${c.id}" title="Ver anamnese">📋</button>
@@ -162,9 +162,9 @@ export async function renderClients(router) {
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <div class="tab-bar" style="margin:0">
-              ${['all', 'active', 'lead', 'inactive'].map(s => `
+              ${['all', 'active', 'inactive'].map(s => `
                 <button class="tab-btn ${filter === s ? 'active' : ''}" data-filter="${s}">
-                  ${s === 'all' ? 'Todos 👥' : s === 'active' ? 'Ativos 🟢' : s === 'lead' ? 'Leads 🟡' : 'Inativos 🔴'}
+                  ${s === 'all' ? 'Todos 👥' : s === 'active' ? 'Ativos 🟢' : 'Inativos 🔴'}
                 </button>`).join('')}
             </div>
             <input class="field-input" id="search-input" placeholder="🔍 Buscar cliente..." style="width:220px;padding:8px 12px" />
@@ -245,7 +245,6 @@ export async function renderClients(router) {
         <div class="form-group">
           <label class="field-label">Status</label>
           <select class="field-select" id="m-status">
-            <option value="lead" ${client?.status === 'lead' ? 'selected' : ''}>Lead 🟡</option>
             <option value="active" ${(client?.status === 'active' || !client?.status) ? 'selected' : ''}>Ativo 🟢</option>
             <option value="inactive" ${client?.status === 'inactive' ? 'selected' : ''}>Inativo 🔴</option>
           </select>
