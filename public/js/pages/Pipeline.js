@@ -96,19 +96,19 @@ export async function renderPipeline(router) {
     const phone = client.phone || client.telefone || '';
     const notes = client.pipeline_notas || '';
 
-    // Mensagens de quebra-gelo personalizadas por estágio
+    // Mensagens de quebra-gelo personalizadas por estágio (sem emojis complexos para compatibilidade com WhatsApp)
     const icebreakers = {
-      lead_captado: `Oi ${firstName}! 😊 Tudo bem com você? Vi que você demonstrou interesse em cuidar mais da sua saúde e bem-estar. Posso te contar algo que pode fazer toda a diferença no seu dia a dia? 🌿`,
-      primeiro_contato: `Oi ${firstName}! Tudo bem? 😊 Lembrei de você e queria saber como está se sentindo. Tenho uma novidade incrível que acho que combina muito com você! Posso te contar? ✨`,
-      interesse_confirmado: `Oi ${firstName}! 😊 Que bom falar com você de novo! Preparei algo especial pensando exatamente no que conversamos. Tem um minutinho? Acho que você vai adorar! 🌟`,
-      protocolo_apresentado: `Oi ${firstName}! Tudo bem? 😊 Queria saber o que você achou do que te apresentei! Ficou com alguma dúvida? Estou aqui para te ajudar no que precisar! 💚`,
-      proposta_enviada: `Oi ${firstName}! 😊 Só passando para saber se você conseguiu dar uma olhada na proposta que te enviei. Fico à disposição para tirar qualquer dúvida! 💚`,
-      negociando: `Oi ${firstName}! 😊 Pensei em você hoje! Como está em relação ao que conversamos? Quero muito te ajudar a dar esse passo. Me conta como posso facilitar para você! 🤝`,
-      primeira_compra: `Oi ${firstName}! 🎉 Que alegria ter você com a gente! Quero te dar todo o suporte para você ter a melhor experiência. Como posso te ajudar hoje? 💚`,
-      perdido: `Oi ${firstName}! 😊 Tudo bem com você? Faz um tempo que não conversamos e queria saber como você está! Sem compromisso, só queria mesmo saber de você. 🌿`,
+      lead_captado: `Oi ${firstName}, tudo bem com voce? Vi que voce demonstrou interesse em cuidar mais da sua saude. Posso te contar algo que pode fazer toda a diferenca no seu dia a dia?`,
+      primeiro_contato: `Oi ${firstName}! Tudo bem? Lembrei de voce e queria saber como esta se sentindo. Tenho uma novidade que acho que combina muito com voce! Posso te contar?`,
+      interesse_confirmado: `Oi ${firstName}! Que bom falar com voce de novo! Preparei algo especial pensando no que conversamos. Tem um minutinho? Acho que voce vai adorar!`,
+      protocolo_apresentado: `Oi ${firstName}, tudo bem? Queria saber o que voce achou do que te apresentei! Ficou com alguma duvida? Estou aqui para te ajudar!`,
+      proposta_enviada: `Oi ${firstName}! So passando para saber se voce conseguiu dar uma olhada na proposta que te enviei. Fico a disposicao para tirar qualquer duvida!`,
+      negociando: `Oi ${firstName}! Pensei em voce hoje! Como esta em relacao ao que conversamos? Quero muito te ajudar a dar esse passo!`,
+      primeira_compra: `Oi ${firstName}! Que alegria ter voce com a gente! Quero te dar todo o suporte para voce ter a melhor experiencia. Como posso te ajudar hoje?`,
+      perdido: `Oi ${firstName}, tudo bem com voce? Faz um tempo que nao conversamos e queria saber como voce esta! Sem compromisso, so queria mesmo saber de voce.`,
     };
 
-    const message = icebreakers[stageConfig.id] || `Oi ${firstName}! Tudo bem com você? 😊`;
+    const message = icebreakers[stageConfig.id] || `Oi ${firstName}, tudo bem com voce?`;
     const waUrl = phone ? `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}` : null;
 
     return `
