@@ -62,6 +62,28 @@ router.put('/users/:id', async (req, res) => {
     }
 });
 
+// PUT /api/admin/users/:id/password — admin changes user password
+router.put('/users/:id/password', async (req, res) => {
+    const { password } = req.body;
+    if (!password || password.length < 6) {
+        return res.status(400).json({ error: 'A nova senha deve ter pelo menos 6 caracteres.' });
+    }
+    try {
+        const bcrypt = require('bcryptjs');
+        const senhaHash = await bcrypt.hash(password, 10);
+
+        const { rows } = await pool.query(
+            `UPDATE consultoras SET senha_hash=$1, atualizado_em=NOW() WHERE id=$2 RETURNING id`,
+            [senhaHash, req.params.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado.' });
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao atualizar senha do usuário.' });
+    }
+});
+
 // PUT /api/admin/users/:id/plan — update subscription plan
 router.put('/users/:id/plan', async (req, res) => {
     const { plano, status } = req.body;
