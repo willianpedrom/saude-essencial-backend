@@ -109,7 +109,9 @@ export async function renderPipeline(router) {
     };
 
     const message = icebreakers[stageConfig.id] || `Oi ${firstName}, tudo bem com voce?`;
-    const waUrl = phone ? `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}` : null;
+    const cleanPhone = phone.replace(/\D/g, '');
+    const waPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+    const waUrl = phone ? `https://wa.me/${waPhone}?text=${encodeURIComponent(message)}` : null;
 
     return `
     <div class="pipeline-card"
