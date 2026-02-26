@@ -52,6 +52,13 @@ export function renderLogin(router) {
           <input class="form-input" type="tel" id="reg-phone" placeholder="55119..." />
         </div>
         <div class="form-group">
+          <label class="form-label">Gênero</label>
+          <select class="form-input" id="reg-genero" required style="padding:12px 14px">
+            <option value="feminino">♀ Feminino</option>
+            <option value="masculino">♂ Masculino</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label class="form-label">Senha</label>
           <input class="form-input" type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6"/>
         </div>
@@ -101,13 +108,14 @@ export function renderLogin(router) {
     const nome = document.getElementById('reg-name').value.trim();
     const email = document.getElementById('reg-email').value.trim();
     const telefone = document.getElementById('reg-phone').value.trim();
+    const genero = document.getElementById('reg-genero').value;
     const senha = document.getElementById('reg-password').value;
     const errEl = document.getElementById('reg-error');
     const btn = document.getElementById('reg-btn');
     btn.disabled = true;
     btn.textContent = 'Criando conta...';
     try {
-      await auth.register(nome, email, senha, telefone);
+      await auth.register(nome, email, senha, telefone, genero);
       toast('Conta criada! 14 dias grátis ativados 💧', 'success');
       router.navigate('/dashboard');
     } catch (err) {

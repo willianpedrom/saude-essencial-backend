@@ -19,7 +19,7 @@ function makeSlug(nome) {
 // POST /api/auth/register
 router.post('/register', async (req, res, next) => {
     try {
-        const { nome, email, senha, telefone } = req.body;
+        const { nome, email, senha, telefone, genero } = req.body;
 
         if (!nome || !email || !senha) {
             return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios.' });
@@ -39,10 +39,10 @@ router.post('/register', async (req, res, next) => {
 
         // Insert consultora
         const { rows } = await pool.query(
-            `INSERT INTO consultoras (nome, email, senha_hash, telefone, slug)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, nome, email, slug`,
-            [nome, email, senhaHash, telefone || null, slug]
+            `INSERT INTO consultoras (nome, email, senha_hash, telefone, slug, genero)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, nome, email, slug, genero`,
+            [nome, email, senhaHash, telefone || null, slug, genero || 'feminino']
         );
         const consultora = rows[0];
 

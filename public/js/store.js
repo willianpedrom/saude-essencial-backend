@@ -79,8 +79,8 @@ export const auth = {
         return data;
     },
 
-    async register(nome, email, senha, telefone) {
-        const data = await api('POST', '/api/auth/register', { nome, email, senha, telefone });
+    async register(nome, email, senha, telefone, genero) {
+        const data = await api('POST', '/api/auth/register', { nome, email, senha, telefone, genero });
         sessionStorage.setItem('se_token', data.token);
         sessionStorage.setItem('se_user', JSON.stringify(data.consultora));
         this._current = data.consultora;
