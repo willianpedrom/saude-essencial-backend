@@ -20,96 +20,290 @@ export async function renderTestimonials(router) {
     `<div style="display:flex;align-items:center;justify-content:center;height:200px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando...</div>`,
     'testimonials');
 
-  const clients = await store.getClients().catch(() => []);
-  const db = ls('testimonials');
+  try {
+    const [clients, testimonials, tags, linkData] = await Promise.all([
+      store.getClients().catch(() => []),
+      store.getTestimonials().catch(() => []),
+      store.getTags().catch(() => []),
+      store.getTestimonialLink().catch(() => ({ slug: '' }))
+    ]);
 
-  function renderList() {
-    const testimonials = db.get();
-    const container = document.getElementById('testimonials-list');
-    if (!container) return;
-    container.innerHTML = testimonials.length === 0
-      ? `<div class="empty-state"><div class="empty-state-icon">⭐</div><h4>Nenhum depoimento ainda</h4>
-               <p>Registre depoimentos de clientes satisfeitas para usar no seu marketing</p></div>`
-      : testimonials.map(t => {
-        const c = clients.find(cl => cl.id === t.clientId);
-        return `
-            <div class="testimonial-card" style="margin-bottom:14px;position:relative">
-              ${!t.approved ? `<div style="position:absolute;top:12px;right:12px"><span class="badge-gold">Pendente</span></div>` : ''}
-              <div class="testimonial-text">${t.text}</div>
-              <div class="testimonial-author">
-                <div class="testimonial-author-avatar">${(c?.name || c?.nome || 'C')[0]}</div>
-                <div>
-                  <div class="testimonial-stars">${'★'.repeat(t.rating || 5)}${'☆'.repeat(5 - (t.rating || 5))}</div>
-                  <div class="testimonial-author-name">${c?.name || c?.nome || 'Cliente'}</div>
-                  <div class="testimonial-author-sub">${formatDate(t.createdAt)}</div>
-                </div>
-                <div style="margin-left:auto;display:flex;gap:6px">
-                  ${!t.approved ? `<button class="btn btn-primary btn-sm" data-approve="${t.id}">✅ Aprovar</button>` : '<span class="badge-green">Aprovado</span>'}
-                </div>
-              </div>
-            </div>`;
-      }).join('');
+    let activeTagFilter = null;
+    let localTestimonials = [...testimonials];
+    let localTags = [...tags];
 
-    container.querySelectorAll('[data-approve]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        db.update(btn.dataset.approve, { approved: true });
-        renderList();
-        toast('Depoimento aprovado! ⭐');
-      });
-    });
-  }
+    const publicUrl = linkData.slug ? `${window.location.origin}/#/depoimento/${linkData.slug}` : '';
 
-  function showAddModal() {
-    modal('Registrar Depoimento', `
-      <div class="form-grid">
-        <div class="form-group form-field-full">
-          <label class="field-label">Cliente *</label>
-          <select class="field-select" id="t-client">
-            <option value="">— Selecione —</option>
-            ${clients.map(c => `<option value="${c.id}">${c.name || c.nome}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-group form-field-full">
-          <label class="field-label">Depoimento *</label>
-          <textarea class="field-textarea" id="t-text" placeholder="Digite o que a cliente disse..."></textarea>
-        </div>
-        <div class="form-group form-field-full">
-          <label class="field-label">Avaliação</label>
-          <div style="display:flex;gap:6px" id="star-selector">
-            ${[1, 2, 3, 4, 5].map(n => `<span class="star-btn" data-star="${n}" style="font-size:1.8rem;cursor:pointer;color:#ddd">★</span>`).join('')}
+    function renderView() {
+      const pc = document.getElementById('page-content');
+      if (!pc) return;
+
+      const filtered = activeTagFilter
+        ? localTestimonials.filter(t => t.etiquetas?.some(e => e.id === activeTagFilter))
+        : localTestimonials;
+
+      pc.innerHTML = `
+        <!-- Top Board: Public Link & Tags -->
+        <div class="card" style="margin-bottom:20px;display:flex;flex-wrap:wrap;gap:20px;align-items:center;background:linear-gradient(135deg,#0a1f0f,#13301b);color:white;border:none">
+          <div style="flex:1;min-width:300px">
+            <h3 style="font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:8px">Seu Link Público 🔗</h3>
+            <p style="font-size:0.85rem;color:rgba(255,255,255,0.7);margin-bottom:12px">
+              Envie este link para as clientes avaliarem os resultados (NPS) e deixarem o depoimento registrado no sistema.
+            </p>
+            <div style="display:flex;gap:8px">
+              <input type="text" readonly value="${publicUrl}" style="flex:1;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:8px 12px;color:white;font-size:0.85rem" />
+              <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${publicUrl}');window.toast('Link copiado!')">Copiar Link</button>
+            </div>
           </div>
-          <input type="hidden" id="t-rating" value="5" />
+          <div style="flex:1;min-width:300px;border-left:1px solid rgba(255,255,255,0.1);padding-left:20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <h3 style="font-size:1.1rem;margin:0">Gerenciar Etiquetas 🏷️</h3>
+              <button class="btn btn-secondary btn-sm" id="btn-add-tag" style="background:rgba(255,255,255,0.1);color:white;border:none">+ Nova</button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              ${localTags.map(tag => `
+                <span class="badge" style="background:${tag.cor}25;border:1px solid ${tag.cor};color:${tag.cor};padding:4px 10px;display:flex;align-items:center;gap:6px">
+                  ${tag.nome}
+                  <button data-deltag="${tag.id}" style="background:none;border:none;color:${tag.cor};cursor:pointer;padding:0;font-size:1.1rem;line-height:1;margin-top:-2px">×</button>
+                </span>
+              `).join('')}
+              ${localTags.length === 0 ? '<span style="color:rgba(255,255,255,0.5);font-size:0.8rem">Nenhuma etiqueta criada.</span>' : ''}
+            </div>
+          </div>
         </div>
-      </div>`, {
-      confirmLabel: 'Salvar',
-      onConfirm: () => {
-        const clientId = document.getElementById('t-client').value;
-        const text = document.getElementById('t-text').value.trim();
-        if (!clientId || !text) { toast('Preencha todos os campos', 'error'); return; }
-        db.add({ clientId, text, rating: parseInt(document.getElementById('t-rating').value) || 5, approved: false });
-        renderList(); toast('Depoimento registrado!');
-      }
-    });
-    let rating = 5;
-    function updateStars() {
-      document.querySelectorAll('.star-btn').forEach(s => {
-        s.style.color = parseInt(s.dataset.star) <= rating ? '#c99a22' : '#ddd';
+
+        <!-- Filter and Add Button -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+          <div style="display:flex;gap:8px;align-items:center;overflow-x:auto;padding-bottom:4px">
+            <span style="font-size:0.85rem;color:var(--text-muted);font-weight:600">FILTRAR PROVA SOCIAL:</span>
+            <button class="btn btn-sm ${activeTagFilter === null ? 'btn-primary' : 'btn-secondary'}" data-filtertag="null">Todos</button>
+            ${localTags.map(tag => `
+              <button class="btn btn-sm ${activeTagFilter === tag.id ? 'btn-primary' : 'btn-secondary'}" data-filtertag="${tag.id}" style="${activeTagFilter === tag.id ? `background:${tag.cor};border-color:${tag.cor}` : `color:${tag.cor};border-color:${tag.cor}40`}">
+                ${tag.nome}
+              </button>
+            `).join('')}
+          </div>
+          <button class="btn btn-secondary" id="btn-add-t">+ Depoimento Manual</button>
+        </div>
+
+        <!-- List -->
+        <div id="testimonials-list" style="position:relative">
+          ${filtered.length === 0
+          ? `<div class="empty-state"><div class="empty-state-icon">⭐</div><h4>Nenhum depoimento encontrado</h4>
+                   <p>Mande seu link para as clientes ou filtre por outra etiqueta.</p></div>`
+          : filtered.map(t => {
+            const isPromoter = t.nota >= 9;
+            const isDetractor = t.nota <= 6;
+            const badgeColor = isPromoter ? 'var(--green-600)' : isDetractor ? 'var(--danger)' : '#f59e0b';
+            const badgeBg = isPromoter ? 'var(--green-100)' : isDetractor ? '#fee2e2' : '#fef3c7';
+
+            return `
+              <div class="testimonial-card" style="margin-bottom:14px;position:relative;border-left:4px solid ${t.aprovado ? 'var(--green-500)' : 'var(--gold)'}">
+                ${!t.aprovado ? `<div style="position:absolute;top:12px;right:12px"><span class="badge" style="background:var(--gold);color:#fff">⏳ Pendente</span></div>` : ''}
+                
+                <div style="display:flex;justify-content:space-between;margin-bottom:12px;align-items:flex-start">
+                  <div class="testimonial-author">
+                    <div class="testimonial-author-avatar" style="background:#f1f5f9;color:#334155">${(t.cliente_nome[0] || 'C').toUpperCase()}</div>
+                    <div>
+                      <div class="testimonial-author-name">${t.cliente_nome} <span style="font-weight:400;color:var(--text-muted);font-size:0.82rem;margin-left:6px">${t.origem === 'link' ? '(Link Público)' : '(Manual)'}</span></div>
+                      ${t.cliente_email ? `<div class="testimonial-author-sub">${t.cliente_email}</div>` : ''}
+                      <div class="testimonial-author-sub">${formatDate(t.criado_em)}</div>
+                    </div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="display:inline-block;padding:4px 10px;border-radius:20px;background:${badgeBg};color:${badgeColor};font-weight:700;font-size:0.85rem">
+                      NPS: ${t.nota}/10 ${isPromoter ? '🔥' : isDetractor ? '⚠️' : '👌'}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="testimonial-text" style="font-size:1.05rem;line-height:1.6;color:var(--text-body);background:#f8fafc;padding:16px;border-radius:12px;margin-bottom:12px;font-style:italic">
+                  "${t.texto}"
+                </div>
+                
+                <div style="display:flex;justify-content:space-between;align-items:center;background:#fff;padding-top:12px;border-top:1px solid var(--border)">
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <span style="font-size:0.8rem;color:var(--text-muted)">Tags:</span>
+                    ${(t.etiquetas || []).map(e => `<span class="badge" style="background:${e.cor}20;color:${e.cor};font-size:0.75rem">${e.nome}</span>`).join('')}
+                    <button class="btn btn-secondary btn-sm" data-assign="${t.id}" style="padding:2px 6px;height:auto;font-size:0.75rem" title="Adicionar Etiquetas">✏️</button>
+                  </div>
+                  <div style="display:flex;gap:8px">
+                    <button class="btn btn-danger btn-sm" data-delete="${t.id}">🗑️</button>
+                    ${!t.aprovado
+                ? `<button class="btn btn-primary btn-sm" data-approve="${t.id}" style="background:var(--green-600)">✅ Aprovar Prova Social</button>`
+                : `<span style="font-size:0.8rem;color:var(--green-700);font-weight:600;display:flex;align-items:center;gap:4px">✅ Aprovado para uso</span>`
+              }
+                  </div>
+                </div>
+                ${!t.consentimento ? `<div style="font-size:0.75rem;color:var(--danger);margin-top:8px;text-align:right">⚠️ Cliente não autorizou o uso desta prova social publicamente.</div>` : ''}
+              </div>`;
+          }).join('')}
+        </div>`;
+
+      bindEvents();
+    }
+
+    function bindEvents() {
+      // Tags Toggle
+      document.querySelectorAll('[data-filtertag]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const val = btn.dataset.filtertag;
+          activeTagFilter = val === "null" ? null : val;
+          renderView();
+        });
+      });
+
+      // Approvation
+      document.querySelectorAll('[data-approve]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.approve;
+          btn.disabled = true; btn.textContent = '...';
+          try {
+            await store.approveTestimonial(id, true);
+            localTestimonials = localTestimonials.map(t => t.id === id ? { ...t, aprovado: true } : t);
+            renderView(); window.toast('Aprovado com sucesso! ✅');
+          } catch (e) { window.toast(e.message, 'error'); renderView(); }
+        });
+      });
+
+      // Assign Tags
+      document.querySelectorAll('[data-assign]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.assign;
+          const t = localTestimonials.find(x => x.id === id);
+          const activeIds = (t.etiquetas || []).map(x => x.id);
+
+          modal('Gerenciar Etiquetas', `
+            <p style="margin-bottom:12px;font-size:0.9rem">Selecione quais temas se aplicam a este depoimento (ex: problema que foi resolvido):</p>
+            <div style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto">
+              ${localTags.map(tag => `
+                <label style="display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--border);border-radius:8px;cursor:pointer">
+                  <input type="checkbox" class="tag-check" value="${tag.id}" ${activeIds.includes(tag.id) ? 'checked' : ''} style="width:18px;height:18px;accent-color:${tag.cor}" />
+                  <span style="font-weight:600;color:${tag.cor}">${tag.nome}</span>
+                </label>
+              `).join('')}
+              ${localTags.length === 0 ? '<p class="text-muted">Você ainda não criou nenhuma etiqueta no topo da página.</p>' : ''}
+            </div>
+          `, {
+            confirmLabel: 'Salvar',
+            onConfirm: async () => {
+              const checked = Array.from(document.querySelectorAll('.tag-check:checked')).map(cb => cb.value);
+              try {
+                await store.setTestimonialTags(id, checked);
+                t.etiquetas = localTags.filter(tg => checked.includes(tg.id));
+                renderView(); window.toast('Etiquetas salvas!');
+              } catch (e) { window.toast(e.message, 'error'); }
+            }
+          });
+        });
+      });
+
+      // Delete Testimonial
+      document.querySelectorAll('[data-delete]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.delete;
+          modal('Apagar Depoimento', '<p>Tem certeza que deseja apagar este depoimento do sistema? Esta ação é irreversível.</p>', {
+            danger: true, confirmLabel: 'Apagar',
+            onConfirm: async () => {
+              try {
+                await store.deleteTestimonial(id);
+                localTestimonials = localTestimonials.filter(x => x.id !== id);
+                renderView(); window.toast('Depoimento apagado.');
+              } catch (e) { window.toast(e.message, 'error'); }
+            }
+          });
+        });
+      });
+
+      // Create Tag
+      document.getElementById('btn-add-tag')?.addEventListener('click', () => {
+        modal('Nova Etiqueta', `
+          <div class="form-group">
+            <label class="field-label">Problema / Benefício</label>
+            <input class="field-input" id="new-tag-name" placeholder="Ex: Emagrecimento, Dor Crônica..." />
+          </div>
+          <div class="form-group">
+            <label class="field-label">Cor Visual</label>
+            <input type="color" id="new-tag-color" value="#059669" style="width:100%;height:40px;border:none;border-radius:8px;cursor:pointer;padding:0" />
+          </div>
+        `, {
+          confirmLabel: 'Criar Etiqueta',
+          onConfirm: async () => {
+            const nome = document.getElementById('new-tag-name').value.trim();
+            const cor = document.getElementById('new-tag-color').value;
+            if (!nome) { window.toast('O nome é obrigatório.', 'error'); return; }
+            try {
+              const res = await store.addTag({ nome, cor });
+              localTags.push(res);
+              renderView(); window.toast('Etiqueta criada! 🏷️');
+            } catch (e) { window.toast(e.message, 'error'); }
+          }
+        });
+      });
+
+      // Delete Tag
+      document.querySelectorAll('[data-deltag]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.deltag;
+          modal('Apagar Etiqueta', '<p>Deseja apagar esta etiqueta? Ela será removida de todos os depoimentos vinculados.</p>', {
+            danger: true, confirmLabel: 'Apagar',
+            onConfirm: async () => {
+              try {
+                await store.deleteTag(id);
+                localTags = localTags.filter(x => x.id !== id);
+                // Also remove it from local cached testimonials immediately
+                localTestimonials.forEach(t => {
+                  if (t.etiquetas) t.etiquetas = t.etiquetas.filter(e => e.id !== id);
+                });
+                if (activeTagFilter === id) activeTagFilter = null;
+                renderView(); window.toast('Etiqueta removida.');
+              } catch (e) { window.toast(e.message, 'error'); }
+            }
+          });
+        });
+      });
+
+      // Manual Add
+      document.getElementById('btn-add-t')?.addEventListener('click', () => {
+        modal('Registrar Depoimento Manual', `
+          <div class="form-grid">
+            <div class="form-group form-field-full">
+              <label class="field-label">Nome da Cliente *</label>
+              <input class="field-input" id="m-nome" placeholder="Nome" />
+            </div>
+            <div class="form-group form-field-full">
+              <label class="field-label">Anotação NPS (0 a 10) *</label>
+              <input class="field-input" id="m-nota" type="number" min="0" max="10" placeholder="10" />
+            </div>
+            <div class="form-group form-field-full">
+              <label class="field-label">Depoimento *</label>
+              <textarea class="field-textarea" id="m-texto" placeholder="A cliente relatou que..."></textarea>
+            </div>
+          </div>`, {
+          confirmLabel: 'Salvar',
+          onConfirm: async () => {
+            const cliente_nome = document.getElementById('m-nome').value.trim();
+            const texto = document.getElementById('m-texto').value.trim();
+            const nota = parseInt(document.getElementById('m-nota').value) || 10;
+            if (!cliente_nome || !texto) { window.toast('Preencha os campos obrigatórios', 'error'); return; }
+
+            try {
+              const res = await store.addTestimonial({ cliente_nome, texto, nota, consentimento: true }); // manual implies you got consent
+              localTestimonials.unshift(res);
+              renderView(); window.toast('Registrado! ⭐');
+            } catch (e) { window.toast(e.message, 'error'); }
+          }
+        });
       });
     }
-    updateStars();
-    document.querySelectorAll('.star-btn').forEach(s => {
-      s.addEventListener('click', () => { rating = parseInt(s.dataset.star); document.getElementById('t-rating').value = rating; updateStars(); });
-    });
-  }
 
-  const pc = document.getElementById('page-content');
-  if (pc) pc.innerHTML = `
-    <div style="display:flex;justify-content:flex-end;margin-bottom:20px">
-      <button class="btn btn-primary" id="btn-add-t">+ Registrar Depoimento</button>
-    </div>
-    <div id="testimonials-list" style="position:relative"></div>`;
-  document.getElementById('btn-add-t')?.addEventListener('click', showAddModal);
-  renderList();
+    renderView();
+
+  } catch (err) {
+    const pc = document.getElementById('page-content');
+    if (pc) pc.innerHTML = `<div class="empty-state">Erro ao carregar dados: ${err.message}</div>`;
+  }
 }
 
 // ═══════════════ COMPRAS ═══════════════

@@ -159,9 +159,20 @@ export const store = {
     updateAgendamento(id, data) { return api('PUT', `/api/agendamentos/${id}`, data); },
     deleteAgendamento(id) { return api('DELETE', `/api/agendamentos/${id}`); },
 
+    /* ---- DEPOIMENTOS E ETIQUETAS ---- */
+    getTags() { return api('GET', '/api/etiquetas'); },
+    addTag(data) { return api('POST', '/api/etiquetas', data); },
+    deleteTag(id) { return api('DELETE', `/api/etiquetas/${id}`); },
+
+    getTestimonials() { return api('GET', '/api/depoimentos'); },
+    getTestimonialLink() { return api('GET', '/api/depoimentos/link'); },
+    addTestimonial(data) { return api('POST', '/api/depoimentos', data); },
+    approveTestimonial(id, aprovado) { return api('PATCH', `/api/depoimentos/${id}/aprovar`, { aprovado }); },
+    setTestimonialTags(id, etiqueta_ids) { return api('PATCH', `/api/depoimentos/${id}/etiquetas`, { etiqueta_ids }); },
+    deleteTestimonial(id) { return api('DELETE', `/api/depoimentos/${id}`); },
+
     /* ---- NOT YET IN BACKEND — return empty arrays ---- */
     getFollowups(_cid) { return Promise.resolve([]); },
-    getTestimonials(_cid) { return Promise.resolve([]); },
     getPurchases(_cid) { return Promise.resolve([]); },
     addPurchase(_cid, _data) { return Promise.resolve({}); },
 

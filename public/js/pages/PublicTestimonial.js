@@ -1,10 +1,10 @@
 import { api } from '../store.js';
 
 export async function renderPublicTestimonial(router, slug) {
-    const app = document.getElementById('app');
+  const app = document.getElementById('app');
 
-    // Loading
-    app.innerHTML = `
+  // Loading
+  app.innerHTML = `
     <div style="min-height:100vh;background:linear-gradient(135deg,#0a1f0f 0%,#1a4527 60%,#0f2d17 100%);display:flex;align-items:center;justify-content:center;padding:20px">
       <div style="text-align:center;color:white;font-size:1.1rem">
         <div style="font-size:3rem;margin-bottom:12px">💧</div>
@@ -12,12 +12,12 @@ export async function renderPublicTestimonial(router, slug) {
       </div>
     </div>`;
 
-    // Fetch consultant info
-    let consultora;
-    try {
-        consultora = await api('GET', `/api/depoimentos/public/${slug}`);
-    } catch {
-        app.innerHTML = `
+  // Fetch consultant info
+  let consultora;
+  try {
+    consultora = await api('GET', `/api/depoimentos/public/${slug}`);
+  } catch {
+    app.innerHTML = `
       <div style="min-height:100vh;background:linear-gradient(135deg,#0a1f0f,#1a4527);display:flex;align-items:center;justify-content:center;padding:20px">
         <div style="text-align:center;color:white">
           <div style="font-size:4rem;margin-bottom:16px">😕</div>
@@ -25,14 +25,14 @@ export async function renderPublicTestimonial(router, slug) {
           <p style="color:rgba(255,255,255,0.6);margin-top:8px">Este link de depoimento é inválido ou expirou.</p>
         </div>
       </div>`;
-        return;
-    }
+    return;
+  }
 
-    let rating = 5;
-    let submitted = false;
+  let rating = 10;
+  let submitted = false;
 
-    function renderForm() {
-        app.innerHTML = `
+  function renderForm() {
+    app.innerHTML = `
     <style>
       .dep-page { min-height:100vh; background:linear-gradient(135deg,#0a1f0f 0%,#1a4527 60%,#0f2d17 100%); display:flex; align-items:center; justify-content:center; padding:24px; }
       .dep-card { background:rgba(255,255,255,0.07); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.12); border-radius:24px; padding:40px 36px; width:100%; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.4); }
@@ -50,6 +50,14 @@ export async function renderPublicTestimonial(router, slug) {
       .dep-stars { display:flex; gap:10px; }
       .dep-star { font-size:2rem; cursor:pointer; transition:transform 0.15s; }
       .dep-star:hover { transform:scale(1.2); }
+      .nps-grid { display:flex; gap:6px; flex-wrap:wrap; justify-content:space-between; margin-top:8px; }
+      .nps-btn { flex:1; min-width:32px; height:42px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:white; font-size:1.05rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+      .nps-btn:hover { background:rgba(255,255,255,0.15); transform:translateY(-2px); }
+      .nps-btn.active { background:linear-gradient(135deg,#d4aa3a,#c99a22); color:#0a1f0f; border-color:#d4aa3a; transform:scale(1.05); box-shadow:0 4px 12px rgba(212,170,58,0.3); }
+      .nps-labels { display:flex; justify-content:space-between; margin-top:8px; font-size:0.75rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.5px; }
+      .checkbox-container { display:flex; align-items:flex-start; gap:12px; margin-top:20px; margin-bottom:12px; cursor:pointer; }
+      .checkbox-container input { margin-top:3px; cursor:pointer; width:18px; height:18px; accent-color:#d4aa3a; }
+      .checkbox-text { color:rgba(255,255,255,0.7); font-size:0.85rem; line-height:1.4; }
       .dep-btn { width:100%; padding:15px; border:none; border-radius:12px; background:linear-gradient(135deg,#d4aa3a,#c99a22); color:#0a1f0f; font-weight:700; font-size:1rem; font-family:'Inter',sans-serif; cursor:pointer; transition:all 0.25s; margin-top:8px; letter-spacing:0.5px; }
       .dep-btn:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(212,170,58,0.4); }
       .dep-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
@@ -74,74 +82,87 @@ export async function renderPublicTestimonial(router, slug) {
           <input class="dep-input" id="dep-email" type="email" placeholder="seuemail@exemplo.com" />
         </div>
         <div class="dep-group">
-          <label class="dep-label">Avaliação</label>
-          <div class="dep-stars" id="dep-stars">
-            ${[1, 2, 3, 4, 5].map(n => `<span class="dep-star" data-star="${n}" id="star-${n}" style="color:${n <= 5 ? '#d4aa3a' : '#444'}">${n <= 5 ? '★' : '★'}</span>`).join('')}
+          <label class="dep-label">De 0 a 10, o quanto você recomendaria o meu acompanhamento a um amigo?</label>
+          <div class="nps-grid" id="dep-nps">
+            ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<div class="nps-btn ${n === 10 ? 'active' : ''}" data-score="${n}">${n}</div>`).join('')}
+          </div>
+          <div class="nps-labels">
+            <span>Nada Provável</span>
+            <span>Muito Provável</span>
           </div>
         </div>
         <div class="dep-group">
           <label class="dep-label">Seu depoimento *</label>
           <textarea class="dep-textarea" id="dep-texto" placeholder="Conte como os óleos essenciais transformaram sua vida, quais resultados você teve, como se sentiu..."></textarea>
         </div>
+
+        <label class="checkbox-container">
+          <input type="checkbox" id="dep-consentimento" />
+          <span class="checkbox-text">Autorizo o uso deste depoimento, acompanhado do meu nome, para fins de divulgação e prova social.</span>
+        </label>
+
         <div class="dep-error" id="dep-error"></div>
         <button class="dep-btn" id="dep-submit">Enviar Depoimento 💧</button>
-
-        <p style="text-align:center;color:rgba(255,255,255,0.3);font-size:0.75rem;margin-top:16px">
-          Seu depoimento será revisado antes de ser publicado.
-        </p>
       </div>
     </div>`;
 
-        // Star rating
-        function updateStars() {
-            [1, 2, 3, 4, 5].forEach(n => {
-                const el = document.getElementById(`star-${n}`);
-                if (el) el.style.color = n <= rating ? '#d4aa3a' : 'rgba(255,255,255,0.2)';
-            });
+    // NPS rating logic
+    function updateNps() {
+      document.querySelectorAll('.nps-btn').forEach(btn => {
+        if (parseInt(btn.dataset.score) === rating) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
         }
-        updateStars();
-        document.getElementById('dep-stars')?.querySelectorAll('.dep-star').forEach(star => {
-            star.addEventListener('click', () => { rating = parseInt(star.dataset.star); updateStars(); });
-            star.addEventListener('mouseover', () => {
-                [1, 2, 3, 4, 5].forEach(n => {
-                    const el = document.getElementById(`star-${n}`);
-                    if (el) el.style.color = n <= parseInt(star.dataset.star) ? '#f5e060' : 'rgba(255,255,255,0.2)';
-                });
-            });
-            star.addEventListener('mouseout', updateStars);
-        });
-
-        // Submit
-        document.getElementById('dep-submit')?.addEventListener('click', async () => {
-            const nome = document.getElementById('dep-nome')?.value?.trim();
-            const email = document.getElementById('dep-email')?.value?.trim();
-            const texto = document.getElementById('dep-texto')?.value?.trim();
-            const errEl = document.getElementById('dep-error');
-            const btn = document.getElementById('dep-submit');
-
-            if (!nome || !texto) {
-                errEl.textContent = 'Por favor, preencha seu nome e depoimento.';
-                errEl.style.display = 'block';
-                return;
-            }
-            errEl.style.display = 'none';
-            btn.disabled = true;
-            btn.textContent = '⏳ Enviando...';
-
-            try {
-                await api('POST', `/api/depoimentos/public/${slug}`, { cliente_nome: nome, cliente_email: email, texto, nota: rating });
-                renderSuccess();
-            } catch (err) {
-                errEl.textContent = err.message || 'Erro ao enviar. Tente novamente.';
-                errEl.style.display = 'block';
-                btn.disabled = false;
-                btn.textContent = 'Enviar Depoimento 💧';
-            }
-        });
+      });
     }
+    document.querySelectorAll('.nps-btn').forEach(btn => {
+      btn.addEventListener('click', () => { rating = parseInt(btn.dataset.score); updateNps(); });
+    });
 
-    function renderSuccess() {
-        app.innerHTML = `
+    // Submit
+    document.getElementById('dep-submit')?.addEventListener('click', async () => {
+      const nome = document.getElementById('dep-nome')?.value?.trim();
+      const email = document.getElementById('dep-email')?.value?.trim();
+      const texto = document.getElementById('dep-texto')?.value?.trim();
+      const consentimento = document.getElementById('dep-consentimento')?.checked;
+      const errEl = document.getElementById('dep-error');
+      const btn = document.getElementById('dep-submit');
+
+      if (!nome || !texto) {
+        errEl.textContent = 'Por favor, preencha seu nome e depoimento.';
+        errEl.style.display = 'block';
+        return;
+      }
+      if (!consentimento) {
+        errEl.textContent = 'Para prosseguir, você precisa autorizar o uso do seu depoimento marcando a caixa acima.';
+        errEl.style.display = 'block';
+        return;
+      }
+      errEl.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = '⏳ Enviando...';
+
+      try {
+        await api('POST', `/api/depoimentos/public/${slug}`, {
+          cliente_nome: nome,
+          cliente_email: email,
+          texto,
+          nota: rating,
+          consentimento: true
+        });
+        renderSuccess();
+      } catch (err) {
+        errEl.textContent = err.message || 'Erro ao enviar. Tente novamente.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Enviar Depoimento 💧';
+      }
+    });
+  }
+
+  function renderSuccess() {
+    app.innerHTML = `
     <div style="min-height:100vh;background:linear-gradient(135deg,#0a1f0f 0%,#1a4527 60%,#0f2d17 100%);display:flex;align-items:center;justify-content:center;padding:20px">
       <div style="text-align:center;color:white;max-width:400px">
         <div style="font-size:5rem;margin-bottom:20px;animation:pop 0.5s ease">🎉</div>
@@ -160,7 +181,7 @@ export async function renderPublicTestimonial(router, slug) {
     <style>
       @keyframes pop { 0%{transform:scale(0)} 80%{transform:scale(1.15)} 100%{transform:scale(1)} }
     </style>`;
-    }
+  }
 
-    renderForm();
+  renderForm();
 }

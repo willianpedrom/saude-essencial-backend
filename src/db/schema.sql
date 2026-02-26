@@ -123,11 +123,14 @@ CREATE TABLE IF NOT EXISTS depoimentos (
   cliente_nome    VARCHAR(200) NOT NULL,
   cliente_email   VARCHAR(200),
   texto           TEXT NOT NULL,
-  nota            SMALLINT DEFAULT 5,
+  nota            SMALLINT DEFAULT 10,
   aprovado        BOOLEAN DEFAULT FALSE,
+  consentimento   BOOLEAN DEFAULT FALSE,
   origem          VARCHAR(20) DEFAULT 'manual',
   criado_em       TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE depoimentos ADD COLUMN IF NOT EXISTS consentimento BOOLEAN DEFAULT FALSE;
 
 -- Relação N:N entre depoimentos e etiquetas
 CREATE TABLE IF NOT EXISTS depoimentos_etiquetas (
