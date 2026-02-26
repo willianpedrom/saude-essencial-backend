@@ -4,125 +4,141 @@ import { toast, modal } from '../utils.js';
 
 // ── Pipeline stages config ────────────────────────────────────
 const STAGES = [
-    {
-        id: 'lead_captado',
-        label: 'Lead Captado',
-        icon: '💧',
-        color: '#3b82f6',
-        bg: '#eff6ff',
-        tip: 'Preencheu a anamnese ou entrou no radar',
-    },
-    {
-        id: 'primeiro_contato',
-        label: 'Primeiro Contato',
-        icon: '📞',
-        color: '#8b5cf6',
-        bg: '#f5f3ff',
-        tip: 'Você entrou em contato via WhatsApp',
-    },
-    {
-        id: 'interesse_confirmado',
-        label: 'Interesse Confirmado',
-        icon: '💬',
-        color: '#0891b2',
-        bg: '#ecfeff',
-        tip: 'Demonstrou interesse em saber mais',
-    },
-    {
-        id: 'protocolo_apresentado',
-        label: 'Protocolo Apresentado',
-        icon: '🌿',
-        color: '#16a34a',
-        bg: '#f0fdf4',
-        tip: 'Kit ou protocolo foi apresentado ao lead',
-    },
-    {
-        id: 'proposta_enviada',
-        label: 'Proposta Enviada',
-        icon: '📦',
-        color: '#d97706',
-        bg: '#fffbeb',
-        tip: 'Preço, link e condições foram enviados',
-    },
-    {
-        id: 'negociando',
-        label: 'Negociando',
-        icon: '🤝',
-        color: '#ea580c',
-        bg: '#fff7ed',
-        tip: 'Aguardando decisão / tratando objeções',
-    },
-    {
-        id: 'primeira_compra',
-        label: 'Primeira Compra! 🎉',
-        icon: '🎉',
-        color: '#15803d',
-        bg: '#dcfce7',
-        tip: 'Fechou! Virou cliente efetivo!',
-        celebrate: true,
-    },
+  {
+    id: 'lead_captado',
+    label: 'Lead Captado',
+    icon: '💧',
+    color: '#3b82f6',
+    bg: '#eff6ff',
+    tip: 'Preencheu a anamnese ou entrou no radar',
+  },
+  {
+    id: 'primeiro_contato',
+    label: 'Primeiro Contato',
+    icon: '📞',
+    color: '#8b5cf6',
+    bg: '#f5f3ff',
+    tip: 'Você entrou em contato via WhatsApp',
+  },
+  {
+    id: 'interesse_confirmado',
+    label: 'Interesse Confirmado',
+    icon: '💬',
+    color: '#0891b2',
+    bg: '#ecfeff',
+    tip: 'Demonstrou interesse em saber mais',
+  },
+  {
+    id: 'protocolo_apresentado',
+    label: 'Protocolo Apresentado',
+    icon: '🌿',
+    color: '#16a34a',
+    bg: '#f0fdf4',
+    tip: 'Kit ou protocolo foi apresentado ao lead',
+  },
+  {
+    id: 'proposta_enviada',
+    label: 'Proposta Enviada',
+    icon: '📦',
+    color: '#d97706',
+    bg: '#fffbeb',
+    tip: 'Preço, link e condições foram enviados',
+  },
+  {
+    id: 'negociando',
+    label: 'Negociando',
+    icon: '🤝',
+    color: '#ea580c',
+    bg: '#fff7ed',
+    tip: 'Aguardando decisão / tratando objeções',
+  },
+  {
+    id: 'primeira_compra',
+    label: 'Primeira Compra! 🎉',
+    icon: '🎉',
+    color: '#15803d',
+    bg: '#dcfce7',
+    tip: 'Fechou! Virou cliente efetivo!',
+    celebrate: true,
+  },
 ];
 
 const LOST_STAGE = {
-    id: 'perdido',
-    label: 'Perdidos',
-    icon: '❌',
-    color: '#9ca3af',
-    bg: '#f9fafb',
-    tip: 'Lead desistiu ou não respondeu',
+  id: 'perdido',
+  label: 'Perdidos',
+  icon: '❌',
+  color: '#9ca3af',
+  bg: '#f9fafb',
+  tip: 'Lead desistiu ou não respondeu',
 };
 
 // ── Main render ────────────────────────────────────────────────
 export async function renderPipeline(router) {
-    renderLayout(router, 'Pipeline de Vendas',
-        `<div style="display:flex;align-items:center;justify-content:center;height:300px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando pipeline...</div>`,
-        'pipeline');
+  renderLayout(router, 'Pipeline de Vendas',
+    `<div style="display:flex;align-items:center;justify-content:center;height:300px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando pipeline...</div>`,
+    'pipeline');
 
-    let clients = [];
+  let clients = [];
 
-    async function load() {
-        clients = await store.getClients().catch(() => []);
-        render();
-    }
+  async function load() {
+    clients = await store.getClients().catch(() => []);
+    render();
+  }
 
-    function getStageClients(stageId) {
-        return clients.filter(c => (c.pipeline_stage || 'lead_captado') === stageId);
-    }
+  function getStageClients(stageId) {
+    return clients.filter(c => (c.pipeline_stage || 'lead_captado') === stageId);
+  }
 
-    function cardHtml(client, stageConfig) {
-        const initials = (client.name || client.nome || 'C').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
-        const phone = client.phone || client.telefone || '';
-        const waUrl = phone ? `https://wa.me/${phone.replace(/\D/g, '')}` : null;
-        const notes = client.pipeline_notas || '';
+  function cardHtml(client, stageConfig) {
+    const initials = (client.name || client.nome || 'C').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    const fullName = client.name || client.nome || '';
+    const firstName = fullName.split(' ')[0] || '';
+    const phone = client.phone || client.telefone || '';
+    const notes = client.pipeline_notas || '';
 
-        return `
+    // Mensagens de quebra-gelo personalizadas por estágio
+    const icebreakers = {
+      lead_captado: `Oi ${firstName}! 😊 Tudo bem com você? Vi que você demonstrou interesse em cuidar mais da sua saúde e bem-estar. Posso te contar algo que pode fazer toda a diferença no seu dia a dia? 🌿`,
+      primeiro_contato: `Oi ${firstName}! Tudo bem? 😊 Lembrei de você e queria saber como está se sentindo. Tenho uma novidade incrível que acho que combina muito com você! Posso te contar? ✨`,
+      interesse_confirmado: `Oi ${firstName}! 😊 Que bom falar com você de novo! Preparei algo especial pensando exatamente no que conversamos. Tem um minutinho? Acho que você vai adorar! 🌟`,
+      protocolo_apresentado: `Oi ${firstName}! Tudo bem? 😊 Queria saber o que você achou do que te apresentei! Ficou com alguma dúvida? Estou aqui para te ajudar no que precisar! 💚`,
+      proposta_enviada: `Oi ${firstName}! 😊 Só passando para saber se você conseguiu dar uma olhada na proposta que te enviei. Fico à disposição para tirar qualquer dúvida! 💚`,
+      negociando: `Oi ${firstName}! 😊 Pensei em você hoje! Como está em relação ao que conversamos? Quero muito te ajudar a dar esse passo. Me conta como posso facilitar para você! 🤝`,
+      primeira_compra: `Oi ${firstName}! 🎉 Que alegria ter você com a gente! Quero te dar todo o suporte para você ter a melhor experiência. Como posso te ajudar hoje? 💚`,
+      perdido: `Oi ${firstName}! 😊 Tudo bem com você? Faz um tempo que não conversamos e queria saber como você está! Sem compromisso, só queria mesmo saber de você. 🌿`,
+    };
+
+    const message = icebreakers[stageConfig.id] || `Oi ${firstName}! Tudo bem com você? 😊`;
+    const waUrl = phone ? `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}` : null;
+
+    return `
     <div class="pipeline-card"
          draggable="true"
          data-id="${client.id}"
          data-stage="${stageConfig.id}"
-         data-name="${(client.name || client.nome || '').replace(/"/g, '&quot;')}"
+         data-name="${fullName.replace(/"/g, '&quot;')}"
          data-phone="${phone}">
       <div class="pipeline-card-header">
         <div class="pipeline-card-avatar" style="background:linear-gradient(135deg,${stageConfig.color}88,${stageConfig.color}cc)">${initials}</div>
         <div class="pipeline-card-info">
-          <div class="pipeline-card-name">${client.name || client.nome || '—'}</div>
+          <div class="pipeline-card-name">${fullName || '—'}</div>
           ${phone ? `<div class="pipeline-card-phone">📱 ${phone}</div>` : ''}
         </div>
         <div class="pipeline-card-actions">
           ${waUrl ? `<a href="${waUrl}" target="_blank" class="pipeline-card-btn" title="WhatsApp">💬</a>` : ''}
-          <button class="pipeline-card-btn" data-note-id="${client.id}" data-note-name="${(client.name || client.nome || '').replace(/"/g, '&quot;')}" data-note-current="${notes.replace(/"/g, '&quot;')}" title="Adicionar nota">📝</button>
+          <button class="pipeline-card-btn" data-note-id="${client.id}" data-note-name="${fullName.replace(/"/g, '&quot;')}" data-note-current="${notes.replace(/"/g, '&quot;')}" title="Adicionar nota">📝</button>
         </div>
       </div>
       ${notes ? `<div class="pipeline-card-note">${notes}</div>` : ''}
     </div>`;
-    }
+  }
 
-    function stageColumnHtml(stage) {
-        const stageClients = getStageClients(stage.id);
-        const count = stageClients.length;
-        const celebrate = stage.celebrate && count > 0;
+  function stageColumnHtml(stage) {
+    const stageClients = getStageClients(stage.id);
+    const count = stageClients.length;
+    const celebrate = stage.celebrate && count > 0;
 
-        return `
+    return `
     <div class="pipeline-column" data-stage="${stage.id}">
       <div class="pipeline-column-header" style="border-top: 3px solid ${stage.color}; background: ${stage.bg}">
         <div style="display:flex;align-items:center;gap:8px">
@@ -134,24 +150,24 @@ export async function renderPipeline(router) {
       </div>
       <div class="pipeline-drop-zone" data-target-stage="${stage.id}">
         ${stageClients.length === 0
-                ? `<div class="pipeline-empty-col">Arraste um card aqui</div>`
-                : stageClients.map(c => cardHtml(c, stage)).join('')
-            }
+        ? `<div class="pipeline-empty-col">Arraste um card aqui</div>`
+        : stageClients.map(c => cardHtml(c, stage)).join('')
+      }
         ${celebrate ? `<div class="pipeline-celebrate">🎊 ${count} cliente${count > 1 ? 's' : ''}!</div>` : ''}
       </div>
     </div>`;
-    }
+  }
 
-    function render() {
-        const pc = document.getElementById('page-content');
-        if (!pc) return;
+  function render() {
+    const pc = document.getElementById('page-content');
+    if (!pc) return;
 
-        const lostClients = getStageClients('perdido');
-        const totalInFunnel = clients.filter(c => (c.pipeline_stage || 'lead_captado') !== 'perdido').length;
-        const converted = getStageClients('primeira_compra').length;
-        const convRate = totalInFunnel > 0 ? Math.round((converted / totalInFunnel) * 100) : 0;
+    const lostClients = getStageClients('perdido');
+    const totalInFunnel = clients.filter(c => (c.pipeline_stage || 'lead_captado') !== 'perdido').length;
+    const converted = getStageClients('primeira_compra').length;
+    const convRate = totalInFunnel > 0 ? Math.round((converted / totalInFunnel) * 100) : 0;
 
-        pc.innerHTML = `
+    pc.innerHTML = `
     <style>
       .pipeline-summary { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
       .pipeline-stat { background:white; border:1px solid var(--border); border-radius:var(--radius-md); padding:14px 20px; display:flex; flex-direction:column; gap:2px; }
@@ -219,107 +235,107 @@ export async function renderPipeline(router) {
       </div>
       <div class="pipeline-lost-body" id="lost-body" style="display:${lostClients.length > 0 ? 'flex' : 'none'}">
         ${lostClients.length === 0
-                ? '<div style="padding:8px;color:var(--text-muted);font-size:0.82rem">Nenhum lead perdido</div>'
-                : lostClients.map(c => cardHtml(c, LOST_STAGE)).join('')}
+        ? '<div style="padding:8px;color:var(--text-muted);font-size:0.82rem">Nenhum lead perdido</div>'
+        : lostClients.map(c => cardHtml(c, LOST_STAGE)).join('')}
       </div>
     </div>`;
 
-        bindEvents(pc);
-    }
+    bindEvents(pc);
+  }
 
-    function bindEvents(pc) {
-        let draggedId = null;
-        let draggedFrom = null;
+  function bindEvents(pc) {
+    let draggedId = null;
+    let draggedFrom = null;
 
-        // Drag start
-        pc.querySelectorAll('.pipeline-card').forEach(card => {
-            card.addEventListener('dragstart', e => {
-                draggedId = card.dataset.id;
-                draggedFrom = card.dataset.stage;
-                card.classList.add('dragging');
-                e.dataTransfer.effectAllowed = 'move';
-            });
-            card.addEventListener('dragend', () => {
-                card.classList.remove('dragging');
-                pc.querySelectorAll('.pipeline-drop-zone').forEach(z => z.classList.remove('drag-over'));
-            });
-        });
+    // Drag start
+    pc.querySelectorAll('.pipeline-card').forEach(card => {
+      card.addEventListener('dragstart', e => {
+        draggedId = card.dataset.id;
+        draggedFrom = card.dataset.stage;
+        card.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        pc.querySelectorAll('.pipeline-drop-zone').forEach(z => z.classList.remove('drag-over'));
+      });
+    });
 
-        // Drop zones
-        pc.querySelectorAll('.pipeline-drop-zone').forEach(zone => {
-            zone.addEventListener('dragover', e => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-                pc.querySelectorAll('.pipeline-drop-zone').forEach(z => z.classList.remove('drag-over'));
-                zone.classList.add('drag-over');
-            });
-            zone.addEventListener('dragleave', e => {
-                if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over');
-            });
-            zone.addEventListener('drop', async e => {
-                e.preventDefault();
-                zone.classList.remove('drag-over');
-                const targetStage = zone.dataset.targetStage;
-                if (!draggedId || !targetStage || targetStage === draggedFrom) return;
+    // Drop zones
+    pc.querySelectorAll('.pipeline-drop-zone').forEach(zone => {
+      zone.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        pc.querySelectorAll('.pipeline-drop-zone').forEach(z => z.classList.remove('drag-over'));
+        zone.classList.add('drag-over');
+      });
+      zone.addEventListener('dragleave', e => {
+        if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over');
+      });
+      zone.addEventListener('drop', async e => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        const targetStage = zone.dataset.targetStage;
+        if (!draggedId || !targetStage || targetStage === draggedFrom) return;
 
-                // Optimistic update
-                const client = clients.find(c => c.id === draggedId);
-                if (client) client.pipeline_stage = targetStage;
-                render();
+        // Optimistic update
+        const client = clients.find(c => c.id === draggedId);
+        if (client) client.pipeline_stage = targetStage;
+        render();
 
-                try {
-                    await store.updateStage(draggedId, targetStage);
-                    const stageConf = [...STAGES, LOST_STAGE].find(s => s.id === targetStage);
-                    toast(`Movido para ${stageConf?.icon || ''} ${stageConf?.label || targetStage}`, 'success');
-                    if (targetStage === 'primeira_compra') {
-                        setTimeout(() => toast('🎊 Parabéns pela venda! 💰', 'success'), 500);
-                    }
-                } catch (err) {
-                    toast('Erro ao mover card: ' + err.message, 'error');
-                    await load();
-                }
-            });
-        });
+        try {
+          await store.updateStage(draggedId, targetStage);
+          const stageConf = [...STAGES, LOST_STAGE].find(s => s.id === targetStage);
+          toast(`Movido para ${stageConf?.icon || ''} ${stageConf?.label || targetStage}`, 'success');
+          if (targetStage === 'primeira_compra') {
+            setTimeout(() => toast('🎊 Parabéns pela venda! 💰', 'success'), 500);
+          }
+        } catch (err) {
+          toast('Erro ao mover card: ' + err.message, 'error');
+          await load();
+        }
+      });
+    });
 
-        // Lost toggle
-        document.getElementById('lost-toggle')?.addEventListener('click', () => {
-            const body = document.getElementById('lost-body');
-            const arrow = document.getElementById('lost-arrow');
-            const isOpen = body.style.display !== 'none';
-            body.style.display = isOpen ? 'none' : 'flex';
-            arrow.textContent = isOpen ? '▼' : '▲';
-        });
+    // Lost toggle
+    document.getElementById('lost-toggle')?.addEventListener('click', () => {
+      const body = document.getElementById('lost-body');
+      const arrow = document.getElementById('lost-arrow');
+      const isOpen = body.style.display !== 'none';
+      body.style.display = isOpen ? 'none' : 'flex';
+      arrow.textContent = isOpen ? '▼' : '▲';
+    });
 
-        // Note button
-        pc.querySelectorAll('[data-note-id]').forEach(btn => {
-            btn.addEventListener('click', e => {
-                e.stopPropagation();
-                const { noteId, noteName, noteCurrent } = btn.dataset;
-                modal(`📝 Nota – ${noteName}`, `
+    // Note button
+    pc.querySelectorAll('[data-note-id]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const { noteId, noteName, noteCurrent } = btn.dataset;
+        modal(`📝 Nota – ${noteName}`, `
           <div class="form-group">
             <label class="field-label">Nota sobre esse lead</label>
             <textarea class="field-textarea" id="note-text" rows="4" placeholder="Ex: Interessada em kit Iniciante, aguarda resposta marido...">${noteCurrent || ''}</textarea>
           </div>`, {
-                    confirmLabel: 'Salvar',
-                    onConfirm: async () => {
-                        const note = document.getElementById('note-text')?.value || '';
-                        try {
-                            await store.updateStage(noteId, clients.find(c => c.id === noteId)?.pipeline_stage || 'lead_captado', note);
-                            const client = clients.find(c => c.id === noteId);
-                            if (client) client.pipeline_notas = note;
-                            toast('Nota salva! 📝');
-                            render();
-                        } catch (err) {
-                            toast('Erro ao salvar nota: ' + err.message, 'error');
-                        }
-                    }
-                });
-            });
+          confirmLabel: 'Salvar',
+          onConfirm: async () => {
+            const note = document.getElementById('note-text')?.value || '';
+            try {
+              await store.updateStage(noteId, clients.find(c => c.id === noteId)?.pipeline_stage || 'lead_captado', note);
+              const client = clients.find(c => c.id === noteId);
+              if (client) client.pipeline_notas = note;
+              toast('Nota salva! 📝');
+              render();
+            } catch (err) {
+              toast('Erro ao salvar nota: ' + err.message, 'error');
+            }
+          }
         });
+      });
+    });
 
-        // Add all clients button
-        document.getElementById('btn-add-all-clients')?.addEventListener('click', () => {
-            modal('Adicionar Clientes ao Pipeline', `
+    // Add all clients button
+    document.getElementById('btn-add-all-clients')?.addEventListener('click', () => {
+      modal('Adicionar Clientes ao Pipeline', `
         <p style="margin-bottom:12px;color:var(--text-muted);font-size:0.9rem">
           Clientes sem estágio definido serão adicionados como <strong>Lead Captado</strong>.
         </p>
@@ -327,16 +343,16 @@ export async function renderPipeline(router) {
           Total de clientes: <strong>${clients.length}</strong><br>
           Já no pipeline: <strong>${clients.filter(c => c.pipeline_stage).length}</strong>
         </p>`, {
-                confirmLabel: 'Confirmar',
-                onConfirm: async () => {
-                    const toAdd = clients.filter(c => !c.pipeline_stage || c.pipeline_stage === 'lead_captado');
-                    if (toAdd.length === 0) { toast('Todos os clientes já estão no pipeline!'); return; }
-                    toast(`${toAdd.length} cliente(s) adicionado(s) ao pipeline! 💧`);
-                    render();
-                }
-            });
-        });
-    }
+        confirmLabel: 'Confirmar',
+        onConfirm: async () => {
+          const toAdd = clients.filter(c => !c.pipeline_stage || c.pipeline_stage === 'lead_captado');
+          if (toAdd.length === 0) { toast('Todos os clientes já estão no pipeline!'); return; }
+          toast(`${toAdd.length} cliente(s) adicionado(s) ao pipeline! 💧`);
+          render();
+        }
+      });
+    });
+  }
 
-    await load();
+  await load();
 }
