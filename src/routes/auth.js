@@ -74,7 +74,7 @@ router.post('/login', async (req, res, next) => {
         }
 
         const { rows } = await pool.query(
-            'SELECT id, nome, email, senha_hash, slug, role, genero FROM consultoras WHERE email = $1',
+            'SELECT id, nome, email, senha_hash, slug, role, genero, telefone FROM consultoras WHERE email = $1',
             [email]
         );
 
