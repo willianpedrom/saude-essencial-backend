@@ -140,12 +140,34 @@ router.get('/profile', authMiddleware, async (req, res, next) => {
     try {
         const { rows } = await pool.query(
             `SELECT id, nome, email, telefone, slug, foto_url,
-              endereco, bio, instagram, youtube, facebook, linkedin, genero
+              endereco, bio, instagram, youtube, facebook, linkedin, genero, rastreamento
              FROM consultoras WHERE id = $1`,
             [req.consultora.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Perfil não encontrado.' });
         return res.json(rows[0]);
+    } catch (err) {
+        return next(err);
+    }
+});
+
+// PUT /api/auth/tracking — consultora updates her own tracking scripts
+router.put('/tracking', authMiddleware, async (req, res, next) => {
+    const { meta_pixel_id, meta_pixel_token, clarity_id, ga_id, gtm_id, custom_script } = req.body;
+    const rastreamento = {
+        meta_pixel_id: meta_pixel_id || null,
+        meta_pixel_token: meta_pixel_token || null,
+        clarity_id: clarity_id || null,
+        ga_id: ga_id || null,
+        gtm_id: gtm_id || null,
+        custom_script: custom_script || null,
+    };
+    try {
+        await pool.query(
+            `UPDATE consultoras SET rastreamento=$1, atualizado_em=NOW() WHERE id=$2`,
+            [JSON.stringify(rastreamento), req.consultora.id]
+        );
+        return res.json({ success: true });
     } catch (err) {
         return next(err);
     }

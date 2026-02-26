@@ -125,4 +125,42 @@ router.delete('/users/:id', async (req, res) => {
     }
 });
 
+// GET /api/admin/users/:id/tracking — get a user's tracking config
+router.get('/users/:id/tracking', async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            'SELECT rastreamento FROM consultoras WHERE id = $1', [req.params.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado.' });
+        res.json({ rastreamento: rows[0].rastreamento || {} });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao buscar configurações de rastreamento.' });
+    }
+});
+
+// PUT /api/admin/users/:id/tracking — update a user's tracking config
+router.put('/users/:id/tracking', async (req, res) => {
+    const { meta_pixel_id, meta_pixel_token, clarity_id, ga_id, gtm_id, custom_script } = req.body;
+    const rastreamento = {
+        meta_pixel_id: meta_pixel_id || null,
+        meta_pixel_token: meta_pixel_token || null,
+        clarity_id: clarity_id || null,
+        ga_id: ga_id || null,
+        gtm_id: gtm_id || null,
+        custom_script: custom_script || null,
+    };
+    try {
+        const { rows } = await pool.query(
+            `UPDATE consultoras SET rastreamento=$1, atualizado_em=NOW() WHERE id=$2 RETURNING id`,
+            [JSON.stringify(rastreamento), req.params.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado.' });
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao salvar configurações de rastreamento.' });
+    }
+});
+
 module.exports = router;

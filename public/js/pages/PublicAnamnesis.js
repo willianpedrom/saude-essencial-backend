@@ -1,6 +1,6 @@
 import { store } from '../store.js';
 import { ANAMNESIS_QUESTIONS, ANAMNESIS_STEPS, analyzeAnamnesis } from '../data.js';
-import { toast } from '../utils.js';
+import { toast, injectTrackingScripts } from '../utils.js';
 
 export async function renderPublicAnamnesis(router, token) {
   const app = document.getElementById('app');
@@ -41,6 +41,9 @@ export async function renderPublicAnamnesis(router, token) {
   }
 
   const consultoraNome = anamneseData.consultora_nome || 'Consultora Gota Essencial';
+
+  // Inject consultant's tracking scripts (Meta Pixel, Clarity, GA4, etc.)
+  injectTrackingScripts(anamneseData.consultora_rastreamento);
 
   // Try to use the API data to guess the correct title, fallback to generic
   // We can pass consultant's gender from the backend, but since PublicAnamnesis might just get the name

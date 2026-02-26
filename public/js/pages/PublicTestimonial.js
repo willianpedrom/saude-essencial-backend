@@ -1,4 +1,5 @@
 import { api } from '../store.js';
+import { injectTrackingScripts } from '../utils.js';
 
 export async function renderPublicTestimonial(router, slug) {
   const app = document.getElementById('app');
@@ -30,6 +31,9 @@ export async function renderPublicTestimonial(router, slug) {
 
   let rating = 10;
   let submitted = false;
+
+  // Inject consultant's tracking scripts
+  injectTrackingScripts(consultora.rastreamento);
 
   function renderForm() {
     app.innerHTML = `

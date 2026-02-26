@@ -23,6 +23,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
     { id: 'followup', icon: '💬', label: 'Follow-up' },
     { id: 'testimonials', icon: '⭐', label: 'Depoimentos' },
     { id: 'purchases', icon: '🛒', label: 'Compras' },
+    { id: 'integrations', icon: '📊', label: 'Integrações' },
     { id: 'profile', icon: '👤', label: 'Meu Perfil' },
   ];
   if (auth.isAdmin) navItems.push({ id: 'admin', icon: '⚙️', label: 'Administração' });

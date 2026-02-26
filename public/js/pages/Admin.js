@@ -8,6 +8,8 @@ const adminApi = {
   updateUser: (id, data) => api('PUT', `/api/admin/users/${id}`, data),
   updatePlan: (id, data) => api('PUT', `/api/admin/users/${id}/plan`, data),
   updatePassword: (id, data) => api('PUT', `/api/admin/users/${id}/password`, data),
+  getTracking: (id) => api('GET', `/api/admin/users/${id}/tracking`),
+  updateTracking: (id, data) => api('PUT', `/api/admin/users/${id}/tracking`, data),
   deleteUser: (id) => api('DELETE', `/api/admin/users/${id}`),
 };
 
@@ -165,6 +167,7 @@ export async function renderAdmin(router) {
                 ${isAdmin ? '👤' : '👑'}
               </button>
               <button class="btn btn-secondary btn-sm" data-pwd-id="${u.id}" data-pwd-nome="${u.nome}" title="Alterar Senha">🔑</button>
+              <button class="btn btn-secondary btn-sm" data-tracking-id="${u.id}" data-tracking-nome="${u.nome}" title="Integrações & Rastreamento">📊</button>
               <button class="btn btn-secondary btn-sm" data-plan-id="${u.id}" data-plan-current="${u.plano || 'starter'}" data-status-current="${u.plano_status || 'trial'}" title="Plano">💳</button>
               <button class="btn btn-danger btn-sm" data-del-id="${u.id}" data-del-nome="${u.nome}" title="Excluir" ${isMe ? 'disabled' : ''}>🗑️</button>
             </div>
@@ -228,6 +231,15 @@ export async function renderAdmin(router) {
       });
     });
 
+    // Tracking config
+    tbody.querySelectorAll('[data-tracking-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const u = users.find(x => x.id === btn.dataset.trackingId);
+        if (!u) return;
+        await showTrackingModal(u);
+      });
+    });
+
     // Delete user
     tbody.querySelectorAll('[data-del-id]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -249,6 +261,59 @@ export async function renderAdmin(router) {
         });
       });
     });
+  }
+
+  async function showTrackingModal(u) {
+    let tracking = {};
+    try {
+      const res = await adminApi.getTracking(u.id);
+      tracking = res.rastreamento || {};
+    } catch { /* Empty config, show blank form */ }
+
+    modal('📊 Integrações — ' + u.nome, `
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="field-label">Meta Pixel ID</label>
+          <input class="field-input" id="at-pixel-id" placeholder="Ex: 1234567890" value="${tracking.meta_pixel_id || ''}" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Meta CAPI Token</label>
+          <input class="field-input" id="at-pixel-token" type="password" placeholder="EAAGxxx..." value="${tracking.meta_pixel_token || ''}" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Clarity ID</label>
+          <input class="field-input" id="at-clarity" placeholder="Ex: abc123" value="${tracking.clarity_id || ''}" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Google Analytics (GA4)</label>
+          <input class="field-input" id="at-ga" placeholder="Ex: G-XXXXXXXXXX" value="${tracking.ga_id || ''}" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Google Tag Manager</label>
+          <input class="field-input" id="at-gtm" placeholder="Ex: GTM-XXXXXXX" value="${tracking.gtm_id || ''}" />
+        </div>
+        <div class="form-group form-field-full">
+          <label class="field-label">Script Personalizado</label>
+          <textarea class="field-textarea" id="at-custom" rows="3" placeholder="<script>...</script>" style="font-family:monospace;font-size:0.8rem">${tracking.custom_script || ''}</textarea>
+        </div>
+      </div>`, {
+      confirmLabel: '💾 Salvar Integrações',
+      onConfirm: async () => {
+        const payload = {
+          meta_pixel_id: document.getElementById('at-pixel-id')?.value?.trim() || null,
+          meta_pixel_token: document.getElementById('at-pixel-token')?.value?.trim() || null,
+          clarity_id: document.getElementById('at-clarity')?.value?.trim() || null,
+          ga_id: document.getElementById('at-ga')?.value?.trim() || null,
+          gtm_id: document.getElementById('at-gtm')?.value?.trim() || null,
+          custom_script: document.getElementById('at-custom')?.value?.trim() || null,
+        };
+        try {
+          await adminApi.updateTracking(u.id, payload);
+          toast('Integrações salvas! ✅');
+        } catch (err) { toast('Erro: ' + err.message, 'error'); }
+      }
+    });
+    setTimeout(() => document.getElementById('at-pixel-id')?.focus(), 100);
   }
 
   function showEditModal(u) {

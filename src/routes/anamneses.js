@@ -12,7 +12,8 @@ router.get('/public/:token', async (req, res) => {
     try {
         const { rows } = await pool.query(
             `SELECT a.id, a.tipo, a.dados, a.preenchido, a.subtipo, a.nome_link, a.acessos,
-              c.nome AS consultora_nome, c.slug AS consultora_slug, c.genero AS consultora_genero
+              c.nome AS consultora_nome, c.slug AS consultora_slug, c.genero AS consultora_genero,
+              c.id AS consultora_id, c.rastreamento AS consultora_rastreamento
        FROM anamneses a
        JOIN consultoras c ON c.id = a.consultora_id
        WHERE a.token_publico = $1`,
@@ -138,6 +139,30 @@ router.put('/public/:token', async (req, res) => {
         await client.query('UPDATE anamneses SET cliente_id = $1 WHERE id = $2', [clienteId, anamnese_id]);
 
         await client.query('COMMIT');
+
+        // 6. Fire Meta CAPI 'Lead' event (non-blocking — fire-and-forget)
+        try {
+            const { sendMetaEvent } = require('../lib/metaCapi');
+            const trackRes = await pool.query(
+                'SELECT rastreamento FROM consultoras WHERE id = $1', [consultora_id]
+            );
+            const tracking = trackRes.rows[0]?.rastreamento || {};
+            if (tracking.meta_pixel_id && tracking.meta_pixel_token) {
+                sendMetaEvent(
+                    tracking.meta_pixel_id,
+                    tracking.meta_pixel_token,
+                    'Lead',
+                    {
+                        clientIp: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                        userAgent: req.headers['user-agent'],
+                        pageUrl: req.headers.referer,
+                    }
+                ).catch(() => { }); // Never throw
+            }
+        } catch (capiErr) {
+            console.warn('[CAPI] Could not fire Lead event:', capiErr.message);
+        }
+
         res.json({ success: true, id: anamnese_id, cliente_id: clienteId });
     } catch (err) {
         await client.query('ROLLBACK');

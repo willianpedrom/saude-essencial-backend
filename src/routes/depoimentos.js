@@ -11,7 +11,7 @@ const router = express.Router();
 router.get('/public/:slug', async (req, res) => {
     try {
         const { rows } = await pool.query(
-            `SELECT id, nome, foto_url, slug, genero FROM consultoras WHERE slug = $1`,
+            `SELECT id, nome, foto_url, slug, genero, rastreamento FROM consultoras WHERE slug = $1`,
             [req.params.slug]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });
@@ -29,15 +29,33 @@ router.post('/public/:slug', async (req, res) => {
 
     try {
         const { rows: consultoras } = await pool.query(
-            'SELECT id FROM consultoras WHERE slug = $1', [req.params.slug]
+            'SELECT id, rastreamento FROM consultoras WHERE slug = $1', [req.params.slug]
         );
         if (consultoras.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });
-        const consultora_id = consultoras[0].id;
+        const { id: consultora_id, rastreamento } = consultoras[0];
         const { rows } = await pool.query(
             `INSERT INTO depoimentos (consultora_id, cliente_nome, cliente_email, texto, nota, aprovado, consentimento, origem)
              VALUES ($1, $2, $3, $4, $5, FALSE, $6, 'link') RETURNING id`,
             [consultora_id, cliente_nome, cliente_email || null, texto, Math.min(10, Math.max(0, parseInt(nota) || 10)), !!consentimento]
         );
+
+        // Fire Meta CAPI 'CompleteRegistration' (non-blocking)
+        try {
+            const tracking = rastreamento || {};
+            if (tracking.meta_pixel_id && tracking.meta_pixel_token) {
+                const { sendMetaEvent } = require('../lib/metaCapi');
+                sendMetaEvent(
+                    tracking.meta_pixel_id,
+                    tracking.meta_pixel_token,
+                    'CompleteRegistration',
+                    {
+                        clientIp: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                        userAgent: req.headers['user-agent'],
+                    }
+                ).catch(() => { });
+            }
+        } catch { /* CAPI failure never blocks the response */ }
+
         res.status(201).json({ success: true, id: rows[0].id });
     } catch (err) {
         res.status(500).json({ error: err.message });
