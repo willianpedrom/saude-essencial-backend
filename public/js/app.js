@@ -20,6 +20,7 @@ import { renderProfile } from './pages/Profile.js';
 import { renderAdmin } from './pages/Admin.js';
 import { renderPipeline } from './pages/Pipeline.js';
 import { renderIntegrations } from './pages/Integracoes.js';
+import { renderLandingPage } from './pages/LandingPage.js';
 
 // Boot
 auth.init();
@@ -68,6 +69,7 @@ const router = new Router({
     '/protocolo': ({ data }) => renderReport(router, data),
     '/depoimento/:slug': ({ slug }) => renderPublicTestimonial(router, slug),
     '/p/:slug': ({ slug }) => renderPublicProfile(router, slug),
+    '/vendas': () => renderLandingPage(router),
 
     '*': () => auth.isLoggedIn ? router.navigate('/dashboard') : renderLogin(router),
 });

@@ -70,4 +70,16 @@ router.get('/perfil/:slug', async (req, res) => {
     }
 });
 
+// GET /api/publico/settings — public-safe settings (checkout_url, etc)
+router.get('/settings', async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            `SELECT valor FROM configuracoes WHERE chave = 'checkout_url' LIMIT 1`
+        );
+        res.json({ checkout_url: rows[0]?.valor || null });
+    } catch {
+        res.json({ checkout_url: null });
+    }
+});
+
 module.exports = router;
