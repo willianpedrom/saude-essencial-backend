@@ -134,54 +134,73 @@ export function getConsultantTitle(gender) {
 
 /**
  * Dynamically inject tracking scripts into <head> for a consultant's public pages.
+ * Scripts are injected using document.createElement('script') to ensure execution.
+ * (innerHTML-injected <script> tags are NOT executed by browsers per HTML5 spec.)
  * @param {object|null} rastreamento — tracking config from the backend
  */
 export function injectTrackingScripts(rastreamento) {
     if (!rastreamento) return;
     const { meta_pixel_id, clarity_id, ga_id, gtm_id, custom_script } = rastreamento;
 
-    function addScript(id, html) {
-        if (document.getElementById(id)) return; // already injected
-        const el = document.createElement('div');
-        el.innerHTML = html;
-        Array.from(el.children).forEach(child => {
-            child.id = id;
-            document.head.appendChild(child);
-        });
+    /** Create and append an inline <script> that will actually execute */
+    function addInlineScript(id, code) {
+        if (document.getElementById(id)) return;
+        const s = document.createElement('script');
+        s.id = id;
+        s.textContent = code;
+        document.head.appendChild(s);
+    }
+
+    /** Create and append an external <script src="…"> */
+    function addExternalScript(id, src, async = true) {
+        if (document.getElementById(id)) return;
+        const s = document.createElement('script');
+        s.id = id;
+        s.src = src;
+        s.async = async;
+        document.head.appendChild(s);
     }
 
     // Meta Pixel (browser-side fbq)
     if (meta_pixel_id) {
-        addScript('tracking-meta-pixel', `<script>
-            !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init','${meta_pixel_id}');fbq('track','PageView');
-        </script>`);
+        addInlineScript('tracking-meta-pixel',
+            `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${meta_pixel_id}');fbq('track','PageView');`
+        );
     }
 
     // Microsoft Clarity
     if (clarity_id) {
-        addScript('tracking-clarity', `<script>
-            (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","${clarity_id}");
-        </script>`);
+        addInlineScript('tracking-clarity',
+            `(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","${clarity_id}");`
+        );
     }
 
     // Google Analytics 4
     if (ga_id) {
-        addScript('tracking-ga4-loader', `<script async src="https://www.googletagmanager.com/gtag/js?id=${ga_id}"></script>`);
-        addScript('tracking-ga4-init', `<script>
-            window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${ga_id}');
-        </script>`);
+        addExternalScript('tracking-ga4-loader', `https://www.googletagmanager.com/gtag/js?id=${ga_id}`);
+        addInlineScript('tracking-ga4-init',
+            `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${ga_id}');`
+        );
     }
 
     // Google Tag Manager
     if (gtm_id) {
-        addScript('tracking-gtm', `<script>
-            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtm_id}');
-        </script>`);
+        addInlineScript('tracking-gtm',
+            `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtm_id}');`
+        );
     }
 
-    // Custom script (raw HTML, admin-supplied)
+    // Custom script (raw HTML — parsed and re-created to ensure execution)
     if (custom_script && custom_script.trim()) {
-        addScript('tracking-custom', custom_script);
+        if (document.getElementById('tracking-custom')) return;
+        const temp = document.createElement('div');
+        temp.innerHTML = custom_script;
+        Array.from(temp.querySelectorAll('script')).forEach((orig, i) => {
+            const s = document.createElement('script');
+            s.id = 'tracking-custom-' + i;
+            if (orig.src) { s.src = orig.src; s.async = true; }
+            else { s.textContent = orig.textContent; }
+            document.head.appendChild(s);
+        });
     }
 }
