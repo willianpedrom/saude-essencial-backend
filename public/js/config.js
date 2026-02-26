@@ -1,2 +1,2 @@
-// API URL — updated automatically by the backend deployment
-window.SE_API_URL = 'https://web-production-9eaa6.up.railway.app';
+// API URL — uses current domain so it works on any domain (Railway or custom)
+window.SE_API_URL = window.location.origin;
