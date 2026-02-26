@@ -15,17 +15,26 @@ router.get('/aniversariantes', async (req, res) => {
         // Ignora o ano de nascimento para comparar apenas dia e mês
         const { rows } = await pool.query(
             `SELECT id, nome, telefone, data_nascimento, ativo,
-             EXTRACT(DAY FROM data_nascimento) = EXTRACT(DAY FROM NOW()) AND EXTRACT(MONTH FROM data_nascimento) = EXTRACT(MONTH FROM NOW()) as is_today
+             (EXTRACT(DAY FROM data_nascimento) = EXTRACT(DAY FROM NOW()) AND EXTRACT(MONTH FROM data_nascimento) = EXTRACT(MONTH FROM NOW())) as is_today
              FROM clientes
              WHERE consultora_id = $1 
                AND ativo = TRUE
                AND data_nascimento IS NOT NULL
                AND (
-                 (EXTRACT(DAY FROM data_nascimento) = EXTRACT(DAY FROM NOW()) AND EXTRACT(MONTH FROM data_nascimento) = EXTRACT(MONTH FROM NOW()))
+                 (
+                   to_char(NOW(), 'MM-DD') <= to_char(NOW() + INTERVAL '7 days', 'MM-DD') AND
+                   to_char(data_nascimento, 'MM-DD') BETWEEN to_char(NOW(), 'MM-DD') AND to_char(NOW() + INTERVAL '7 days', 'MM-DD')
+                 )
                  OR 
-                 (EXTRACT(DAY FROM data_nascimento) = EXTRACT(DAY FROM NOW() + INTERVAL '7 days') AND EXTRACT(MONTH FROM data_nascimento) = EXTRACT(MONTH FROM NOW() + INTERVAL '7 days'))
+                 (
+                   to_char(NOW(), 'MM-DD') > to_char(NOW() + INTERVAL '7 days', 'MM-DD') AND
+                   (
+                     to_char(data_nascimento, 'MM-DD') >= to_char(NOW(), 'MM-DD') OR
+                     to_char(data_nascimento, 'MM-DD') <= to_char(NOW() + INTERVAL '7 days', 'MM-DD')
+                   )
+                 )
                )
-             ORDER BY is_today DESC, nome ASC`,
+             ORDER BY is_today DESC, to_char(data_nascimento, 'MM-DD') ASC`,
             [req.consultora.id]
         );
 
