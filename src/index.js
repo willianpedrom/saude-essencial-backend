@@ -70,6 +70,7 @@ app.use('/api/depoimentos', require('./routes/depoimentos'));
 app.use('/api/etiquetas', require('./routes/etiquetas'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/publico', require('./routes/publico'));
+app.use('/api/hotmart', require('./routes/hotmart'));
 
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '../public')));
@@ -101,6 +102,16 @@ async function runMigration() {
         // Column migrations (idempotent - ADD COLUMN IF NOT EXISTS)
         await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS rastreamento JSONB DEFAULT NULL`);
         await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS doterra_nivel VARCHAR(60) DEFAULT NULL`);
+        await pool.query(`ALTER TABLE assinaturas ADD COLUMN IF NOT EXISTS hotmart_transaction_id TEXT`);
+        await pool.query(`ALTER TABLE assinaturas ADD COLUMN IF NOT EXISTS hotmart_subscription_id TEXT`);
+        await pool.query(`ALTER TABLE assinaturas ADD COLUMN IF NOT EXISTS gateway VARCHAR(20) DEFAULT 'hotmart'`);
+
+        // System settings table (key-value store for admin-configurable settings)
+        await pool.query(`CREATE TABLE IF NOT EXISTS configuracoes (
+            chave VARCHAR(100) PRIMARY KEY,
+            valor TEXT,
+            atualizado_em TIMESTAMPTZ DEFAULT NOW()
+        )`);
         console.log('✅ Schema OK');
     } catch (err) {
         console.error('⚠️  Erro na migração (tabelas podem já existir):', err.message);

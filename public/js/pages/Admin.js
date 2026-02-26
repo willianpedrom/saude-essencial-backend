@@ -111,6 +111,21 @@ export async function renderAdmin(router) {
             </tbody>
           </table>
         </div>
+      </div>
+
+      <!-- ══════════ Payment Gateway Config ══════════ -->
+      <div class="card" style="margin-top:20px">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;background:linear-gradient(135deg,#f97316,#ef4444);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem">💳</div>
+          <div>
+            <div style="font-weight:700">Gateway de Pagamento</div>
+            <div style="font-size:0.8rem;color:var(--text-muted)">Configure a integração com a Hotmart para cobranças de assinatura</div>
+          </div>
+          <div id="gateway-status-badge" style="margin-left:auto"></div>
+        </div>
+        <div style="padding:20px" id="gateway-section">
+          <div style="display:flex;align-items:center;justify-content:center;height:60px;color:var(--text-muted)">⏳ Carregando configurações...</div>
+        </div>
       </div>`;
 
     // Search filter
@@ -125,6 +140,9 @@ export async function renderAdmin(router) {
     });
 
     bindRowEvents();
+
+    // Load payment gateway settings
+    loadGatewaySettings();
   }
 
   function renderRows(list) {
@@ -425,6 +443,100 @@ export async function renderAdmin(router) {
       }
     });
     setTimeout(() => document.getElementById('apwd-senha')?.focus(), 100);
+  }
+
+  // ══════════ Gateway Settings Loader ══════════
+  async function loadGatewaySettings() {
+    const section = document.getElementById('gateway-section');
+    const badge = document.getElementById('gateway-status-badge');
+    if (!section) return;
+
+    let settings = {};
+    try {
+      settings = await api('GET', '/api/admin/settings');
+    } catch { /* empty */ }
+
+    const isConfigured = !!(settings.hotmart_hottok);
+    const webhookUrl = `${window.location.origin}/api/hotmart/webhook`;
+
+    if (badge) {
+      badge.innerHTML = isConfigured
+        ? `<span style="background:#dcfce7;color:#166534;font-size:0.72rem;padding:3px 10px;border-radius:10px">✅ Configurado</span>`
+        : `<span style="background:#fef9c3;color:#854d0e;font-size:0.72rem;padding:3px 10px;border-radius:10px">⚠️ Não configurado</span>`;
+    }
+
+    section.innerHTML = `
+      <!-- Webhook URL display -->
+      <div style="margin-bottom:20px;padding:16px;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-radius:12px;border:1px solid #bae6fd">
+        <div style="font-weight:600;margin-bottom:6px;color:#0369a1;font-size:0.88rem">📡 URL do Webhook (cole na Hotmart)</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <code style="flex:1;background:#fff;padding:10px 14px;border-radius:8px;font-size:0.82rem;border:1px solid #e2e8f0;word-break:break-all">${webhookUrl}</code>
+          <button class="btn btn-primary btn-sm" id="btn-copy-webhook">📋</button>
+        </div>
+        <div style="font-size:0.75rem;color:#64748b;margin-top:8px">
+          Na Hotmart: <strong>Ferramentas → Webhook → Nova configuração</strong> → Cole esta URL → Selecione os eventos → Versão 2.0.0
+        </div>
+      </div>
+
+      <!-- Hotmart Config Form -->
+      <div class="form-grid">
+        <div class="form-group form-field-full">
+          <label class="field-label">🔑 Hottok (Token de Autenticação)</label>
+          <input class="field-input" id="gw-hottok" type="password" placeholder="Cole o Hottok da Hotmart aqui" value="${settings.hotmart_hottok || ''}" />
+          ${settings.hotmart_hottok_masked ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">Atual: ${settings.hotmart_hottok_masked}</div>` : ''}
+        </div>
+        <div class="form-group">
+          <label class="field-label">📦 ID do Produto (opcional)</label>
+          <input class="field-input" id="gw-product-id" placeholder="Ex: 1234567" value="${settings.hotmart_product_id || ''}" />
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">Se quiser filtrar apenas um produto</div>
+        </div>
+        <div class="form-group">
+          <label class="field-label">🛒 URL do Checkout (Hotmart)</label>
+          <input class="field-input" id="gw-checkout-url" placeholder="https://pay.hotmart.com/..." value="${settings.checkout_url || ''}" />
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">Link de pagamento para novos assinantes</div>
+        </div>
+      </div>
+
+      <!-- Info box -->
+      <div style="margin-top:16px;padding:14px;background:#eff6ff;border-radius:10px;font-size:0.82rem;color:#1e40af;line-height:1.6">
+        💡 <strong>Eventos tratados automaticamente:</strong><br>
+        PURCHASE_COMPLETE • PURCHASE_APPROVED • SUBSCRIPTION_CANCELLATION • PURCHASE_CANCELED • PURCHASE_REFUNDED • PURCHASE_DELAYED • PURCHASE_EXPIRED<br><br>
+        O sistema localiza o consultor pelo <strong>email do comprador</strong> e ativa/cancela a assinatura automaticamente.
+      </div>
+
+      <!-- Save button -->
+      <div style="display:flex;justify-content:flex-end;margin-top:20px">
+        <button class="btn btn-primary" id="btn-save-gateway" style="padding:12px 28px">
+          💾 Salvar Configurações
+        </button>
+      </div>`;
+
+    // Copy webhook URL
+    section.querySelector('#btn-copy-webhook')?.addEventListener('click', () => {
+      navigator.clipboard.writeText(webhookUrl)
+        .then(() => toast('URL do Webhook copiada! ✅'))
+        .catch(() => toast('Erro ao copiar', 'error'));
+    });
+
+    // Save gateway settings
+    section.querySelector('#btn-save-gateway')?.addEventListener('click', async () => {
+      const btn = section.querySelector('#btn-save-gateway');
+      btn.disabled = true; btn.textContent = '⏳ Salvando...';
+      const payload = {
+        hotmart_hottok: section.querySelector('#gw-hottok')?.value?.trim() || null,
+        hotmart_product_id: section.querySelector('#gw-product-id')?.value?.trim() || null,
+        checkout_url: section.querySelector('#gw-checkout-url')?.value?.trim() || null,
+      };
+      try {
+        await api('PUT', '/api/admin/settings', payload);
+        toast('Gateway configurado com sucesso! ✅');
+        loadGatewaySettings(); // Refresh to show masked token
+      } catch (err) {
+        toast('Erro: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = '💾 Salvar Configurações';
+      }
+    });
   }
 
   await load();

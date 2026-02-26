@@ -163,4 +163,51 @@ router.put('/users/:id/tracking', async (req, res) => {
     }
 });
 
+// ══════════════════════════════════════════════════════════════
+//  SYSTEM SETTINGS (payment gateway, etc.)
+// ══════════════════════════════════════════════════════════════
+
+// GET /api/admin/settings — get all system settings
+router.get('/settings', async (req, res) => {
+    try {
+        const { rows } = await pool.query(`SELECT chave, valor FROM configuracoes`);
+        const settings = {};
+        rows.forEach(r => { settings[r.chave] = r.valor; });
+        // Mask sensitive tokens for display
+        if (settings.hotmart_hottok) {
+            const tok = settings.hotmart_hottok;
+            settings.hotmart_hottok_masked = tok.length > 8
+                ? tok.slice(0, 4) + '••••' + tok.slice(-4)
+                : '••••••••';
+        }
+        res.json(settings);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao buscar configurações.' });
+    }
+});
+
+// PUT /api/admin/settings — update system settings (upsert)
+router.put('/settings', async (req, res) => {
+    const allowed = [
+        'hotmart_hottok', 'hotmart_product_id', 'hotmart_plano_map',
+        'gateway_ativo', 'checkout_url'
+    ];
+    try {
+        for (const key of allowed) {
+            if (req.body[key] !== undefined) {
+                await pool.query(
+                    `INSERT INTO configuracoes (chave, valor) VALUES ($1, $2)
+                     ON CONFLICT (chave) DO UPDATE SET valor = $2, atualizado_em = NOW()`,
+                    [key, req.body[key] || null]
+                );
+            }
+        }
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao salvar configurações.' });
+    }
+});
+
 module.exports = router;
