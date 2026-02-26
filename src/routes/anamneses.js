@@ -35,6 +35,18 @@ router.get('/public/:token', async (req, res) => {
             [req.params.token]
         ).catch(err => console.error('acessos update error:', err.message));
 
+        // Only expose browser-safe tracking IDs (never expose CAPI access token)
+        if (anamnese.consultora_rastreamento) {
+            const r = anamnese.consultora_rastreamento;
+            anamnese.consultora_rastreamento = {
+                meta_pixel_id: r.meta_pixel_id || null,
+                clarity_id: r.clarity_id || null,
+                ga_id: r.ga_id || null,
+                gtm_id: r.gtm_id || null,
+                custom_script: r.custom_script || null,
+            };
+        }
+
         res.json(anamnese);
     } catch (err) {
         console.error(err);

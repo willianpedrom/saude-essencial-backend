@@ -56,11 +56,20 @@ router.get('/perfil/:slug', async (req, res) => {
             }
         } catch { /* never block */ }
 
-        // Return public data (exclude private fields like rastreamento token, id)
-        const { rastreamento: _r, id: _id, ...publicConsultor } = consultor;
+        // Return public data (exclude private fields like CAPI token, internal id)
+        const { rastreamento, id: _id, ...publicConsultor } = consultor;
+
+        // Only expose browser-safe tracking IDs (never expose CAPI access token)
+        const safeTracking = rastreamento ? {
+            meta_pixel_id: rastreamento.meta_pixel_id || null,
+            clarity_id: rastreamento.clarity_id || null,
+            ga_id: rastreamento.ga_id || null,
+            gtm_id: rastreamento.gtm_id || null,
+            custom_script: rastreamento.custom_script || null,
+        } : null;
 
         res.json({
-            consultor: publicConsultor,
+            consultor: { ...publicConsultor, rastreamento: safeTracking },
             depoimentos,
             anamnese_token,
         });

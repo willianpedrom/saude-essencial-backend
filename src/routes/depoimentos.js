@@ -15,7 +15,19 @@ router.get('/public/:slug', async (req, res) => {
             [req.params.slug]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });
-        res.json(rows[0]);
+        const row = rows[0];
+        // Only expose browser-safe tracking IDs (never expose CAPI access token)
+        if (row.rastreamento) {
+            const r = row.rastreamento;
+            row.rastreamento = {
+                meta_pixel_id: r.meta_pixel_id || null,
+                clarity_id: r.clarity_id || null,
+                ga_id: r.ga_id || null,
+                gtm_id: r.gtm_id || null,
+                custom_script: r.custom_script || null,
+            };
+        }
+        res.json(row);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
