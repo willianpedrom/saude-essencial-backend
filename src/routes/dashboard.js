@@ -43,12 +43,19 @@ router.get('/aniversariantes', async (req, res) => {
             let whatsappLink = null;
             if (cliente.telefone) {
                 // Remove todos os caracteres não numéricos
-                const numeroLimpo = cliente.telefone.replace(/\D/g, '');
-                if (numeroLimpo.length >= 10) { // Garante que tem um tamanho mínimo válido (ex: 5511999999999)
+                let numeroLimpo = cliente.telefone.replace(/\D/g, '');
+
+                // Se o número tiver 10 ou 11 dígitos, provavelmente é do BR sem o 55. Adiciona o 55.
+                if (numeroLimpo.length === 10 || numeroLimpo.length === 11) {
+                    numeroLimpo = '55' + numeroLimpo;
+                }
+
+                if (numeroLimpo.length >= 12) { // Garante que tem um tamanho mínimo com DDI (ex: 5511999999999)
                     const mensagem = cliente.is_today
                         ? `Olá ${cliente.nome}! 🎉 Parabéns pelo seu dia! Que seu novo ciclo seja repleto de realizações, saúde e muita alegria. Um grande abraço! 🎂🥳`
                         : `Olá ${cliente.nome}! Passando para lembrar que seu aniversário está chegando! Já estamos preparando muitas energias positivas para você! 🎉`;
-                    whatsappLink = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
+                    // Usando api.whatsapp.com em vez de wa.me para maior compatibilidade com Mac/Desktop
+                    whatsappLink = `https://api.whatsapp.com/send?phone=${numeroLimpo}&text=${encodeURIComponent(mensagem)}`;
                 }
             }
 
