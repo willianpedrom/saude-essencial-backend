@@ -123,3 +123,11 @@ export function generateSlug(name) {
         .replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').trim('-')
         + '-' + Math.random().toString(36).slice(2, 7);
 }
+
+export function getConsultantTitle(gender) {
+    // If the gender is explicitly 'masculino', return 'Consultor', otherwise 'Consultora'
+    if (typeof gender === 'string' && gender.trim().toLowerCase() === 'masculino') {
+        return 'Consultor';
+    }
+    return 'Consultora';
+}

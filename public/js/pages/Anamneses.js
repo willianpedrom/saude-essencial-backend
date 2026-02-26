@@ -1,7 +1,7 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { ANAMNESIS_STEPS, ANAMNESIS_QUESTIONS } from '../data.js';
-import { formatDate, toast, modal } from '../utils.js';
+import { formatDate, toast, modal, getConsultantTitle } from '../utils.js';
 
 export async function renderAnamnesisList(router) {
   renderLayout(router, 'Links de Anamnese',
@@ -156,9 +156,10 @@ export async function renderAnamnesisList(router) {
     pc.querySelectorAll('[data-wa]').forEach(btn => {
       btn.addEventListener('click', () => {
         const consultant = auth.current;
+        const title = getConsultantTitle(consultant?.genero).toLowerCase();
         const nome = consultant?.nome || 'Consultora';
         const msg = encodeURIComponent(
-          `Olá ${btn.dataset.name}! 💧 Sou ${nome}, consultora de Gota Essencial.\n\nPreencha sua avaliação de saúde pelo link abaixo e receba seu protocolo personalizado:\n\n${btn.dataset.wa}\n\nDemora apenas ~5 minutos! 💧`
+          `Olá ${btn.dataset.name}! 💧 Sou ${nome}, ${title} da Gota Essencial.\n\nPreencha sua avaliação de saúde pelo link abaixo e receba seu protocolo personalizado:\n\n${btn.dataset.wa}\n\nDemora apenas ~5 minutos! 💧`
         );
         window.open(`https://wa.me/?text=${msg}`, '_blank');
       });

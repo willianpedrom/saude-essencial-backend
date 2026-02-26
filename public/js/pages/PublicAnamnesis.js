@@ -41,6 +41,12 @@ export async function renderPublicAnamnesis(router, token) {
   }
 
   const consultoraNome = anamneseData.consultora_nome || 'Consultora Gota Essencial';
+
+  // Try to use the API data to guess the correct title, fallback to generic
+  // We can pass consultant's gender from the backend, but since PublicAnamnesis might just get the name
+  // for now we use "Consultor(a)" or look for specific gender info if the backend provides it
+  const cTitle = anamneseData.consultora_genero === 'masculino' ? 'Consultor de Saúde Natural' : 'Consultora de Saúde Natural';
+
   let currentStep = 0;
   const answers = {};
 
@@ -61,7 +67,7 @@ export async function renderPublicAnamnesis(router, token) {
         <div class="consultant-avatar">💧</div>
         <div class="consultant-info">
           <h3>${consultoraNome}</h3>
-          <p>Consultora de Saúde Natural · Gota Essencial</p>
+          <p>${cTitle} · Gota Essencial</p>
         </div>
       </div>
 
@@ -222,7 +228,7 @@ export async function renderPublicAnamnesis(router, token) {
       // Navigate to protocol
       const encoded = encodeURIComponent(JSON.stringify({
         answers: allAnswers,
-        consultant: { name: consultoraNome },
+        consultant: { name: consultoraNome, genero: anamneseData.consultora_genero },
         clientName: allAnswers.full_name || 'Cliente'
       }));
       router.navigate('/protocolo', { data: encoded });

@@ -93,7 +93,7 @@ export async function renderProfile(router) {
                 </div>
                 <div class="form-group form-field-full">
                   <label class="field-label">Bio / Apresentação</label>
-                  <textarea class="field-textarea" id="p-bio" rows="3" placeholder="Conte um pouco sobre você e sua missão como consultora...">${profile.bio || ''}</textarea>
+                  <textarea class="field-textarea" id="p-bio" rows="3" placeholder="Conte um pouco sobre você e sua missão...">${profile.bio || ''}</textarea>
                 </div>
                 <div class="form-group">
                   <label class="field-label">Gênero</label>

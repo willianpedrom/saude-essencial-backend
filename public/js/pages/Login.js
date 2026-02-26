@@ -13,7 +13,7 @@ export function renderLogin(router) {
       <div class="auth-logo">
         <div class="auth-logo-icon">💧</div>
         <div class="auth-brand">Gota <span>Essencial</span></div>
-        <div class="auth-tagline">Plataforma de Consultoras</div>
+        <div class="auth-tagline">Plataforma Gota Essencial</div>
       </div>
       <div class="auth-tabs">
         <button class="auth-tab active" data-tab="login">Entrar</button>

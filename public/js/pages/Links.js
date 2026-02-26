@@ -1,6 +1,6 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
-import { toast, modal } from '../utils.js';
+import { toast, modal, getConsultantTitle } from '../utils.js';
 
 export async function renderLinks(router) {
   const consultant = auth.current;
@@ -103,9 +103,10 @@ export async function renderLinks(router) {
 
     pc.querySelectorAll('[data-whatsapp]').forEach(btn => {
       btn.addEventListener('click', () => {
+        const title = getConsultantTitle(consultant?.genero).toLowerCase();
         const nome = consultant?.nome || 'Consultora';
         const msg = encodeURIComponent(
-          `Olá! 💧 Sou ${nome}, consultora da Gota Essencial.\n\nPara montar seu protocolo personalizado de óleos essenciais, preencha a avaliação pelo link:\n\n${btn.dataset.whatsapp}\n\nLeva apenas ~5 minutos e o protocolo é gerado automaticamente! 💧`
+          `Olá! 💧 Sou ${nome}, ${title} da Gota Essencial.\n\nPara montar seu protocolo personalizado de óleos essenciais, preencha a avaliação pelo link:\n\n${btn.dataset.whatsapp}\n\nLeva apenas ~5 minutos e o protocolo é gerado automaticamente! 💧`
         );
         window.open(`https://wa.me/?text=${msg}`, '_blank');
       });

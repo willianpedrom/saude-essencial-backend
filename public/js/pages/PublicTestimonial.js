@@ -174,7 +174,7 @@ export async function renderPublicTestimonial(router, slug) {
         <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:20px;margin-top:16px">
           <div style="font-size:1.5rem;margin-bottom:8px">💧</div>
           <div style="color:rgba(255,255,255,0.8);font-size:0.9rem">Gota Essencial</div>
-          <div style="color:rgba(255,255,255,0.45);font-size:0.78rem;margin-top:4px">Plataforma de Consultoras</div>
+          <div style="color:rgba(255,255,255,0.45);font-size:0.78rem;margin-top:4px">Plataforma Gota Essencial</div>
         </div>
       </div>
     </div>

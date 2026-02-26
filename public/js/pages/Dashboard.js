@@ -1,9 +1,9 @@
 import { auth, store } from '../store.js';
-import { formatDate, formatCurrency, getInitials, toast } from '../utils.js';
+import { formatDate, formatCurrency, getInitials, toast, getConsultantTitle } from '../utils.js';
 
 // ── Helper: get consultant's display name ────────────────────
 function getNome(consultant) {
-  return consultant?.nome || consultant?.name || 'Consultora';
+  return consultant?.nome || consultant?.name || getConsultantTitle(consultant?.genero);
 }
 
 // ── Shared Layout (sidebar + header) ────────────────────────
@@ -11,6 +11,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
   const consultant = auth.current;
   const app = document.getElementById('app');
   const firstName = getNome(consultant).split(' ')[0];
+  const cTitle = getConsultantTitle(consultant?.genero);
 
   const navItems = [
     { id: 'dashboard', icon: '📊', label: 'Dashboard' },
@@ -31,7 +32,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-logo" id="sidebar-logo">
         <div class="sidebar-logo-mark">Gota <span>Essencial</span></div>
-        <div class="sidebar-logo-sub">Plataforma de Consultoras</div>
+        <div class="sidebar-logo-sub">Plataforma Gota Essencial</div>
       </div>
       <div class="sidebar-user" id="sidebar-user-btn" style="cursor:pointer" title="Meu Perfil">
         <div class="sidebar-avatar">
@@ -43,7 +44,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
           <div class="sidebar-user-name">${firstName}</div>
           <div class="sidebar-user-role">${auth.isAdmin
       ? (consultant?.genero === 'masculino' ? 'Administrador' : 'Administradora')
-      : (consultant?.genero === 'masculino' ? 'Consultor' : 'Consultora')}</div>
+      : cTitle}</div>
         </div>
       </div>
       <nav class="sidebar-nav">

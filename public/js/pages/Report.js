@@ -1,4 +1,5 @@
 import { analyzeAnamnesis, PROTOCOLS } from '../data.js';
+import { getConsultantTitle } from '../utils.js';
 
 export function renderReport(router, dataParam) {
   const app = document.getElementById('app');
@@ -14,6 +15,7 @@ export function renderReport(router, dataParam) {
   const { answers = {}, consultant = {}, clientName = 'você' } = payload;
   const analysis = analyzeAnamnesis(answers);
   const firstName = clientName.split(' ')[0] || 'você';
+  const cTitle = getConsultantTitle(consultant.genero);
 
   const emotionalMessages = [
     `${firstName}, você deu um passo incrível ao cuidar de si mesma hoje. 💚`,
@@ -90,7 +92,7 @@ export function renderReport(router, dataParam) {
         <div class="report-section">
           <h3>🌿 Protocolos de Bem-Estar Geral</h3>
           <div style="padding:16px;background:var(--green-50);border-radius:var(--radius-md);font-size:0.9rem;color:var(--text-body)">
-            Com base nas suas respostas, sua consultora irá preparar um protocolo exclusivo e personalizado para você. Entre em contato para descobrir as melhores opções naturais!
+            Com base nas suas respostas, seu(ua) ${parseInt(cTitle) ? 'consultor' : cTitle.toLowerCase()} irá preparar um protocolo exclusivo e personalizado para você. Entre em contato para descobrir as melhores opções naturais!
           </div>
         </div>`}
 
@@ -110,8 +112,8 @@ export function renderReport(router, dataParam) {
             Você merece viver com mais saúde, energia e leveza.
           </h3>
           <p style="color:var(--text-muted);font-size:0.9rem;max-width:480px;margin:0 auto">
-            ${consultant.name || 'Sua consultora'} está pronta para guiar você nesta transformação. 
-            Ela é especialista em terapias naturais e vai te ajudar a implementar este protocolo com segurança e cuidado.
+            ${consultant.name || `Seu ${cTitle.toLowerCase()}`} está pront${cTitle === 'Consultor' ? 'o' : 'a'} para guiar você nesta transformação. 
+            El${cTitle === 'Consultor' ? 'e' : 'a'} é especialist${cTitle === 'Consultor' ? 'a' : 'a'} em terapias naturais e vai te ajudar a implementar este protocolo com segurança e cuidado.
           </p>
           <p style="color:var(--text-muted);font-size:0.88rem;margin-top:10px;font-style:italic">
             "Este é o primeiro dia do resto da sua vida mais saudável. Dê o próximo passo agora." 🌿
@@ -122,7 +124,7 @@ export function renderReport(router, dataParam) {
         <a class="report-cta" href="https://wa.me/${phone}?text=${whatsappMsg}" target="_blank">
           <div class="report-cta-icon">💬</div>
           <div class="report-cta-text">
-            <strong>Falar com ${consultant.name?.split(' ')[0] || 'minha consultora'} no WhatsApp</strong>
+            <strong>Falar com ${consultant.name?.split(' ')[0] || `meu(inha) ${cTitle.toLowerCase()}`} no WhatsApp</strong>
             <span>Quero começar meu protocolo personalizado agora!</span>
           </div>
         </a>
@@ -137,8 +139,8 @@ export function renderReport(router, dataParam) {
         <div class="rcf-info">
           <div class="rcf-avatar">${consultant.photo || '🌿'}</div>
           <div>
-            <div class="rcf-name">${consultant.name || 'Consultora'}</div>
-            <div class="rcf-role">Consultora de Saúde Natural · Gota Essencial</div>
+            <div class="rcf-name">${consultant.name || cTitle}</div>
+            <div class="rcf-role">${cTitle} de Saúde Natural · Gota Essencial</div>
           </div>
         </div>
         ${phone ? `<div class="rcf-contact">📱 +${phone}</div>` : ''}

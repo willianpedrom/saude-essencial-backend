@@ -5,8 +5,6 @@ import { formatDate, getInitials, toast, modal } from '../utils.js';
 let cachedAnamneses = null; // lazy-load once per session
 
 export async function renderClients(router) {
-  const nome = (auth.current?.nome || auth.current?.name || 'Consultora');
-
   // Render layout immediately with loading
   renderLayout(router, 'Clientes', `
       <div style="display:flex;align-items:center;justify-content:center;height:200px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando clientes...</div>
