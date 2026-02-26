@@ -224,7 +224,10 @@ export async function renderProfile(router) {
       try {
         await store.updateProfile(data);
         // Update auth cache
-        if (auth.current) auth.current.nome = data.nome;
+        if (auth.current) {
+          auth.current.nome = data.nome;
+          auth.current.genero = data.genero;
+        }
         toast('Perfil salvo com sucesso! ✅');
         profile = { ...profile, ...data };
         render(); // re-render with updated data
