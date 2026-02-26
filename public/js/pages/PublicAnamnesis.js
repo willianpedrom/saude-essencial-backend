@@ -110,7 +110,8 @@ export async function renderPublicAnamnesis(router, token) {
         const name = document.getElementById('field-full_name')?.value?.trim();
         const email = document.getElementById('field-email')?.value?.trim();
         const phone = document.getElementById('field-phone')?.value?.trim();
-        if (!name || !email || !phone) { toast('Preencha os dados pessoais obrigatórios', 'error'); return; }
+        const gender = document.getElementById('field-gender')?.value;
+        if (!name || !email || !phone || !gender) { toast('Preencha os dados pessoais obrigatórios', 'error'); return; }
       }
       collectAnswers(stepDef.id);
       if (isLast) {
@@ -140,6 +141,15 @@ export async function renderPublicAnamnesis(router, token) {
           return `<div class="form-group" style="margin-bottom:14px">
               <label class="field-label">${f.label}${f.required ? ' *' : ''}</label>
               <input class="field-input" id="field-${f.name}" type="${f.type}" value="${val}" placeholder="${f.placeholder || ''}" ${f.required ? 'required' : ''} />
+            </div>`;
+        }
+        if (f.type === 'select') {
+          return `<div class="form-group" style="margin-bottom:14px">
+              <label class="field-label">${f.label}${f.required ? ' *' : ''}</label>
+              <select class="field-input" id="field-${f.name}" ${f.required ? 'required' : ''} style="padding:12px 14px;border-radius:10px">
+                <option value="">— Selecionar —</option>
+                ${(f.options || []).map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('')}
+              </select>
             </div>`;
         }
         return '';

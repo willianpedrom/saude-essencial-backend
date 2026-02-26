@@ -24,6 +24,7 @@ export const ANAMNESIS_QUESTIONS = {
             { name: 'email', label: 'E-mail', type: 'email', required: true },
             { name: 'phone', label: 'WhatsApp', type: 'tel', required: true },
             { name: 'birthdate', label: 'Data de nascimento', type: 'date', required: true },
+            { name: 'gender', label: 'Gênero', type: 'select', required: true, options: ['Feminino', 'Masculino'] },
             { name: 'city', label: 'Cidade / Estado', type: 'text' },
             { name: 'occupation', label: 'Profissão', type: 'text' },
         ]
