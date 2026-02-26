@@ -144,7 +144,7 @@ export async function renderClients(router) {
         const consultant = auth.current;
         const encoded = encodeURIComponent(JSON.stringify({
           answers: dados,
-          consultant: { name: consultant?.nome || consultant?.name },
+          consultant: { name: consultant?.nome || consultant?.name, phone: consultant?.telefone || consultant?.phone, genero: consultant?.genero },
           clientName: client.name
         }));
         router.navigate('/protocolo', { data: encoded });

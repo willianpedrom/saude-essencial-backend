@@ -13,6 +13,7 @@ router.get('/public/:token', async (req, res) => {
         const { rows } = await pool.query(
             `SELECT a.id, a.tipo, a.dados, a.preenchido, a.subtipo, a.nome_link, a.acessos,
               c.nome AS consultora_nome, c.slug AS consultora_slug, c.genero AS consultora_genero,
+              c.telefone AS consultora_telefone,
               c.id AS consultora_id, c.rastreamento AS consultora_rastreamento
        FROM anamneses a
        JOIN consultoras c ON c.id = a.consultora_id

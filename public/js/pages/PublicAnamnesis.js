@@ -241,7 +241,7 @@ export async function renderPublicAnamnesis(router, token) {
       // Navigate to protocol
       const encoded = encodeURIComponent(JSON.stringify({
         answers: allAnswers,
-        consultant: { name: consultoraNome, genero: anamneseData.consultora_genero },
+        consultant: { name: consultoraNome, genero: anamneseData.consultora_genero, phone: anamneseData.consultora_telefone },
         clientName: allAnswers.full_name || 'Cliente'
       }));
       router.navigate('/protocolo', { data: encoded });
