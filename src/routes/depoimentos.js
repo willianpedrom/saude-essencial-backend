@@ -11,7 +11,7 @@ const router = express.Router();
 router.get('/public/:slug', async (req, res) => {
     try {
         const { rows } = await pool.query(
-            `SELECT id, nome, foto_url, slug FROM consultoras WHERE slug = $1`,
+            `SELECT id, nome, foto_url, slug, genero FROM consultoras WHERE slug = $1`,
             [req.params.slug]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });

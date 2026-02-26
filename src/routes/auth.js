@@ -74,7 +74,7 @@ router.post('/login', async (req, res, next) => {
         }
 
         const { rows } = await pool.query(
-            'SELECT id, nome, email, senha_hash, slug, role FROM consultoras WHERE email = $1',
+            'SELECT id, nome, email, senha_hash, slug, role, genero FROM consultoras WHERE email = $1',
             [email]
         );
 
@@ -97,7 +97,7 @@ router.post('/login', async (req, res, next) => {
         const sub = subResult.rows[0] || { plano: 'none', status: 'none' };
 
         const token = jwt.sign(
-            { id: consultora.id, email: consultora.email, nome: consultora.nome, role: consultora.role || 'user' },
+            { id: consultora.id, email: consultora.email, nome: consultora.nome, role: consultora.role || 'user', genero: consultora.genero || 'feminino' },
             process.env.JWT_SECRET || 'dev_secret',
             { expiresIn: '7d' }
         );

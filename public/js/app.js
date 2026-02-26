@@ -21,6 +21,9 @@ import { renderPipeline } from './pages/Pipeline.js';
 
 // Boot
 auth.init();
+if (auth.isLoggedIn && typeof auth.current.genero === 'undefined') {
+    await auth.refresh();
+}
 
 // Remove loader
 window.addEventListener('load', () => {
