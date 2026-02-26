@@ -102,6 +102,15 @@ export async function renderProfile(router) {
                     <option value="masculino" ${profile.genero === 'masculino' ? 'selected' : ''}>♂ Masculino</option>
                   </select>
                 </div>
+                <div class="form-group">
+                  <label class="field-label">🏅 Graduação doTerra</label>
+                  <select class="field-select" id="p-doterra-nivel">
+                    <option value="">— Selecionar —</option>
+                    ${['Wellness Advocate', 'Consultor', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Blue Diamond', 'Presidential Diamond']
+        .map(n => `<option value="${n}" ${profile.doterra_nivel === n ? 'selected' : ''}>${n}</option>`).join('')}
+                  </select>
+                  <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">Exibido como badge na sua página pública</div>
+                </div>
               </div>
             </div>
           </div>
@@ -135,6 +144,22 @@ export async function renderProfile(router) {
               </div>
             </div>
           </div>
+
+          <!-- Public profile link -->
+          ${profile.slug ? `
+          <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0">
+            <div style="padding:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+              <div style="font-size:2rem">🌿</div>
+              <div style="flex:1">
+                <div style="font-weight:700;margin-bottom:4px">Sua Página Pública</div>
+                <div style="font-size:0.82rem;color:#166534;word-break:break-all">${window.location.origin}/#/p/${profile.slug}</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <a href="${window.location.origin}/#/p/${profile.slug}" target="_blank" class="btn btn-secondary btn-sm">👁️ Ver</a>
+                <button type="button" class="btn btn-primary btn-sm" id="btn-copy-profile-link">🔗 Copiar</button>
+              </div>
+            </div>
+          </div>` : ''}
 
           <!-- Save button -->
           <div style="display:flex;justify-content:flex-end;gap:10px">
@@ -194,6 +219,12 @@ export async function renderProfile(router) {
     // Cancel
     pc.querySelector('#btn-cancel')?.addEventListener('click', () => router.navigate('/dashboard'));
 
+    // Copy public profile link
+    pc.querySelector('#btn-copy-profile-link')?.addEventListener('click', () => {
+      const url = `${window.location.origin}/#/p/${profile.slug}`;
+      navigator.clipboard.writeText(url).then(() => toast('Link copiado! ✅')).catch(() => toast('Erro ao copiar', 'error'));
+    });
+
     // Form submit
     pc.querySelector('#profile-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -207,6 +238,7 @@ export async function renderProfile(router) {
         endereco: pc.querySelector('#p-endereco')?.value?.trim(),
         bio: pc.querySelector('#p-bio')?.value?.trim(),
         genero: pc.querySelector('#p-genero')?.value || 'feminino',
+        doterra_nivel: pc.querySelector('#p-doterra-nivel')?.value || null,
         foto_url: profile.foto_url || null,
         instagram: pc.querySelector('#p-instagram')?.value?.trim(),
         youtube: pc.querySelector('#p-youtube')?.value?.trim(),

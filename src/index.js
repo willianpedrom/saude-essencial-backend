@@ -69,6 +69,7 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/depoimentos', require('./routes/depoimentos'));
 app.use('/api/etiquetas', require('./routes/etiquetas'));
 app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/publico', require('./routes/publico'));
 
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '../public')));
@@ -99,6 +100,7 @@ async function runMigration() {
 
         // Column migrations (idempotent - ADD COLUMN IF NOT EXISTS)
         await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS rastreamento JSONB DEFAULT NULL`);
+        await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS doterra_nivel VARCHAR(60) DEFAULT NULL`);
         console.log('✅ Schema OK');
     } catch (err) {
         console.error('⚠️  Erro na migração (tabelas podem já existir):', err.message);

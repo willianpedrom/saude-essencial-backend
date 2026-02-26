@@ -12,6 +12,7 @@ import { renderSchedule, renderFollowup } from './pages/Schedule.js';
 import { renderTestimonials, renderPurchases } from './pages/Extras.js';
 import { renderPublicAnamnesis } from './pages/PublicAnamnesis.js';
 import { renderPublicTestimonial } from './pages/PublicTestimonial.js';
+import { renderPublicProfile } from './pages/PublicProfile.js';
 import { renderReport } from './pages/Report.js';
 import { renderAnamnesisList } from './pages/Anamneses.js';
 import { renderAssinatura } from './pages/Assinatura.js';
@@ -66,6 +67,7 @@ const router = new Router({
     '/anamnese/:token': ({ token }) => renderPublicAnamnesis(router, token),
     '/protocolo': ({ data }) => renderReport(router, data),
     '/depoimento/:slug': ({ slug }) => renderPublicTestimonial(router, slug),
+    '/p/:slug': ({ slug }) => renderPublicProfile(router, slug),
 
     '*': () => auth.isLoggedIn ? router.navigate('/dashboard') : renderLogin(router),
 });
