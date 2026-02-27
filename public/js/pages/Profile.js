@@ -145,6 +145,36 @@ export async function renderProfile(router) {
             </div>
           </div>
 
+          <!-- Segurança — Troca de Senha -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--border-light)">
+              <h3 style="margin:0;font-size:1rem">🔒 Segurança</h3>
+            </div>
+            <div style="padding:20px">
+              <p style="font-size:0.85rem;color:var(--text-muted);margin:0 0 16px 0">Para alterar sua senha, preencha os campos abaixo. Deixe em branco para manter a senha atual.</p>
+              <div class="form-grid">
+                <div class="form-group form-field-full">
+                  <label class="field-label">Senha Atual *</label>
+                  <input class="field-input" type="password" id="p-senha-atual" placeholder="Sua senha atual" autocomplete="current-password" />
+                </div>
+                <div class="form-group">
+                  <label class="field-label">Nova Senha *</label>
+                  <input class="field-input" type="password" id="p-nova-senha" placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
+                  <div id="senha-strength" style="margin-top:6px;font-size:0.75rem;color:var(--text-muted)"></div>
+                </div>
+                <div class="form-group">
+                  <label class="field-label">Confirmar Nova Senha *</label>
+                  <input class="field-input" type="password" id="p-confirmar-senha" placeholder="Repita a nova senha" autocomplete="new-password" />
+                </div>
+              </div>
+              <div style="display:flex;justify-content:flex-end;margin-top:4px">
+                <button type="button" class="btn btn-primary btn-sm" id="btn-change-password" style="padding:10px 20px">
+                  🔐 Alterar Senha
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Public profile link -->
           ${profile.slug ? `
           <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0">
@@ -223,6 +253,48 @@ export async function renderProfile(router) {
     pc.querySelector('#btn-copy-profile-link')?.addEventListener('click', () => {
       const url = `${window.location.origin}/#/p/${profile.slug}`;
       navigator.clipboard.writeText(url).then(() => toast('Link copiado! ✅')).catch(() => toast('Erro ao copiar', 'error'));
+    });
+
+    // Password strength indicator
+    pc.querySelector('#p-nova-senha')?.addEventListener('input', (e) => {
+      const val = e.target.value;
+      const el = pc.querySelector('#senha-strength');
+      if (!val) { el.textContent = ''; return; }
+      const strength = val.length >= 12 && /[A-Z]/.test(val) && /[0-9]/.test(val) && /[^a-zA-Z0-9]/.test(val)
+        ? { label: 'Forte 💪', color: '#16a34a' }
+        : val.length >= 8
+          ? { label: 'Razoável 😐', color: '#d97706' }
+          : { label: 'Fraca ⚠️', color: '#dc2626' };
+      el.innerHTML = `<span style="color:${strength.color};font-weight:600">${strength.label}</span>`;
+    });
+
+    // Change password
+    pc.querySelector('#btn-change-password')?.addEventListener('click', async () => {
+      const senhaAtual = pc.querySelector('#p-senha-atual')?.value;
+      const novaSenha = pc.querySelector('#p-nova-senha')?.value;
+      const confirmarSenha = pc.querySelector('#p-confirmar-senha')?.value;
+
+      if (!senhaAtual && !novaSenha && !confirmarSenha) {
+        toast('Preencha os campos de senha para alterá-la.', 'warning');
+        return;
+      }
+
+      const btn = pc.querySelector('#btn-change-password');
+      btn.disabled = true; btn.textContent = '⏳ Alterando...';
+      try {
+        const { api } = await import('../utils.js');
+        await api('PUT', '/api/auth/change-password', { senhaAtual, novaSenha, confirmarSenha });
+        toast('✅ Senha alterada com sucesso! Use a nova senha no próximo acesso.');
+        // Clear fields
+        pc.querySelector('#p-senha-atual').value = '';
+        pc.querySelector('#p-nova-senha').value = '';
+        pc.querySelector('#p-confirmar-senha').value = '';
+        pc.querySelector('#senha-strength').textContent = '';
+      } catch (err) {
+        toast('Erro: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = '🔐 Alterar Senha';
+      }
     });
 
     // Form submit

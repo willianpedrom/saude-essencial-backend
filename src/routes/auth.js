@@ -197,5 +197,41 @@ router.put('/profile', authMiddleware, async (req, res, next) => {
     }
 });
 
+// PUT /api/auth/change-password — user changes own password (requires current password)
+router.put('/change-password', authMiddleware, async (req, res, next) => {
+    const { senhaAtual, novaSenha, confirmarSenha } = req.body;
+
+    if (!senhaAtual || !novaSenha || !confirmarSenha) {
+        return res.status(400).json({ error: 'Preencha todos os campos.' });
+    }
+    if (novaSenha.length < 8) {
+        return res.status(400).json({ error: 'A nova senha deve ter no mínimo 8 caracteres.' });
+    }
+    if (novaSenha !== confirmarSenha) {
+        return res.status(400).json({ error: 'A nova senha e a confirmação não coincidem.' });
+    }
+
+    try {
+        const bcrypt = require('bcryptjs');
+        const { rows } = await pool.query(
+            'SELECT senha_hash FROM consultoras WHERE id = $1', [req.consultora.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado.' });
+
+        const match = await bcrypt.compare(senhaAtual, rows[0].senha_hash);
+        if (!match) return res.status(401).json({ error: 'Senha atual incorreta.' });
+
+        const newHash = await bcrypt.hash(novaSenha, 10);
+        await pool.query(
+            'UPDATE consultoras SET senha_hash=$1, atualizado_em=NOW() WHERE id=$2',
+            [newHash, req.consultora.id]
+        );
+        console.log(`[Auth] 🔐 Senha alterada para consultora ${req.consultora.id}`);
+        return res.json({ success: true, message: 'Senha alterada com sucesso!' });
+    } catch (err) {
+        return next(err);
+    }
+});
+
 module.exports = router;
 
