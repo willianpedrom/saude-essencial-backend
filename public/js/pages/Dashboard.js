@@ -16,7 +16,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
   const navItems = [
     { id: 'dashboard', icon: '📊', label: 'Dashboard' },
     { id: 'clients', icon: '👥', label: 'Clientes' },
-    { id: 'pipeline', icon: '📈', label: 'Pipeline de Vendas' },
+    { id: 'pipeline', icon: '📈', label: 'Fluxo de Vendas' },
     { id: 'anamnesis', icon: '📋', label: 'Anamneses' },
     { id: 'links', icon: '🔗', label: 'Links de Captação' },
     { id: 'schedule', icon: '📅', label: 'Agenda' },

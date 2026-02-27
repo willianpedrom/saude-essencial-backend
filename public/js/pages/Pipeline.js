@@ -74,7 +74,7 @@ const LOST_STAGE = {
 
 // ── Main render ────────────────────────────────────────────────
 export async function renderPipeline(router) {
-  renderLayout(router, 'Pipeline de Vendas',
+  renderLayout(router, 'Fluxo de Vendas',
     `<div style="display:flex;align-items:center;justify-content:center;height:300px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando pipeline...</div>`,
     'pipeline');
 
