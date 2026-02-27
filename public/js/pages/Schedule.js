@@ -343,10 +343,21 @@ export async function renderFollowup(router) {
       <div class="form-grid">
         <div class="form-group form-field-full">
           <label class="field-label">Cliente *</label>
-          <select class="field-select" id="fu-client">
-            <option value="">— Selecione —</option>
-            ${clients.map(c => `<option value="${c.id}">${c.name || c.nome}${(c.phone || c.telefone) ? ' · ' + ((c.phone || c.telefone).slice(-4).padStart(8, '•')) : ''}</option>`).join('')}
-          </select>
+          <div style="position:relative">
+            <input
+              class="field-input"
+              id="fu-client-search"
+              placeholder="🔍 Buscar cliente pelo nome..."
+              autocomplete="off"
+            />
+            <input type="hidden" id="fu-client" />
+            <div
+              id="fu-client-dropdown"
+              style="display:none;position:absolute;top:100%;left:0;right:0;z-index:999;
+                     background:#fff;border:1px solid var(--border);border-radius:10px;
+                     box-shadow:0 8px 24px rgba(0,0,0,0.12);max-height:220px;overflow-y:auto;margin-top:4px"
+            ></div>
+          </div>
         </div>
         <div class="form-group form-field-full">
           <label class="field-label">Anotação / Tarefa *</label>
@@ -376,10 +387,76 @@ export async function renderFollowup(router) {
         </div>
       </div>`, {
       confirmLabel: '💾 Salvar Follow-up',
+      onOpen: () => {
+        const searchInput = document.getElementById('fu-client-search');
+        const hiddenInput = document.getElementById('fu-client');
+        const dropdown = document.getElementById('fu-client-dropdown');
+
+        function renderDropdown(query) {
+          const q = query.toLowerCase().trim();
+          const matches = q
+            ? clients.filter(c => (c.name || c.nome || '').toLowerCase().includes(q))
+            : clients;
+
+          if (!matches.length) {
+            dropdown.innerHTML = `<div style="padding:12px 16px;color:var(--text-muted);font-size:0.9rem">Nenhuma cliente encontrada</div>`;
+          } else {
+            dropdown.innerHTML = matches.map(c => {
+              const name = c.name || c.nome || '';
+              const phone = c.phone || c.telefone || '';
+              const highlighted = name.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
+                '<strong style="color:var(--green-700)">$1</strong>');
+              return `<div
+                data-id="${c.id}"
+                data-name="${name}"
+                style="padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;
+                       border-bottom:1px solid var(--border);transition:background 0.15s"
+                onmouseover="this.style.background='var(--green-50)'"
+                onmouseout="this.style.background=''"
+              >
+                <div style="width:32px;height:32px;border-radius:50%;background:var(--green-100);
+                            color:var(--green-700);font-weight:700;display:flex;align-items:center;
+                            justify-content:center;flex-shrink:0;font-size:0.85rem">
+                  ${name[0]?.toUpperCase() || '?'}
+                </div>
+                <div>
+                  <div style="font-size:0.92rem">${highlighted}</div>
+                  ${phone ? `<div style="font-size:0.75rem;color:var(--text-muted)">${phone}</div>` : ''}
+                </div>
+              </div>`;
+            }).join('');
+          }
+          dropdown.style.display = 'block';
+        }
+
+        searchInput.addEventListener('input', () => {
+          hiddenInput.value = '';
+          renderDropdown(searchInput.value);
+        });
+
+        searchInput.addEventListener('focus', () => {
+          renderDropdown(searchInput.value);
+        });
+
+        dropdown.addEventListener('mousedown', (e) => {
+          const item = e.target.closest('[data-id]');
+          if (!item) return;
+          hiddenInput.value = item.dataset.id;
+          searchInput.value = item.dataset.name;
+          dropdown.style.display = 'none';
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+          }
+        }, { once: false, capture: true });
+      },
       onConfirm: async () => {
         const clientId = document.getElementById('fu-client').value;
         const note = document.getElementById('fu-note').value.trim();
-        if (!clientId || !note) { toast('Cliente e anotação obrigatórios', 'error'); return; }
+        if (!clientId) { toast('Selecione uma cliente na lista de sugestões', 'error'); return; }
+        if (!note) { toast('Preencha a anotação / tarefa', 'error'); return; }
 
         const date = document.getElementById('fu-date').value;
         const time = document.getElementById('fu-time').value || '09:00';
