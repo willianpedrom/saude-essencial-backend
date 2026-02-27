@@ -7,47 +7,82 @@
 const nodemailer = require('nodemailer');
 
 function createTransport() {
-    // Support pre-built service shortcuts (e.g. SMTP_SERVICE=gmail)
-    if (process.env.SMTP_SERVICE) {
-        return nodemailer.createTransport({
-            service: process.env.SMTP_SERVICE,
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-            },
-        });
-    }
+  if (process.env.SMTP_SERVICE) {
     return nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-        },
+      service: process.env.SMTP_SERVICE,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
     });
+  }
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+    tls: { rejectUnauthorized: false }, // tolerate self-signed certs in some hosts
+  });
 }
 
 const FROM = process.env.SMTP_FROM || `"Gota Essencial" <${process.env.SMTP_USER}>`;
 const PLATFORM_URL = process.env.PLATFORM_URL || 'https://gotaessencial.com.br';
 
+function isSmtpConfigured() {
+  return !!(process.env.SMTP_USER && process.env.SMTP_PASS);
+}
+
+/**
+ * Verify SMTP connection — throws on failure.
+ */
+async function verifyConnection() {
+  if (!isSmtpConfigured()) {
+    throw new Error('Variáveis SMTP_USER e SMTP_PASS não configuradas no servidor.');
+  }
+  const transporter = createTransport();
+  await transporter.verify(); // throws if cannot connect
+  return true;
+}
+
 /**
  * Send welcome email to a new member with temporary password.
+ * @param {object} options
+ * @param {boolean} [options.throwOnError=false] — if true, throws instead of swallowing errors (use for admin-triggered sends)
  */
-async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano }) {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-        console.warn('[Mailer] ⚠️ SMTP não configurado. Email de boas-vindas não enviado para:', email);
-        return;
-    }
+async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnError = false }) {
+  if (!isSmtpConfigured()) {
+    const msg = `SMTP não configurado. Verifique as variáveis SMTP_USER e SMTP_PASS no Railway.`;
+    console.warn('[Mailer] ⚠️', msg);
+    if (throwOnError) throw new Error(msg);
+    return;
+  }
 
-    const transporter = createTransport();
-    const loginUrl = `${PLATFORM_URL}/#/login`;
+  const transporter = createTransport();
+  const loginUrl = `${PLATFORM_URL}/#/login`;
+  const planLabels = { starter: 'Starter', pro: 'Pro', enterprise: 'Enterprise' };
+  const planNome = planLabels[plano] || plano || 'Starter';
 
-    const planLabels = { starter: 'Starter', pro: 'Pro', enterprise: 'Enterprise' };
-    const planNome = planLabels[plano] || plano || 'Starter';
+  const credBlock = senhaProvisoria ? `
+    <div class="credentials">
+      <div class="cred-label">Seu E-mail de Acesso</div>
+      <div class="cred-value">${email}</div>
+      <div class="cred-label">Senha Provisória</div>
+      <div class="cred-value">${senhaProvisoria}</div>
+    </div>
+    <div class="warning">
+      ⚠️ <strong>Por segurança, troque sua senha após o primeiro acesso.</strong>
+      Vá em <em>Meu Perfil → Alterar Senha</em>.
+    </div>` : `
+    <div class="credentials">
+      <div class="cred-label">Seu E-mail de Acesso</div>
+      <div class="cred-value">${email}</div>
+    </div>
+    <p class="text">Use sua senha atual para acessar. Caso não lembre, clique em "Esqueci minha senha" na tela de login.</p>`;
 
-    const html = `
-<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
@@ -83,88 +118,65 @@ async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano }) {
   <div class="body">
     <div class="greeting">Olá, ${nome}! 🎉</div>
     <p class="text">
-      Sua compra do plano <strong>${planNome}</strong> foi aprovada com sucesso!
-      Criamos sua conta na plataforma <strong>Gota Essencial</strong> automaticamente.
+      ${senhaProvisoria
+      ? `Sua compra do plano <strong>${planNome}</strong> foi aprovada! Criamos sua conta na plataforma <strong>Gota Essencial</strong> automaticamente.`
+      : `Seus dados de acesso à plataforma <strong>Gota Essencial</strong> foram atualizados.`}
     </p>
-    <p class="text">Use as credenciais abaixo para fazer seu primeiro acesso:</p>
-
-    <div class="credentials">
-      <div class="cred-label">Seu E-mail de Acesso</div>
-      <div class="cred-value">${email}</div>
-      <div class="cred-label">Senha Provisória</div>
-      <div class="cred-value">${senhaProvisoria}</div>
-    </div>
-
+    <p class="text">Use as credenciais abaixo para acessar:</p>
+    ${credBlock}
     <div style="text-align:center;margin:28px 0">
       <a class="btn" href="${loginUrl}">🚀 Acessar a Plataforma</a>
     </div>
-
-    <div class="warning">
-      ⚠️ <strong>Por segurança, troque sua senha após o primeiro acesso.</strong>
-      Vá em <em>Meu Perfil → Alterar Senha</em>.
-    </div>
-
     <div class="steps">
       <p style="font-weight:700;color:#1a2e1a;margin-bottom:12px">📋 Primeiros passos recomendados:</p>
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-text"><strong>Faça login</strong> com suas credenciais acima</div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-text"><strong>Complete seu perfil</strong> (foto, bio, redes sociais) — isso ativa sua página pública</div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-text"><strong>Crie seu primeiro link de anamnese</strong> e compartilhe com seus clientes</div>
-      </div>
-      <div class="step">
-        <div class="step-num">4</div>
-        <div class="step-text"><strong>Troque a senha provisória</strong> em Meu Perfil → Segurança</div>
-      </div>
+      <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Faça login</strong> com suas credenciais acima</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Complete seu perfil</strong> (foto, bio, redes sociais) — isso ativa sua página pública</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Crie seu primeiro link de anamnese</strong> e compartilhe com seus clientes</div></div>
+      ${senhaProvisoria ? '<div class="step"><div class="step-num">4</div><div class="step-text"><strong>Troque a senha provisória</strong> em Meu Perfil → Segurança</div></div>' : ''}
     </div>
   </div>
   <div class="footer">
-    Gota Essencial • Este é um e-mail automático, não responda.<br>
-    En caso de dúvidas, entre em contato com o suporte.
+    Gota Essencial • Este é um e-mail automático, não responda.
   </div>
 </div>
 </body>
 </html>`;
 
-    try {
-        const info = await transporter.sendMail({
-            from: FROM,
-            to: email,
-            subject: `🎉 Bem-vindo(a) à Gota Essencial! Seus dados de acesso estão aqui`,
-            html,
-            text: `Olá ${nome}!\n\nSua conta na Gota Essencial foi criada.\n\nE-mail: ${email}\nSenha provisória: ${senhaProvisoria}\n\nAcesse: ${loginUrl}\n\nTroque sua senha após o primeiro login.`,
-        });
-        console.log(`[Mailer] ✅ Email de boas-vindas enviado para ${email}:`, info.messageId);
-        return info;
-    } catch (err) {
-        console.error(`[Mailer] ❌ Erro ao enviar email para ${email}:`, err.message);
-        // Never throw — email failure shouldn't block the webhook response
-    }
+  try {
+    const info = await transporter.sendMail({
+      from: FROM,
+      to: email,
+      subject: senhaProvisoria
+        ? `🎉 Bem-vindo(a) à Gota Essencial! Seus dados de acesso estão aqui`
+        : `📧 Seus dados de acesso — Gota Essencial`,
+      html,
+      text: `Olá ${nome}!\n\nE-mail: ${email}${senhaProvisoria ? `\nSenha provisória: ${senhaProvisoria}` : ''}\n\nAcesse: ${loginUrl}`,
+    });
+    console.log(`[Mailer] ✅ Email enviado para ${email} — ID: ${info.messageId}`);
+    return info;
+  } catch (err) {
+    console.error(`[Mailer] ❌ Erro ao enviar para ${email}:`, err.message);
+    if (throwOnError) throw new Error(`Falha ao enviar email: ${err.message}`);
+  }
 }
 
 /**
  * Send cancellation notification email.
  */
 async function sendCancellationEmail({ nome, email }) {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) return;
-    const transporter = createTransport();
-    try {
-        await transporter.sendMail({
-            from: FROM,
-            to: email,
-            subject: `Sua assinatura Gota Essencial foi cancelada`,
-            html: `<p>Olá ${nome},</p><p>Sua assinatura foi cancelada. Caso queira reativar, acesse <a href="${PLATFORM_URL}">${PLATFORM_URL}</a>.</p>`,
-            text: `Olá ${nome},\n\nSua assinatura foi cancelada. Para reativar: ${PLATFORM_URL}`,
-        });
-    } catch (err) {
-        console.error('[Mailer] Erro ao enviar email de cancelamento:', err.message);
-    }
+  if (!isSmtpConfigured()) return;
+  const transporter = createTransport();
+  try {
+    await transporter.sendMail({
+      from: FROM,
+      to: email,
+      subject: `Sua assinatura Gota Essencial foi cancelada`,
+      html: `<p>Olá ${nome},</p><p>Sua assinatura foi cancelada. Caso queira reativar, acesse <a href="${PLATFORM_URL}">${PLATFORM_URL}</a>.</p>`,
+      text: `Olá ${nome},\n\nSua assinatura foi cancelada. Para reativar: ${PLATFORM_URL}`,
+    });
+  } catch (err) {
+    console.error('[Mailer] Erro ao enviar email de cancelamento:', err.message);
+  }
 }
 
-module.exports = { sendWelcomeEmail, sendCancellationEmail };
+module.exports = { sendWelcomeEmail, sendCancellationEmail, verifyConnection, isSmtpConfigured };

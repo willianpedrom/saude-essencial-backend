@@ -381,15 +381,55 @@ router.post('/users/:id/reenviar-acesso', async (req, res) => {
             [hash, req.params.id]
         );
 
-        // Send welcome email with new temp password
+        // Send welcome email — throwOnError:true so the admin sees real SMTP errors
         const { sendWelcomeEmail } = require('../lib/mailer');
-        await sendWelcomeEmail({ nome, email, senhaProvisoria: tempPassword, plano, isNewAccount: false });
+        await sendWelcomeEmail({ nome, email, senhaProvisoria: tempPassword, plano, throwOnError: true });
 
-        console.log(`[Admin] 📧 Acesso reenviado para ${email} por admin ${req.consultora.email}`);
+        console.log(`[Admin] 📧 Acesso reenviado para ${email} por ${req.consultora.email}`);
         res.json({ success: true, email, message: 'Email de acesso reenviado com nova senha temporária.' });
     } catch (err) {
-        console.error(err);
+        console.error('[Admin] reenviar-acesso error:', err.message);
         res.status(500).json({ error: 'Erro ao reenviar acesso: ' + err.message });
+    }
+});
+
+// GET /api/admin/test-smtp — testa conexão SMTP e retorna diagnóstico
+router.get('/test-smtp', async (req, res) => {
+    const { verifyConnection, isSmtpConfigured } = require('../lib/mailer');
+    const config = {
+        SMTP_HOST: process.env.SMTP_HOST || '(não definido)',
+        SMTP_PORT: process.env.SMTP_PORT || '(não definido)',
+        SMTP_USER: process.env.SMTP_USER ? process.env.SMTP_USER.replace(/(.{3}).*(@.*)/, '$1***$2') : '(não definido)',
+        SMTP_PASS: process.env.SMTP_PASS ? '*** configurado ***' : '(não definido)',
+        SMTP_FROM: process.env.SMTP_FROM || '(não definido)',
+        SMTP_SERVICE: process.env.SMTP_SERVICE || '(não definido)',
+        PLATFORM_URL: process.env.PLATFORM_URL || '(não definido)',
+        configured: isSmtpConfigured(),
+    };
+
+    if (!config.configured) {
+        return res.status(400).json({
+            success: false,
+            error: 'SMTP_USER e/ou SMTP_PASS não configurados.',
+            config,
+        });
+    }
+
+    try {
+        await verifyConnection();
+        res.json({ success: true, message: 'Conexão SMTP verificada com sucesso! ✅', config });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            error: err.message,
+            config,
+            dicas: [
+                'Gmail: use uma Senha de App (não a senha normal). Ative em myaccount.google.com → Segurança → Senhas de app.',
+                'Se usar SMTP_SERVICE=gmail, remova SMTP_HOST e SMTP_PORT.',
+                'Verifique se o Railway não está bloqueando a porta 587 (tente SMTP_PORT=465 com SMTP_SECURE=true).',
+                'Alternativa mais simples: configure SMTP_SERVICE=gmail com SMTP_USER e SMTP_PASS.',
+            ],
+        });
     }
 });
 

@@ -839,18 +839,52 @@ export async function renderAdmin(router) {
         O sistema localiza o consultor pelo <strong>email do comprador</strong> e ativa/cancela a assinatura automaticamente.
       </div>
 
-      <!-- Save button -->
-      <div style="display:flex;justify-content:flex-end;margin-top:20px">
+      <!-- Action buttons -->
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
+        <button class="btn btn-secondary" id="btn-test-smtp" style="padding:12px 20px">
+          🔌 Testar SMTP
+        </button>
         <button class="btn btn-primary" id="btn-save-gateway" style="padding:12px 28px">
           💾 Salvar Configurações
         </button>
-      </div>`;
+      </div>
+      <div id="smtp-test-result" style="margin-top:14px"></div>`;
 
     // Copy webhook URL
     section.querySelector('#btn-copy-webhook')?.addEventListener('click', () => {
       navigator.clipboard.writeText(webhookUrl)
         .then(() => toast('URL do Webhook copiada! ✅'))
         .catch(() => toast('Erro ao copiar', 'error'));
+    });
+
+    // Test SMTP
+    section.querySelector('#btn-test-smtp')?.addEventListener('click', async () => {
+      const btn = section.querySelector('#btn-test-smtp');
+      const result = section.querySelector('#smtp-test-result');
+      btn.disabled = true; btn.textContent = '⏳ Testando...';
+      try {
+        const r = await api('GET', '/api/admin/test-smtp');
+        result.innerHTML = `
+          <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:14px 16px;font-size:0.85rem">
+            ✅ <strong>Conexão SMTP OK!</strong><br>
+            <span style="color:#16a34a">Emails serão enviados com sucesso.</span>
+            <details style="margin-top:8px"><summary style="cursor:pointer;color:var(--text-muted);font-size:0.8rem">Ver configuração</summary>
+            <pre style="font-size:0.75rem;margin-top:6px;color:#374151">${JSON.stringify(r.config, null, 2)}</pre></details>
+          </div>`;
+        toast('✅ SMTP funcionando!');
+      } catch (err) {
+        let errorData;
+        try { errorData = JSON.parse(err.message.match(/\{.*\}/s)?.[0] || '{}'); } catch { errorData = {}; }
+        result.innerHTML = `
+          <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:14px 16px;font-size:0.85rem">
+            ❌ <strong>Falha no SMTP</strong><br>
+            <code style="font-size:0.78rem;color:#dc2626">${err.message}</code>
+            ${errorData.dicas ? `<ul style="margin:10px 0 0;padding-left:18px;font-size:0.8rem;color:#7f1d1d">${errorData.dicas.map(d => `<li>${d}</li>`).join('')}</ul>` : ''}
+            ${errorData.config ? `<details style="margin-top:8px"><summary style="cursor:pointer;color:var(--text-muted);font-size:0.8rem">Ver configuração atual</summary><pre style="font-size:0.75rem;margin-top:6px">${JSON.stringify(errorData.config, null, 2)}</pre></details>` : ''}
+          </div>`;
+      } finally {
+        btn.disabled = false; btn.textContent = '🔌 Testar SMTP';
+      }
     });
 
     // Save gateway settings
