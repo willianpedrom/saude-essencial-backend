@@ -15,15 +15,47 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'"],
+            scriptSrc: [
+                "'self'",
+                "'unsafe-inline'",          // inline scripts (nosso snippet do pixel)
+                "https://connect.facebook.net",
+                "https://www.googletagmanager.com",
+                "https://www.google-analytics.com",
+                "https://www.clarity.ms",
+                "https://cdn.clarity.ms",
+            ],
             scriptSrcAttr: ["'unsafe-inline'"],   // allow onclick="..." in templates
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-            imgSrc: ["'self'", "data:"],
-            connectSrc: ["'self'"],
+            imgSrc: [
+                "'self'",
+                "data:",
+                "blob:",
+                "https://www.facebook.com",         // pixel noscript img
+                "https://*.fbcdn.net",
+                "https://www.google-analytics.com",
+                "https://*.googleusercontent.com",
+                "https://*.gravatar.com",
+                "*",                                // fotos de perfil de URLs externas
+            ],
+            connectSrc: [
+                "'self'",
+                "https://www.facebook.com",         // fbevents tracking requests
+                "https://connect.facebook.net",
+                "https://www.google-analytics.com",
+                "https://analytics.google.com",
+                "https://www.clarity.ms",
+                "https://*.clarity.ms",
+                "https://stats.g.doubleclick.net",
+            ],
+            frameSrc: [
+                "'self'",
+                "https://www.googletagmanager.com",
+            ],
         },
     },
 }));
+
 app.use(cors({ origin: true, credentials: true }));
 app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 500 }));
 
