@@ -20,6 +20,7 @@ const adminApi = {
   getUso: (id) => api('GET', `/api/admin/users/${id}/uso`),
   darCortesia: (id, data) => api('POST', `/api/admin/users/${id}/cortesia`, data),
   getPagamentos: (id) => api('GET', `/api/admin/users/${id}/pagamentos`),
+  reenviarAcesso: (id) => api('POST', `/api/admin/users/${id}/reenviar-acesso`, {}),
 };
 
 const PLAN_LABELS = {
@@ -301,6 +302,7 @@ export async function renderAdmin(router) {
               <button class="btn btn-secondary btn-sm" data-tracking-id="${u.id}" title="Rastreamento">📊</button>
               <button class="btn btn-secondary btn-sm" data-plan-id="${u.id}" data-plan-current="${u.plano || 'starter'}" data-status-current="${u.plano_status || 'trial'}" title="Alterar Plano">💳</button>
               <button class="btn btn-secondary btn-sm" data-cortesia-id="${u.id}" data-cortesia-nome="${u.nome}" title="Conceder Cortesia">🎁</button>
+              <button class="btn btn-secondary btn-sm" data-reenvio-id="${u.id}" data-reenvio-nome="${u.nome}" title="Reenviar Email de Acesso">📧</button>
               <button class="btn btn-danger btn-sm" data-del-id="${u.id}" data-del-nome="${u.nome}" title="Excluir" ${isMe ? 'disabled' : ''}>🗑️</button>
             </div>
           </td>
@@ -378,6 +380,27 @@ export async function renderAdmin(router) {
         const u = users.find(x => x.id === btn.dataset.cortesiaId);
         if (!u) return;
         showCortesiaModal(u);
+      });
+    });
+
+    // Reenviar Email de Acesso
+    tbody.querySelectorAll('[data-reenvio-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const nome = btn.dataset.reenvioNome;
+        modal('📧 Reenviar Email de Acesso', `
+          <div style="text-align:center">
+            <div style="font-size:2.5rem;margin-bottom:12px">📧</div>
+            <p>Isso irá <strong>gerar uma nova senha temporária</strong> para <strong>${nome}</strong> e enviar um email com as instruções de acesso.</p>
+            <p style="font-size:0.83rem;color:var(--text-muted)">A senha atual do usuário será redefinida.</p>
+          </div>`, {
+          confirmLabel: '📧 Reenviar Agora',
+          onConfirm: async () => {
+            try {
+              const r = await adminApi.reenviarAcesso(btn.dataset.reenvioId);
+              toast(`✅ Email de acesso reenviado para ${r.email || nome}!`);
+            } catch (err) { toast('Erro: ' + err.message + ' — Verifique as variáveis SMTP no servidor.', 'error'); return false; }
+          }
+        });
       });
     });
 

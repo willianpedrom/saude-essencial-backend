@@ -356,6 +356,43 @@ router.get('/users/:id/pagamentos', async (req, res) => {
     }
 });
 
+// POST /api/admin/users/:id/reenviar-acesso — gera nova senha temp e reenvia email de boas-vindas
+router.post('/users/:id/reenviar-acesso', async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            `SELECT c.nome, c.email, a.plano
+             FROM consultoras c
+             LEFT JOIN assinaturas a ON a.consultora_id = c.id
+             WHERE c.id = $1
+             ORDER BY a.criado_em DESC LIMIT 1`,
+            [req.params.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado.' });
+
+        const { nome, email, plano } = rows[0];
+
+        // Generate and save new temp password
+        const bcrypt = require('bcryptjs');
+        const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
+        const tempPassword = Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+        const hash = await bcrypt.hash(tempPassword, 10);
+        await pool.query(
+            'UPDATE consultoras SET senha_hash=$1, atualizado_em=NOW() WHERE id=$2',
+            [hash, req.params.id]
+        );
+
+        // Send welcome email with new temp password
+        const { sendWelcomeEmail } = require('../lib/mailer');
+        await sendWelcomeEmail({ nome, email, senhaProvisoria: tempPassword, plano, isNewAccount: false });
+
+        console.log(`[Admin] 📧 Acesso reenviado para ${email} por admin ${req.consultora.email}`);
+        res.json({ success: true, email, message: 'Email de acesso reenviado com nova senha temporária.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao reenviar acesso: ' + err.message });
+    }
+});
+
 // ══════════════════════════════════════════════════════════════
 //  SYSTEM SETTINGS (payment gateway, etc.)
 // ══════════════════════════════════════════════════════════════
