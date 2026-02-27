@@ -271,6 +271,28 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
     const { cliente_id, tipo, subtipo, nome_link } = req.body;
     try {
+        // ── Limit enforcement ───────────────────────────────────────────
+        const limites = req.consultora.limites || {};
+        if (limites.anamneses_mes_max !== null && limites.anamneses_mes_max !== undefined) {
+            const inicioMes = new Date();
+            inicioMes.setDate(1); inicioMes.setHours(0, 0, 0, 0);
+            const { rows: [{ count }] } = await pool.query(
+                `SELECT COUNT(*) FROM anamneses
+                 WHERE consultora_id=$1 AND criado_em >= $2 AND link_origem_id IS NULL`,
+                [req.consultora.id, inicioMes]
+            );
+            const total = parseInt(count);
+            if (total >= limites.anamneses_mes_max) {
+                return res.status(403).json({
+                    error: `Você atingiu o limite de ${limites.anamneses_mes_max} anamneses por mês do seu plano. Faça upgrade para continuar.`,
+                    code: 'LIMIT_REACHED',
+                    limit: limites.anamneses_mes_max,
+                    current: total,
+                    resource: 'anamneses_mes',
+                });
+            }
+        }
+
         const { rows } = await pool.query(
             `INSERT INTO anamneses (consultora_id, cliente_id, tipo, subtipo, nome_link)
        VALUES ($1, $2, $3, $4, $5)
@@ -284,6 +306,7 @@ router.post('/', async (req, res) => {
         res.status(500).json({ error: 'Erro ao criar anamnese.' });
     }
 });
+
 
 // DELETE /api/anamneses/:id  (also deletes child records for generic)
 router.delete('/:id', async (req, res) => {

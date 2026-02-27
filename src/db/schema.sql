@@ -141,3 +141,53 @@ CREATE TABLE IF NOT EXISTS depoimentos_etiquetas (
 
 CREATE INDEX IF NOT EXISTS idx_depoimentos_consultora ON depoimentos(consultora_id);
 CREATE INDEX IF NOT EXISTS idx_etiquetas_consultora   ON etiquetas(consultora_id);
+
+-- ── Planos do sistema (configuráveis pelo admin) ─────────────────────────────
+CREATE TABLE IF NOT EXISTS planos (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug                VARCHAR(50) UNIQUE NOT NULL,   -- ex: 'starter', 'pro', 'enterprise'
+  nome                VARCHAR(100) NOT NULL,
+  preco_mensal        NUMERIC(10,2) DEFAULT 0,
+  clientes_max        INT,                           -- NULL = ilimitado
+  anamneses_mes_max   INT,                           -- NULL = ilimitado
+  tem_integracoes     BOOLEAN DEFAULT FALSE,         -- Meta Pixel, GA4, Clarity etc.
+  tem_pipeline        BOOLEAN DEFAULT TRUE,
+  tem_multiusuario    BOOLEAN DEFAULT FALSE,
+  tem_relatorios      BOOLEAN DEFAULT TRUE,
+  hotmart_offer_id    TEXT,                          -- ID da oferta na Hotmart
+  ativo               BOOLEAN DEFAULT TRUE,
+  criado_em           TIMESTAMPTZ DEFAULT NOW(),
+  atualizado_em       TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_planos_slug ON planos(slug);
+
+-- Seed dos planos padrão (idempotente)
+INSERT INTO planos (slug, nome, preco_mensal, clientes_max, anamneses_mes_max, tem_integracoes, tem_pipeline, tem_multiusuario)
+VALUES
+  ('starter',    'Starter',    49.00,  30,   5,    false, true,  false),
+  ('pro',        'Pro',        97.00,  NULL, NULL, true,  true,  false),
+  ('enterprise', 'Enterprise', 197.00, NULL, NULL, true,  true,  true)
+ON CONFLICT (slug) DO NOTHING;
+
+-- Migrations novas em assinaturas
+ALTER TABLE assinaturas ADD COLUMN IF NOT EXISTS hotmart_offer_id       TEXT;
+ALTER TABLE assinaturas ADD COLUMN IF NOT EXISTS trial_fim_estendido    TIMESTAMPTZ;
+ALTER TABLE assinaturas ADD COLUMN IF NOT EXISTS observacoes            TEXT;
+
+-- Compras registradas no sistema (histórico de pagamentos)
+CREATE TABLE IF NOT EXISTS pagamentos (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  consultora_id       UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+  gateway             VARCHAR(20) DEFAULT 'hotmart',
+  evento              VARCHAR(60),                   -- ex: PURCHASE_COMPLETE
+  transaction_id      TEXT,
+  subscription_id     TEXT,
+  plano               VARCHAR(50),
+  valor               NUMERIC(10,2),
+  status              VARCHAR(30),
+  payload             JSONB,
+  criado_em           TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_pagamentos_consultora ON pagamentos(consultora_id);

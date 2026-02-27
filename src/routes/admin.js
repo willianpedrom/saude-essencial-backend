@@ -164,6 +164,199 @@ router.put('/users/:id/tracking', async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════
+//  PLANOS (CRUD)
+// ══════════════════════════════════════════════════════════════
+
+// GET /api/admin/planos
+router.get('/planos', async (req, res) => {
+    try {
+        const { rows } = await pool.query(`SELECT * FROM planos ORDER BY preco_mensal ASC`);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao buscar planos.' });
+    }
+});
+
+// POST /api/admin/planos
+router.post('/planos', async (req, res) => {
+    const { slug, nome, preco_mensal, clientes_max, anamneses_mes_max,
+        tem_integracoes, tem_pipeline, tem_multiusuario, tem_relatorios, hotmart_offer_id } = req.body;
+    if (!slug || !nome) return res.status(400).json({ error: 'slug e nome são obrigatórios.' });
+    try {
+        const { rows } = await pool.query(
+            `INSERT INTO planos (slug, nome, preco_mensal, clientes_max, anamneses_mes_max,
+               tem_integracoes, tem_pipeline, tem_multiusuario, tem_relatorios, hotmart_offer_id)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+            [slug, nome, preco_mensal || 0,
+                clientes_max || null, anamneses_mes_max || null,
+                !!tem_integracoes, tem_pipeline !== false,
+                !!tem_multiusuario, tem_relatorios !== false,
+                hotmart_offer_id || null]
+        );
+        res.status(201).json(rows[0]);
+    } catch (err) {
+        if (err.code === '23505') return res.status(409).json({ error: 'Já existe um plano com esse slug.' });
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao criar plano.' });
+    }
+});
+
+// PUT /api/admin/planos/:id
+router.put('/planos/:id', async (req, res) => {
+    const { nome, preco_mensal, clientes_max, anamneses_mes_max,
+        tem_integracoes, tem_pipeline, tem_multiusuario, tem_relatorios,
+        hotmart_offer_id, ativo } = req.body;
+    try {
+        const { rows } = await pool.query(
+            `UPDATE planos SET
+               nome=$1, preco_mensal=$2, clientes_max=$3, anamneses_mes_max=$4,
+               tem_integracoes=$5, tem_pipeline=$6, tem_multiusuario=$7, tem_relatorios=$8,
+               hotmart_offer_id=$9, ativo=$10, atualizado_em=NOW()
+             WHERE id=$11 RETURNING *`,
+            [nome, preco_mensal || 0,
+                clientes_max || null, anamneses_mes_max || null,
+                !!tem_integracoes, tem_pipeline !== false,
+                !!tem_multiusuario, tem_relatorios !== false,
+                hotmart_offer_id || null, ativo !== false,
+                req.params.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Plano não encontrado.' });
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao atualizar plano.' });
+    }
+});
+
+// DELETE /api/admin/planos/:id
+router.delete('/planos/:id', async (req, res) => {
+    try {
+        const { rows: inUse } = await pool.query(
+            `SELECT COUNT(*) FROM assinaturas a
+             JOIN planos p ON p.slug = a.plano AND p.id = $1
+             WHERE a.status IN ('active','trial')`,
+            [req.params.id]
+        );
+        if (parseInt(inUse[0].count) > 0) {
+            return res.status(409).json({ error: 'Existem assinaturas ativas usando este plano. Desative-o em vez de excluir.' });
+        }
+        await pool.query('DELETE FROM planos WHERE id=$1', [req.params.id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao excluir plano.' });
+    }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  USO & CORTESIA
+// ══════════════════════════════════════════════════════════════
+
+// GET /api/admin/users/:id/uso — uso atual do membro vs. limites do plano
+router.get('/users/:id/uso', async (req, res) => {
+    try {
+        const { rows: subRows } = await pool.query(
+            `SELECT a.plano, a.status, a.trial_fim, a.periodo_fim,
+                    p.clientes_max, p.anamneses_mes_max, p.tem_integracoes,
+                    p.tem_pipeline, p.tem_multiusuario
+             FROM assinaturas a
+             LEFT JOIN planos p ON p.slug = a.plano
+             WHERE a.consultora_id=$1
+             ORDER BY a.criado_em DESC LIMIT 1`,
+            [req.params.id]
+        );
+        const sub = subRows[0] || {};
+
+        const [{ count: totalClientes }] = (await pool.query(
+            'SELECT COUNT(*) FROM clientes WHERE consultora_id=$1 AND ativo=TRUE', [req.params.id]
+        )).rows;
+
+        const inicio = new Date();
+        inicio.setDate(1); inicio.setHours(0, 0, 0, 0);
+        const [{ count: anamnesesMes }] = (await pool.query(
+            'SELECT COUNT(*) FROM anamneses WHERE consultora_id=$1 AND criado_em >= $2 AND link_origem_id IS NULL',
+            [req.params.id, inicio]
+        )).rows;
+
+        res.json({
+            plano: sub.plano || 'starter',
+            status: sub.status || 'trial',
+            trial_fim: sub.trial_fim,
+            periodo_fim: sub.periodo_fim,
+            clientes_max: sub.clientes_max,
+            anamneses_mes_max: sub.anamneses_mes_max,
+            tem_integracoes: sub.tem_integracoes,
+            tem_pipeline: sub.tem_pipeline,
+            tem_multiusuario: sub.tem_multiusuario,
+            uso: {
+                clientes: parseInt(totalClientes),
+                anamneses_mes: parseInt(anamnesesMes),
+            },
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao buscar uso.' });
+    }
+});
+
+// POST /api/admin/users/:id/cortesia — estender trial por N dias
+router.post('/users/:id/cortesia', async (req, res) => {
+    const { dias, observacao } = req.body;
+    if (!dias || dias < 1 || dias > 365) {
+        return res.status(400).json({ error: 'Informe um número de dias entre 1 e 365.' });
+    }
+    try {
+        const { rows: existing } = await pool.query(
+            'SELECT id, trial_fim, periodo_fim, status FROM assinaturas WHERE consultora_id=$1 ORDER BY criado_em DESC LIMIT 1',
+            [req.params.id]
+        );
+        const base = existing[0];
+        const now = new Date();
+
+        if (base) {
+            // Extend from current trial_fim or now, whichever is later
+            const currentFim = base.trial_fim ? new Date(base.trial_fim) : now;
+            const newFim = new Date(Math.max(currentFim, now));
+            newFim.setDate(newFim.getDate() + parseInt(dias));
+            await pool.query(
+                `UPDATE assinaturas SET trial_fim=$1, trial_fim_estendido=$1, status='trial',
+                  observacoes=COALESCE(observacoes||E'\n', '') || $2, atualizado_em=NOW()
+                 WHERE id=$3`,
+                [newFim, `[${now.toISOString().split('T')[0]}] Cortesia +${dias}d: ${observacao || '—'}`, base.id]
+            );
+        } else {
+            const newFim = new Date(now);
+            newFim.setDate(newFim.getDate() + parseInt(dias));
+            await pool.query(
+                `INSERT INTO assinaturas (consultora_id, plano, status, trial_fim, observacoes)
+                 VALUES ($1, 'starter', 'trial', $2, $3)`,
+                [req.params.id, newFim, `Cortesia inicial +${dias}d: ${observacao || '—'}`]
+            );
+        }
+        res.json({ success: true, dias_concedidos: parseInt(dias) });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao conceder cortesia.' });
+    }
+});
+
+// GET /api/admin/users/:id/pagamentos — histórico de eventos Hotmart
+router.get('/users/:id/pagamentos', async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            `SELECT id, gateway, evento, transaction_id, plano, valor, status, criado_em
+             FROM pagamentos WHERE consultora_id=$1 ORDER BY criado_em DESC LIMIT 50`,
+            [req.params.id]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao buscar histórico.' });
+    }
+});
+
+// ══════════════════════════════════════════════════════════════
 //  SYSTEM SETTINGS (payment gateway, etc.)
 // ══════════════════════════════════════════════════════════════
 

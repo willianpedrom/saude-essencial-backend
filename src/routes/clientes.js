@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
             WHERE consultora_id = $1
         `;
         const queryParams = [req.consultora.id];
-        
+
         if (req.query.ativo !== undefined) {
             queryStr += ` AND ativo = $2`;
             queryParams.push(req.query.ativo === 'true');
@@ -56,6 +56,30 @@ router.post('/', async (req, res) => {
     if (!nome) return res.status(400).json({ error: 'Nome é obrigatório.' });
 
     try {
+        // ── Limit enforcement ───────────────────────────────────────────
+        const limites = req.consultora.limites || {};
+        if (limites.clientes_max !== null && limites.clientes_max !== undefined) {
+            const { rows: [{ count }] } = await pool.query(
+                'SELECT COUNT(*) FROM clientes WHERE consultora_id=$1 AND ativo=TRUE',
+                [req.consultora.id]
+            );
+            const total = parseInt(count);
+            if (total >= limites.clientes_max) {
+                return res.status(403).json({
+                    error: `Você atingiu o limite de ${limites.clientes_max} clientes do seu plano. Faça upgrade para continuar.`,
+                    code: 'LIMIT_REACHED',
+                    limit: limites.clientes_max,
+                    current: total,
+                    resource: 'clientes',
+                });
+            }
+            // Warn at 80%
+            const pct = total / limites.clientes_max;
+            if (pct >= 0.8) {
+                res.setHeader('X-Limit-Warning', `clientes:${total}/${limites.clientes_max}`);
+            }
+        }
+
         const { rows } = await pool.query(
             `INSERT INTO clientes (consultora_id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -68,6 +92,7 @@ router.post('/', async (req, res) => {
         res.status(500).json({ error: 'Erro ao criar cliente.' });
     }
 });
+
 
 // PUT /api/clientes/:id
 router.put('/:id', async (req, res) => {

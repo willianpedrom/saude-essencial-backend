@@ -11,20 +11,44 @@ const adminApi = {
   getTracking: (id) => api('GET', `/api/admin/users/${id}/tracking`),
   updateTracking: (id, data) => api('PUT', `/api/admin/users/${id}/tracking`, data),
   deleteUser: (id) => api('DELETE', `/api/admin/users/${id}`),
+  // Planos
+  getPlanos: () => api('GET', '/api/admin/planos'),
+  createPlano: (data) => api('POST', '/api/admin/planos', data),
+  updatePlano: (id, data) => api('PUT', `/api/admin/planos/${id}`, data),
+  deletePlano: (id) => api('DELETE', `/api/admin/planos/${id}`),
+  // Uso & Cortesia
+  getUso: (id) => api('GET', `/api/admin/users/${id}/uso`),
+  darCortesia: (id, data) => api('POST', `/api/admin/users/${id}/cortesia`, data),
+  getPagamentos: (id) => api('GET', `/api/admin/users/${id}/pagamentos`),
 };
 
 const PLAN_LABELS = {
   starter: 'Starter',
   pro: 'Pro',
   enterprise: 'Enterprise',
+  trial: 'Trial',
+  admin: 'Admin',
   none: 'Nenhum',
 };
 const PLAN_STATUS_LABELS = {
   trial: '⏳ Trial',
   active: '✅ Ativo',
   canceled: '❌ Cancelado',
+  cancelled: '❌ Cancelado',
   expired: '🔴 Expirado',
+  overdue: '⚠️ Inadimplente',
+  refunded: '💸 Reembolsado',
   none: '—',
+};
+
+const STATUS_COLORS = {
+  trial: '#f59e0b',
+  active: '#16a34a',
+  canceled: '#dc2626',
+  cancelled: '#dc2626',
+  expired: '#dc2626',
+  overdue: '#ea580c',
+  refunded: '#7c3aed',
 };
 
 export async function renderAdmin(router) {
@@ -47,12 +71,24 @@ export async function renderAdmin(router) {
 
   async function load() {
     try {
-      users = await adminApi.getUsers();
+      [users, planos] = await Promise.all([
+        adminApi.getUsers().catch(() => []),
+        adminApi.getPlanos().catch(() => []),
+      ]);
     } catch (err) {
-      toast('Erro ao carregar usuários: ' + err.message, 'error');
-      users = [];
+      toast('Erro ao carregar dados: ' + err.message, 'error');
+      users = []; planos = [];
     }
     render();
+  }
+
+  let activeTab = 'membros';
+  let filterStatus = '';
+  let filterPlano = '';
+  let planos = [];
+
+  async function loadPlanos() {
+    try { planos = await adminApi.getPlanos(); } catch { planos = []; }
   }
 
   function render() {
@@ -63,103 +99,180 @@ export async function renderAdmin(router) {
     const totalActive = users.filter(u => u.plano_status === 'active').length;
     const totalTrial = users.filter(u => u.plano_status === 'trial').length;
     const totalAdmins = users.filter(u => u.role === 'admin').length;
+    const totalInadimplente = users.filter(u => u.plano_status === 'overdue').length;
+    // MRR: sum of plan prices for active users
+    const mrrMap = {};
+    planos.forEach(p => { mrrMap[p.slug] = parseFloat(p.preco_mensal || 0); });
+    const mrr = users
+      .filter(u => u.plano_status === 'active')
+      .reduce((sum, u) => sum + (mrrMap[u.plano] || 0), 0);
+
+    // Trials expiring in 7 days
+    const now = new Date();
+    const in7 = new Date(); in7.setDate(in7.getDate() + 7);
+    const trialExpiring = users.filter(u => {
+      if (u.plano_status !== 'trial' || !u.trial_fim) return false;
+      const f = new Date(u.trial_fim);
+      return f > now && f <= in7;
+    }).length;
 
     pc.innerHTML = `
       <!-- Stats strip -->
-      <div class="stats-grid" style="margin-bottom:20px;grid-template-columns:repeat(4,1fr)">
+      <div class="stats-grid" style="margin-bottom:16px;grid-template-columns:repeat(5,1fr)">
         <div class="stat-card green">
           <div class="stat-icon">👥</div>
           <div class="stat-value">${totalUsers}</div>
-          <div class="stat-label">Total de Membros</div>
-        </div>
-        <div class="stat-card gold">
-          <div class="stat-icon">⏳</div>
-          <div class="stat-value">${totalTrial}</div>
-          <div class="stat-label">Em Trial</div>
+          <div class="stat-label">Total Membros</div>
         </div>
         <div class="stat-card blue">
           <div class="stat-icon">✅</div>
           <div class="stat-value">${totalActive}</div>
           <div class="stat-label">Ativos (pagos)</div>
         </div>
+        <div class="stat-card gold">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-value">${totalTrial}</div>
+          <div class="stat-label">Em Trial</div>
+        </div>
         <div class="stat-card rose">
-          <div class="stat-icon">👑</div>
-          <div class="stat-value">${totalAdmins}</div>
-          <div class="stat-label">Administradores</div>
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-value">${totalInadimplente}</div>
+          <div class="stat-label">Inadimplentes</div>
+        </div>
+        <div class="stat-card" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #86efac">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value" style="font-size:1.1rem">R$ ${mrr.toFixed(2).replace('.', ',')}</div>
+          <div class="stat-label">MRR Estimado</div>
         </div>
       </div>
 
-      <!-- User table -->
+      ${trialExpiring > 0 ? `<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:10px 16px;margin-bottom:14px;font-size:0.85rem;color:#92400e">⚡ <strong>${trialExpiring} membro(s)</strong> com trial expirando nos próximos 7 dias</div>` : ''}
+
+      <!-- Abas -->
+      <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--border-light)">
+        ${['membros', 'planos', 'gateway'].map(tab => `
+          <button id="tab-${tab}" class="btn ${activeTab === tab ? 'btn-primary' : 'btn-secondary'}" style="border-radius:8px 8px 0 0;border-bottom:none;padding:8px 18px;font-size:0.85rem" data-tab="${tab}">
+            ${{ membros: '👥 Membros', planos: '📦 Planos', gateway: '💳 Gateway' }[tab]}
+          </button>`).join('')}
+      </div>
+
+      <div id="tab-content"></div>`;
+
+    // Tab switching
+    pc.querySelectorAll('[data-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeTab = btn.dataset.tab;
+        render();
+      });
+    });
+
+    const tabContent = pc.querySelector('#tab-content');
+    if (activeTab === 'membros') renderMembros(tabContent);
+    else if (activeTab === 'planos') renderPlanosSection(tabContent);
+    else if (activeTab === 'gateway') renderGatewaySection(tabContent);
+  }
+
+  // ── Aba Membros ────────────────────────────────────────────────
+  function renderMembros(container) {
+    const planOptions = planos.map(p => `<option value="${p.slug}">${p.nome}</option>`).join('');
+    container.innerHTML = `
       <div class="card">
-        <div style="padding:16px 20px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between">
-          <h3 style="margin:0;font-size:1rem">👥 Membros do Sistema</h3>
-          <input class="field-input" id="admin-search" placeholder="🔍 Buscar..." style="width:200px;padding:6px 12px" />
+        <div style="padding:14px 18px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <h3 style="margin:0;font-size:0.95rem;flex:1">👥 Membros do Sistema</h3>
+          <select class="field-select" id="filter-status" style="width:160px;padding:6px 10px;font-size:0.82rem">
+            <option value="">Todos os status</option>
+            <option value="trial">⏳ Trial</option>
+            <option value="active">✅ Ativo</option>
+            <option value="overdue">⚠️ Inadimplente</option>
+            <option value="cancelled">❌ Cancelado</option>
+            <option value="expired">🔴 Expirado</option>
+          </select>
+          <select class="field-select" id="filter-plano" style="width:150px;padding:6px 10px;font-size:0.82rem">
+            <option value="">Todos os planos</option>
+            ${planOptions}
+          </select>
+          <input class="field-input" id="admin-search" placeholder="🔍 Buscar nome/email..." style="width:200px;padding:6px 12px;font-size:0.82rem" />
         </div>
         <div style="overflow-x:auto">
-          <table class="clients-table" id="admin-table">
+          <table class="clients-table">
             <thead><tr>
               <th>Membro</th>
-              <th>Plano</th>
+              <th>Plano / Status</th>
               <th>Clientes</th>
               <th>Anamneses</th>
-              <th>Cadastro</th>
+              <th>Vence em</th>
               <th>Cargo</th>
               <th>Ações</th>
             </tr></thead>
-            <tbody id="admin-tbody">
-              ${renderRows(users)}
-            </tbody>
+            <tbody id="admin-tbody">${renderRows(applyFilters(users))}</tbody>
           </table>
-        </div>
-      </div>
-
-      <!-- ══════════ Payment Gateway Config ══════════ -->
-      <div class="card" style="margin-top:20px">
-        <div style="padding:16px 20px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:12px">
-          <div style="width:36px;height:36px;background:linear-gradient(135deg,#f97316,#ef4444);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem">💳</div>
-          <div>
-            <div style="font-weight:700">Gateway de Pagamento</div>
-            <div style="font-size:0.8rem;color:var(--text-muted)">Configure a integração com a Hotmart para cobranças de assinatura</div>
-          </div>
-          <div id="gateway-status-badge" style="margin-left:auto"></div>
-        </div>
-        <div style="padding:20px" id="gateway-section">
-          <div style="display:flex;align-items:center;justify-content:center;height:60px;color:var(--text-muted)">⏳ Carregando configurações...</div>
         </div>
       </div>`;
 
-    // Search filter
-    pc.querySelector('#admin-search')?.addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase();
-      const filtered = users.filter(u =>
-        (u.nome || '').toLowerCase().includes(q) ||
-        (u.email || '').toLowerCase().includes(q)
+    // Restore filter values
+    const fs = container.querySelector('#filter-status');
+    const fp = container.querySelector('#filter-plano');
+    const se = container.querySelector('#admin-search');
+    if (fs) fs.value = filterStatus;
+    if (fp) fp.value = filterPlano;
+
+    function applyAndRender() {
+      filterStatus = fs?.value || '';
+      filterPlano = fp?.value || '';
+      const q = (se?.value || '').toLowerCase();
+      const filtered = applyFilters(users).filter(u =>
+        !q || (u.nome || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q)
       );
       document.getElementById('admin-tbody').innerHTML = renderRows(filtered);
       bindRowEvents();
-    });
+    }
 
+    fs?.addEventListener('change', applyAndRender);
+    fp?.addEventListener('change', applyAndRender);
+    se?.addEventListener('input', applyAndRender);
     bindRowEvents();
+  }
 
-    // Load payment gateway settings
-    loadGatewaySettings();
+  function applyFilters(list) {
+    return list.filter(u => {
+      if (filterStatus && u.plano_status !== filterStatus) return false;
+      if (filterPlano && u.plano !== filterPlano) return false;
+      return true;
+    });
   }
 
   function renderRows(list) {
     if (list.length === 0) return `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted)">Nenhum membro encontrado</td></tr>`;
+    const now = new Date();
+    const in7 = new Date(); in7.setDate(in7.getDate() + 7);
     return list.map(u => {
       const initials = (u.nome || '').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
       const isMe = u.id === auth.current?.id;
       const isAdmin = u.role === 'admin';
+      const statusColor = STATUS_COLORS[u.plano_status] || '#64748b';
+
+      // Vencimento
+      const venceFim = u.plano_status === 'trial' ? u.trial_fim : u.periodo_fim;
+      let venceHtml = '—';
+      if (venceFim) {
+        const vd = new Date(venceFim);
+        const diff = Math.ceil((vd - now) / 86400000);
+        const color = diff < 0 ? '#dc2626' : diff <= 7 ? '#d97706' : '#16a34a';
+        venceHtml = `<span style="color:${color};font-size:0.78rem;font-weight:600">${diff < 0 ? 'Expirado' : diff === 0 ? 'Hoje' : `${diff}d`}</span><br><span style="font-size:0.7rem;color:var(--text-muted)">${vd.toLocaleDateString('pt-BR')}</span>`;
+      }
+
+      const rowBg = u.plano_status === 'overdue' ? 'background:#fff7ed' :
+        u.plano_status === 'expired' || u.plano_status === 'cancelled' ? 'background:#fef2f2' : '';
+
       return `
-        <tr>
+        <tr style="${rowBg}">
           <td>
             <div class="client-name-cell">
               <div class="client-avatar-sm" style="${isAdmin ? 'background:linear-gradient(135deg,#7c3aed,#a855f7)' : ''}">
                 ${u.foto_url ? `<img src="${u.foto_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" />` : initials}
               </div>
               <div>
-                <div style="font-weight:600;font-size:0.9rem">${u.nome || '—'} ${isMe ? '<span style="font-size:0.7rem;color:var(--text-muted)">(você)</span>' : ''}</div>
+                <div style="font-weight:600;font-size:0.88rem">${u.nome || '—'} ${isMe ? '<span style="font-size:0.7rem;color:var(--text-muted)">(você)</span>' : ''}</div>
                 <div style="font-size:0.72rem;color:var(--text-muted)">${u.email || '—'}</div>
               </div>
             </div>
@@ -167,26 +280,27 @@ export async function renderAdmin(router) {
           <td>
             <div style="font-size:0.82rem">
               <div style="font-weight:600">${PLAN_LABELS[u.plano] || u.plano || '—'}</div>
-              <div style="font-size:0.72rem">${PLAN_STATUS_LABELS[u.plano_status] || u.plano_status || '—'}</div>
+              <div style="font-size:0.72rem;color:${statusColor}">${PLAN_STATUS_LABELS[u.plano_status] || u.plano_status || '—'}</div>
             </div>
           </td>
           <td style="text-align:center;font-weight:600">${u.total_clientes || 0}</td>
           <td style="text-align:center;font-weight:600">${u.total_anamneses || 0}</td>
-          <td style="font-size:0.8rem;white-space:nowrap">${formatDate(u.criado_em)}</td>
+          <td style="font-size:0.8rem;white-space:nowrap">${venceHtml}</td>
           <td>
             ${isAdmin
           ? `<span style="background:#f3e8ff;color:#6b21a8;font-size:0.72rem;padding:2px 8px;border-radius:10px">👑 Admin</span>`
           : `<span style="background:#f0fdf4;color:#166534;font-size:0.72rem;padding:2px 8px;border-radius:10px">👤 Membro</span>`}
           </td>
           <td>
-            <div style="display:flex;gap:5px;flex-wrap:wrap">
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
               <button class="btn btn-secondary btn-sm" data-edit-id="${u.id}" title="Editar">✏️</button>
               <button class="btn btn-${isAdmin ? 'secondary' : 'primary'} btn-sm" data-role-id="${u.id}" data-role-current="${u.role}" title="${isAdmin ? 'Remover admin' : 'Tornar admin'}" ${isMe ? 'disabled' : ''}>
                 ${isAdmin ? '👤' : '👑'}
               </button>
-              <button class="btn btn-secondary btn-sm" data-pwd-id="${u.id}" data-pwd-nome="${u.nome}" title="Alterar Senha">🔑</button>
-              <button class="btn btn-secondary btn-sm" data-tracking-id="${u.id}" data-tracking-nome="${u.nome}" title="Integrações & Rastreamento">📊</button>
-              <button class="btn btn-secondary btn-sm" data-plan-id="${u.id}" data-plan-current="${u.plano || 'starter'}" data-status-current="${u.plano_status || 'trial'}" title="Plano">💳</button>
+              <button class="btn btn-secondary btn-sm" data-pwd-id="${u.id}" title="Alterar Senha">🔑</button>
+              <button class="btn btn-secondary btn-sm" data-tracking-id="${u.id}" title="Rastreamento">📊</button>
+              <button class="btn btn-secondary btn-sm" data-plan-id="${u.id}" data-plan-current="${u.plano || 'starter'}" data-status-current="${u.plano_status || 'trial'}" title="Alterar Plano">💳</button>
+              <button class="btn btn-secondary btn-sm" data-cortesia-id="${u.id}" data-cortesia-nome="${u.nome}" title="Conceder Cortesia">🎁</button>
               <button class="btn btn-danger btn-sm" data-del-id="${u.id}" data-del-nome="${u.nome}" title="Excluir" ${isMe ? 'disabled' : ''}>🗑️</button>
             </div>
           </td>
@@ -255,6 +369,15 @@ export async function renderAdmin(router) {
         const u = users.find(x => x.id === btn.dataset.trackingId);
         if (!u) return;
         await showTrackingModal(u);
+      });
+    });
+
+    // Cortesia
+    tbody.querySelectorAll('[data-cortesia-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const u = users.find(x => x.id === btn.dataset.cortesiaId);
+        if (!u) return;
+        showCortesiaModal(u);
       });
     });
 
@@ -375,6 +498,195 @@ export async function renderAdmin(router) {
       }
     });
     setTimeout(() => document.getElementById('ae-nome')?.focus(), 100);
+  }
+
+  function showCortesiaModal(u) {
+    modal('🎁 Conceder Cortesia — ' + u.nome, `
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="field-label">Dias de Cortesia *</label>
+          <input class="field-input" id="ac-dias" type="number" min="1" max="365" value="7" placeholder="Ex: 7, 30, 90" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Observação</label>
+          <input class="field-input" id="ac-obs" placeholder="Ex: Parceiro, influencer, teste..." />
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:12px;background:#f0fdf4;border-radius:8px;font-size:0.83rem;color:#166534">
+        💡 Isso ativará ou estenderá o período de trial do membro pelos dias especificados.
+      </div>`, {
+      confirmLabel: '🎁 Conceder Cortesia',
+      onConfirm: async () => {
+        const dias = parseInt(document.getElementById('ac-dias')?.value);
+        const obs = document.getElementById('ac-obs')?.value?.trim();
+        if (!dias || dias < 1) { toast('Informe um número de dias válido.', 'error'); return false; }
+        try {
+          const r = await adminApi.darCortesia(u.id, { dias, observacao: obs });
+          toast(`✅ Cortesia de ${r.dias_concedidos} dia(s) concedida a ${u.nome}!`);
+          await load();
+        } catch (err) { toast('Erro: ' + err.message, 'error'); return false; }
+      }
+    });
+    setTimeout(() => document.getElementById('ac-dias')?.focus(), 100);
+  }
+
+  // ── Aba Planos ─────────────────────────────────────────────────
+  async function renderPlanosSection(container) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">⏳ Carregando planos...</div>`;
+    await loadPlanos();
+
+    function renderPlanosTable() {
+      const lim = (v) => v === null || v === undefined ? '∞ Ilimitado' : v;
+      const feat = (v) => v ? '✅' : '❌';
+      return `
+        <div class="card">
+          <div style="padding:14px 18px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between">
+            <h3 style="margin:0;font-size:0.95rem">📦 Planos Configuráveis</h3>
+            <button class="btn btn-primary btn-sm" id="btn-novo-plano">+ Novo Plano</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="clients-table">
+              <thead><tr>
+                <th>Slug</th><th>Nome</th><th>Preço/mês</th><th>Clientes</th><th>Anamneses/mês</th>
+                <th>Integrações</th><th>Pipeline</th><th>Multi-usuário</th><th>Hotmart Offer ID</th><th>Ativo</th><th>Ações</th>
+              </tr></thead>
+              <tbody>
+                ${planos.length === 0 ? '<tr><td colspan="11" style="text-align:center;padding:30px">Nenhum plano cadastrado</td></tr>' : planos.map(p => `
+                  <tr>
+                    <td><code style="font-size:0.78rem;background:#f1f5f9;padding:2px 6px;border-radius:4px">${p.slug}</code></td>
+                    <td><strong>${p.nome}</strong></td>
+                    <td>R$ ${parseFloat(p.preco_mensal || 0).toFixed(2).replace('.', ',')}</td>
+                    <td>${lim(p.clientes_max)}</td>
+                    <td>${lim(p.anamneses_mes_max)}</td>
+                    <td style="text-align:center">${feat(p.tem_integracoes)}</td>
+                    <td style="text-align:center">${feat(p.tem_pipeline)}</td>
+                    <td style="text-align:center">${feat(p.tem_multiusuario)}</td>
+                    <td style="font-size:0.75rem;color:var(--text-muted)">${p.hotmart_offer_id || '—'}</td>
+                    <td style="text-align:center">${p.ativo ? '✅' : '⛔'}</td>
+                    <td>
+                      <div style="display:flex;gap:4px">
+                        <button class="btn btn-secondary btn-sm" data-edit-plano='${JSON.stringify(p)}' title="Editar">✏️</button>
+                        <button class="btn btn-danger btn-sm" data-del-plano-id="${p.id}" data-del-plano-nome="${p.nome}" title="Excluir">🗑️</button>
+                      </div>
+                    </td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:14px 18px;font-size:0.8rem;color:var(--text-muted)">
+            💡 As colunas <strong>Clientes</strong> e <strong>Anamneses/mês</strong> em branco = ilimitado.
+            O campo <strong>Hotmart Offer ID</strong> é usado para mapear compras automaticamente ao plano correto.
+          </div>
+        </div>`;
+    }
+
+    function showPlanoModal(plano = null) {
+      const p = plano || {};
+      modal(`${plano ? '✏️ Editar' : '➕ Novo'} Plano`, `
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="field-label">Slug (identificador único) *</label>
+            <input class="field-input" id="pp-slug" value="${p.slug || ''}" placeholder="ex: starter" ${plano ? 'readonly style="opacity:.6"' : ''} />
+          </div>
+          <div class="form-group">
+            <label class="field-label">Nome do Plano *</label>
+            <input class="field-input" id="pp-nome" value="${p.nome || ''}" placeholder="ex: Starter" />
+          </div>
+          <div class="form-group">
+            <label class="field-label">Preço Mensal (R$)</label>
+            <input class="field-input" id="pp-preco" type="number" step="0.01" min="0" value="${p.preco_mensal || 0}" />
+          </div>
+          <div class="form-group">
+            <label class="field-label">Máx. Clientes (vazio = ilimitado)</label>
+            <input class="field-input" id="pp-clientes" type="number" min="1" value="${p.clientes_max || ''}" placeholder="Ilimitado" />
+          </div>
+          <div class="form-group">
+            <label class="field-label">Máx. Anamneses/mês (vazio = ilimitado)</label>
+            <input class="field-input" id="pp-anamneses" type="number" min="1" value="${p.anamneses_mes_max || ''}" placeholder="Ilimitado" />
+          </div>
+          <div class="form-group">
+            <label class="field-label">Hotmart Offer ID (opcional)</label>
+            <input class="field-input" id="pp-hotmart" value="${p.hotmart_offer_id || ''}" placeholder="Ex: OFR-XXXXXX" />
+          </div>
+          <div class="form-group form-field-full" style="display:flex;gap:16px;flex-wrap:wrap">
+            ${[['tem_integracoes', 'Integrações (Pixel/GA)'], ['tem_pipeline', 'Pipeline/Fluxo'], ['tem_multiusuario', 'Multi-usuário'], ['tem_relatorios', 'Relatórios']].map(([k, l]) =>
+        `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem">
+                <input type="checkbox" id="pp-${k}" ${p[k] ? 'checked' : ''} style="width:16px;height:16px"> ${l}
+              </label>`).join('')}
+          </div>
+        </div>`, {
+        confirmLabel: plano ? '💾 Salvar Plano' : '➕ Criar Plano',
+        onConfirm: async () => {
+          const data = {
+            slug: document.getElementById('pp-slug')?.value?.trim(),
+            nome: document.getElementById('pp-nome')?.value?.trim(),
+            preco_mensal: parseFloat(document.getElementById('pp-preco')?.value) || 0,
+            clientes_max: parseInt(document.getElementById('pp-clientes')?.value) || null,
+            anamneses_mes_max: parseInt(document.getElementById('pp-anamneses')?.value) || null,
+            hotmart_offer_id: document.getElementById('pp-hotmart')?.value?.trim() || null,
+            tem_integracoes: document.getElementById('pp-tem_integracoes')?.checked,
+            tem_pipeline: document.getElementById('pp-tem_pipeline')?.checked,
+            tem_multiusuario: document.getElementById('pp-tem_multiusuario')?.checked,
+            tem_relatorios: document.getElementById('pp-tem_relatorios')?.checked,
+            ativo: true,
+          };
+          if (!data.slug || !data.nome) { toast('Slug e Nome são obrigatórios.', 'error'); return false; }
+          try {
+            if (plano) await adminApi.updatePlano(plano.id, data);
+            else await adminApi.createPlano(data);
+            toast(`Plano ${plano ? 'atualizado' : 'criado'}! ✅`);
+            await loadPlanos();
+            container.innerHTML = renderPlanosTable();
+            bindPlanoEvents();
+          } catch (err) { toast('Erro: ' + err.message, 'error'); return false; }
+        }
+      });
+    }
+
+    function bindPlanoEvents() {
+      container.querySelector('#btn-novo-plano')?.addEventListener('click', () => showPlanoModal());
+      container.querySelectorAll('[data-edit-plano]').forEach(btn => {
+        btn.addEventListener('click', () => showPlanoModal(JSON.parse(btn.dataset.editPlano)));
+      });
+      container.querySelectorAll('[data-del-plano-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          modal('🗑️ Excluir Plano', `<p>Excluir o plano <strong>${btn.dataset.delPlanoNome}</strong>?<br><small style="color:var(--text-muted)">Planos com assinaturas ativas não podem ser excluídos.</small></p>`, {
+            confirmLabel: 'Excluir', confirmClass: 'btn-danger',
+            onConfirm: async () => {
+              try {
+                await adminApi.deletePlano(btn.dataset.delPlanoId);
+                toast('Plano excluído.');
+                await loadPlanos();
+                container.innerHTML = renderPlanosTable();
+                bindPlanoEvents();
+              } catch (err) { toast('Erro: ' + err.message, 'error'); return false; }
+            }
+          });
+        });
+      });
+    }
+
+    container.innerHTML = renderPlanosTable();
+    bindPlanoEvents();
+  }
+
+  // ── Aba Gateway ────────────────────────────────────────────────
+  function renderGatewaySection(container) {
+    container.innerHTML = `
+      <div class="card">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;background:linear-gradient(135deg,#f97316,#ef4444);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem">💳</div>
+          <div>
+            <div style="font-weight:700">Gateway de Pagamento</div>
+            <div style="font-size:0.8rem;color:var(--text-muted)">Configure a integração com a Hotmart</div>
+          </div>
+          <div id="gateway-status-badge" style="margin-left:auto"></div>
+        </div>
+        <div style="padding:20px" id="gateway-section">
+          <div style="text-align:center;color:var(--text-muted)">⏳ Carregando...</div>
+        </div>
+      </div>`;
+    loadGatewaySettings();
   }
 
   function showPlanModal(u) {

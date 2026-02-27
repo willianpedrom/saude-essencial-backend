@@ -55,16 +55,26 @@ router.post('/webhook', express.json(), async (req, res) => {
         switch (event) {
             case 'PURCHASE_COMPLETE':
             case 'PURCHASE_APPROVED': {
-                // Determine plan from product or default to 'pro'
+                // Determine plan — first try planos table by offer_id, then plano_map config
                 let plano = 'pro';
                 try {
-                    const { rows: cfg } = await pool.query(
-                        `SELECT valor FROM configuracoes WHERE chave = 'hotmart_plano_map' LIMIT 1`
-                    );
-                    if (cfg.length > 0 && cfg[0].valor) {
-                        const map = JSON.parse(cfg[0].valor);
-                        const productId = String(data?.product?.id || '');
-                        if (map[productId]) plano = map[productId];
+                    const offerId = String(data?.purchase?.offer?.code || data?.product?.id || '');
+                    if (offerId) {
+                        const { rows: planoRows } = await pool.query(
+                            `SELECT slug FROM planos WHERE hotmart_offer_id=$1 AND ativo=TRUE LIMIT 1`,
+                            [offerId]
+                        );
+                        if (planoRows.length > 0) {
+                            plano = planoRows[0].slug;
+                        } else {
+                            const { rows: cfg } = await pool.query(
+                                `SELECT valor FROM configuracoes WHERE chave = 'hotmart_plano_map' LIMIT 1`
+                            );
+                            if (cfg.length > 0 && cfg[0].valor) {
+                                const map = JSON.parse(cfg[0].valor);
+                                if (map[offerId]) plano = map[offerId];
+                            }
+                        }
                     }
                 } catch { /* use default */ }
 
