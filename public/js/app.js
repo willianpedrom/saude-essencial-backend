@@ -4,7 +4,7 @@
 
 import { auth } from './store.js';
 import { Router } from './utils.js';
-import { renderLogin } from './pages/Login.js';
+import { renderLogin, renderResetPassword } from './pages/Login.js';
 import { renderDashboard } from './pages/Dashboard.js';
 import { renderClients } from './pages/Clients.js';
 import { renderLinks } from './pages/Links.js';
@@ -70,6 +70,7 @@ const router = new Router({
     '/depoimento/:slug': ({ slug }) => renderPublicTestimonial(router, slug),
     '/p/:slug': ({ slug }) => renderPublicProfile(router, slug),
     '/vendas': () => renderLandingPage(router),
+    '/reset-password': () => renderResetPassword(router),
 
     '*': () => auth.isLoggedIn ? router.navigate('/dashboard') : renderLogin(router),
 });

@@ -282,3 +282,119 @@ export function renderLogin(router) {
     }
   });
 }
+
+// ── Tela dedicada de redefinição de senha (rota: /#/reset-password?token=...) ──
+export function renderResetPassword(router) {
+  // Token está na query string do hash: #/reset-password?token=abc123
+  const queryString = window.location.hash.split('?')[1] || '';
+  const params = new URLSearchParams(queryString);
+  const resetToken = params.get('token');
+
+  const app = document.getElementById('app');
+  app.innerHTML = `
+  <div class="auth-page">
+    <div class="auth-orbs">
+      <div class="auth-orb" style="width:400px;height:400px;top:-100px;left:-100px;opacity:0.4"></div>
+      <div class="auth-orb" style="width:300px;height:300px;bottom:-80px;right:-80px;opacity:0.3;animation-delay:3s"></div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="auth-logo-icon">💧</div>
+        <div class="auth-brand">Gota <span>Essencial</span></div>
+        <div class="auth-tagline">Plataforma Gota Essencial</div>
+      </div>
+
+      ${!resetToken ? `
+        <div style="text-align:center;padding:24px">
+          <div style="font-size:2.5rem">❌</div>
+          <h3 style="color:#dc2626">Link inválido</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem">Este link de recuperação é inválido ou expirou.</p>
+          <button class="btn-auth" id="btn-go-login" style="margin-top:16px">← Voltar para o login</button>
+        </div>
+      ` : `
+        <div id="reset-main">
+          <div style="text-align:center;margin-bottom:20px">
+            <div style="font-size:2.5rem">🔑</div>
+            <h2 style="margin:8px 0 4px;font-size:1.1rem">Nova Senha</h2>
+            <p style="font-size:0.85rem;color:var(--text-muted);margin:0">Escolha uma senha forte para sua conta.</p>
+          </div>
+          <form id="reset-form">
+            <div class="form-group">
+              <label class="form-label">Nova Senha</label>
+              <div style="position:relative">
+                <input class="form-input" type="password" id="reset-password" placeholder="Mínimo 8 caracteres" required style="padding-right:44px" />
+                <button type="button" class="toggle-pw" data-target="reset-password" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:0.5;padding:4px 6px">👁️</button>
+              </div>
+              <div id="reset-strength" style="margin-top:6px;font-size:0.78rem"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirmar Nova Senha</label>
+              <input class="form-input" type="password" id="reset-confirm" placeholder="Repita a nova senha" required />
+            </div>
+            <div class="auth-error" id="reset-error"></div>
+            <button class="btn-auth" type="submit" id="reset-btn">🔐 Redefinir Senha</button>
+          </form>
+        </div>
+        <div id="reset-success" style="display:none;text-align:center;padding:20px">
+          <div style="font-size:3rem">✅</div>
+          <h3 style="color:#16a34a;margin:12px 0 8px">Senha redefinida!</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem">Faça login com sua nova senha.</p>
+          <button class="btn-auth" id="btn-go-login-ok" style="margin-top:16px">Ir para o Login</button>
+        </div>
+      `}
+    </div>
+  </div>`;
+
+  // Back to login
+  app.querySelector('#btn-go-login')?.addEventListener('click', () => router.navigate('/'));
+  app.querySelector('#btn-go-login-ok')?.addEventListener('click', () => router.navigate('/'));
+
+  // Toggle pw visibility
+  app.querySelectorAll('.toggle-pw').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = document.getElementById(btn.dataset.target);
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      btn.textContent = isHidden ? '🙈' : '👁️';
+    });
+  });
+
+  // Strength indicator
+  app.querySelector('#reset-password')?.addEventListener('input', e => {
+    const val = e.target.value;
+    const el = app.querySelector('#reset-strength');
+    if (!el) return;
+    if (!val) { el.textContent = ''; return; }
+    const s = val.length >= 12 && /[A-Z]/.test(val) && /[0-9]/.test(val)
+      ? { label: 'Forte 💪', color: '#16a34a' }
+      : val.length >= 8 ? { label: 'Razoável 😐', color: '#d97706' }
+        : { label: 'Fraca ⚠️', color: '#dc2626' };
+    el.innerHTML = `<span style="color:${s.color};font-weight:600">${s.label}</span>`;
+  });
+
+  // Reset form submit
+  app.querySelector('#reset-form')?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const novaSenha = app.querySelector('#reset-password').value;
+    const confirmarSenha = app.querySelector('#reset-confirm').value;
+    const errEl = app.querySelector('#reset-error');
+    const btn = app.querySelector('#reset-btn');
+    btn.disabled = true; btn.textContent = '⏳ Redefinindo...';
+    errEl.textContent = ''; errEl.classList.remove('show');
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: resetToken, novaSenha, confirmarSenha }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ao redefinir senha.');
+      app.querySelector('#reset-main').style.display = 'none';
+      app.querySelector('#reset-success').style.display = 'block';
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.classList.add('show');
+      btn.disabled = false; btn.textContent = '🔐 Redefinir Senha';
+    }
+  });
+}
