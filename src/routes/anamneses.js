@@ -197,19 +197,18 @@ router.get('/', async (req, res) => {
         const { rows } = await pool.query(
             `SELECT
               a.id, a.tipo, a.subtipo, a.nome_link, a.preenchido,
-              a.token_publico, a.criado_em, a.acessos,
+              a.token_publico, a.criado_em,
+              a.acessos                            AS visitas,
               a.cliente_id,
               cl.nome AS cliente_nome,
-              -- For generic templates: count fills and visits from child records
-              COALESCE(gen.preenchimentos, 0)  AS preenchimentos,
-              COALESCE(gen.visitas,        0)  AS visitas
+              -- For generic templates: count fills from child records
+              COALESCE(gen.preenchimentos, 0)      AS preenchimentos
             FROM anamneses a
             LEFT JOIN clientes cl ON cl.id = a.cliente_id
-            -- Aggregate stats for generic templates
+            -- Count filled copies for each generic template
             LEFT JOIN (
               SELECT link_origem_id,
-                     COUNT(*)        AS preenchimentos,
-                     SUM(acessos)    AS visitas
+                     COUNT(*) AS preenchimentos
               FROM anamneses
               WHERE link_origem_id IS NOT NULL
               GROUP BY link_origem_id
@@ -230,6 +229,7 @@ router.get('/', async (req, res) => {
         res.status(500).json({ error: 'Erro ao buscar anamneses.' });
     }
 });
+
 
 
 // GET /api/anamneses/cliente/:clienteId  — all anamneses for a specific client

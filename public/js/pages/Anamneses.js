@@ -69,6 +69,8 @@ export async function renderAnamnesisList(router) {
         const nome = a.nome_link || 'Campanha';
         const visitas = parseInt(a.visitas || a.acessos || 0);
         const preenchi = parseInt(a.preenchimentos || 0);
+        const taxa = visitas > 0 ? Math.round((preenchi / visitas) * 100) : 0;
+        const taxaColor = taxa >= 50 ? 'var(--green-700)' : taxa >= 20 ? '#d97706' : '#dc2626';
         return `
           <tr>
             <td>${typeChip('generico')}</td>
@@ -80,9 +82,19 @@ export async function renderAnamnesisList(router) {
             </td>
             <td style="white-space:nowrap">${formatDate(a.criado_em)}</td>
             <td>
-              <div style="font-size:0.82rem;line-height:1.6">
+              <div style="font-size:0.82rem;line-height:1.8;min-width:140px">
                 <div>👁️ <strong>${visitas}</strong> acessos</div>
                 <div>✅ <strong>${preenchi}</strong> preenchimentos</div>
+                ${visitas > 0 ? `
+                <div style="margin-top:4px">
+                  <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);margin-bottom:2px">
+                    <span>Conversão</span>
+                    <strong style="color:${taxaColor}">${taxa}%</strong>
+                  </div>
+                  <div style="background:#e5e7eb;border-radius:4px;height:5px;overflow:hidden">
+                    <div style="background:${taxaColor};width:${Math.min(taxa, 100)}%;height:100%;border-radius:4px;transition:width 0.5s"></div>
+                  </div>
+                </div>` : ''}
               </div>
             </td>
             <td>
@@ -95,6 +107,7 @@ export async function renderAnamnesisList(router) {
             </td>
           </tr>`;
       }).join('');
+
 
     pc.innerHTML = `
       ${pessoais.length > 0 ? `
