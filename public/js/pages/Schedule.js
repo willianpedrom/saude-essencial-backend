@@ -207,18 +207,31 @@ export async function renderFollowup(router) {
     });
   }
 
-  function makeGoogleCalendarUrl(followup, clientName) {
+  function makeGoogleCalendarUrl(followup, clientName, clientPhone) {
     if (!followup.dueDateTime) return null;
     const start = new Date(followup.dueDateTime);
     const end = new Date(start.getTime() + 30 * 60 * 1000); // 30min
     const fmt = d => d.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+
+    // details with phone if available
+    const phone = (clientPhone || '').replace(/\D/g, '');
+    const details = [
+      followup.note,
+      phone ? `\nWhatsApp: https://wa.me/55${phone}` : ''
+    ].filter(Boolean).join('');
+
     const params = new URLSearchParams({
       action: 'TEMPLATE',
-      text: `Follow-up: ${clientName}`,
-      details: followup.note,
+      text: `💬 Follow-up: ${clientName}`,
+      details,
       dates: `${fmt(start)}/${fmt(end)}`,
+      // Lembretes: 1 dia antes (1440 min) + na hora (0 min)
+      crm: 'POPUP',
+      cr: '1440',
     });
-    return `https://calendar.google.com/calendar/render?${params}`;
+    // Google Calendar aceita múltiplos rem=X na URL
+    const url = `https://calendar.google.com/calendar/render?${params}&rem=1440&rem=0`;
+    return url;
   }
 
   function makeWhatsAppUrl(followup, client) {
@@ -261,7 +274,7 @@ export async function renderFollowup(router) {
       const statusColor = { done: '#166534', pending: '#854d0e', overdue: '#7c2d12' }[status];
       const statusBg = { done: '#dcfce7', pending: '#fef9c3', overdue: '#fee2e2' }[status];
 
-      const gcalUrl = makeGoogleCalendarUrl(f, clientName);
+      const gcalUrl = makeGoogleCalendarUrl(f, clientName, c?.phone || c?.telefone);
       const waUrl = makeWhatsAppUrl(f, c);
 
       const initials = clientName.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
@@ -371,19 +384,9 @@ export async function renderFollowup(router) {
           <label class="field-label">🕐 Horário</label>
           <input class="field-input" id="fu-time" type="time" value="09:00" />
         </div>
-        ${notifStatus === 'granted' ? `
-        <div class="form-group form-field-full">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88rem">
-            <input type="checkbox" id="fu-notif" checked />
-            <span>🔔 Ativar notificação de lembrete (dentro de 7 dias)</span>
-          </label>
-        </div>` : notifStatus === 'denied' ? `
-        <div style="background:#fef3c7;border-radius:8px;padding:10px 12px;font-size:0.8rem;color:#92400e">
-          ⚠️ Notificações bloqueadas. Permita notificações no navegador para receber lembretes.
-        </div>` : ''}
         <div style="background:#f0fdf4;border-radius:8px;padding:12px;font-size:0.82rem;color:#1a4731" class="form-group form-field-full">
-          💡 Um link do <strong>WhatsApp com mensagem personalizada</strong> e atalho para o 
-          <strong>Google Agenda</strong> serão gerados automaticamente.
+          📅 Após salvar, clique em <strong>📆 Adicionar ao Google Agenda</strong> no card do follow-up.
+          Os lembretes serão configurados automaticamente: <strong>1 dia antes</strong> e <strong>na hora do contato</strong>.
         </div>
       </div>`, {
       confirmLabel: '💾 Salvar Follow-up',
@@ -474,21 +477,7 @@ export async function renderFollowup(router) {
         const list = getFollowups();
         list.push(followup);
         saveFollowups(list);
-
-        // Schedule browser notification if within range
-        if (wantsNotif && dueDateTime) {
-          const c = clients.find(cl => cl.id === clientId);
-          const clientName = c?.name || c?.nome || 'Cliente';
-          if (notifStatus === 'granted') {
-            scheduleNotification(followup, clientName);
-            toast('Follow-up salvo! 🔔 Lembrete agendado.', 'success');
-          } else {
-            toast('Follow-up salvo! 💬');
-          }
-        } else {
-          toast('Follow-up salvo! 💬');
-        }
-
+        toast('Follow-up salvo! 💬 Clique em "📆 Agenda" para adicionar ao Google Calendar com lembretes.', 'success');
         renderList();
       }
     });
