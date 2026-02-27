@@ -167,7 +167,10 @@ export async function renderClients(router) {
             </div>
             <input class="field-input" id="search-input" placeholder="🔍 Buscar cliente..." style="width:220px;padding:8px 12px" />
           </div>
-          <button class="btn btn-primary" id="btn-add-client">+ Novo Cliente</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary" id="btn-import-csv">📥 Importar CSV</button>
+            <button class="btn btn-primary" id="btn-add-client">+ Novo Cliente</button>
+          </div>
         </div>
         <div class="card">
           <div style="overflow-x:auto">
@@ -182,6 +185,7 @@ export async function renderClients(router) {
 
     renderTable();
     pc.querySelector('#btn-add-client').addEventListener('click', () => showClientModal());
+    pc.querySelector('#btn-import-csv').addEventListener('click', () => showImportModal());
     pc.querySelectorAll('[data-filter]').forEach(btn => {
       btn.addEventListener('click', () => {
         filter = btn.dataset.filter;
@@ -280,6 +284,204 @@ export async function renderClients(router) {
       // Close this modal, then open anamnese view
       el.querySelector('[data-close]')?.click();
       setTimeout(() => showAnamneseModal(client, router), 200);
+    });
+  }
+
+  // ── CSV Import Modal ───────────────────────────────────────
+  function parseCSV(text) {
+    const lines = text.trim().split(/\r?\n/);
+    if (lines.length < 2) return [];
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/["']/g, ''));
+    return lines.slice(1).map(line => {
+      // Handle quoted fields
+      const cols = [];
+      let cur = ''; let inQ = false;
+      for (const ch of line) {
+        if (ch === '"') { inQ = !inQ; }
+        else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+        else cur += ch;
+      }
+      cols.push(cur.trim());
+      const obj = {};
+      headers.forEach((h, i) => { obj[h] = (cols[i] || '').replace(/^"|"$/g, ''); });
+      return obj;
+    }).filter(row => Object.values(row).some(v => v));
+  }
+
+  function downloadTemplate() {
+    const header = 'nome,email,telefone,data_nascimento,cidade,genero,status,notas';
+    const ex = 'Maria Silva,maria@email.com,5511999999999,1990-05-15,São Paulo,feminino,ativo,Cliente VIP';
+    const blob = new Blob([header + '\n' + ex], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'modelo_importacao_clientes.csv';
+    a.click();
+  }
+
+  function showImportModal() {
+    let parsed = [];
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay open';
+    overlay.innerHTML = `
+      <div class="modal-box" style="max-width:680px">
+        <div class="modal-header">
+          <h3>📥 Importar Clientes via CSV</h3>
+          <button class="modal-close" id="import-close">✕</button>
+        </div>
+        <div class="modal-body">
+
+          <!-- Step 1: Instructions + download -->
+          <div id="import-step1">
+            <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:16px;margin-bottom:20px">
+              <p style="font-weight:700;color:#166534;margin-bottom:8px">📋 Como importar:</p>
+              <ol style="color:#166534;font-size:0.85rem;padding-left:18px;line-height:1.9">
+                <li>Baixe o modelo CSV abaixo</li>
+                <li>Preencha com seus clientes (máximo 500 por vez)</li>
+                <li>Suba o arquivo aqui e confira o preview</li>
+                <li>Clique em <strong>Importar</strong></li>
+              </ol>
+              <button class="btn btn-secondary btn-sm" id="btn-download-template" style="margin-top:10px">⬇️ Baixar Modelo CSV</button>
+            </div>
+
+            <!-- Colunas aceitas -->
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px">
+              <strong>Colunas aceitas:</strong> nome* · email · telefone · data_nascimento (AAAA-MM-DD) · cidade · genero (feminino/masculino) · status (ativo/inativo) · notas
+            </div>
+
+            <!-- Drop zone -->
+            <label id="drop-zone" style="display:block;border:2px dashed var(--green-300);border-radius:12px;
+              padding:40px;text-align:center;cursor:pointer;transition:all .2s;
+              background:var(--green-50);color:var(--text-muted)">
+              <div style="font-size:2.5rem;margin-bottom:8px">📁</div>
+              <div style="font-size:0.95rem;font-weight:600">Clique ou arraste seu arquivo CSV aqui</div>
+              <div style="font-size:0.78rem;margin-top:4px">Formatos: .csv (UTF-8)</div>
+              <input type="file" id="csv-file-input" accept=".csv,text/csv" style="display:none" />
+            </label>
+          </div>
+
+          <!-- Step 2: Preview -->
+          <div id="import-step2" style="display:none">
+            <div id="import-stats" style="margin-bottom:12px"></div>
+            <div style="max-height:280px;overflow:auto;border:1px solid var(--border);border-radius:8px">
+              <table class="clients-table" id="preview-table" style="min-width:500px">
+                <thead><tr>
+                  <th>#</th><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Cidade</th><th>Status</th>
+                </tr></thead>
+                <tbody id="preview-tbody"></tbody>
+              </table>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btn-change-file" style="margin-top:10px">🔄 Trocar arquivo</button>
+          </div>
+
+          <!-- Step 3: Result -->
+          <div id="import-step3" style="display:none;text-align:center;padding:20px"></div>
+
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="import-cancel">Cancelar</button>
+          <button class="btn btn-primary" id="btn-do-import" disabled style="min-width:130px">📥 Importar</button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(overlay);
+    const closeModal = () => overlay.remove();
+    overlay.querySelector('#import-close').addEventListener('click', closeModal);
+    overlay.querySelector('#import-cancel').addEventListener('click', closeModal);
+    overlay.querySelector('#btn-download-template').addEventListener('click', downloadTemplate);
+
+    // File handling
+    const fileInput = overlay.querySelector('#csv-file-input');
+    const dropZone = overlay.querySelector('#drop-zone');
+
+    function handleFile(file) {
+      if (!file || !file.name.endsWith('.csv')) { toast('Use um arquivo .csv', 'error'); return; }
+      const reader = new FileReader();
+      reader.onload = e => {
+        parsed = parseCSV(e.target.result);
+        if (parsed.length === 0) { toast('Arquivo vazio ou inválido', 'error'); return; }
+        showPreview();
+      };
+      reader.readAsText(file, 'UTF-8');
+    }
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = 'var(--green-500)'; dropZone.style.background = 'var(--green-100)'; });
+    dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = ''; dropZone.style.background = ''; });
+    dropZone.addEventListener('drop', e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); });
+
+    function showPreview() {
+      overlay.querySelector('#import-step1').style.display = 'none';
+      overlay.querySelector('#import-step2').style.display = 'block';
+      overlay.querySelector('#btn-do-import').disabled = false;
+
+      const semNome = parsed.filter(r => !(r.nome || r.name || '').trim()).length;
+      const stats = overlay.querySelector('#import-stats');
+      stats.innerHTML = `
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <span style="background:#d1fae5;color:#065f46;padding:4px 12px;border-radius:20px;font-size:0.82rem;font-weight:600">✅ ${parsed.length} clientes encontrados</span>
+          ${semNome ? `<span style="background:#fee2e2;color:#991b1b;padding:4px 12px;border-radius:20px;font-size:0.82rem;font-weight:600">⚠️ ${semNome} sem nome (serão ignorados)</span>` : ''}
+        </div>`;
+
+      const tbody = overlay.querySelector('#preview-tbody');
+      tbody.innerHTML = parsed.slice(0, 8).map((r, i) => {
+        const nome = r.nome || r.name || '—';
+        const valido = !!nome.trim() && nome !== '—';
+        return `<tr style="${!valido ? 'background:#fff1f2' : ''}">
+          <td style="font-size:0.75rem;color:var(--text-muted)">${i + 2}</td>
+          <td style="font-weight:${valido ? '600' : 'normal'};color:${valido ? 'inherit' : '#dc2626'}">${nome}</td>
+          <td style="font-size:0.8rem">${r.email || '—'}</td>
+          <td style="font-size:0.8rem">${r.telefone || r.phone || '—'}</td>
+          <td style="font-size:0.8rem">${r.cidade || r.city || '—'}</td>
+          <td><span class="status-badge status-${(r.status || 'ativo').toLowerCase() === 'inativo' ? 'inactive' : 'active'}" style="font-size:0.7rem">${(r.status || 'ativo').toLowerCase() === 'inativo' ? 'Inativo' : 'Ativo'}</span></td>
+        </tr>`;
+      }).join('');
+      if (parsed.length > 8) {
+        tbody.innerHTML += `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:10px">... e mais ${parsed.length - 8} clientes</td></tr>`;
+      }
+    }
+
+    overlay.querySelector('#btn-change-file').addEventListener('click', () => {
+      overlay.querySelector('#import-step1').style.display = 'block';
+      overlay.querySelector('#import-step2').style.display = 'none';
+      overlay.querySelector('#btn-do-import').disabled = true;
+      parsed = []; fileInput.value = '';
+    });
+
+    // Import
+    overlay.querySelector('#btn-do-import').addEventListener('click', async () => {
+      const btn = overlay.querySelector('#btn-do-import');
+      btn.disabled = true; btn.textContent = '⏳ Importando...';
+      try {
+        const { api } = await import('../store.js').then(m => ({ api: m.api }));
+        const res = await api('POST', '/api/clientes/import', { clientes: parsed });
+        overlay.querySelector('#import-step2').style.display = 'none';
+        overlay.querySelector('#import-step3').style.display = 'block';
+        overlay.querySelector('#import-step3').innerHTML = `
+          <div style="font-size:3rem;margin-bottom:12px">✅</div>
+          <h3 style="color:#16a34a;margin-bottom:16px">Importação concluída!</h3>
+          <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:20px">
+            <div style="text-align:center">
+              <div style="font-size:2rem;font-weight:800;color:#16a34a">${res.criados}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted)">Criados</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:2rem;font-weight:800;color:#d97706">${res.pulados}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted)">Pulados (duplicados)</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:2rem;font-weight:800;color:#dc2626">${res.erros?.length || 0}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted)">Erros</div>
+            </div>
+          </div>
+          ${res.erros?.length ? `<details style="text-align:left;font-size:0.8rem"><summary style="cursor:pointer;color:var(--text-muted)">Ver erros</summary><pre style="background:#f8f9fa;padding:10px;border-radius:6px;overflow:auto;margin-top:8px">${res.erros.map(e => `Linha ${e.linha}: ${e.erro}`).join('\n')}</pre></details>` : ''}`;
+        overlay.querySelector('#import-cancel').textContent = 'Fechar';
+        overlay.querySelector('#btn-do-import').style.display = 'none';
+        await refresh();
+      } catch (err) {
+        toast('Erro na importação: ' + err.message, 'error');
+        btn.disabled = false; btn.textContent = '📥 Importar';
+      }
     });
   }
 

@@ -153,4 +153,85 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// POST /api/clientes/import — importação em massa via CSV (enviado como JSON array)
+router.post('/import', async (req, res) => {
+    const { clientes } = req.body;
+    if (!Array.isArray(clientes) || clientes.length === 0) {
+        return res.status(400).json({ error: 'Nenhum cliente enviado.' });
+    }
+    if (clientes.length > 500) {
+        return res.status(400).json({ error: 'Máximo de 500 clientes por importação.' });
+    }
+
+    // Check plan limit
+    const limites = req.consultora.limites || {};
+    let totalAtual = 0;
+    if (limites.clientes_max !== null && limites.clientes_max !== undefined) {
+        const { rows: [{ count }] } = await pool.query(
+            'SELECT COUNT(*) FROM clientes WHERE consultora_id=$1 AND ativo=TRUE',
+            [req.consultora.id]
+        );
+        totalAtual = parseInt(count);
+        const disponiveis = limites.clientes_max - totalAtual;
+        if (disponiveis <= 0) {
+            return res.status(403).json({
+                error: `Você atingiu o limite de ${limites.clientes_max} clientes do plano. Faça upgrade para importar mais.`,
+                code: 'LIMIT_REACHED',
+            });
+        }
+    }
+
+    const criados = [];
+    const pulados = [];
+    const erros = [];
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        for (let i = 0; i < clientes.length; i++) {
+            const row = clientes[i];
+            const nome = (row.nome || row.name || '').trim();
+            if (!nome) { erros.push({ linha: i + 2, erro: 'Nome obrigatório', dados: row }); continue; }
+
+            // Parse optional date
+            let dataNasc = null;
+            const rawDate = row.data_nascimento || row.birthdate || row.nascimento || '';
+            if (rawDate) {
+                const d = new Date(rawDate);
+                if (!isNaN(d.getTime())) dataNasc = d.toISOString().split('T')[0];
+            }
+
+            const email = (row.email || '').trim().toLowerCase() || null;
+            const telefone = (row.telefone || row.phone || row.whatsapp || '').trim() || null;
+            const cidade = (row.cidade || row.city || '').trim() || null;
+            const genero = (row.genero || row.gender || 'feminino').toLowerCase().includes('masc') ? 'masculino' : 'feminino';
+            const notas = (row.notas || row.notes || row.observacoes || '').trim() || null;
+            const status = (row.status || 'active').toLowerCase() === 'inativo' ? 'inactive' : 'active';
+
+            try {
+                const { rows } = await client.query(
+                    `INSERT INTO clientes (consultora_id, nome, email, telefone, data_nascimento, genero, cidade, notas, status)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                     ON CONFLICT (consultora_id, email) DO NOTHING
+                     RETURNING id, nome`,
+                    [req.consultora.id, nome, email, telefone, dataNasc, genero, cidade, notas, status]
+                );
+                if (rows.length > 0) criados.push(rows[0].nome);
+                else pulados.push({ linha: i + 2, motivo: 'E-mail já cadastrado', nome });
+            } catch (e) {
+                erros.push({ linha: i + 2, erro: e.message, nome });
+            }
+        }
+        await client.query('COMMIT');
+    } catch (e) {
+        await client.query('ROLLBACK');
+        return res.status(500).json({ error: 'Erro na importação: ' + e.message });
+    } finally {
+        client.release();
+    }
+
+    console.log(`[Import] consultora=${req.consultora.id} criados=${criados.length} pulados=${pulados.length} erros=${erros.length}`);
+    return res.json({ success: true, criados: criados.length, pulados: pulados.length, erros, total: clientes.length });
+});
+
 module.exports = router;
