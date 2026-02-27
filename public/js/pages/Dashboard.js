@@ -64,29 +64,71 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
       </div>
     </aside>
 
+    <!-- Mobile overlay -->
+    <div id="sidebar-overlay"></div>
+
     <div class="main-content">
       <header class="main-header">
-        <div>
-          <div class="main-header-title">${pageTitle}</div>
-          <div class="main-header-sub">${new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button id="sidebar-toggle" aria-label="Menu" title="Menu">☰</button>
+          <div>
+            <div class="main-header-title">${pageTitle}</div>
+            <div class="main-header-sub">${new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</div>
+          </div>
         </div>
         <div class="main-header-actions" id="header-actions"></div>
       </header>
       <div class="page-content" id="page-content">${pageContent}</div>
     </div>
+
+    <!-- Bottom navigation (mobile only) -->
+    <nav class="bottom-nav" id="bottom-nav">
+      <button class="bottom-nav-item ${activeNav === 'dashboard' ? 'active' : ''}" data-nav="dashboard">
+        <span class="nav-icon">📊</span>Dashboard
+      </button>
+      <button class="bottom-nav-item ${activeNav === 'clients' ? 'active' : ''}" data-nav="clients">
+        <span class="nav-icon">👥</span>Clientes
+      </button>
+      <button class="bottom-nav-item ${activeNav === 'anamnesis' ? 'active' : ''}" data-nav="anamnesis">
+        <span class="nav-icon">📋</span>Anamneses
+      </button>
+      <button class="bottom-nav-item ${activeNav === 'schedule' ? 'active' : ''}" data-nav="schedule">
+        <span class="nav-icon">📅</span>Agenda
+      </button>
+      <button class="bottom-nav-item bottom-nav-more" id="bottom-nav-more">
+        <span class="nav-icon">☰</span>Mais
+      </button>
+    </nav>
   </div>`;
 
+  // Sidebar nav items
   app.querySelectorAll('[data-nav]').forEach(btn => {
-    btn.addEventListener('click', () => router.navigate('/' + btn.dataset.nav));
+    btn.addEventListener('click', () => {
+      closeSidebar();
+      router.navigate('/' + btn.dataset.nav);
+    });
   });
 
+  // Hamburger toggle
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  function openSidebar() { sidebar?.classList.add('open'); overlay?.classList.add('active'); document.body.style.overflow = 'hidden'; }
+  function closeSidebar() { sidebar?.classList.remove('open'); overlay?.classList.remove('active'); document.body.style.overflow = ''; }
+  document.getElementById('sidebar-toggle')?.addEventListener('click', openSidebar);
+  overlay?.addEventListener('click', closeSidebar);
+
+  // Bottom nav "Mais" opens sidebar
+  document.getElementById('bottom-nav-more')?.addEventListener('click', openSidebar);
+
   document.getElementById('logout-btn').addEventListener('click', () => {
+    closeSidebar();
     auth.logout();
     toast('Até logo! 👋', 'info');
     router.navigate('/');
   });
 
   document.getElementById('sidebar-user-btn')?.addEventListener('click', () => {
+    closeSidebar();
     router.navigate('/profile');
   });
 
