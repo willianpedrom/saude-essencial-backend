@@ -54,6 +54,10 @@ app.use(helmet({
             ],
         },
     },
+    // Helmet default é "no-referrer" — isso impede o Meta Pixel de verificar
+    // o domínio de origem e bloqueia o disparo de eventos.
+    // strict-origin-when-cross-origin envia a origem (domínio) em requests cross-origin.
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
 
 app.use(cors({ origin: true, credentials: true }));
