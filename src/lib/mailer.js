@@ -6,30 +6,38 @@
 
 const nodemailer = require('nodemailer');
 
+// Dynamic getters — read at send time, not at module load time
+// This ensures Railway env vars are always picked up correctly
+function getFrom() {
+  return process.env.SMTP_FROM || `"Gota Essencial" <${process.env.SMTP_USER}>`;
+}
+function getPlatformUrl() {
+  return process.env.PLATFORM_URL || 'https://gotaessencial.com.br';
+}
+
 function createTransport() {
-  if (process.env.SMTP_SERVICE) {
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  const service = process.env.SMTP_SERVICE;
+
+  // Gmail or other named services (explicit config avoids host/port conflicts)
+  if (service) {
     return nodemailer.createTransport({
-      service: process.env.SMTP_SERVICE,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
+      service,
+      auth: { user, pass },
     });
   }
+
+  // Generic SMTP (SendGrid, Brevo, Zoho, etc.)
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.SMTP_PORT || '587'),
     secure: process.env.SMTP_SECURE === 'true',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-    tls: { rejectUnauthorized: false }, // tolerate self-signed certs in some hosts
+    auth: { user, pass },
+    tls: { rejectUnauthorized: false },
   });
 }
 
-const FROM = process.env.SMTP_FROM || `"Gota Essencial" <${process.env.SMTP_USER}>`;
-const PLATFORM_URL = process.env.PLATFORM_URL || 'https://gotaessencial.com.br';
 
 function isSmtpConfigured() {
   return !!(process.env.SMTP_USER && process.env.SMTP_PASS);
@@ -61,7 +69,7 @@ async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnEr
   }
 
   const transporter = createTransport();
-  const loginUrl = `${PLATFORM_URL}/#/login`;
+  const loginUrl = `${getPlatformUrl()}/#/login`;
   const planLabels = { starter: 'Starter', pro: 'Pro', enterprise: 'Enterprise' };
   const planNome = planLabels[plano] || plano || 'Starter';
 
@@ -144,13 +152,13 @@ async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnEr
 
   try {
     const info = await transporter.sendMail({
-      from: FROM,
+      from: getFrom(),
       to: email,
       subject: senhaProvisoria
         ? `🎉 Bem-vindo(a) à Gota Essencial! Seus dados de acesso estão aqui`
         : `📧 Seus dados de acesso — Gota Essencial`,
       html,
-      text: `Olá ${nome}!\n\nE-mail: ${email}${senhaProvisoria ? `\nSenha provisória: ${senhaProvisoria}` : ''}\n\nAcesse: ${loginUrl}`,
+      text: `Olá ${nome}!\n\nE-mail: ${email}${senhaProvisoria ? `\nSenha provisória: ${senhaProvisoria}` : ''}\n\nAcesse: ${getPlatformUrl()}/#/login`,
     });
     console.log(`[Mailer] ✅ Email enviado para ${email} — ID: ${info.messageId}`);
     return info;
@@ -168,11 +176,11 @@ async function sendCancellationEmail({ nome, email }) {
   const transporter = createTransport();
   try {
     await transporter.sendMail({
-      from: FROM,
+      from: getFrom(),
       to: email,
       subject: `Sua assinatura Gota Essencial foi cancelada`,
-      html: `<p>Olá ${nome},</p><p>Sua assinatura foi cancelada. Caso queira reativar, acesse <a href="${PLATFORM_URL}">${PLATFORM_URL}</a>.</p>`,
-      text: `Olá ${nome},\n\nSua assinatura foi cancelada. Para reativar: ${PLATFORM_URL}`,
+      html: `<p>Olá ${nome},</p><p>Sua assinatura foi cancelada. Caso queira reativar, acesse <a href="${getPlatformUrl()}">${getPlatformUrl()}</a>.</p>`,
+      text: `Olá ${nome},\n\nSua assinatura foi cancelada. Para reativar: ${getPlatformUrl()}`,
     });
   } catch (err) {
     console.error('[Mailer] Erro ao enviar email de cancelamento:', err.message);
