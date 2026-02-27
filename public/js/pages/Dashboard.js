@@ -241,10 +241,10 @@ export async function renderDashboard(router) {
         '<div style="font-size:0.85rem;color:var(--text-body);margin-top:4px">' + (f.note || '') + '</div>' +
         '</div>' +
         '<div style="display:flex;gap:6px">' +
-        '<button class="btn btn-sm" style="background:#f3f4f6;color:#374151" onclick="window.dashboardDoneFu(\\'' + f.id + '\\')">✅</button>' +
-          '<a href="' + wa + '" target="_blank" class="btn btn-sm" style="background:#25D366;color:white;text-decoration:none">📱</a>' +
-          '</div>' +
-          '</div>';
+        '<button class="btn btn-sm" style="background:#f3f4f6;color:#374151" onclick="window.dashboardDoneFu(&quot;' + f.id + '&quot;)">✅</button>' +
+        '<a href="' + wa + '" target="_blank" class="btn btn-sm" style="background:#25D366;color:white;text-decoration:none">📱</a>' +
+        '</div>' +
+        '</div>';
     }).join('')}
       </div>
     </div>` : ''}
