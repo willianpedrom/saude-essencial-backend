@@ -164,36 +164,29 @@ export function injectTrackingScripts(rastreamento) {
         document.head.appendChild(s);
     }
 
-    // Meta Pixel (browser-side fbq)
-    if (meta_pixel_id) {
+    // Meta Pixel (browser-side fbq) — snippet oficial Meta injetado como inline script
+    if (meta_pixel_id && String(meta_pixel_id).trim()) {
+        const pixelId = String(meta_pixel_id).trim();
         if (!document.getElementById('tracking-meta-pixel')) {
-            // 1. Set up the fbq stub (queues calls until fbevents.js loads)
-            if (!window.fbq) {
-                const n = window.fbq = function () {
-                    n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
-                };
-                if (!window._fbq) window._fbq = n;
-                n.push = n; n.loaded = true; n.version = '2.0'; n.queue = [];
-            }
-
-            // 2. Load fbevents.js as an external script
-            const fbScript = document.createElement('script');
-            fbScript.id = 'tracking-meta-pixel';
-            fbScript.async = true;
-            fbScript.src = 'https://connect.facebook.net/en_US/fbevents.js';
-            document.head.appendChild(fbScript);
-
-            // 3. Init and fire PageView (queued, processed when fbevents.js loads)
-            window.fbq('init', meta_pixel_id);
-            window.fbq('track', 'PageView');
-
-            // 4. Add noscript img fallback
+            // Snippet oficial da Meta como script inline — reconhecido pelo Meta Pixel Helper
+            addInlineScript('tracking-meta-pixel',
+                `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?` +
+                `n.callMethod.apply(n,arguments):n.queue.push(arguments)};` +
+                `if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';` +
+                `n.queue=[];t=b.createElement(e);t.async=!0;` +
+                `t.src=v;s=b.getElementsByTagName(e)[0];` +
+                `s.parentNode.insertBefore(t,s)}(window,document,'script',` +
+                `'https://connect.facebook.net/en_US/fbevents.js');` +
+                `fbq('init','${pixelId}');fbq('track','PageView');`
+            );
+            // noscript fallback
             const ns = document.createElement('noscript');
             ns.id = 'tracking-meta-pixel-ns';
-            ns.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${meta_pixel_id}&ev=PageView&noscript=1"/>`;
+            ns.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1"/>`;
             document.head.appendChild(ns);
         }
     }
+
 
     // Microsoft Clarity
     if (clarity_id) {
