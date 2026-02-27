@@ -142,7 +142,7 @@ async function sendEmail({ to, toName, subject, html, text, throwOnError = false
 // ── Welcome email template ────────────────────────────────────────────────
 
 async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnError = false }) {
-  const loginUrl = `${getPlatformUrl()}/#/login`;
+  const loginUrl = getPlatformUrl(); // link para a raiz — o app redireciona para login automaticamente
   const planLabels = { starter: 'Starter', pro: 'Pro', enterprise: 'Enterprise' };
   const planNome = planLabels[plano] || plano || 'Starter';
 
