@@ -63,7 +63,7 @@ export function toast(msg, type = 'success', duration = 3000) {
     setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(40px)'; t.style.transition = 'all 0.3s'; setTimeout(() => t.remove(), 300); }, duration);
 }
 
-export function modal(title, bodyHtml, { onConfirm, confirmLabel = 'Confirmar', confirmClass = 'btn-primary', cancelLabel = 'Cancelar' } = {}) {
+export function modal(title, bodyHtml, { onConfirm, onOpen, confirmLabel = 'Confirmar', confirmClass = 'btn-primary', cancelLabel = 'Cancelar' } = {}) {
     const existing = document.querySelector('.modal-overlay');
     if (existing) existing.remove();
 
@@ -83,7 +83,10 @@ export function modal(title, bodyHtml, { onConfirm, confirmLabel = 'Confirmar', 
     </div>
   `;
     document.body.appendChild(m);
-    requestAnimationFrame(() => m.classList.add('open'));
+    requestAnimationFrame(() => {
+        m.classList.add('open');
+        if (onOpen) onOpen(m);
+    });
 
     function close() { m.classList.remove('open'); setTimeout(() => m.remove(), 250); }
     m.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', close));
