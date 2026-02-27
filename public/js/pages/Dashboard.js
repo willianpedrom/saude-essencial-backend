@@ -154,7 +154,25 @@ export async function renderDashboard(router) {
       store.getAniversariantes().catch(() => []),
     ]);
 
+    // Carregar follow-ups
+    const followupsArr = [];
+    try {
+      const stored = localStorage.getItem('gota_followups_' + consultant.id);
+      if (stored) followupsArr.push(...JSON.parse(stored));
+    } catch (e) { }
+
+    const pendentes = followupsArr.filter(f => f.status === 'pending');
+    const totalFollowups = pendentes.length;
+
     const now = new Date();
+    const hojeStr = now.toDateString();
+
+    const hojeFollowups = pendentes.filter(f => f.dueDateTime && new Date(f.dueDateTime).toDateString() === hojeStr);
+    const atrasadosFollowups = pendentes.filter(f => f.dueDateTime && new Date(f.dueDateTime) < now && new Date(f.dueDateTime).toDateString() !== hojeStr);
+
+    // Sort urgent: overdue first, then today
+    const urgentFollowups = [...atrasadosFollowups, ...hojeFollowups].sort((a, b) => new Date(a.dueDateTime) - new Date(b.dueDateTime)).slice(0, 5);
+
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const totalClients = clients.length;
@@ -182,17 +200,55 @@ export async function renderDashboard(router) {
     </div>
     <div class="stat-card blue">
       <div class="stat-icon">💰</div>
-      <div class="stat-value" style="font-size:1.4rem">${formatCurrency(0)}</div>
+      <div class="stat-value">${formatCurrency(0)}</div>
       <div class="stat-label">Receita Total</div>
     </div>
-    <div class="stat-card rose">
+    <div class="stat-card rose" style="cursor:pointer" onclick="location.hash='#/followup'">
       <div class="stat-icon">💬</div>
-      <div class="stat-value">0</div>
+      <div class="stat-value">${totalFollowups}</div>
       <div class="stat-label">Follow-ups Pendentes</div>
+      ${hojeFollowups.length > 0 ? `<div class="stat-trend trend-down" style="color:#b45309">🔥 ${hojeFollowups.length} hoje</div>` : (atrasadosFollowups.length > 0 ? `<div class="stat-trend trend-down">⚠️ ${atrasadosFollowups.length} atrasados</div>` : '')}
     </div>
   </div>
 
   <div class="dashboard-grid">
+    <!-- Follow-ups Urgentes (Hoje/Atrasados) -->
+    ${urgentFollowups.length > 0 ? `
+    <div class="card col-span-2" style="border-left:4px solid #f59e0b">
+      <div class="card-header">
+        <h3>💬 Consultas e Avisos (Follow-up)</h3>
+        <button class="btn btn-secondary btn-sm" onclick="location.hash='#/followup'">Ver todos</button>
+      </div>
+      <div class="card-body">
+        ${urgentFollowups.map(f => {
+      const c = clients.find(cl => cl.id === f.clientId);
+      const name = c?.name || c?.nome || 'Cliente';
+      const isOverdue = new Date(f.dueDateTime) < new Date() && new Date(f.dueDateTime).toDateString() !== new Date().toDateString();
+      const phone = (c?.phone || c?.telefone || '').replace(/\\D/g, '');
+      const msg = encodeURIComponent('Oi ' + name + ', combinamos que eu entraria em contato hoje com você. Lembra? Podemos conversar agora? 💚');
+      const wa = phone ? 'https://wa.me/55' + phone + '?text=' + msg : 'https://wa.me/?text=' + msg;
+
+      const badgeColor = isOverdue ? '#991b1b' : '#b45309';
+      const badgeBg = isOverdue ? '#fee2e2' : '#ffedd5';
+      const badgeText = isOverdue ? '⚠️ Atrasado' : '🔥 Hoje';
+
+      return '<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px">' +
+        '<div>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+        '<span style="font-weight:600">' + name + '</span>' +
+        '<span style="font-size:0.7rem;padding:2px 6px;border-radius:10px;background:' + badgeBg + ';color:' + badgeColor + '">' + badgeText + '</span>' +
+        '</div>' +
+        '<div style="font-size:0.85rem;color:var(--text-body);margin-top:4px">' + (f.note || '') + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px">' +
+        '<button class="btn btn-sm" style="background:#f3f4f6;color:#374151" onclick="window.dashboardDoneFu(\\'' + f.id + '\\')">✅</button>' +
+          '<a href="' + wa + '" target="_blank" class="btn btn-sm" style="background:#25D366;color:white;text-decoration:none">📱</a>' +
+          '</div>' +
+          '</div>';
+    }).join('')}
+      </div>
+    </div>` : ''}
+
     <!-- Aniversariantes -->
     <div class="card col-span-2">
       <div class="card-header">
@@ -225,7 +281,7 @@ export async function renderDashboard(router) {
       </div>
     </div>
 
-    <!-- Clientes Recentes -->
+    <!--Clientes Recentes-- >
     <div class="card col-span-2">
       <div class="card-header">
         <h3>👥 Clientes Recentes</h3>
@@ -250,7 +306,7 @@ export async function renderDashboard(router) {
       </div>
     </div>
 
-    <!-- Próximas Reuniões -->
+    <!--Próximas Reuniões-- >
     <div class="card col-span-2">
       <div class="card-header">
         <h3>📅 Próximas Reuniões</h3>
@@ -266,7 +322,7 @@ export async function renderDashboard(router) {
              </div>`).join('')}
       </div>
     </div>
-  </div>`;
+  </div > `;
 
     // Update page-content with real data (no full re-render to avoid losing sidebar)
     const pc = document.getElementById('page-content');
@@ -276,10 +332,28 @@ export async function renderDashboard(router) {
     console.error('Dashboard error:', err);
     const pc = document.getElementById('page-content');
     if (pc) pc.innerHTML = `
-          <div class="empty-state">
+      < div class="empty-state" >
             <div class="empty-state-icon">⚠️</div>
             <p>Erro ao carregar dashboard: ${err.message}</p>
             <button class="btn btn-primary" onclick="location.reload()">Recarregar</button>
-          </div>`;
+          </div > `;
   }
 }
+
+// Handler global temporário no window para marcar como feito no dashboard
+window.dashboardDoneFu = function (id) {
+  try {
+    const consultantId = JSON.parse(localStorage.getItem('gota_auth')).id;
+    const key = 'gota_followups_' + consultantId;
+    let list = JSON.parse(localStorage.getItem(key) || '[]');
+    const idx = list.findIndex(f => f.id === id);
+    if (idx >= 0) {
+      list[idx].status = 'done';
+      localStorage.setItem(key, JSON.stringify(list));
+      import('../utils.js').then(m => m.toast('Follow-up concluído! ✅'));
+      // re-render without reloading route
+      const app = document.getElementById('app');
+      app.querySelector('[data-nav="dashboard"]')?.click();
+    }
+  } catch (e) { }
+};

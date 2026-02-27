@@ -249,13 +249,28 @@ export async function renderFollowup(router) {
 
   function renderList() {
     const followups = getFollowups().sort((a, b) => {
+      // 1. Status: Overdue > Pending > Done
+      const sA = a.status === 'pending' && a.dueDateTime && new Date(a.dueDateTime) < new Date() ? 'overdue' : a.status;
+      const sB = b.status === 'pending' && b.dueDateTime && new Date(b.dueDateTime) < new Date() ? 'overdue' : b.status;
+
       const priority = { overdue: 0, pending: 1, done: 2 };
-      const s = f => f.status === 'pending' && f.dueDateTime && new Date(f.dueDateTime) < new Date() ? 'overdue' : f.status;
-      return (priority[s(a)] || 1) - (priority[s(b)] || 1);
+      if (priority[sA] !== priority[sB]) return priority[sA] - priority[sB];
+
+      // 2. Data ascendente (mais próximos primeiro)
+      if (sA !== 'done') {
+        const dA = a.dueDateTime ? new Date(a.dueDateTime).getTime() : Infinity;
+        const dB = b.dueDateTime ? new Date(b.dueDateTime).getTime() : Infinity;
+        return dA - dB;
+      }
+
+      // Concluidos: mais recentes primeiro
+      const cA = new Date(a.createdAt).getTime();
+      const cB = new Date(b.createdAt).getTime();
+      return cB - cA;
     });
+
     const container = document.getElementById('followup-list');
     if (!container) return;
-
     const pending = followups.filter(f => f.status !== 'done');
     const done = followups.filter(f => f.status === 'done');
 
@@ -268,19 +283,41 @@ export async function renderFollowup(router) {
     function renderCard(f) {
       const c = clients.find(cl => cl.id === f.clientId);
       const clientName = c?.name || c?.nome || 'Cliente';
-      const isOverdue = f.status === 'pending' && f.dueDateTime && new Date(f.dueDateTime) < new Date();
-      const status = isOverdue ? 'overdue' : f.status;
-      const statusLabel = { done: '✅ Concluído', pending: '⏳ Pendente', overdue: '⚠️ Atrasado' }[status];
-      const statusColor = { done: '#166534', pending: '#854d0e', overdue: '#7c2d12' }[status];
-      const statusBg = { done: '#dcfce7', pending: '#fef9c3', overdue: '#fee2e2' }[status];
+      let statusLabel = '';
+      let statusColor = '';
+      let statusBg = '';
+
+      if (f.status === 'done') {
+        statusLabel = '✅ Concluído';
+        statusColor = '#166534'; statusBg = '#dcfce7';
+      } else {
+        const now = new Date();
+        const due = f.dueDateTime ? new Date(f.dueDateTime) : null;
+        if (!due) {
+          statusLabel = '⏳ Pendente';
+          statusColor = '#854d0e'; statusBg = '#fef9c3';
+        } else if (due < now && due.toDateString() !== now.toDateString()) {
+          statusLabel = '⚠️ Atrasado';
+          statusColor = '#991b1b'; statusBg = '#fee2e2'; // Vermelho mais forte
+        } else if (due.toDateString() === now.toDateString()) {
+          statusLabel = '🔥 HOJE';
+          statusColor = '#b45309'; statusBg = '#ffedd5'; // Laranja destaque
+        } else {
+          statusLabel = '⏳ Pendente';
+          statusColor = '#1e40af'; statusBg = '#dbeafe'; // Azul para futuro
+        }
+      }
 
       const gcalUrl = makeGoogleCalendarUrl(f, clientName, c?.phone || c?.telefone);
       const waUrl = makeWhatsAppUrl(f, c);
 
       const initials = clientName.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
 
+      // Determine card border color based on statusLabel mapping
+      const borderColor = { '✅ Concluído': '#22c55e', '⏳ Pendente': '#3b82f6', '⚠️ Atrasado': '#ef4444', '🔥 HOJE': '#f59e0b' }[statusLabel] || '#f59e0b';
+
       return `
-        <div class="card" style="margin-bottom:12px;border-left:4px solid ${{ done: '#22c55e', pending: '#f59e0b', overdue: '#ef4444' }[status]}">
+        <div class="card" style="margin-bottom:12px;border-left:4px solid ${borderColor}">
           <div style="padding:16px 18px">
             <div style="display:flex;align-items:flex-start;gap:12px">
               <div class="client-avatar-sm" style="flex-shrink:0">${initials}</div>
