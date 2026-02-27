@@ -393,41 +393,54 @@ router.post('/users/:id/reenviar-acesso', async (req, res) => {
     }
 });
 
-// GET /api/admin/test-smtp — testa conexão SMTP e retorna diagnóstico
+// GET /api/admin/test-email — testa conexão de email (Brevo ou SMTP)
 router.get('/test-smtp', async (req, res) => {
-    const { verifyConnection, isSmtpConfigured } = require('../lib/mailer');
+    const { verifyConnection, isConfigured, isBrevoConfigured, isSmtpConfigured } = require('../lib/mailer');
+
     const config = {
+        modo: isBrevoConfigured() ? 'Brevo API (HTTP)' : isSmtpConfigured() ? 'SMTP (nodemailer)' : 'Nenhum configurado',
+        BREVO_API_KEY: process.env.BREVO_API_KEY ? '*** configurado ***' : '(não definido)',
+        BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || '(não definido)',
+        SMTP_SERVICE: process.env.SMTP_SERVICE || '(não definido)',
         SMTP_HOST: process.env.SMTP_HOST || '(não definido)',
         SMTP_PORT: process.env.SMTP_PORT || '(não definido)',
         SMTP_USER: process.env.SMTP_USER ? process.env.SMTP_USER.replace(/(.{3}).*(@.*)/, '$1***$2') : '(não definido)',
         SMTP_PASS: process.env.SMTP_PASS ? '*** configurado ***' : '(não definido)',
-        SMTP_FROM: process.env.SMTP_FROM || '(não definido)',
-        SMTP_SERVICE: process.env.SMTP_SERVICE || '(não definido)',
         PLATFORM_URL: process.env.PLATFORM_URL || '(não definido)',
-        configured: isSmtpConfigured(),
+        configured: isConfigured(),
     };
 
     if (!config.configured) {
         return res.status(400).json({
             success: false,
-            error: 'SMTP_USER e/ou SMTP_PASS não configurados.',
+            error: 'Nenhum provedor de email configurado.',
             config,
+            dicas: [
+                'OPÇÃO 1 (Recomendada para Railway): Crie conta grátis em brevo.com, gere uma API Key e configure BREVO_API_KEY + BREVO_SENDER_EMAIL no Railway.',
+                'OPÇÃO 2 (SMTP): Configure SMTP_SERVICE=gmail + SMTP_USER + SMTP_PASS (senha de app) — pode não funcionar se Railway bloquear a porta.',
+            ],
         });
     }
 
     try {
-        await verifyConnection();
-        res.json({ success: true, message: 'Conexão SMTP verificada com sucesso! ✅', config });
+        const result = await verifyConnection();
+        res.json({
+            success: true,
+            message: `✅ Conexão verificada via ${result.method === 'brevo' ? 'Brevo API' : 'SMTP'}`,
+            detail: result,
+            config,
+        });
     } catch (err) {
         res.status(500).json({
             success: false,
             error: err.message,
             config,
-            dicas: [
-                'Gmail: use uma Senha de App (não a senha normal). Ative em myaccount.google.com → Segurança → Senhas de app.',
-                'Se usar SMTP_SERVICE=gmail, remova SMTP_HOST e SMTP_PORT.',
-                'Verifique se o Railway não está bloqueando a porta 587 (tente SMTP_PORT=465 com SMTP_SECURE=true).',
-                'Alternativa mais simples: configure SMTP_SERVICE=gmail com SMTP_USER e SMTP_PASS.',
+            dicas: isBrevoConfigured() ? [
+                'Verifique se a BREVO_API_KEY está correta (copie do painel Brevo → SMTP & API → API Keys).',
+                'Verifique se o BREVO_SENDER_EMAIL é um remetente verificado no Brevo.',
+            ] : [
+                'Railway frequentemente bloqueia portas SMTP (587, 465). Use Brevo API em vez de SMTP.',
+                'Para criar conta Brevo grátis: brevo.com → Sign up → SMTP & API → API Keys.',
             ],
         });
     }
