@@ -163,9 +163,33 @@ export function injectTrackingScripts(rastreamento) {
 
     // Meta Pixel (browser-side fbq)
     if (meta_pixel_id) {
-        addInlineScript('tracking-meta-pixel',
-            `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${meta_pixel_id}');fbq('track','PageView');`
-        );
+        if (!document.getElementById('tracking-meta-pixel')) {
+            // 1. Set up the fbq stub (queues calls until fbevents.js loads)
+            if (!window.fbq) {
+                const n = window.fbq = function () {
+                    n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+                };
+                if (!window._fbq) window._fbq = n;
+                n.push = n; n.loaded = true; n.version = '2.0'; n.queue = [];
+            }
+
+            // 2. Load fbevents.js as an external script
+            const fbScript = document.createElement('script');
+            fbScript.id = 'tracking-meta-pixel';
+            fbScript.async = true;
+            fbScript.src = 'https://connect.facebook.net/en_US/fbevents.js';
+            document.head.appendChild(fbScript);
+
+            // 3. Init and fire PageView (queued, processed when fbevents.js loads)
+            window.fbq('init', meta_pixel_id);
+            window.fbq('track', 'PageView');
+
+            // 4. Add noscript img fallback
+            const ns = document.createElement('noscript');
+            ns.id = 'tracking-meta-pixel-ns';
+            ns.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${meta_pixel_id}&ev=PageView&noscript=1"/>`;
+            document.head.appendChild(ns);
+        }
     }
 
     // Microsoft Clarity
