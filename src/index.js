@@ -63,6 +63,13 @@ app.use(helmet({
 app.use(cors({ origin: true, credentials: true }));
 app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 500 }));
 
+// Force Referrer-Policy to allow Meta Pixel domain verification.
+// Helmet defaults to "no-referrer" which blocks fbq from verifying the origin domain.
+app.use((req, res, next) => {
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+});
+
 
 // Health check (no DB, never fails)
 app.get('/health', (req, res) => res.json({
