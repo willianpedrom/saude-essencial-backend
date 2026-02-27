@@ -393,6 +393,80 @@ router.post('/users/:id/reenviar-acesso', async (req, res) => {
     }
 });
 
+// POST /api/admin/send-test-email — envia email de teste real para o admin logado
+router.post('/send-test-email', async (req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT nome, email FROM consultoras WHERE id=$1', [req.consultora.id]);
+        if (rows.length === 0) return res.status(404).json({ error: 'Admin não encontrado.' });
+        const { nome, email } = rows[0];
+
+        const { sendEmail } = require('../lib/mailer');
+        // sendEmail não é exportado diretamente, usamos sendWelcomeEmail como proxy
+        const { isConfigured } = require('../lib/mailer');
+        if (!isConfigured()) {
+            return res.status(400).json({ error: 'Nenhum provedor de email configurado. Configure BREVO_API_KEY ou SMTP_USER+SMTP_PASS.' });
+        }
+
+        // Envio direto via Brevo ou SMTP
+        const mailer = require('../lib/mailer');
+        const isBrevo = mailer.isBrevoConfigured();
+
+        if (isBrevo) {
+            const apiKey = process.env.BREVO_API_KEY;
+            const fromEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_USER;
+            const body = {
+                sender: { email: fromEmail, name: 'Gota Essencial' },
+                to: [{ email, name: nome }],
+                subject: '🧪 Teste de Email — Gota Essencial',
+                htmlContent: `<div style="font-family:sans-serif;padding:24px;max-width:500px;margin:0 auto;border:1px solid #e2e8f0;border-radius:12px">
+                  <h2 style="color:#0a4a2a">✅ Email de Teste</h2>
+                  <p>Olá <strong>${nome}</strong>,</p>
+                  <p>Este é um teste de envio de email da plataforma <strong>Gota Essencial</strong>.</p>
+                  <p>Se você recebeu esta mensagem, a configuração de email está funcionando corretamente! 🎉</p>
+                  <hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0">
+                  <small style="color:#94a3b8">Enviado por: ${fromEmail}</small>
+                </div>`,
+                textContent: `Olá ${nome}, este é um teste de email da Gota Essencial. Se você recebeu, está funcionando!`,
+            };
+
+            const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+                method: 'POST',
+                headers: { 'accept': 'application/json', 'api-key': apiKey, 'content-type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                return res.status(500).json({
+                    error: `Brevo recusou o envio: ${data.message || JSON.stringify(data)}`,
+                    detail: data,
+                });
+            }
+            console.log(`[Admin] 🧪 Email de teste enviado para ${email} via Brevo:`, data.messageId);
+            return res.json({ success: true, sentTo: email, method: 'brevo', messageId: data.messageId });
+        } else {
+            // SMTP fallback
+            const nodemailer = require('nodemailer');
+            const transport = nodemailer.createTransport({
+                service: process.env.SMTP_SERVICE,
+                host: process.env.SMTP_HOST,
+                port: parseInt(process.env.SMTP_PORT || '587'),
+                auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+            });
+            const info = await transport.sendMail({
+                from: process.env.SMTP_FROM || process.env.SMTP_USER,
+                to: email,
+                subject: '🧪 Teste de Email — Gota Essencial',
+                text: `Olá ${nome}, este é um teste de email da Gota Essencial. Funcionou!`,
+            });
+            console.log(`[Admin] 🧪 Email de teste enviado para ${email} via SMTP:`, info.messageId);
+            return res.json({ success: true, sentTo: email, method: 'smtp', messageId: info.messageId });
+        }
+    } catch (err) {
+        console.error('[Admin] send-test-email error:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // GET /api/admin/test-email — testa conexão de email (Brevo ou SMTP)
 router.get('/test-smtp', async (req, res) => {
     const { verifyConnection, isConfigured, isBrevoConfigured, isSmtpConfigured } = require('../lib/mailer');

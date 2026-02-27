@@ -840,9 +840,12 @@ export async function renderAdmin(router) {
       </div>
 
       <!-- Action buttons -->
-      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;flex-wrap:wrap">
         <button class="btn btn-secondary" id="btn-test-smtp" style="padding:12px 20px">
-          🔌 Testar SMTP
+          🔌 Testar Conexão
+        </button>
+        <button class="btn btn-secondary" id="btn-send-test-email" style="padding:12px 20px;background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;border:none">
+          📨 Enviar Email de Teste
         </button>
         <button class="btn btn-primary" id="btn-save-gateway" style="padding:12px 28px">
           💾 Salvar Configurações
@@ -883,10 +886,42 @@ export async function renderAdmin(router) {
             ${errorData.config ? `<details style="margin-top:8px"><summary style="cursor:pointer;color:var(--text-muted);font-size:0.8rem">Ver configuração atual</summary><pre style="font-size:0.75rem;margin-top:6px">${JSON.stringify(errorData.config, null, 2)}</pre></details>` : ''}
           </div>`;
       } finally {
-        btn.disabled = false; btn.textContent = '🔌 Testar SMTP';
+        btn.disabled = false; btn.textContent = '🔌 Testar Conexão';
       }
     });
 
+    // Send real test email to the logged-in admin
+    section.querySelector('#btn-send-test-email')?.addEventListener('click', async () => {
+      const btn = section.querySelector('#btn-send-test-email');
+      const result = section.querySelector('#smtp-test-result');
+      btn.disabled = true; btn.textContent = '⏳ Enviando...';
+      try {
+        const r = await api('POST', '/api/admin/send-test-email', {});
+        result.innerHTML = `
+          <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:14px 16px;font-size:0.85rem">
+            ✅ <strong>Email de teste enviado!</strong><br>
+            <span style="color:#16a34a">Enviado para: <strong>${r.sentTo}</strong></span><br>
+            <small style="color:var(--text-muted)">Verifique a caixa de entrada (e spam) desse email.</small>
+          </div>`;
+        toast('✅ Email de teste enviado! Verifique sua caixa de entrada.');
+      } catch (err) {
+        let msg = err.message;
+        try {
+          const parsed = JSON.parse(err.message.match(/\{.*\}/s)?.[0] || '{}');
+          if (parsed.error) msg = parsed.error;
+        } catch { }
+        result.innerHTML = `
+          <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:14px 16px;font-size:0.85rem">
+            ❌ <strong>Falha no envio real</strong><br>
+            <code style="font-size:0.78rem;color:#dc2626">${msg}</code><br><br>
+            <strong>Possível causa:</strong> O remetente <code>atendimento@gotaessencial.com.br</code> precisa ser verificado no Brevo.<br>
+            <a href="https://app.brevo.com/senders" target="_blank" style="color:#0ea5e9">Abrir Brevo → Senders &amp; IP → Senders</a>
+          </div>`;
+        toast('Erro: ' + msg, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = '📨 Enviar Email de Teste';
+      }
+    });
     // Save gateway settings
     section.querySelector('#btn-save-gateway')?.addEventListener('click', async () => {
       const btn = section.querySelector('#btn-save-gateway');
