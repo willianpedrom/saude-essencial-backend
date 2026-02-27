@@ -191,3 +191,7 @@ CREATE TABLE IF NOT EXISTS pagamentos (
 );
 
 CREATE INDEX IF NOT EXISTS idx_pagamentos_consultora ON pagamentos(consultora_id);
+
+-- ── Recuperação de senha ────────────────────────────────────────────────────
+ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS reset_token       TEXT;
+ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMPTZ;
