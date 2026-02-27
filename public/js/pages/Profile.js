@@ -1,4 +1,4 @@
-import { auth, store } from '../store.js';
+import { auth, store, api } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { toast } from '../utils.js';
 
@@ -282,7 +282,6 @@ export async function renderProfile(router) {
       const btn = pc.querySelector('#btn-change-password');
       btn.disabled = true; btn.textContent = '⏳ Alterando...';
       try {
-        const { api } = await import('../utils.js');
         await api('PUT', '/api/auth/change-password', { senhaAtual, novaSenha, confirmarSenha });
         toast('✅ Senha alterada com sucesso! Use a nova senha no próximo acesso.');
         // Clear fields
