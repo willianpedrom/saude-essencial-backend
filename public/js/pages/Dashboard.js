@@ -202,7 +202,7 @@ export async function renderDashboard(router) {
     // ── Follow-ups do localStorage ──
     const followupsArr = [];
     try {
-      const stored = localStorage.getItem('gota_followups_' + consultant.id);
+      const stored = localStorage.getItem('se_followups_' + consultant.id);
       if (stored) followupsArr.push(...JSON.parse(stored));
     } catch (e) { }
 
@@ -434,7 +434,7 @@ window.dashboardDoneFu = function (id) {
     const raw = sessionStorage.getItem('se_user');
     if (!raw) return;
     const consultantId = JSON.parse(raw).id;
-    const key = 'gota_followups_' + consultantId;
+    const key = 'se_followups_' + consultantId;
     let list = JSON.parse(localStorage.getItem(key) || '[]');
     const idx = list.findIndex(f => f.id === id);
     if (idx >= 0) {
