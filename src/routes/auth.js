@@ -46,9 +46,9 @@ router.post('/register', async (req, res, next) => {
         );
         const consultora = rows[0];
 
-        // Create trial subscription
+        // Create trial subscription (7 days)
         await pool.query(
-            `INSERT INTO assinaturas (consultora_id, plano, status) VALUES ($1, 'starter', 'trial')`,
+            `INSERT INTO assinaturas (consultora_id, plano, status, trial_fim) VALUES ($1, 'starter', 'trial', NOW() + INTERVAL '7 days')`,
             [consultora.id]
         );
 

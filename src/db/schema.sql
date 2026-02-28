@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS assinaturas (
   stripe_sub_id       TEXT,
   periodo_inicio      TIMESTAMPTZ,
   periodo_fim         TIMESTAMPTZ,
-  trial_fim           TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '14 days'),
+  trial_fim           TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '7 days'),
   criado_em           TIMESTAMPTZ DEFAULT NOW(),
   atualizado_em       TIMESTAMPTZ DEFAULT NOW()
 );
@@ -195,3 +195,6 @@ CREATE INDEX IF NOT EXISTS idx_pagamentos_consultora ON pagamentos(consultora_id
 -- ── Recuperação de senha ────────────────────────────────────────────────────
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS reset_token       TEXT;
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMPTZ;
+
+-- ── Trial de 7 dias (era 14) ────────────────────────────────────────────────
+ALTER TABLE assinaturas ALTER COLUMN trial_fim SET DEFAULT (NOW() + INTERVAL '7 days');
