@@ -107,6 +107,19 @@ UPDATE consultoras SET role = 'admin'
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS pipeline_stage  VARCHAR(40) DEFAULT 'lead_captado';
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS pipeline_notas  TEXT;
 
+-- Links Personaliados da Consultora (Linktree)
+CREATE TABLE IF NOT EXISTS consultora_links (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  consultora_id   UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+  titulo          VARCHAR(150) NOT NULL,
+  url             TEXT NOT NULL,
+  icone           VARCHAR(50) DEFAULT '🔗',
+  is_public       BOOLEAN DEFAULT TRUE,
+  ordem           INT DEFAULT 0,
+  criado_em       TIMESTAMPTZ DEFAULT NOW(),
+  atualizado_em   TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Etiquetas personalizadas por consultora
 CREATE TABLE IF NOT EXISTS etiquetas (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),

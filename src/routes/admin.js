@@ -19,6 +19,30 @@ router.use(auth, async (req, res, next) => {
     }
 });
 
+// Migration Helper for Linktree (temporary endpoint to add table since we don't have local pg access)
+router.get('/migrate-links', async (req, res) => {
+    try {
+        const sql = `
+        CREATE TABLE IF NOT EXISTS consultora_links (
+          id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          consultora_id   UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+          titulo          VARCHAR(150) NOT NULL,
+          url             TEXT NOT NULL,
+          icone           VARCHAR(50) DEFAULT '🔗',
+          is_public       BOOLEAN DEFAULT TRUE,
+          ordem           INT DEFAULT 0,
+          criado_em       TIMESTAMPTZ DEFAULT NOW(),
+          atualizado_em   TIMESTAMPTZ DEFAULT NOW()
+        );
+        `;
+        await pool.query(sql);
+        res.json({ success: true, message: 'Tabela consultora_links criada com sucesso.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // GET /api/admin/users — list all consultoras with subscription info
 router.get('/users', async (req, res) => {
     try {

@@ -209,7 +209,6 @@ export async function renderPublicProfile(router, slug) {
     <section class="pp-section" style="background:${(data.links && data.links.length > 0 && !bio) || (!data.links?.length && bio) ? '#f9fafb' : 'white'}">
       <div class="pp-container">
         <div style="text-align:center;margin-bottom:8px">
-          <div style="display:inline-block;background:#dcfce7;color:#166534;font-size:0.8rem;font-weight:600;padding:4px 14px;border-radius:20px;margin-bottom:12px">PROVA SOCIAL</div>
           <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.2rem);color:#0a2818">O que dizem os clientes</h2>
           <p style="color:#6b7280;margin-top:8px">${depoimentos.length} depoimento${depoimentos.length > 1 ? 's' : ''} verificado${depoimentos.length > 1 ? 's' : ''}</p>
         </div>

@@ -114,6 +114,7 @@ app.use('/api/etiquetas', require('./routes/etiquetas'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/publico', require('./routes/publico'));
 app.use('/api/hotmart', require('./routes/hotmart'));
+app.use('/api/links', require('./routes/links'));
 
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '../public')));
