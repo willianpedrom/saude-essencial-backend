@@ -11,7 +11,7 @@ router.use(auth, checkSub);
 // GET /api/clientes
 router.get('/', async (req, res) => {
     try {
-        // Permite filtrar por status (?ativo=true ou ?ativo=false). Se não passar, retorna todos.
+        // Filtra ativo=TRUE por padrão. Use ?ativo=false para ver inativos, ?ativo=all para todos.
         let queryStr = `
             SELECT id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, ativo, status,
                    pipeline_stage, pipeline_notas, criado_em
@@ -20,9 +20,13 @@ router.get('/', async (req, res) => {
         `;
         const queryParams = [req.consultora.id];
 
-        if (req.query.ativo !== undefined) {
-            queryStr += ` AND ativo = $2`;
-            queryParams.push(req.query.ativo === 'true');
+        if (req.query.ativo === 'all') {
+            // não filtra — retorna todos
+        } else if (req.query.ativo === 'false') {
+            queryStr += ` AND ativo = FALSE`;
+        } else {
+            // padrão: só ativos
+            queryStr += ` AND ativo = TRUE`;
         }
 
         queryStr += ` ORDER BY nome ASC`;
