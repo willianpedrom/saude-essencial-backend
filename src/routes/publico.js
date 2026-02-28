@@ -68,10 +68,20 @@ router.get('/perfil/:slug', async (req, res) => {
             custom_script: rastreamento.custom_script || null,
         } : null;
 
+        // 5. Fetch the consultant's public links (Linktree style)
+        const { rows: linksPublicos } = await pool.query(
+            `SELECT titulo, url, icone
+             FROM etiquetas_links
+             WHERE consultora_id = $1 AND tipo = 'link' AND is_public = TRUE
+             ORDER BY criado_em ASC`,
+            [consultor.id]
+        );
+
         res.json({
             consultor: { ...publicConsultor, rastreamento: safeTracking },
             depoimentos,
             anamnese_token,
+            links: linksPublicos
         });
     } catch (err) {
         console.error('[publico]', err);
