@@ -175,18 +175,36 @@ export async function renderProfile(router) {
             </div>
           </div>
 
-          <!-- Public profile link -->
+          <!-- Public profile link with editable slug -->
           ${profile.slug ? `
           <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0">
-            <div style="padding:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-              <div style="font-size:2rem">🌿</div>
-              <div style="flex:1">
-                <div style="font-weight:700;margin-bottom:4px">Sua Página Pública</div>
-                <div style="font-size:0.82rem;color:#166534;word-break:break-all">${window.location.origin}/#/p/${profile.slug}</div>
+            <div style="padding:20px">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+                <div style="font-size:2rem">🌿</div>
+                <div>
+                  <div style="font-weight:700;font-size:1.05rem">Sua Página Pública</div>
+                  <div style="font-size:0.78rem;color:#166534">Personalize o link que seus clientes verão</div>
+                </div>
               </div>
-              <div style="display:flex;gap:8px">
-                <a href="${window.location.origin}/#/p/${profile.slug}" target="_blank" class="btn btn-secondary btn-sm">👁️ Ver</a>
-                <button type="button" class="btn btn-primary btn-sm" id="btn-copy-profile-link">🔗 Copiar</button>
+
+              <div style="margin-bottom:12px">
+                <label style="font-size:0.82rem;font-weight:600;color:#166534;display:block;margin-bottom:6px">🔗 Seu link personalizado</label>
+                <div style="display:flex;align-items:center;gap:0;border:2px solid #86efac;border-radius:10px;overflow:hidden;background:white">
+                  <span style="padding:10px 12px;background:#f0fdf4;color:#166534;font-size:0.82rem;white-space:nowrap;border-right:1px solid #86efac">${window.location.origin}/#/p/</span>
+                  <input type="text" id="slug-input" value="${profile.slug}"
+                    style="flex:1;border:none;padding:10px 12px;font-size:0.92rem;font-weight:600;color:#166534;outline:none;min-width:80px"
+                    placeholder="seu-nome" maxlength="60" />
+                </div>
+                <div id="slug-preview" style="font-size:0.75rem;color:#6b7280;margin-top:6px">
+                  Link atual: <span style="color:#166534;font-weight:500">${window.location.origin}/#/p/${profile.slug}</span>
+                </div>
+                <div id="slug-error" style="font-size:0.78rem;color:#dc2626;margin-top:4px;display:none"></div>
+              </div>
+
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <button type="button" class="btn btn-primary btn-sm" id="btn-save-slug" style="background:#166534">✅ Salvar Link</button>
+                <a href="${window.location.origin}/#/p/${profile.slug}" target="_blank" class="btn btn-secondary btn-sm">👁️ Ver página</a>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-profile-link">🔗 Copiar link</button>
               </div>
             </div>
           </div>` : ''}
@@ -249,9 +267,66 @@ export async function renderProfile(router) {
     // Cancel
     pc.querySelector('#btn-cancel')?.addEventListener('click', () => router.navigate('/dashboard'));
 
-    // Copy public profile link
+    // Slug live preview
+    const slugInput = pc.querySelector('#slug-input');
+    const slugPreview = pc.querySelector('#slug-preview');
+    const slugError = pc.querySelector('#slug-error');
+
+    slugInput?.addEventListener('input', () => {
+      let v = slugInput.value.toLowerCase().trim()
+        .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-');
+      if (slugPreview) {
+        slugPreview.innerHTML = 'Preview: <span style="color:#166534;font-weight:500">' +
+          window.location.origin + '/#/p/' + (v || '...') + '</span>';
+      }
+      if (slugError) slugError.style.display = 'none';
+    });
+
+    // Save slug
+    pc.querySelector('#btn-save-slug')?.addEventListener('click', async () => {
+      const newSlug = slugInput?.value?.trim();
+      if (!newSlug || newSlug.length < 3) {
+        if (slugError) { slugError.textContent = 'O link precisa ter pelo menos 3 caracteres.'; slugError.style.display = 'block'; }
+        return;
+      }
+      if (newSlug === profile.slug) {
+        toast('O link é o mesmo. Nenhuma alteração feita.', 'info');
+        return;
+      }
+
+      const btn = pc.querySelector('#btn-save-slug');
+      btn.disabled = true; btn.textContent = '⏳ Salvando...';
+
+      try {
+        const res = await api('PATCH', '/api/auth/slug', { slug: newSlug });
+        profile.slug = res.slug;
+
+        // Atualizar sessionStorage
+        const user = JSON.parse(sessionStorage.getItem('se_user') || '{}');
+        user.slug = res.slug;
+        sessionStorage.setItem('se_user', JSON.stringify(user));
+
+        toast('Link atualizado com sucesso! ✅ Seu novo link: ' + window.location.origin + '/#/p/' + res.slug);
+
+        // Atualizar preview e links na página
+        if (slugPreview) {
+          slugPreview.innerHTML = 'Link atual: <span style="color:#166534;font-weight:500">' +
+            window.location.origin + '/#/p/' + res.slug + '</span>';
+        }
+        slugInput.value = res.slug;
+        if (slugError) slugError.style.display = 'none';
+      } catch (err) {
+        if (slugError) { slugError.textContent = err.message; slugError.style.display = 'block'; }
+        toast(err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = '✅ Salvar Link';
+      }
+    });
+
+    // Copy public profile link (use current slug from input)
     pc.querySelector('#btn-copy-profile-link')?.addEventListener('click', () => {
-      const url = `${window.location.origin}/#/p/${profile.slug}`;
+      const currentSlug = slugInput?.value?.trim() || profile.slug;
+      const url = `${window.location.origin}/#/p/${currentSlug}`;
       navigator.clipboard.writeText(url).then(() => toast('Link copiado! ✅')).catch(() => toast('Erro ao copiar', 'error'));
     });
 

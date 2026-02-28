@@ -197,6 +197,61 @@ router.put('/profile', authMiddleware, async (req, res, next) => {
     }
 });
 
+// PATCH /api/auth/slug — personalizar link da página pública
+router.patch('/slug', authMiddleware, async (req, res) => {
+    let { slug } = req.body;
+    if (!slug || typeof slug !== 'string') {
+        return res.status(400).json({ error: 'Informe o novo slug.' });
+    }
+
+    // Normalizar: minúsculas, remover acentos, trocar espaços por hífen
+    slug = slug.toLowerCase().trim()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+
+    if (slug.length < 3) {
+        return res.status(400).json({ error: 'O link precisa ter pelo menos 3 caracteres.' });
+    }
+    if (slug.length > 60) {
+        return res.status(400).json({ error: 'O link pode ter no máximo 60 caracteres.' });
+    }
+
+    // Palavras reservadas
+    const reserved = ['admin', 'api', 'login', 'register', 'reset', 'profile', 'dashboard', 'app', 'www', 'gota', 'essencial'];
+    if (reserved.includes(slug)) {
+        return res.status(400).json({ error: 'Esse link não está disponível.' });
+    }
+
+    try {
+        // Verificar se já está em uso por outro usuário
+        const { rows: existing } = await pool.query(
+            'SELECT id FROM consultoras WHERE slug = $1 AND id != $2',
+            [slug, req.consultora.id]
+        );
+        if (existing.length > 0) {
+            return res.status(409).json({ error: 'Esse link já está em uso. Escolha outro.' });
+        }
+
+        const { rows } = await pool.query(
+            `UPDATE consultoras SET slug=$1, atualizado_em=NOW() WHERE id=$2 RETURNING slug`,
+            [slug, req.consultora.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Conta não encontrada.' });
+
+        // Atualizar sessionStorage no frontend
+        res.json({ success: true, slug: rows[0].slug });
+    } catch (err) {
+        console.error('Erro ao atualizar slug:', err.message);
+        if (err.code === '23505') {
+            return res.status(409).json({ error: 'Esse link já está em uso.' });
+        }
+        res.status(500).json({ error: 'Erro ao atualizar link.' });
+    }
+});
+
 // POST /api/auth/forgot-password — gera token e envia email de recuperação
 router.post('/forgot-password', async (req, res, next) => {
     const { email } = req.body;
