@@ -48,7 +48,10 @@ export async function renderPublicAnamnesis(router, token) {
   // Try to use the API data to guess the correct title, fallback to generic
   // We can pass consultant's gender from the backend, but since PublicAnamnesis might just get the name
   // for now we use "Consultor(a)" or look for specific gender info if the backend provides it
-  const cTitle = anamneseData.consultora_genero === 'masculino' ? 'Consultor de Saúde Natural' : 'Consultora de Saúde Natural';
+  const cTitle = 'Consultor de Saúde Natural'; // Unificado conforme pedido pelo usuário
+  const avatarHtml = anamneseData.consultora_foto
+    ? `<img src="${anamneseData.consultora_foto}" alt="Foto ${consultoraNome}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" />`
+    : `💧`;
 
   let currentStep = 0;
   const answers = {};
@@ -67,7 +70,7 @@ export async function renderPublicAnamnesis(router, token) {
       </div>
 
       <div class="anamnesis-consultant-card">
-        <div class="consultant-avatar">💧</div>
+        <div class="consultant-avatar" style="${anamneseData.consultora_foto ? 'padding:0;overflow:hidden;background:transparent' : ''}">${avatarHtml}</div>
         <div class="consultant-info">
           <h3>${consultoraNome}</h3>
           <p>${cTitle} · Gota Essencial</p>
