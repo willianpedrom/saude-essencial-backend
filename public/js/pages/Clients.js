@@ -349,14 +349,14 @@ export async function renderClients(router) {
             </div>
 
             <!-- Drop zone -->
-            <label id="drop-zone" style="display:block;border:2px dashed var(--green-300);border-radius:12px;
+            <div id="drop-zone" style="display:block;border:2px dashed var(--green-300);border-radius:12px;
               padding:40px;text-align:center;cursor:pointer;transition:all .2s;
               background:var(--green-50);color:var(--text-muted)">
               <div style="font-size:2.5rem;margin-bottom:8px">📁</div>
               <div style="font-size:0.95rem;font-weight:600">Clique ou arraste seu arquivo CSV aqui</div>
               <div style="font-size:0.78rem;margin-top:4px">Formatos: .csv (UTF-8)</div>
               <input type="file" id="csv-file-input" accept=".csv,text/csv" style="display:none" />
-            </label>
+            </div>
           </div>
 
           <!-- Step 2: Preview -->
@@ -394,7 +394,7 @@ export async function renderClients(router) {
     const dropZone = overlay.querySelector('#drop-zone');
 
     function handleFile(file) {
-      if (!file || !file.name.endsWith('.csv')) { toast('Use um arquivo .csv', 'error'); return; }
+      if (!file || !file.name.toLowerCase().endsWith('.csv')) { toast('Use um arquivo .csv', 'error'); return; }
       const reader = new FileReader();
       reader.onload = e => {
         parsed = parseCSV(e.target.result);
