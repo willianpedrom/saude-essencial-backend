@@ -49,12 +49,15 @@ router.get('/users', async (req, res) => {
         const { rows } = await pool.query(
             `SELECT c.id, c.nome, c.email, c.telefone, c.role, c.foto_url,
               c.criado_em, c.atualizado_em,
-              a.plano, a.status AS plano_status, a.trial_fim, a.periodo_fim,
-              (SELECT COUNT(*) FROM clientes cl WHERE cl.consultora_id = c.id)  AS total_clientes,
-              (SELECT COUNT(*) FROM anamneses an WHERE an.consultora_id = c.id) AS total_anamneses
+              a.id AS assinatura_id, a.plano, a.status AS plano_status, a.trial_fim, a.periodo_fim,
+              a.hotmart_transaction_id, a.hotmart_subscription_id, a.gateway,
+              p.clientes_max, p.anamneses_mes_max, p.preco_mensal,
+              (SELECT COUNT(*) FROM clientes cl WHERE cl.consultora_id = c.id AND cl.ativo = TRUE)  AS total_clientes,
+              (SELECT COUNT(*) FROM anamneses an WHERE an.consultora_id = c.id AND date_trunc('month', an.criado_em) = date_trunc('month', NOW())) AS total_anamneses_mes
               FROM consultoras c
               LEFT JOIN assinaturas a ON a.consultora_id = c.id
                 AND a.criado_em = (SELECT MAX(criado_em) FROM assinaturas WHERE consultora_id = c.id)
+              LEFT JOIN planos p ON p.slug = a.plano AND p.ativo = TRUE
               ORDER BY c.criado_em ASC`
         );
         res.json(rows);
@@ -146,6 +149,63 @@ router.delete('/users/:id', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erro ao excluir usuário.' });
+    }
+});
+
+// GET /api/admin/users/:id/historico — subscription history for a user
+router.get('/users/:id/historico', async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            `SELECT * FROM assinaturas WHERE consultora_id = $1 ORDER BY criado_em DESC`,
+            [req.params.id]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao buscar histórico de assinaturas.' });
+    }
+});
+
+// POST /api/admin/users/:id/cortesia — extend trial/period
+router.post('/users/:id/cortesia', async (req, res) => {
+    const { dias } = req.body;
+    const qtdDias = parseInt(dias) || 7;
+    try {
+        // Encontra a assinatura mais recente ou cria uma caso não exista
+        const { rows: current } = await pool.query(
+            `SELECT id, status, trial_fim, periodo_fim FROM assinaturas 
+             WHERE consultora_id = $1 ORDER BY criado_em DESC LIMIT 1`,
+            [req.params.id]
+        );
+
+        if (current.length === 0) {
+            // Cria trial do zero
+            await pool.query(
+                `INSERT INTO assinaturas (consultora_id, plano, status, gateway, trial_fim)
+                 VALUES ($1, 'starter', 'trial', 'manual', NOW() + interval '${qtdDias} days')`,
+                [req.params.id]
+            );
+        } else {
+            const sub = current[0];
+            // Se tá em trial ou outro status (inactive, past_due) atualiza trial_fim
+            // Se tá active atualiza periodo_fim
+            const campoDatas = sub.status === 'active' ? 'periodo_fim' : 'trial_fim';
+            const novoStatus = sub.status === 'active' ? 'active' : 'trial';
+
+            // Adiciona dias a partir de hoje ou a partir do fim atual se for no futuro
+            await pool.query(
+                `UPDATE assinaturas 
+                 SET status = $1, 
+                     ${campoDatas} = GREATEST(COALESCE(${campoDatas}, NOW()), NOW()) + interval '${qtdDias} days',
+                     atualizado_em = NOW()
+                 WHERE id = $2`,
+                [novoStatus, sub.id]
+            );
+        }
+        res.json({ success: true, message: `Cortesia de ${qtdDias} dias concedida.` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao aplicar cortesia.' });
     }
 });
 

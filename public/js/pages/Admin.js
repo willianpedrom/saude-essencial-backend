@@ -19,6 +19,7 @@ const adminApi = {
   // Uso & Cortesia
   getUso: (id) => api('GET', `/api/admin/users/${id}/uso`),
   darCortesia: (id, data) => api('POST', `/api/admin/users/${id}/cortesia`, data),
+  getHistorico: (id) => api('GET', `/api/admin/users/${id}/historico`),
   getPagamentos: (id) => api('GET', `/api/admin/users/${id}/pagamentos`),
   reenviarAcesso: (id) => api('POST', `/api/admin/users/${id}/reenviar-acesso`, {}),
 };
@@ -284,8 +285,18 @@ export async function renderAdmin(router) {
               <div style="font-size:0.72rem;color:${statusColor}">${PLAN_STATUS_LABELS[u.plano_status] || u.plano_status || '—'}</div>
             </div>
           </td>
-          <td style="text-align:center;font-weight:600">${u.total_clientes || 0}</td>
-          <td style="text-align:center;font-weight:600">${u.total_anamneses || 0}</td>
+          <td style="text-align:center;">
+            <div style="font-size:0.75rem;margin-bottom:2px;font-weight:600">${u.total_clientes || 0} / ${u.clientes_max || '∞'}</div>
+            <div style="width:100%;height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden">
+              <div style="width:${u.clientes_max ? Math.min(100, ((u.total_clientes || 0) / u.clientes_max) * 100).toFixed(0) : 50}%;height:100%;background:${(u.clientes_max && ((u.total_clientes || 0) / u.clientes_max) > 0.9) ? '#dc2626' : '#3b82f6'};border-radius:2px"></div>
+            </div>
+          </td>
+          <td style="text-align:center;">
+            <div style="font-size:0.75rem;margin-bottom:2px;font-weight:600">${u.total_anamneses_mes || 0} / ${u.anamneses_mes_max || '∞'}</div>
+            <div style="width:100%;height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden">
+              <div style="width:${u.anamneses_mes_max ? Math.min(100, ((u.total_anamneses_mes || 0) / u.anamneses_mes_max) * 100).toFixed(0) : 50}%;height:100%;background:${(u.anamneses_mes_max && ((u.total_anamneses_mes || 0) / u.anamneses_mes_max) > 0.9) ? '#dc2626' : '#8b5cf6'};border-radius:2px"></div>
+            </div>
+          </td>
           <td style="font-size:0.8rem;white-space:nowrap">${venceHtml}</td>
           <td>
             ${isAdmin
@@ -302,6 +313,7 @@ export async function renderAdmin(router) {
               <button class="btn btn-secondary btn-sm" data-tracking-id="${u.id}" title="Rastreamento">📊</button>
               <button class="btn btn-secondary btn-sm" data-plan-id="${u.id}" data-plan-current="${u.plano || 'starter'}" data-status-current="${u.plano_status || 'trial'}" title="Alterar Plano">💳</button>
               <button class="btn btn-secondary btn-sm" data-cortesia-id="${u.id}" data-cortesia-nome="${u.nome}" title="Conceder Cortesia">🎁</button>
+              <button class="btn btn-secondary btn-sm" data-historico-id="${u.id}" data-historico-nome="${u.nome}" title="Histórico de Assinaturas (Hotmart/Pagamentos)">📜</button>
               <button class="btn btn-secondary btn-sm" data-reenvio-id="${u.id}" data-reenvio-nome="${u.nome}" title="Reenviar Email de Acesso">📧</button>
               <button class="btn btn-danger btn-sm" data-del-id="${u.id}" data-del-nome="${u.nome}" title="Excluir" ${isMe ? 'disabled' : ''}>🗑️</button>
             </div>
@@ -383,6 +395,15 @@ export async function renderAdmin(router) {
       });
     });
 
+    // Histórico de Assinaturas
+    tbody.querySelectorAll('[data-historico-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const u = users.find(x => x.id === btn.dataset.historicoId);
+        if (!u) return;
+        showHistoricoModal(u);
+      });
+    });
+
     // Reenviar Email de Acesso
     tbody.querySelectorAll('[data-reenvio-id]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -424,6 +445,67 @@ export async function renderAdmin(router) {
           }
         });
       });
+    });
+  }
+
+  async function showHistoricoModal(u) {
+    let hist = [];
+    try {
+      hist = await adminApi.getHistorico(u.id);
+    } catch (e) { toast('Erro ao buscar histórico', 'error'); return; }
+
+    const tbody = hist.length === 0 ? '<tr><td colspan="5" class="text-center">Nenhum registro encontrado.</td></tr>' : hist.map(h => `
+      <tr>
+        <td>${new Date(h.criado_em).toLocaleDateString('pt-BR')}</td>
+        <td><strong>${PLAN_LABELS[h.plano] || h.plano}</strong></td>
+        <td>${PLAN_STATUS_LABELS[h.status] || h.status}</td>
+        <td>${h.gateway === 'hotmart' ? 'Hotmart' : 'Manual'}</td>
+        <td style="font-size:0.75rem">${h.hotmart_transaction_id || h.hotmart_subscription_id || '—'}</td>
+      </tr>
+    `).join('');
+
+    modal('📜 Histórico de Assinaturas — ' + u.nome, `
+      <div style="overflow-x:auto;max-height:400px;overflow-y:auto">
+        <table class="clients-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Plano</th>
+              <th>Status</th>
+              <th>Origem</th>
+              <th>Transação/ID</th>
+            </tr>
+          </thead>
+          <tbody>${tbody}</tbody>
+        </table>
+      </div>
+    `, { confirmLabel: 'Fechar', onConfirm: () => true });
+  }
+
+  function showCortesiaModal(u) {
+    modal('🎁 Conceder Cortesia — ' + u.nome, `
+      <p>Estenda o tempo de acesso gratuito (Trial) deste usuário. Os dias serão somados a partir de hoje ou do prazo atual.</p>
+      <div class="form-group">
+        <label class="field-label">Dias de cortesia adicionar</label>
+        <select class="field-select" id="cortesia-dias">
+          <option value="7">7 dias</option>
+          <option value="15">15 dias</option>
+          <option value="30" selected>30 dias (1 mês)</option>
+          <option value="90">90 dias (3 meses)</option>
+          <option value="365">365 dias (1 ano)</option>
+        </select>
+      </div>
+    `, {
+      confirmLabel: '✔️ Conceder',
+      onConfirm: async () => {
+        const dias = document.getElementById('cortesia-dias').value;
+        try {
+          await adminApi.darCortesia(u.id, { dias });
+          toast(`Sucesso! ${dias} dias adicionados.`);
+          await load();
+          return true;
+        } catch (err) { toast('Erro: ' + err.message, 'error'); return false; }
+      }
     });
   }
 
