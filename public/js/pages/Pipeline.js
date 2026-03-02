@@ -233,12 +233,15 @@ export async function renderPipeline(router) {
     </div>
 
     <div class="pipeline-lost-toggle">
-      <div class="pipeline-lost-header" id="lost-toggle">
-        ❌ Perdidos (${lostClients.length}) <span id="lost-arrow">▼</span>
+      <div class="pipeline-lost-header" id="lost-toggle" style="background:#f9fafb;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:8px">
+          ❌ <span style="color:#ef4444">Leads Perdidos</span> <span style="font-weight:normal;color:var(--text-muted)">(${lostClients.length})</span>
+        </div>
+        <span id="lost-arrow">▼</span>
       </div>
-      <div class="pipeline-lost-body" id="lost-body" style="display:${lostClients.length > 0 ? 'flex' : 'none'}">
+      <div class="pipeline-lost-body pipeline-drop-zone" id="lost-body" data-target-stage="perdido" style="display:${lostClients.length > 0 ? 'flex' : 'none'};flex-wrap:wrap;gap:10px;padding:16px;background:#fef2f2;border:2px dashed #fecaca;margin:8px;border-radius:8px">
         ${lostClients.length === 0
-        ? '<div style="padding:8px;color:var(--text-muted);font-size:0.82rem">Nenhum lead perdido</div>'
+        ? '<div style="width:100%;text-align:center;color:#ef4444;font-size:0.9rem;padding:20px;opacity:0.6">Solte os cards de clientes ou leads que desistiram aqui</div>'
         : lostClients.map(c => cardHtml(c, LOST_STAGE)).join('')}
       </div>
     </div>`;
