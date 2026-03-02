@@ -11,23 +11,28 @@
 }
 
 :root {
-  --green-950: #0a1f0f;
-  --green-900: #0f2d17;
-  --green-800: #1a4527;
-  --green-700: #20573100;
-  --green-600: #2d7a45;
-  --green-500: #37985a;
-  --green-400: #4aba72;
-  --green-300: #72cc90;
-  --green-200: #a8e0ba;
-  --green-100: #d4f0df;
-  --green-50: #edf8f2;
-  --gold-900: #5c3a00;
-  --gold-700: #95600a;
-  --gold-500: #c99a22;
-  --gold-400: #d4aa3a;
-  --gold-300: #e2c265;
-  --gold-100: #f5e9c0;
+  /* Tons extraídos da nova identidade visual "Gota Essencial" */
+  --green-950: #06120b;
+  /* Fundo hiper escuro da logo */
+  --green-900: #0a1711;
+  --green-800: #12291d;
+  --green-700: #1b4028;
+  --green-600: #265738;
+  --green-500: #337a4d;
+  --green-400: #429c62;
+  --green-300: #5db97f;
+  --green-200: #93d0ab;
+  --green-100: #cdecd8;
+  --green-50: #ebf7f0;
+
+  /* Detalhes Dourados (da Gota na logo) */
+  --gold-900: #4a3300;
+  --gold-700: #7a5400;
+  --gold-500: #b8860b;
+  /* darkgoldenrod */
+  --gold-400: #d4a017;
+  --gold-300: #f5d061;
+  --gold-100: #fcf4d9;
   --ivory: #faf8f4;
   --white: #ffffff;
   --text-dark: #1a2a1f;

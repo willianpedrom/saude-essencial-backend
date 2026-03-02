@@ -15,10 +15,8 @@ export function renderLogin(router) {
       <div class="auth-orb" style="width:300px;height:300px;bottom:-80px;right:-80px;opacity:0.3;animation-delay:3s"></div>
     </div>
     <div class="auth-card">
-      <div class="auth-logo">
-        <div class="auth-logo-icon">💧</div>
-        <div class="auth-brand">Gota <span>Essencial</span></div>
-        <div class="auth-tagline">Plataforma Gota Essencial</div>
+      <div class="auth-logo" style="margin-bottom:12px">
+        <img src="/logo.png" alt="Gota Essencial" style="height:120px;width:auto;object-fit:contain" />
       </div>
 
       <!-- LOGIN -->
@@ -298,10 +296,8 @@ export function renderResetPassword(router) {
       <div class="auth-orb" style="width:300px;height:300px;bottom:-80px;right:-80px;opacity:0.3;animation-delay:3s"></div>
     </div>
     <div class="auth-card">
-      <div class="auth-logo">
-        <div class="auth-logo-icon">💧</div>
-        <div class="auth-brand">Gota <span>Essencial</span></div>
-        <div class="auth-tagline">Plataforma Gota Essencial</div>
+      <div class="auth-logo" style="margin-bottom:12px">
+        <img src="/logo.png" alt="Gota Essencial" style="height:120px;width:auto;object-fit:contain" />
       </div>
 
       ${!resetToken ? `

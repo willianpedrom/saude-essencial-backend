@@ -122,7 +122,7 @@ export async function renderPublicProfile(router, slug) {
     </style>
 
     <!-- ═══════════════ HERO ═══════════════ -->
-    <section style="background:linear-gradient(160deg,#0a2818 0%,#1a4527 50%,#134020 100%);padding:80px 24px 60px;text-align:center;position:relative;overflow:hidden">
+    <section style="background:linear-gradient(160deg,#06120b 0%,#0a1711 50%,#12291d 100%);padding:80px 24px 60px;text-align:center;position:relative;overflow:hidden">
       <div style="position:absolute;top:-60px;left:-60px;width:300px;height:300px;background:rgba(255,255,255,0.03);border-radius:50%"></div>
       <div style="position:absolute;bottom:-80px;right:-40px;width:400px;height:400px;background:rgba(255,255,255,0.02);border-radius:50%"></div>
 

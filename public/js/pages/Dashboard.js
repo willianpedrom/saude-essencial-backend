@@ -31,9 +31,8 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
   app.innerHTML = `
   <div class="app-layout">
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-logo" id="sidebar-logo">
-        <div class="sidebar-logo-mark">Gota <span>Essencial</span></div>
-        <div class="sidebar-logo-sub">Plataforma Gota Essencial</div>
+      <div class="sidebar-logo" id="sidebar-logo" style="margin-bottom:12px">
+        <img src="/logo.png" alt="Gota Essencial" style="width:100%;max-width:180px;height:auto;object-fit:contain" />
       </div>
       <div class="sidebar-user" id="sidebar-user-btn" style="cursor:pointer" title="Meu Perfil">
         <div class="sidebar-avatar">
