@@ -142,7 +142,8 @@ body {
 /* ===== AUTH PAGE ===== */
 .auth-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--green-950) 0%, var(--green-800) 50%, var(--green-900) 100%);
+  background: #111b13;
+  /* Fundo sólido bem escuro */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -152,11 +153,7 @@ body {
 }
 
 .auth-page::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201, 154, 34, 0.12) 0%, transparent 70%);
-  pointer-events: none;
+  display: none;
 }
 
 .auth-orbs {
@@ -186,14 +183,16 @@ body {
 }
 
 .auth-card {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(24px);
-  border: 1px solid var(--glass-border);
+  background: #202d23;
+  /* Fundo fosco mais claro que o fundo da página */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  /* Borda muito sutil */
   border-radius: var(--radius-xl);
   padding: 48px 40px;
   width: 100%;
   max-width: 440px;
-  box-shadow: var(--shadow-lg), 0 0 60px rgba(201, 154, 34, 0.08);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  /* Sombra mais limpa e escura */
   position: relative;
   z-index: 1;
   animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -272,9 +271,10 @@ body {
 }
 
 .auth-tab.active {
-  background: linear-gradient(135deg, var(--green-600), var(--green-500));
+  background: #316844;
+  /* Verde fosco para a aba ativa */
   color: white;
-  box-shadow: 0 2px 12px rgba(55, 152, 90, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .auth-form {
@@ -297,8 +297,9 @@ body {
 }
 
 .form-input {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #314035;
+  /* Fundo dos inputs (um pouco mais claro que o card) */
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-sm);
   padding: 12px 16px;
   color: white;
@@ -329,14 +330,16 @@ body {
   border: none;
   cursor: pointer;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--gold-400), var(--gold-500));
-  color: var(--green-950);
+  background: #c89617;
+  /* Dourado Sólido (mostarda elegante) */
+  color: #111b13;
+  /* Texto verde-escuro quase preto da página */
   font-weight: 700;
   font-size: 1rem;
   font-family: var(--font-body);
   letter-spacing: 0.5px;
   transition: var(--spring);
-  box-shadow: 0 4px 20px rgba(201, 154, 34, 0.35);
+  box-shadow: 0 4px 15px rgba(200, 150, 23, 0.2);
 }
 
 .btn-auth:hover {
