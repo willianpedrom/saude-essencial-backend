@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../db/pool');
 const authMiddleware = require('../middleware/auth');
+const checkSubscription = require('../middleware/checkSubscription');
+const checkFeature = require('../middleware/checkFeature');
 
 const router = express.Router();
 
@@ -152,7 +154,7 @@ router.get('/profile', authMiddleware, async (req, res, next) => {
 });
 
 // PUT /api/auth/tracking — consultora updates her own tracking scripts
-router.put('/tracking', authMiddleware, async (req, res, next) => {
+router.put('/tracking', authMiddleware, checkSubscription, checkFeature('tem_integracoes'), async (req, res, next) => {
     const { meta_pixel_id, meta_pixel_token, clarity_id, ga_id, gtm_id, custom_script } = req.body;
     const rastreamento = {
         meta_pixel_id: meta_pixel_id || null,

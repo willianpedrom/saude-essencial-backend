@@ -2,6 +2,7 @@ const express = require('express');
 const pool = require('../db/pool');
 const auth = require('../middleware/auth');
 const checkSub = require('../middleware/checkSubscription');
+const checkFeature = require('../middleware/checkFeature');
 
 const router = express.Router();
 
@@ -120,7 +121,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // PATCH /api/clientes/:id/stage
-router.patch('/:id/stage', async (req, res) => {
+router.patch('/:id/stage', checkFeature('tem_pipeline'), async (req, res) => {
     const { stage, notas, motivo_perda } = req.body;
     const VALID_STAGES = ['lead_captado', 'primeiro_contato', 'interesse_confirmado',
         'protocolo_apresentado', 'proposta_enviada', 'negociando', 'primeira_compra', 'perdido'];
