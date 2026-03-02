@@ -213,15 +213,32 @@ router.post('/import', async (req, res) => {
             const status = (row.status || 'active').toLowerCase() === 'inativo' ? 'inactive' : 'active';
 
             try {
+                // Verificar duplicidade de e-mail
+                let isDuplicate = false;
+                if (email) {
+                    const checkEmail = await client.query(
+                        'SELECT id FROM clientes WHERE consultora_id=$1 AND email=$2',
+                        [req.consultora.id, email]
+                    );
+                    if (checkEmail.rows.length > 0) isDuplicate = true;
+                }
+
+                // Opcional: Verificar duplicidade por telefone também?
+                // Vou manter o foco apenas no e-mail conforme era o comportamento anterior
+
+                if (isDuplicate) {
+                    pulados.push({ linha: i + 2, motivo: 'E-mail já cadastrado', nome });
+                    continue;
+                }
+
                 const { rows } = await client.query(
                     `INSERT INTO clientes (consultora_id, nome, email, telefone, data_nascimento, genero, cidade, notas, status)
                      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-                     ON CONFLICT (consultora_id, email) DO NOTHING
                      RETURNING id, nome`,
                     [req.consultora.id, nome, email, telefone, dataNasc, genero, cidade, notas, status]
                 );
+
                 if (rows.length > 0) criados.push(rows[0].nome);
-                else pulados.push({ linha: i + 2, motivo: 'E-mail já cadastrado', nome });
             } catch (e) {
                 erros.push({ linha: i + 2, erro: e.message, nome });
             }
