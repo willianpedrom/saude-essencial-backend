@@ -4,72 +4,72 @@
    ============================================================ */
 
 export class Router {
-    constructor(routes) {
-        this._routes = routes;
-        window.addEventListener('hashchange', () => this.resolve());
+  constructor(routes) {
+    this._routes = routes;
+    window.addEventListener('hashchange', () => this.resolve());
+  }
+
+  navigate(path, params = {}) {
+    const query = new URLSearchParams(params).toString();
+    window.location.hash = query ? `#${path}?${query}` : `#${path}`;
+  }
+
+  resolve() {
+    const hash = window.location.hash.slice(1) || '/';
+    const [pathPart, queryPart] = hash.split('?');
+    const params = Object.fromEntries(new URLSearchParams(queryPart || ''));
+
+    // Find matching route
+    for (const [pattern, handler] of Object.entries(this._routes)) {
+      const regex = new RegExp('^' + pattern.replace(/:[^/]+/g, '([^/?]+)') + '$');
+      const match = pathPart.match(regex);
+      if (match) {
+        // Extract named params
+        const paramNames = [...pattern.matchAll(/:([^/]+)/g)].map(m => m[1]);
+        const routeParams = {};
+        paramNames.forEach((name, i) => { routeParams[name] = match[i + 1]; });
+        handler({ ...routeParams, ...params });
+        return;
+      }
     }
 
-    navigate(path, params = {}) {
-        const query = new URLSearchParams(params).toString();
-        window.location.hash = query ? `#${path}?${query}` : `#${path}`;
-    }
+    // Default route
+    const defaultHandler = this._routes['/'] || this._routes['*'];
+    if (defaultHandler) defaultHandler({ ...params });
+  }
 
-    resolve() {
-        const hash = window.location.hash.slice(1) || '/';
-        const [pathPart, queryPart] = hash.split('?');
-        const params = Object.fromEntries(new URLSearchParams(queryPart || ''));
-
-        // Find matching route
-        for (const [pattern, handler] of Object.entries(this._routes)) {
-            const regex = new RegExp('^' + pattern.replace(/:[^/]+/g, '([^/?]+)') + '$');
-            const match = pathPart.match(regex);
-            if (match) {
-                // Extract named params
-                const paramNames = [...pattern.matchAll(/:([^/]+)/g)].map(m => m[1]);
-                const routeParams = {};
-                paramNames.forEach((name, i) => { routeParams[name] = match[i + 1]; });
-                handler({ ...routeParams, ...params });
-                return;
-            }
-        }
-
-        // Default route
-        const defaultHandler = this._routes['/'] || this._routes['*'];
-        if (defaultHandler) defaultHandler({ ...params });
-    }
-
-    start() {
-        this.resolve();
-    }
+  start() {
+    this.resolve();
+  }
 }
 
 /* ---- UI Utilities ---- */
 export function render(el, html) {
-    el.innerHTML = html;
+  el.innerHTML = html;
 }
 
 export function toast(msg, type = 'success', duration = 3000) {
-    let container = document.querySelector('.toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'toast-container';
-        document.body.appendChild(container);
-    }
-    const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
-    const t = document.createElement('div');
-    t.className = `toast ${type}`;
-    t.innerHTML = `<span>${icons[type] || '✅'}</span><span>${msg}</span>`;
-    container.appendChild(t);
-    setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(40px)'; t.style.transition = 'all 0.3s'; setTimeout(() => t.remove(), 300); }, duration);
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${icons[type] || '✅'}</span><span>${msg}</span>`;
+  container.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(40px)'; t.style.transition = 'all 0.3s'; setTimeout(() => t.remove(), 300); }, duration);
 }
 
 export function modal(title, bodyHtml, { onConfirm, onOpen, confirmLabel = 'Confirmar', confirmClass = 'btn-primary', cancelLabel = 'Cancelar' } = {}) {
-    const existing = document.querySelector('.modal-overlay');
-    if (existing) existing.remove();
+  const existing = document.querySelector('.modal-overlay');
+  if (existing) existing.remove();
 
-    const m = document.createElement('div');
-    m.className = 'modal-overlay';
-    m.innerHTML = `
+  const m = document.createElement('div');
+  m.className = 'modal-overlay';
+  m.innerHTML = `
     <div class="modal-box">
       <div class="modal-header">
         <h3>${title}</h3>
@@ -82,57 +82,57 @@ export function modal(title, bodyHtml, { onConfirm, onOpen, confirmLabel = 'Conf
       </div>` : ''}
     </div>
   `;
-    document.body.appendChild(m);
-    requestAnimationFrame(() => {
-        m.classList.add('open');
-        if (onOpen) onOpen(m);
-    });
+  document.body.appendChild(m);
+  requestAnimationFrame(() => {
+    m.classList.add('open');
+    if (onOpen) onOpen(m);
+  });
 
-    function close() { m.classList.remove('open'); setTimeout(() => m.remove(), 250); }
-    m.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', close));
-    m.addEventListener('click', e => { if (e.target === m) close(); });
-    if (onConfirm) {
-        m.querySelector('[data-confirm]').addEventListener('click', () => { onConfirm(m); close(); });
-    }
-    return { close, el: m };
+  function close() { m.classList.remove('open'); setTimeout(() => m.remove(), 250); }
+  m.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', close));
+  m.addEventListener('click', e => { if (e.target === m) close(); });
+  if (onConfirm) {
+    m.querySelector('[data-confirm]').addEventListener('click', () => { onConfirm(m); close(); });
+  }
+  return { close, el: m };
 }
 
 export function formatDate(iso, opts = {}) {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', ...opts });
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', ...opts });
 }
 
 export function formatCurrency(val) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0);
 }
 
 export function getInitials(name) {
-    if (!name) return '?';
-    return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
+  if (!name) return '?';
+  return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
 }
 
 export function daysUntilBirthday(birthdateStr) {
-    if (!birthdateStr) return null;
-    const today = new Date();
-    const bd = new Date(birthdateStr);
-    const next = new Date(today.getFullYear(), bd.getMonth(), bd.getDate());
-    if (next < today) next.setFullYear(today.getFullYear() + 1);
-    return Math.ceil((next - today) / (1000 * 60 * 60 * 24));
+  if (!birthdateStr) return null;
+  const today = new Date();
+  const bd = new Date(birthdateStr);
+  const next = new Date(today.getFullYear(), bd.getMonth(), bd.getDate());
+  if (next < today) next.setFullYear(today.getFullYear() + 1);
+  return Math.ceil((next - today) / (1000 * 60 * 60 * 24));
 }
 
 export function generateSlug(name) {
-    return name.toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').trim('-')
-        + '-' + Math.random().toString(36).slice(2, 7);
+  return name.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').trim('-')
+    + '-' + Math.random().toString(36).slice(2, 7);
 }
 
 export function getConsultantTitle(gender) {
-    // If the gender is explicitly 'masculino', return 'Consultor', otherwise 'Consultora'
-    if (typeof gender === 'string' && gender.trim().toLowerCase() === 'masculino') {
-        return 'Consultor';
-    }
-    return 'Consultora';
+  // If the gender is explicitly 'masculino', return 'Consultor', otherwise 'Consultora'
+  if (typeof gender === 'string' && gender.trim().toLowerCase() === 'masculino') {
+    return 'Consultor';
+  }
+  return 'Consultora';
 }
 
 /**
@@ -142,117 +142,121 @@ export function getConsultantTitle(gender) {
  * @param {object|null} rastreamento — tracking config from the backend
  */
 export function injectTrackingScripts(rastreamento) {
-    if (!rastreamento) return;
-    const { meta_pixel_id, clarity_id, ga_id, gtm_id, custom_script } = rastreamento;
+  if (!rastreamento) return;
+  const { meta_pixel_id, clarity_id, ga_id, gtm_id, custom_script } = rastreamento;
 
-    /** Create and append an inline <script> that will actually execute */
-    function addInlineScript(id, code) {
-        if (document.getElementById(id)) return;
-        const s = document.createElement('script');
-        s.id = id;
-        s.textContent = code;
-        document.head.appendChild(s);
+  /** Create and append an inline <script> that will actually execute */
+  function addInlineScript(id, code) {
+    if (document.getElementById(id)) return;
+    const s = document.createElement('script');
+    s.id = id;
+    s.textContent = code;
+    document.head.appendChild(s);
+  }
+
+  /** Create and append an external <script src="…"> */
+  function addExternalScript(id, src, async = true) {
+    if (document.getElementById(id)) return;
+    const s = document.createElement('script');
+    s.id = id;
+    s.src = src;
+    s.async = async;
+    document.head.appendChild(s);
+  }
+
+  // Meta Pixel (browser-side fbq) — snippet oficial Meta injetado como inline script
+  if (meta_pixel_id && String(meta_pixel_id).trim()) {
+    const pixelId = String(meta_pixel_id).trim();
+    if (!document.getElementById('tracking-meta-pixel')) {
+      // Snippet oficial da Meta como script inline — reconhecido pelo Meta Pixel Helper
+      addInlineScript('tracking-meta-pixel',
+        `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?` +
+        `n.callMethod.apply(n,arguments):n.queue.push(arguments)};` +
+        `if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';` +
+        `n.queue=[];t=b.createElement(e);t.async=!0;` +
+        `t.src=v;s=b.getElementsByTagName(e)[0];` +
+        `s.parentNode.insertBefore(t,s)}(window,document,'script',` +
+        `'https://connect.facebook.net/en_US/fbevents.js');` +
+        `fbq('init','${pixelId}');fbq('track','PageView');`
+      );
+      // noscript fallback
+      const ns = document.createElement('noscript');
+      ns.id = 'tracking-meta-pixel-ns';
+      ns.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1"/>`;
+      document.head.appendChild(ns);
     }
-
-    /** Create and append an external <script src="…"> */
-    function addExternalScript(id, src, async = true) {
-        if (document.getElementById(id)) return;
-        const s = document.createElement('script');
-        s.id = id;
-        s.src = src;
-        s.async = async;
-        document.head.appendChild(s);
-    }
-
-    // Meta Pixel (browser-side fbq) — snippet oficial Meta injetado como inline script
-    if (meta_pixel_id && String(meta_pixel_id).trim()) {
-        const pixelId = String(meta_pixel_id).trim();
-        if (!document.getElementById('tracking-meta-pixel')) {
-            // Snippet oficial da Meta como script inline — reconhecido pelo Meta Pixel Helper
-            addInlineScript('tracking-meta-pixel',
-                `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?` +
-                `n.callMethod.apply(n,arguments):n.queue.push(arguments)};` +
-                `if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';` +
-                `n.queue=[];t=b.createElement(e);t.async=!0;` +
-                `t.src=v;s=b.getElementsByTagName(e)[0];` +
-                `s.parentNode.insertBefore(t,s)}(window,document,'script',` +
-                `'https://connect.facebook.net/en_US/fbevents.js');` +
-                `fbq('init','${pixelId}');fbq('track','PageView');`
-            );
-            // noscript fallback
-            const ns = document.createElement('noscript');
-            ns.id = 'tracking-meta-pixel-ns';
-            ns.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1"/>`;
-            document.head.appendChild(ns);
-        }
-    }
+  }
 
 
-    // Microsoft Clarity
-    if (clarity_id) {
-        addInlineScript('tracking-clarity',
-            `(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","${clarity_id}");`
-        );
-    }
+  // Microsoft Clarity
+  if (clarity_id) {
+    addInlineScript('tracking-clarity',
+      `(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","${clarity_id}");`
+    );
+  }
 
-    // Google Analytics 4
-    if (ga_id) {
-        addExternalScript('tracking-ga4-loader', `https://www.googletagmanager.com/gtag/js?id=${ga_id}`);
-        addInlineScript('tracking-ga4-init',
-            `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${ga_id}');`
-        );
-    }
+  // Google Analytics 4
+  if (ga_id) {
+    addExternalScript('tracking-ga4-loader', `https://www.googletagmanager.com/gtag/js?id=${ga_id}`);
+    addInlineScript('tracking-ga4-init',
+      `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${ga_id}');`
+    );
+  }
 
-    // Google Tag Manager
-    if (gtm_id) {
-        addInlineScript('tracking-gtm',
-            `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtm_id}');`
-        );
-    }
+  // Google Tag Manager
+  if (gtm_id) {
+    addInlineScript('tracking-gtm',
+      `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtm_id}');`
+    );
+  }
 
-    // Custom script (raw HTML — parsed and re-created to ensure execution)
-    if (custom_script && custom_script.trim()) {
-        if (document.getElementById('tracking-custom')) return;
-        const temp = document.createElement('div');
-        temp.innerHTML = custom_script;
+  // Custom script (raw HTML — parsed and re-created to ensure execution)
+  if (custom_script && custom_script.trim()) {
+    if (document.getElementById('tracking-custom')) return;
+    Array.from(temp.querySelectorAll('script')).forEach((orig, i) => {
+      const s = document.createElement('script');
+      s.id = 'tracking-custom-' + i;
+      if (orig.src) { s.src = orig.src; s.async = true; }
+      else { s.textContent = orig.textContent; }
+      document.head.appendChild(s);
     });
-}
+  }
 }
 
 export function openClientOffcanvas(client) {
-    if (!client) return;
+  if (!client) return;
 
-    // Remove existing
-    const existing = document.querySelector('.offcanvas-overlay');
-    if (existing) existing.remove();
+  // Remove existing
+  const existing = document.querySelector('.offcanvas-overlay');
+  if (existing) existing.remove();
 
-    const overlay = document.createElement('div');
-    overlay.className = 'offcanvas-overlay';
+  const overlay = document.createElement('div');
+  overlay.className = 'offcanvas-overlay';
 
-    const cleanPhone = (client.telefone || '').replace(/\D/g, '');
-    const waPhone = cleanPhone.startsWith('55') ? cleanPhone : \`55\${cleanPhone}\`;
-    const firstName = (client.nome || 'Cliente').split(' ')[0];
-    const waMsg = encodeURIComponent(\`Oi \${firstName}, tudo bem com voce?\`);
-    const waLink = client.telefone ? \`https://wa.me/\${waPhone}?text=\${waMsg}\` : '#';
+  const cleanPhone = (client.telefone || '').replace(/\D/g, '');
+  const waPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+  const firstName = (client.nome || 'Cliente').split(' ')[0];
+  const waMsg = encodeURIComponent(`Oi ${firstName}, tudo bem com voce?`);
+  const waLink = client.telefone ? `https://wa.me/${waPhone}?text=${waMsg}` : '#';
 
-    // Timeline placeholder (mockup for now, could be filled by actual API data)
-    const pipelineDate = client.atualizado_em || client.criado_em;
-    const isLost = client.pipeline_stage === 'perdido';
-    const stageName = (client.pipeline_stage || 'lead_captado').replace('_', ' ').toUpperCase();
+  // Timeline placeholder (mockup for now, could be filled by actual API data)
+  const pipelineDate = client.atualizado_em || client.criado_em;
+  const isLost = client.pipeline_stage === 'perdido';
+  const stageName = (client.pipeline_stage || 'lead_captado').replace('_', ' ').toUpperCase();
 
-    overlay.innerHTML = \`
+  overlay.innerHTML = `
       <div class="offcanvas" id="client-offcanvas">
         <div class="offcanvas-header">
           <div style="display:flex;align-items:center;gap:12px">
             <div style="width:48px;height:48px;border-radius:50%;background:var(--green-600);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.2rem">
-              \${getInitials(client.nome)}
+              ${getInitials(client.nome)}
             </div>
             <div>
-              <h3 style="margin:0;font-size:1.1rem;color:var(--text-dark)">\${client.nome}</h3>
+              <h3 style="margin:0;font-size:1.1rem;color:var(--text-dark)">${client.nome}</h3>
               <div style="font-size:0.8rem;color:var(--text-muted);display:flex;gap:8px;margin-top:4px">
-                 <span>\${client.cidade || 'Sem cidade'}</span>
+                 <span>${client.cidade || 'Sem cidade'}</span>
                  <span>•</span>
-                 <span style="color:\${isLost?'#ef4444':'var(--green-600)'};font-weight:600">\${stageName}</span>
+                 <span style="color:${isLost ? '#ef4444' : 'var(--green-600)'};font-weight:600">${stageName}</span>
               </div>
             </div>
           </div>
@@ -261,9 +265,9 @@ export function openClientOffcanvas(client) {
 
         <div class="offcanvas-body">
           <div style="display:flex;gap:8px;margin-bottom:24px">
-             \${client.telefone ? \`<a href="\${waLink}" target="_blank" class="btn btn-primary" style="flex:1;justify-content:center;gap:6px">💬 WhatsApp</a>\` : ''}
-             \${client.telefone ? \`<a href="tel:\${cleanPhone}" class="btn btn-secondary" style="padding:10px" title="Ligar">📞</a>\` : ''}
-             \${client.email ? \`<a href="mailto:\${client.email}" class="btn btn-secondary" style="padding:10px" title="Email">✉️</a>\` : ''}
+             ${client.telefone ? `<a href="${waLink}" target="_blank" class="btn btn-primary" style="flex:1;justify-content:center;gap:6px">💬 WhatsApp</a>` : ''}
+             ${client.telefone ? `<a href="tel:${cleanPhone}" class="btn btn-secondary" style="padding:10px" title="Ligar">📞</a>` : ''}
+             ${client.email ? `<a href="mailto:${client.email}" class="btn btn-secondary" style="padding:10px" title="Email">✉️</a>` : ''}
           </div>
 
           <div class="oc-tabs">
@@ -276,36 +280,36 @@ export function openClientOffcanvas(client) {
           <div class="oc-pane active" id="pane-geral">
              <div class="form-group">
                <label class="field-label" style="font-size:0.75rem;margin-bottom:4px">Telefone</label>
-               <div style="color:var(--text-dark);font-weight:500;margin-bottom:12px">\${client.telefone || '—'}</div>
+               <div style="color:var(--text-dark);font-weight:500;margin-bottom:12px">${client.telefone || '—'}</div>
                
                <label class="field-label" style="font-size:0.75rem;margin-bottom:4px">Email</label>
-               <div style="color:var(--text-dark);font-weight:500;margin-bottom:12px">\${client.email || '—'}</div>
+               <div style="color:var(--text-dark);font-weight:500;margin-bottom:12px">${client.email || '—'}</div>
                
                <label class="field-label" style="font-size:0.75rem;margin-bottom:4px">Nascimento / Idade</label>
-               <div style="color:var(--text-dark);font-weight:500;margin-bottom:12px">\${formatDate(client.data_nascimento)} \${client.data_nascimento ? \`(\${Math.floor((new Date() - new Date(client.data_nascimento)) / 31557600000)} anos)\` : ''}</div>
+               <div style="color:var(--text-dark);font-weight:500;margin-bottom:12px">${formatDate(client.data_nascimento)} ${client.data_nascimento ? `(${Math.floor((new Date() - new Date(client.data_nascimento)) / 31557600000)} anos)` : ''}</div>
                
                <label class="field-label" style="font-size:0.75rem;margin-bottom:4px">Anotações Fixadas</label>
                <div style="background:#fffbeb;padding:12px;border:1px solid #fcd34d;border-radius:6px;font-size:0.85rem;color:#b45309;white-space:pre-wrap">
-                 \${client.notas || 'Nenhuma anotação geral sobre este cliente.'}
+                 ${client.notas || 'Nenhuma anotação geral sobre este cliente.'}
                </div>
              </div>
           </div>
 
           <!-- PANE: FOLLOW-UP -->
           <div class="oc-pane" id="pane-followup">
-             \${client.motivo_perda ? \`
+             ${client.motivo_perda ? `
                <div style="background:#fef2f2;border:1px solid #fecaca;padding:12px;border-radius:6px;margin-bottom:16px">
                  <div style="color:#ef4444;font-size:0.75rem;font-weight:700;margin-bottom:4px">MOTIVO DE PERDA</div>
-                 <div style="color:#991b1b;font-size:0.85rem">\${client.motivo_perda}</div>
+                 <div style="color:#991b1b;font-size:0.85rem">${client.motivo_perda}</div>
                </div>
-             \` : ''}
+             ` : ''}
 
-             \${client.pipeline_notas ? \`
+             ${client.pipeline_notas ? `
                <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:6px;margin-bottom:16px">
                  <div style="color:#16a34a;font-size:0.75rem;font-weight:700;margin-bottom:4px">ÚLTIMA NOTA DO PIPELINE</div>
-                 <div style="color:#166534;font-size:0.85rem;white-space:pre-wrap">\${client.pipeline_notas}</div>
+                 <div style="color:#166534;font-size:0.85rem;white-space:pre-wrap">${client.pipeline_notas}</div>
                </div>
-             \` : '<div style="color:var(--text-muted);font-size:0.85rem;font-style:italic">Nenhuma anotação de funil.</div>'}
+             ` : '<div style="color:var(--text-muted);font-size:0.85rem;font-style:italic">Nenhuma anotação de funil.</div>'}
              
              <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:16px">
                 <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px">TIMELINE (Últimos Movimentos)</div>
@@ -313,8 +317,8 @@ export function openClientOffcanvas(client) {
                   <div style="width:2px;background:var(--border);margin-left:5px"></div>
                   <div>
                     <div style="width:12px;height:12px;border-radius:50%;background:var(--green-500);margin-left:-24px;margin-top:2px"></div>
-                    <div style="font-size:0.8rem;color:var(--text-dark);margin-top:-14px">Movido para <b>\${stageName}</b></div>
-                    <div style="font-size:0.7rem;color:var(--text-muted)">\${formatDate(pipelineDate, {hour:'2-digit', minute:'2-digit'})}</div>
+                    <div style="font-size:0.8rem;color:var(--text-dark);margin-top:-14px">Movido para <b>${stageName}</b></div>
+                    <div style="font-size:0.7rem;color:var(--text-muted)">${formatDate(pipelineDate, { hour: '2-digit', minute: '2-digit' })}</div>
                   </div>
                 </div>
                 <!-- Mockup of creation date -->
@@ -323,7 +327,7 @@ export function openClientOffcanvas(client) {
                   <div>
                     <div style="width:12px;height:12px;border-radius:50%;background:#d1d5db;margin-left:-24px;margin-top:2px"></div>
                     <div style="font-size:0.8rem;color:var(--text-dark);margin-top:-14px">Cadastro Inicial (Lead)</div>
-                    <div style="font-size:0.7rem;color:var(--text-muted)">\${formatDate(client.criado_em, {hour:'2-digit', minute:'2-digit'})}</div>
+                    <div style="font-size:0.7rem;color:var(--text-muted)">${formatDate(client.criado_em, { hour: '2-digit', minute: '2-digit' })}</div>
                   </div>
                 </div>
              </div>
@@ -340,38 +344,38 @@ export function openClientOffcanvas(client) {
 
         </div>
       </div>
-    \`;
+    `;
 
-    document.body.appendChild(overlay);
+  document.body.appendChild(overlay);
 
-    // Animate In
-    requestAnimationFrame(() => {
-        overlay.classList.add('show');
-        document.getElementById('client-offcanvas').classList.add('show');
+  // Animate In
+  requestAnimationFrame(() => {
+    overlay.classList.add('show');
+    document.getElementById('client-offcanvas').classList.add('show');
+  });
+
+  // Close logic
+  function closeOC() {
+    document.getElementById('client-offcanvas').classList.remove('show');
+    overlay.classList.remove('show');
+    setTimeout(() => overlay.remove(), 350);
+  }
+
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeOC();
+  });
+  overlay.querySelector('[data-oc-close]').addEventListener('click', closeOC);
+
+  // Tabs logic
+  const tabs = overlay.querySelectorAll('.oc-tab');
+  const panes = overlay.querySelectorAll('.oc-pane');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      panes.forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      overlay.querySelector('#' + tab.dataset.target).classList.add('active');
     });
-
-    // Close logic
-    function closeOC() {
-        document.getElementById('client-offcanvas').classList.remove('show');
-        overlay.classList.remove('show');
-        setTimeout(() => overlay.remove(), 350);
-    }
-
-    overlay.addEventListener('click', e => {
-        if (e.target === overlay) closeOC();
-    });
-    overlay.querySelector('[data-oc-close]').addEventListener('click', closeOC);
-
-    // Tabs logic
-    const tabs = overlay.querySelectorAll('.oc-tab');
-    const panes = overlay.querySelectorAll('.oc-pane');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            panes.forEach(p => p.classList.remove('active'));
-            tab.classList.add('active');
-            overlay.querySelector('#' + tab.dataset.target).classList.add('active');
-        });
-    });
+  });
 }

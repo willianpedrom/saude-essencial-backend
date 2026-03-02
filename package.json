@@ -10,6 +10,7 @@
     "db:setup": "node src/db/setup.js"
   },
   "dependencies": {
+    "acorn": "^8.16.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -27,5 +28,16 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/willianpedrom/saude-essencial-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/willianpedrom/saude-essencial-backend/issues"
+  },
+  "homepage": "https://github.com/willianpedrom/saude-essencial-backend#readme"
 }
