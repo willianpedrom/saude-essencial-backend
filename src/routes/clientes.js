@@ -226,12 +226,17 @@ router.post('/import', async (req, res) => {
                     if (checkEmail.rows.length > 0) isDuplicate = true;
                 }
 
-                // Opcional: Verificar duplicidade por telefone também?
-                // Vou manter o foco apenas no e-mail conforme era o comportamento anterior
-
                 if (isDuplicate) {
                     pulados.push({ linha: i + 2, motivo: 'E-mail já cadastrado', nome });
                     continue;
+                }
+
+                // Enforce plan limits strictly on a per-row basis
+                if (limites.clientes_max !== null && limites.clientes_max !== undefined) {
+                    if (totalAtual + criados.length >= limites.clientes_max) {
+                        erros.push({ linha: i + 2, erro: `Limite do plano atingido (Máx ${limites.clientes_max} clientes)`, nome });
+                        continue;
+                    }
                 }
 
                 const { rows } = await client.query(

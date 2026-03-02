@@ -140,6 +140,27 @@ router.put('/public/:token', async (req, res) => {
         }
         // Generic always creates a new client record
         if (!clienteId) {
+            // Verify plan limit before adding new client
+            const { rows: limitRows } = await client.query(`
+                SELECT p.clientes_max,
+                (SELECT COUNT(*) FROM clientes WHERE consultora_id = $1 AND ativo = TRUE) as total_ativos
+                FROM assinaturas a
+                LEFT JOIN planos p ON p.slug = a.plano AND p.ativo = TRUE
+                WHERE a.consultora_id = $1
+                ORDER BY a.criado_em DESC LIMIT 1
+            `, [consultora_id]);
+
+            if (limitRows.length > 0) {
+                const sub = limitRows[0];
+                if (sub.clientes_max !== null && sub.clientes_max !== undefined) {
+                    const totalAtivos = parseInt(sub.total_ativos || 0);
+                    if (totalAtivos >= sub.clientes_max) {
+                        await client.query('ROLLBACK');
+                        return res.status(403).json({ error: 'O consultor(a) atingiu o limite de atendimentos e não pode receber novos formulários no momento.' });
+                    }
+                }
+            }
+
             const { rows: cRows } = await client.query(
                 `INSERT INTO clientes (consultora_id, nome, email, telefone, data_nascimento, cidade, status)
                  VALUES ($1, $2, $3, $4, $5, $6, 'lead') RETURNING id`,
