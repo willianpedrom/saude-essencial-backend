@@ -129,8 +129,8 @@ export const store = {
         const res = await api('PUT', `/api/clientes/${id}`, clientToApi(payload));
         return normalizeClient(res);
     },
-    async updateStage(id, stage, notas) {
-        return api('PATCH', `/api/clientes/${id}/stage`, { stage, notas });
+    async updateStage(id, stage, notas, motivo_perda) {
+        return api('PATCH', `/api/clientes/${id}/stage`, { stage, notas, motivo_perda });
     },
     async deleteClient(_cidOrId, id) {
         const actualId = id !== undefined ? id : _cidOrId;

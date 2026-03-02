@@ -131,6 +131,7 @@ export async function renderPipeline(router) {
           <button class="pipeline-card-btn" data-note-id="${client.id}" data-note-name="${fullName.replace(/"/g, '&quot;')}" data-note-current="${notes.replace(/"/g, '&quot;')}" title="Adicionar nota">📝</button>
         </div>
       </div>
+      ${client.motivo_perda ? `<div class="pipeline-card-note" style="color:#ef4444;font-style:normal;font-weight:600;margin-bottom:2px">🛑 Motivo: ${client.motivo_perda}</div>` : ''}
       ${notes ? `<div class="pipeline-card-note">${notes}</div>` : ''}
     </div>`;
   }
@@ -280,9 +281,57 @@ export async function renderPipeline(router) {
         const targetStage = zone.dataset.targetStage;
         if (!draggedId || !targetStage || targetStage === draggedFrom) return;
 
-        // Optimistic update
         const client = clients.find(c => c.id === draggedId);
-        if (client) client.pipeline_stage = targetStage;
+        if (!client) return;
+
+        // Se o destino for 'perdido', abre o modal perguntando o motivo
+        if (targetStage === 'perdido') {
+          modal(`Perdemos uma venda? 😢`, `
+              <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px">
+                Qual foi o principal motivo de ${client.nome || client.name} não ter fechado negócio?
+              </p>
+              <div class="form-group" style="margin-bottom:12px">
+                <label class="field-label">Motivo de Perda</label>
+                <select class="field-input" id="input-motivo-perda">
+                  <option value="Sem Resposta / Sumiu">Sem Resposta / Sumiu</option>
+                  <option value="Achou Caro / Sem Dinheiro">Achou Caro / Sem Dinheiro</option>
+                  <option value="Comprou com Outro (Concorrente)">Comprou com Outro (Concorrente)</option>
+                  <option value="Desistiu / Adiou a Compra">Desistiu / Adiou a Compra</option>
+                  <option value="Não era o momento certo">Não era o momento certo</option>
+                  <option value="Outro">Outro (especificar nas notas)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="field-label">Detalhes adicionais (Nota)</label>
+                <textarea class="field-textarea" id="note-text" rows="3" placeholder="Ex: O marido não deixou investir agora...">${client.pipeline_notas || ''}</textarea>
+              </div>`, {
+            confirmLabel: 'Confirmar Perda',
+            cancelLabel: 'Cancelar',
+            onConfirm: async () => {
+              const motivo = document.getElementById('input-motivo-perda')?.value || 'Sem Resposta';
+              const note = document.getElementById('note-text')?.value || '';
+
+              try {
+                await store.updateStage(draggedId, targetStage, note, motivo);
+                client.pipeline_stage = targetStage;
+                client.motivo_perda = motivo;
+                client.pipeline_notas = note;
+                toast('Lead marcado como PERDIDO. Motivo registrado.', 'success');
+                render();
+              } catch (err) {
+                toast('Erro ao mover card: ' + err.message, 'error');
+                await load();
+              }
+            },
+            onCancel: () => {
+              render(); // force re-render to snap back
+            }
+          });
+          return; // Espera a decisão do Modal
+        }
+
+        // Optimistic update para outras colunas
+        client.pipeline_stage = targetStage;
         render();
 
         try {

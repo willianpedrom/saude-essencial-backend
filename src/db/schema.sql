@@ -106,6 +106,7 @@ UPDATE consultoras SET role = 'admin'
 
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS pipeline_stage  VARCHAR(40) DEFAULT 'lead_captado';
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS pipeline_notas  TEXT;
+ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS motivo_perda    TEXT;
 
 -- Links Personaliados da Consultora (Linktree)
 CREATE TABLE IF NOT EXISTS consultora_links (

@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
         // Filtra ativo=TRUE por padrão. Use ?ativo=false para ver inativos, ?ativo=all para todos.
         let queryStr = `
             SELECT id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, ativo, status,
-                   pipeline_stage, pipeline_notas, criado_em
+                   pipeline_stage, pipeline_notas, motivo_perda, criado_em
             FROM clientes
             WHERE consultora_id = $1
         `;
@@ -121,7 +121,7 @@ router.put('/:id', async (req, res) => {
 
 // PATCH /api/clientes/:id/stage
 router.patch('/:id/stage', async (req, res) => {
-    const { stage, notas } = req.body;
+    const { stage, notas, motivo_perda } = req.body;
     const VALID_STAGES = ['lead_captado', 'primeiro_contato', 'interesse_confirmado',
         'protocolo_apresentado', 'proposta_enviada', 'negociando', 'primeira_compra', 'perdido'];
     if (!stage || !VALID_STAGES.includes(stage)) {
@@ -130,10 +130,13 @@ router.patch('/:id/stage', async (req, res) => {
     try {
         const { rows } = await pool.query(
             `UPDATE clientes
-         SET pipeline_stage=$1, pipeline_notas=COALESCE($2, pipeline_notas), atualizado_em=NOW()
-         WHERE id=$3 AND consultora_id=$4
-         RETURNING id, nome, pipeline_stage, pipeline_notas`,
-            [stage, notas || null, req.params.id, req.consultora.id]
+             SET pipeline_stage=$1, 
+                 pipeline_notas=COALESCE($2, pipeline_notas), 
+                 motivo_perda=$3,
+                 atualizado_em=NOW()
+             WHERE id=$4 AND consultora_id=$5
+             RETURNING id, nome, pipeline_stage, pipeline_notas, motivo_perda`,
+            [stage, notas || null, motivo_perda || null, req.params.id, req.consultora.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Cliente não encontrado.' });
         res.json(rows[0]);
