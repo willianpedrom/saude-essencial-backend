@@ -1,6 +1,6 @@
 import { store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
-import { toast, modal } from '../utils.js';
+import { toast, modal, openClientOffcanvas } from '../utils.js';
 
 // ── Pipeline stages config ────────────────────────────────────
 const STAGES = [
@@ -264,6 +264,12 @@ export async function renderPipeline(router) {
       card.addEventListener('dragend', () => {
         card.classList.remove('dragging');
         pc.querySelectorAll('.pipeline-drop-zone').forEach(z => z.classList.remove('drag-over'));
+      });
+      // Click on card opens offcanvas
+      card.addEventListener('click', e => {
+        if (e.target.closest('.pipeline-card-btn')) return; // Ignore action buttons
+        const c = clients.find(cl => cl.id === card.dataset.id);
+        if (c) openClientOffcanvas(c);
       });
     });
 

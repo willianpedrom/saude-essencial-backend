@@ -215,12 +215,163 @@ export function injectTrackingScripts(rastreamento) {
         if (document.getElementById('tracking-custom')) return;
         const temp = document.createElement('div');
         temp.innerHTML = custom_script;
-        Array.from(temp.querySelectorAll('script')).forEach((orig, i) => {
-            const s = document.createElement('script');
-            s.id = 'tracking-custom-' + i;
-            if (orig.src) { s.src = orig.src; s.async = true; }
-            else { s.textContent = orig.textContent; }
-            document.head.appendChild(s);
-        });
+    });
+}
+}
+
+export function openClientOffcanvas(client) {
+    if (!client) return;
+
+    // Remove existing
+    const existing = document.querySelector('.offcanvas-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'offcanvas-overlay';
+
+    const cleanPhone = (client.telefone || '').replace(/\D/g, '');
+    const waPhone = cleanPhone.startsWith('55') ? cleanPhone : \`55\${cleanPhone}\`;
+    const firstName = (client.nome || 'Cliente').split(' ')[0];
+    const waMsg = encodeURIComponent(\`Oi \${firstName}, tudo bem com voce?\`);
+    const waLink = client.telefone ? \`https://wa.me/\${waPhone}?text=\${waMsg}\` : '#';
+
+    // Timeline placeholder (mockup for now, could be filled by actual API data)
+    const pipelineDate = client.atualizado_em || client.criado_em;
+    const isLost = client.pipeline_stage === 'perdido';
+    const stageName = (client.pipeline_stage || 'lead_captado').replace('_', ' ').toUpperCase();
+
+    overlay.innerHTML = \`
+      <div class="offcanvas" id="client-offcanvas">
+        <div class="offcanvas-header">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:48px;height:48px;border-radius:50%;background:var(--green-600);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.2rem">
+              \${getInitials(client.nome)}
+            </div>
+            <div>
+              <h3 style="margin:0;font-size:1.1rem;color:var(--text-dark)">\${client.nome}</h3>
+              <div style="font-size:0.8rem;color:var(--text-muted);display:flex;gap:8px;margin-top:4px">
+                 <span>\${client.cidade || 'Sem cidade'}</span>
+                 <span>•</span>
+                 <span style="color:\${isLost?'#ef4444':'var(--green-600)'};font-weight:600">\${stageName}</span>
+              </div>
+            </div>
+          </div>
+          <button class="offcanvas-close" data-oc-close>&times;</button>
+        </div>
+
+        <div class="offcanvas-body">
+          <div style="display:flex;gap:8px;margin-bottom:24px">
+             \${client.telefone ? \`<a href="\${waLink}" target="_blank" class="btn btn-primary" style="flex:1;justify-content:center;gap:6px">💬 WhatsApp</a>\` : ''}
+             \${client.telefone ? \`<a href="tel:\${cleanPhone}" class="btn btn-secondary" style="padding:10px" title="Ligar">📞</a>\` : ''}
+             \${client.email ? \`<a href="mailto:\${client.email}" class="btn btn-secondary" style="padding:10px" title="Email">✉️</a>\` : ''}
+          </div>
+
+          <div class="oc-tabs">
+            <button class="oc-tab active" data-target="pane-geral">Visão Geral</button>
+            <button class="oc-tab" data-target="pane-followup">Follow-up</button>
+            <button class="oc-tab" data-target="pane-compras">Compras</button>
+          </div>
+
+          <!-- PANE: GERAL -->
+          <div class="oc-pane active" id="pane-geral">
+             <div class="form-group">
+               <label class="field-label" style="font-size:0.75rem;margin-bottom:4px">Telefone</label>
+               <div style="color:var(--text-dark);font-weight:500;margin-bottom:12px">\${client.telefone || '—'}</div>
+               
+               <label class="field-label" style="font-size:0.75rem;margin-bottom:4px">Email</label>
+               <div style="color:var(--text-dark);font-weight:500;margin-bottom:12px">\${client.email || '—'}</div>
+               
+               <label class="field-label" style="font-size:0.75rem;margin-bottom:4px">Nascimento / Idade</label>
+               <div style="color:var(--text-dark);font-weight:500;margin-bottom:12px">\${formatDate(client.data_nascimento)} \${client.data_nascimento ? \`(\${Math.floor((new Date() - new Date(client.data_nascimento)) / 31557600000)} anos)\` : ''}</div>
+               
+               <label class="field-label" style="font-size:0.75rem;margin-bottom:4px">Anotações Fixadas</label>
+               <div style="background:#fffbeb;padding:12px;border:1px solid #fcd34d;border-radius:6px;font-size:0.85rem;color:#b45309;white-space:pre-wrap">
+                 \${client.notas || 'Nenhuma anotação geral sobre este cliente.'}
+               </div>
+             </div>
+          </div>
+
+          <!-- PANE: FOLLOW-UP -->
+          <div class="oc-pane" id="pane-followup">
+             \${client.motivo_perda ? \`
+               <div style="background:#fef2f2;border:1px solid #fecaca;padding:12px;border-radius:6px;margin-bottom:16px">
+                 <div style="color:#ef4444;font-size:0.75rem;font-weight:700;margin-bottom:4px">MOTIVO DE PERDA</div>
+                 <div style="color:#991b1b;font-size:0.85rem">\${client.motivo_perda}</div>
+               </div>
+             \` : ''}
+
+             \${client.pipeline_notas ? \`
+               <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:6px;margin-bottom:16px">
+                 <div style="color:#16a34a;font-size:0.75rem;font-weight:700;margin-bottom:4px">ÚLTIMA NOTA DO PIPELINE</div>
+                 <div style="color:#166534;font-size:0.85rem;white-space:pre-wrap">\${client.pipeline_notas}</div>
+               </div>
+             \` : '<div style="color:var(--text-muted);font-size:0.85rem;font-style:italic">Nenhuma anotação de funil.</div>'}
+             
+             <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:16px">
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px">TIMELINE (Últimos Movimentos)</div>
+                <div style="display:flex;gap:12px;margin-bottom:12px">
+                  <div style="width:2px;background:var(--border);margin-left:5px"></div>
+                  <div>
+                    <div style="width:12px;height:12px;border-radius:50%;background:var(--green-500);margin-left:-24px;margin-top:2px"></div>
+                    <div style="font-size:0.8rem;color:var(--text-dark);margin-top:-14px">Movido para <b>\${stageName}</b></div>
+                    <div style="font-size:0.7rem;color:var(--text-muted)">\${formatDate(pipelineDate, {hour:'2-digit', minute:'2-digit'})}</div>
+                  </div>
+                </div>
+                <!-- Mockup of creation date -->
+                <div style="display:flex;gap:12px">
+                  <div style="width:2px;background:transparent;margin-left:5px"></div>
+                  <div>
+                    <div style="width:12px;height:12px;border-radius:50%;background:#d1d5db;margin-left:-24px;margin-top:2px"></div>
+                    <div style="font-size:0.8rem;color:var(--text-dark);margin-top:-14px">Cadastro Inicial (Lead)</div>
+                    <div style="font-size:0.7rem;color:var(--text-muted)">\${formatDate(client.criado_em, {hour:'2-digit', minute:'2-digit'})}</div>
+                  </div>
+                </div>
+             </div>
+          </div>
+
+          <!-- PANE: COMPRAS -->
+          <div class="oc-pane" id="pane-compras">
+             <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center;gap:12px;opacity:0.6">
+                <span style="font-size:2rem">🛒</span>
+                <div style="font-size:0.9rem;color:var(--text-dark);font-weight:600">Nenhuma compra importada</div>
+                <div style="font-size:0.8rem;color:var(--text-muted)">Integren com a Hotmart ou cadastre vendas manualmente para exibir LTV e histórico.</div>
+             </div>
+          </div>
+
+        </div>
+      </div>
+    \`;
+
+    document.body.appendChild(overlay);
+
+    // Animate In
+    requestAnimationFrame(() => {
+        overlay.classList.add('show');
+        document.getElementById('client-offcanvas').classList.add('show');
+    });
+
+    // Close logic
+    function closeOC() {
+        document.getElementById('client-offcanvas').classList.remove('show');
+        overlay.classList.remove('show');
+        setTimeout(() => overlay.remove(), 350);
     }
+
+    overlay.addEventListener('click', e => {
+        if (e.target === overlay) closeOC();
+    });
+    overlay.querySelector('[data-oc-close]').addEventListener('click', closeOC);
+
+    // Tabs logic
+    const tabs = overlay.querySelectorAll('.oc-tab');
+    const panes = overlay.querySelectorAll('.oc-pane');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            panes.forEach(p => p.classList.remove('active'));
+            tab.classList.add('active');
+            overlay.querySelector('#' + tab.dataset.target).classList.add('active');
+        });
+    });
 }

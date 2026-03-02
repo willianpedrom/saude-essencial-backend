@@ -1,6 +1,6 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
-import { formatDate, getInitials, toast, modal } from '../utils.js';
+import { formatDate, getInitials, toast, modal, openClientOffcanvas } from '../utils.js';
 
 let cachedAnamneses = null; // lazy-load once per session
 
@@ -42,7 +42,7 @@ export async function renderClients(router) {
                <p>Cadastre clientes ou compartilhe seu link de anamnese</p>
                <button class="btn btn-primary" id="btn-add-client-empty">+ Adicionar Cliente</button></div></td></tr>`
       : list.map(c => `
-        <tr>
+        <tr class="client-row" data-id="${c.id}" style="cursor:pointer" title="Ver ficha completa">
           <td><div class="client-name-cell">
             <div class="client-avatar-sm">${getInitials(c.name || '?')}</div>
             <div><div style="font-weight:600">${c.name || '—'}</div>
@@ -87,6 +87,15 @@ export async function renderClients(router) {
         if (btn.dataset.action === 'anamnese') {
           showAnamneseModal(client, router);
         }
+      });
+    });
+
+    // Row click
+    pc.querySelectorAll('.client-row').forEach(row => {
+      row.addEventListener('click', e => {
+        if (e.target.closest('.btn')) return; // Ignore action buttons
+        const client = clients.find(c => c.id === row.dataset.id);
+        if (client) openClientOffcanvas(client);
       });
     });
   }
