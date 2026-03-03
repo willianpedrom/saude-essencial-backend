@@ -73,7 +73,7 @@ export async function renderPublicAnamnesis(router, token) {
         <div class="consultant-avatar" style="${anamneseData.consultora_foto ? 'padding:0;overflow:hidden;background:transparent' : ''}">${avatarHtml}</div>
         <div class="consultant-info">
           <h3>${consultoraNome}</h3>
-          <p>${cTitle} · Gota Essencial</p>
+          <p>${cTitle}</p>
         </div>
       </div>
 
