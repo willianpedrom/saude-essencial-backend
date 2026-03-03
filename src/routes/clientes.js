@@ -148,6 +148,34 @@ router.patch('/:id/stage', checkFeature('tem_pipeline'), async (req, res) => {
     }
 });
 
+// PATCH /api/clientes/:id/recrutamento-stage
+router.patch('/:id/recrutamento-stage', checkFeature('tem_pipeline'), async (req, res) => {
+    const { stage, notas, motivo_perda } = req.body;
+    // se stage for null, o cliente sai do pipeline de recrutamento (não é mais validado como estágio)
+    const VALID_STAGES = [null, 'prospecto_negocio', 'convite_apresentacao', 'apresentacao_assistida',
+        'acompanhamento_cadastro', 'cadastrada', 'nao_tem_interesse_agora'];
+    if (stage !== undefined && stage !== null && !VALID_STAGES.includes(stage)) {
+        return res.status(400).json({ error: 'Estágio de recrutamento inválido.' });
+    }
+    try {
+        const { rows } = await pool.query(
+            `UPDATE clientes
+             SET recrutamento_stage=$1, 
+                 recrutamento_notas=COALESCE($2, recrutamento_notas), 
+                 motivo_perda_recrutamento=$3,
+                 atualizado_em=NOW()
+             WHERE id=$4 AND consultora_id=$5
+             RETURNING id, nome, recrutamento_stage, recrutamento_notas, motivo_perda_recrutamento`,
+            [stage, notas || null, motivo_perda || null, req.params.id, req.consultora.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Cliente não encontrado.' });
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao atualizar estágio de recrutamento.' });
+    }
+});
+
 // DELETE /api/clientes/:id (soft delete)
 router.delete('/:id', async (req, res) => {
     try {
