@@ -854,6 +854,11 @@ export async function renderAdmin(router) {
             <option value="expired" ${u.plano_status === 'expired' ? 'selected' : ''}>🔴 Expirado</option>
           </select>
         </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label class="field-label">Vencimento Manual (Opcional)</label>
+          <input type="date" class="field-input" id="ap-vencimento" value="${u.periodo_fim ? u.periodo_fim.split('T')[0] : ''}">
+          <small style="color:var(--text-muted)">Se deixado em branco, não alterará a data atual.</small>
+        </div>
       </div>
       <div style="margin-top:12px;padding:12px;background:#f0fdf4;border-radius:8px;font-size:0.85rem">
         💡 Definindo como <strong>Ativo</strong> libera acesso completo ao sistema imediatamente.
@@ -862,8 +867,9 @@ export async function renderAdmin(router) {
       onConfirm: async () => {
         const plano = document.getElementById('ap-plano')?.value;
         const status = document.getElementById('ap-status')?.value;
+        const periodo_fim = document.getElementById('ap-vencimento')?.value || null;
         try {
-          await adminApi.updatePlan(u.id, { plano, status });
+          await adminApi.updatePlan(u.id, { plano, status, periodo_fim });
           toast('Plano atualizado! ✅');
           await load();
         } catch (err) { toast('Erro: ' + err.message, 'error'); }

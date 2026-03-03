@@ -23,25 +23,65 @@ function generateTempPassword(length = 10) {
 }
 
 async function resolveHotmartPlan(data) {
-    let plano = 'pro';
+    let slug = 'pro';
+    let dias_trial = 0;
+    let fallbackRow = null;
+    let matchedRow = null;
+
     try {
         const offerId = String(data?.purchase?.offer?.code || data?.product?.id || '');
         if (offerId) {
             const { rows: planoRows } = await pool.query(
-                `SELECT slug FROM planos WHERE hotmart_offer_id=$1 AND ativo=TRUE LIMIT 1`,
+                `SELECT slug, preco_mensal, preco_semestral, preco_anual, dias_trial FROM planos WHERE hotmart_offer_id=$1 AND ativo=TRUE LIMIT 1`,
                 [offerId]
             );
-            if (planoRows.length > 0) return planoRows[0].slug;
-            const { rows: cfg } = await pool.query(
-                `SELECT valor FROM configuracoes WHERE chave = 'hotmart_plano_map' LIMIT 1`
-            );
-            if (cfg.length > 0 && cfg[0].valor) {
-                const map = JSON.parse(cfg[0].valor);
-                if (map[offerId]) return map[offerId];
+            if (planoRows.length > 0) {
+                matchedRow = planoRows[0];
+            } else {
+                const { rows: cfg } = await pool.query(
+                    `SELECT valor FROM configuracoes WHERE chave = 'hotmart_plano_map' LIMIT 1`
+                );
+                if (cfg.length > 0 && cfg[0].valor) {
+                    const map = JSON.parse(cfg[0].valor);
+                    if (map[offerId]) {
+                        slug = map[offerId];
+                        const { rows: fallbackRows } = await pool.query(
+                            `SELECT slug, preco_mensal, preco_semestral, preco_anual, dias_trial FROM planos WHERE slug=$1 LIMIT 1`,
+                            [slug]
+                        );
+                        if (fallbackRows.length > 0) matchedRow = fallbackRows[0];
+                    }
+                }
             }
         }
     } catch { /* use default */ }
-    return plano;
+
+    if (!matchedRow) {
+        // Find default plan 'pro' to at least get its pricing
+        const { rows: defaultRows } = await pool.query(`SELECT slug, preco_mensal, preco_semestral, preco_anual, dias_trial FROM planos WHERE slug=$1 LIMIT 1`, [slug]).catch(() => ({ rows: [] }));
+        if (defaultRows.length > 0) matchedRow = defaultRows[0];
+    }
+
+    // Now figure out the duration based on price paid
+    let intervalDays = 30; // default
+    if (matchedRow) {
+        slug = matchedRow.slug;
+        dias_trial = matchedRow.dias_trial || 0;
+        const valorPago = parseFloat(data?.purchase?.price?.value || 0);
+
+        // Define helpers to find the closest matching price
+        const absDiff = (a, b) => Math.abs((a || 0) - (b || 0));
+        const diffAnual = matchedRow.preco_anual ? absDiff(valorPago, matchedRow.preco_anual) : Infinity;
+        const diffSemestral = matchedRow.preco_semestral ? absDiff(valorPago, matchedRow.preco_semestral) : Infinity;
+        const diffMensal = absDiff(valorPago, matchedRow.preco_mensal);
+
+        const minDiff = Math.min(diffAnual, diffSemestral, diffMensal);
+        if (minDiff === diffAnual && matchedRow.preco_anual > 0) intervalDays = 365;
+        else if (minDiff === diffSemestral && matchedRow.preco_semestral > 0) intervalDays = 180;
+        else intervalDays = 30;
+    }
+
+    return { slug, intervalDays, dias_trial };
 }
 
 async function registerPayment(consultoraId, { event, transactionId, subscriptionId, plano, valor }) {
@@ -129,7 +169,12 @@ router.post('/webhook', express.json(), async (req, res) => {
         switch (event) {
             case 'PURCHASE_COMPLETE':
             case 'PURCHASE_APPROVED': {
-                const plano = await resolveHotmartPlan(data);
+                const { slug: plano, intervalDays, dias_trial } = await resolveHotmartPlan(data);
+
+                // Se o valor for 0 e dias_trial for > 0, usar os dias de trial, se não, usa o intervalo 
+                const valorPago = parseFloat(data?.purchase?.price?.value || 0);
+                const isTrial = (valorPago === 0 && dias_trial > 0);
+                const daysToAdd = isTrial ? dias_trial : intervalDays;
 
                 const { rows: existing } = await pool.query(
                     `SELECT id FROM assinaturas WHERE consultora_id = $1 LIMIT 1`,
@@ -144,7 +189,7 @@ router.post('/webhook', express.json(), async (req, res) => {
                              hotmart_subscription_id = $3,
                              gateway = 'hotmart',
                              periodo_inicio = NOW(),
-                             periodo_fim = NOW() + INTERVAL '30 days',
+                             periodo_fim = NOW() + interval '${daysToAdd} days',
                              atualizado_em = NOW()
                          WHERE consultora_id = $4`,
                         [plano, transactionId, subscriptionId, consultoraId]
@@ -155,7 +200,7 @@ router.post('/webhook', express.json(), async (req, res) => {
                              (consultora_id, plano, status, gateway,
                               hotmart_transaction_id, hotmart_subscription_id,
                               periodo_inicio, periodo_fim)
-                         VALUES ($1, $2, 'active', 'hotmart', $3, $4, NOW(), NOW() + INTERVAL '30 days')`,
+                         VALUES ($1, $2, 'active', 'hotmart', $3, $4, NOW(), NOW() + interval '${daysToAdd} days')`,
                         [consultoraId, plano, transactionId, subscriptionId]
                     );
                 }

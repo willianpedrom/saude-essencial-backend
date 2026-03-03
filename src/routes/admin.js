@@ -113,7 +113,7 @@ router.put('/users/:id/password', async (req, res) => {
 
 // PUT /api/admin/users/:id/plan — update subscription plan
 router.put('/users/:id/plan', async (req, res) => {
-    const { plano, status } = req.body;
+    const { plano, status, periodo_fim } = req.body;
     try {
         // Upsert: update most recent subscription or insert new one
         const existing = await pool.query(
@@ -121,14 +121,21 @@ router.put('/users/:id/plan', async (req, res) => {
             [req.params.id]
         );
         if (existing.rows.length > 0) {
-            await pool.query(
-                'UPDATE assinaturas SET plano=$1, status=$2 WHERE id=$3',
-                [plano, status, existing.rows[0].id]
-            );
+            if (periodo_fim) {
+                await pool.query(
+                    'UPDATE assinaturas SET plano=$1, status=$2, periodo_fim=$3 WHERE id=$4',
+                    [plano, status, periodo_fim, existing.rows[0].id]
+                );
+            } else {
+                await pool.query(
+                    'UPDATE assinaturas SET plano=$1, status=$2 WHERE id=$3',
+                    [plano, status, existing.rows[0].id]
+                );
+            }
         } else {
             await pool.query(
-                'INSERT INTO assinaturas (consultora_id, plano, status) VALUES ($1, $2, $3)',
-                [req.params.id, plano, status]
+                `INSERT INTO assinaturas (consultora_id, plano, status, periodo_fim) VALUES ($1, $2, $3, COALESCE($4, NOW() + INTERVAL '30 days'))`,
+                [req.params.id, plano, status, periodo_fim || null]
             );
         }
         res.json({ success: true });
