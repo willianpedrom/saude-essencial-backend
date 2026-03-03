@@ -45,7 +45,7 @@ export async function renderClients(router) {
         <tr class="client-row" data-id="${c.id}" style="cursor:pointer" title="Ver ficha completa">
           <td><div class="client-name-cell">
             <div class="client-avatar-sm">${getInitials(c.name || '?')}</div>
-            <div><div style="font-weight:600">${c.name || '—'}</div>
+            <div><div style="font-weight:600">${c.name || '—'} ${c.tipo_cadastro === 'preferencial' ? '🛍️' : c.tipo_cadastro === 'consultora' ? '💼' : ''}</div>
             <div style="font-size:0.75rem;color:var(--text-muted)">${c.email || ''}</div></div>
           </div></td>
           <td>${c.phone || '—'}</td>

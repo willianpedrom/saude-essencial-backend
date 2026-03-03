@@ -153,6 +153,7 @@ async function runMigration() {
         await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS recrutamento_stage VARCHAR(40)`);
         await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS recrutamento_notas TEXT`);
         await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS motivo_perda_recrutamento TEXT`);
+        await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS tipo_cadastro VARCHAR(30)`);
 
         // System settings table (key-value store for admin-configurable settings)
         await pool.query(`CREATE TABLE IF NOT EXISTS configuracoes (

@@ -278,6 +278,24 @@ export function openClientOffcanvas(client) {
 
           <!-- PANE: GERAL -->
           <div class="oc-pane active" id="pane-geral">
+             <div class="form-group" style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid var(--border);margin-bottom:16px">
+                <label class="field-label" style="font-size:0.75rem;margin-bottom:8px;display:block">Classificação de Atuação</label>
+                <div style="display:flex;gap:12px;font-size:0.8rem">
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+                    <input type="radio" name="oc_tipo_cadastro" value="lead" ${!client.tipo_cadastro || client.tipo_cadastro === 'lead' ? 'checked' : ''}>
+                    <span>Prospecto</span>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+                    <input type="radio" name="oc_tipo_cadastro" value="preferencial" ${client.tipo_cadastro === 'preferencial' ? 'checked' : ''}>
+                    <span>🛍️ Preferencial</span>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+                    <input type="radio" name="oc_tipo_cadastro" value="consultora" ${client.tipo_cadastro === 'consultora' ? 'checked' : ''}>
+                    <span>💼 Consultora</span>
+                  </label>
+                </div>
+             </div>
+
              <div class="form-group">
                <label class="field-label" style="font-size:0.75rem;margin-bottom:4px">Telefone</label>
                <div style="color:var(--text-dark);font-weight:500;margin-bottom:12px">${client.telefone || '—'}</div>
@@ -387,6 +405,28 @@ export function openClientOffcanvas(client) {
       panes.forEach(p => p.classList.remove('active'));
       tab.classList.add('active');
       overlay.querySelector('#' + tab.dataset.target).classList.add('active');
+    });
+  });
+
+  // Classificação Action (Radio buttons)
+  const tipoRadios = overlay.querySelectorAll('input[name="oc_tipo_cadastro"]');
+  tipoRadios.forEach(radio => {
+    radio.addEventListener('change', async (e) => {
+      try {
+        const val = e.target.value === 'lead' ? null : e.target.value;
+        const { store } = await import('./store.js');
+        // Fetch current full client object to avoid overriding to null
+        const atual = client;
+        atual.tipo_cadastro = val;
+        await store.updateClient(client.id, atual);
+        toast('Classificação atualizada salvo!', 'success');
+
+        // Disparar evento customizado pra não ter que dar reload a todo instante
+        window.dispatchEvent(new Event('client-updated'));
+
+      } catch (err) {
+        toast('Erro ao mudar classificação: ' + err.message, 'error');
+      }
     });
   });
 

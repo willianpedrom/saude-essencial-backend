@@ -147,7 +147,7 @@ export async function renderPipeline(router) {
       <div class="pipeline-card-header">
         <div class="pipeline-card-avatar" style="background:linear-gradient(135deg,${stageConfig.color}88,${stageConfig.color}cc)">${initials}</div>
         <div class="pipeline-card-info">
-          <div class="pipeline-card-name">${fullName || '—'}</div>
+          <div class="pipeline-card-name">${fullName || '—'} ${client.tipo_cadastro === 'preferencial' ? ' 🛍️' : client.tipo_cadastro === 'consultora' ? ' 💼' : ''}</div>
           ${phone ? `<div class="pipeline-card-phone">📱 ${phone}</div>` : ''}
         </div>
         <div class="pipeline-card-actions">
