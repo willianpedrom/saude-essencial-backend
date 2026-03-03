@@ -155,8 +155,8 @@ export async function renderAdmin(router) {
             <p style="margin:4px 0 0;font-size:0.85rem;color:rgba(255,255,255,0.8)">Divulgue seu CRM com uma Landing Page exclusiva de alta conversão para captar novas assinantes.</p>
          </div>
          <div style="display:flex;gap:8px">
-            <button class="btn btn-secondary btn-sm" onclick="window.open('/#vendas', '_blank')" style="background:rgba(255,255,255,0.2);color:white;border:none">👁️ Ver Página</button>
-            <button class="btn btn-primary btn-sm" id="btn-copy-sales" style="background:white;color:var(--green-800);border:none" data-link="${window.location.origin}/#vendas">📋 Copiar Link Oficial</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.open('/#/vendas', '_blank')" style="background:rgba(255,255,255,0.2);color:white;border:none">👁️ Ver Página</button>
+            <button class="btn btn-primary btn-sm" id="btn-copy-sales" style="background:white;color:var(--green-800);border:none" data-link="${window.location.origin}/#/vendas">📋 Copiar Link Oficial</button>
          </div>
       </div>
 

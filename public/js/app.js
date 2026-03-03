@@ -70,6 +70,7 @@ const router = new Router({
     '/depoimento/:slug': ({ slug }) => renderPublicTestimonial(router, slug),
     '/p/:slug': ({ slug }) => renderPublicProfile(router, slug),
     '/vendas': () => renderLandingPage(router),
+    'vendas': () => renderLandingPage(router),
     '/reset-password': () => renderResetPassword(router),
 
     '*': () => auth.isLoggedIn ? router.navigate('/dashboard') : renderLogin(router),

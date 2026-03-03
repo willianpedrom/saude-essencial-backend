@@ -4,29 +4,20 @@
 import { store } from '../store.js';
 
 export async function renderLandingPage(router) {
-  const app = document.getElementById('app');
+    const app = document.getElementById('app');
 
-  // Configurações de UI: Removendo o Layout Padrão do Admin
-  app.className = 'landing-page-theme';
-  document.body.style.background = '#f9fafb';
+    // Configurações de UI: Removendo o Layout Padrão do Admin
+    app.className = 'landing-page-theme';
+    document.body.style.background = '#f9fafb';
 
-  // Tentar carregar os planos disponíveis no backend (Opcional, usado se for dinâmico)
-  let planos = [];
-  try {
-    const response = await fetch('/api/public/planos').catch(() => null);
-    if (response && response.ok) {
-      planos = await response.json();
-    } else {
-      // Planos Fixos (Fallback caso a API pública não exista ou falhe)
-      planos = [
+    // Planos disponíveis fixos (como definido em documentação)
+    let planos = [
         { id: 'basico', nome: 'Básico', preco_mensal: 47.90, descricoes: ['Até 50 Clientes', 'Ficha Anamnese', 'Painel de Acompanhamento'] },
         { id: 'pro', nome: 'Pro', preco_mensal: 97.90, descricoes: ['Até 500 Clientes', 'Ficha Anamnese', 'Pipeline de Vendas', 'Pipeline de Recrutamento', 'Suporte Prioritário'] }
-      ];
-    }
-  } catch (e) { console.error('Error fetching plans', e); }
+    ];
 
-  const isLightMode = true; // Forçar design Light clean para conversão
-  const navBar = `
+    const isLightMode = true; // Forçar design Light clean para conversão
+    const navBar = `
         <nav style="display:flex;justify-content:space-between;align-items:center;padding:20px 5%;background:white;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,0.05)">
             <div style="display:flex;align-items:center;gap:12px">
                 <div style="width:40px;height:40px;background:var(--green-600);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem">💧</div>
@@ -39,7 +30,7 @@ export async function renderLandingPage(router) {
         </nav>
     `;
 
-  const heroSection = `
+    const heroSection = `
         <header style="padding:100px 5%;text-align:center;background:linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%)">
             <h1 style="font-size:3.5rem;font-weight:800;color:var(--text-dark);line-height:1.2;margin-bottom:24px;max-width:800px;margin-inline:auto">
                 Transforme Contatos em <span style="background:linear-gradient(90deg, #16a34a, #047857);-webkit-background-clip:text;color:transparent">Clientes Fiéis e Líderes</span>.
@@ -54,7 +45,7 @@ export async function renderLandingPage(router) {
         </header>
     `;
 
-  const featuresSection = `
+    const featuresSection = `
         <section id="recursos" style="padding:80px 5%;background:white">
             <div style="text-align:center;margin-bottom:60px">
                 <h2 style="font-size:2.5rem;font-weight:800;color:var(--text-dark);margin-bottom:16px">Tudo que você precisa para crescer</h2>
@@ -85,7 +76,7 @@ export async function renderLandingPage(router) {
         </section>
     `;
 
-  const pricingSection = `
+    const pricingSection = `
         <section id="planos" style="padding:100px 5%;background:var(--text-dark)">
             <div style="text-align:center;margin-bottom:60px">
                 <h2 style="font-size:2.5rem;font-weight:800;color:white;margin-bottom:16px">Simples e com preço acessível</h2>
@@ -121,14 +112,14 @@ export async function renderLandingPage(router) {
         </section>
     `;
 
-  const footer = `
+    const footer = `
         <footer style="padding:40px 5%;background:#111827;color:rgba(255,255,255,0.6);text-align:center;font-size:0.9rem">
             © ${new Date().getFullYear()} Gota Essencial. Todos os direitos reservados.
         </footer>
     `;
 
-  // Renderização Final
-  app.innerHTML = `
+    // Renderização Final
+    app.innerHTML = `
         <div style="font-family:'Inter', sans-serif;">
             ${navBar}
             ${heroSection}
@@ -138,8 +129,8 @@ export async function renderLandingPage(router) {
         </div>
     `;
 
-  // Removendo listener residual do SPA default pra focar no css isolated
-  return () => {
-    app.className = '';
-  };
+    // Removendo listener residual do SPA default pra focar no css isolated
+    return () => {
+        app.className = '';
+    };
 }
