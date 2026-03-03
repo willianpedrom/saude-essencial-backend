@@ -147,8 +147,18 @@ export async function renderAdmin(router) {
           <div class="stat-label">MRR Estimado</div>
         </div>
       </div>
-
       ${trialExpiring > 0 ? `<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:10px 16px;margin-bottom:14px;font-size:0.85rem;color:#92400e">⚡ <strong>${trialExpiring} membro(s)</strong> com trial expirando nos próximos 7 dias</div>` : ''}
+
+      <div style="background:linear-gradient(135deg,var(--green-900),var(--green-700));border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;color:white;box-shadow:0 4px 12px rgba(0,0,0,0.1)">
+         <div>
+            <h3 style="margin:0;font-size:1.1rem;color:white;display:flex;align-items:center;gap:8px">🚀 Sua Página de Vendas</h3>
+            <p style="margin:4px 0 0;font-size:0.85rem;color:rgba(255,255,255,0.8)">Divulgue seu CRM com uma Landing Page exclusiva de alta conversão para captar novas assinantes.</p>
+         </div>
+         <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary btn-sm" onclick="window.open('/#vendas', '_blank')" style="background:rgba(255,255,255,0.2);color:white;border:none">👁️ Ver Página</button>
+            <button class="btn btn-primary btn-sm" id="btn-copy-sales" style="background:white;color:var(--green-800);border:none" data-link="${window.location.origin}/#vendas">📋 Copiar Link Oficial</button>
+         </div>
+      </div>
 
       <!-- Abas -->
       <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--border-light)">
@@ -167,6 +177,19 @@ export async function renderAdmin(router) {
         render();
       });
     });
+
+    // Clipboard Copy
+    const btnCopy = pc.querySelector('#btn-copy-sales');
+    if (btnCopy) {
+      btnCopy.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(btnCopy.dataset.link);
+          toast('Link da Landing Page copiado com sucesso!', 'success');
+        } catch (e) {
+          toast('Não foi possível copiar o link.', 'error');
+        }
+      });
+    }
 
     const tabContent = pc.querySelector('#tab-content');
     if (activeTab === 'membros') renderMembros(tabContent);
