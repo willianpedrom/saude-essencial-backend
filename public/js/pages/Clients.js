@@ -12,6 +12,8 @@ export async function renderClients(router) {
 
   let clients = [];
   let filter = 'all';
+  let tipoFilter = 'all';
+  let sortOrder = 'name';
   let search = '';
 
   async function refresh() {
@@ -20,15 +22,28 @@ export async function renderClients(router) {
   }
 
   function filtered() {
-    return clients.filter(c => {
+    let list = clients.filter(c => {
       const matchStatus = filter === 'all' || c.status === filter;
+      const matchTipo = tipoFilter === 'all' ||
+        (tipoFilter === 'lead' && (!c.tipo_cadastro || c.tipo_cadastro === 'lead')) ||
+        c.tipo_cadastro === tipoFilter;
       const q = search.toLowerCase();
       const matchSearch = !q
         || (c.name || '').toLowerCase().includes(q)
         || (c.email || '').toLowerCase().includes(q)
         || (c.phone || '').toLowerCase().includes(q);
-      return matchStatus && matchSearch;
+      return matchStatus && matchTipo && matchSearch;
     });
+
+    if (sortOrder === 'recent') {
+      list.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em));
+    } else if (sortOrder === 'oldest') {
+      list.sort((a, b) => new Date(a.criado_em) - new Date(b.criado_em));
+    } else {
+      // name a-z
+      list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    }
+    return list;
   }
 
   function renderTable() {
@@ -174,7 +189,21 @@ export async function renderClients(router) {
                   ${s === 'all' ? 'Todos 👥' : s === 'active' ? 'Ativos 🟢' : 'Inativos 🔴'}
                 </button>`).join('')}
             </div>
-            <input class="field-input" id="search-input" placeholder="🔍 Buscar cliente..." style="width:220px;padding:8px 12px" />
+            
+            <select class="field-input" id="filter-tipo" style="width:160px;padding:8px 12px;cursor:pointer">
+              <option value="all">Tipos (Todos)</option>
+              <option value="lead">Prospectos (Leads)</option>
+              <option value="preferencial">🛍️ Preferenciais</option>
+              <option value="consultora">💼 Consultoras</option>
+            </select>
+
+            <select class="field-input" id="filter-sort" style="width:160px;padding:8px 12px;cursor:pointer">
+              <option value="name">A-Z (Nome)</option>
+              <option value="recent">Mais Recentes</option>
+              <option value="oldest">Mais Antigos</option>
+            </select>
+
+            <input class="field-input" id="search-input" placeholder="🔍 Buscar cliente..." style="width:200px;padding:8px 12px" />
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-secondary" id="btn-import-csv">📥 Importar CSV</button>
@@ -202,6 +231,23 @@ export async function renderClients(router) {
         renderTable();
       });
     });
+
+    // Novo listener pro Tipo de Cadastro
+    const selectTipo = pc.querySelector('#filter-tipo');
+    selectTipo.value = tipoFilter;
+    selectTipo.addEventListener('change', e => {
+      tipoFilter = e.target.value;
+      renderTable();
+    });
+
+    // Novo listener pra Ordenação
+    const selectSort = pc.querySelector('#filter-sort');
+    selectSort.value = sortOrder;
+    selectSort.addEventListener('change', e => {
+      sortOrder = e.target.value;
+      renderTable();
+    });
+
     pc.querySelector('#search-input').addEventListener('input', e => { search = e.target.value; renderTable(); });
   }
 
