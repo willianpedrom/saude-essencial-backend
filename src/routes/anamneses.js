@@ -172,6 +172,18 @@ router.put('/public/:token', async (req, res) => {
         // 5. Link anamnesis to client
         await client.query('UPDATE anamneses SET cliente_id = $1 WHERE id = $2', [clienteId, anamnese_id]);
 
+        // 5.1 If this is a recruitment anamnesis, push client to the recruitment pipeline
+        if (tipo === 'recrutamento') {
+            await client.query(
+                "UPDATE clientes " +
+                "SET recrutamento_stage = 'prospecto_negocio', " +
+                "    status = 'lead', " +
+                "    tipo_cadastro = 'consultora' " +
+                "WHERE id = $1",
+                [clienteId]
+            );
+        }
+
         await client.query('COMMIT');
 
         // 6. Fire Meta CAPI 'Lead' event (non-blocking — fire-and-forget)
@@ -218,28 +230,28 @@ router.get('/', async (req, res) => {
         const { rows } = await pool.query(
             `SELECT
               a.id, a.tipo, a.subtipo, a.nome_link, a.preenchido,
-              a.token_publico, a.criado_em,
-              a.acessos                            AS visitas,
-              a.cliente_id,
-              cl.nome AS cliente_nome,
-              -- For generic templates: count fills from child records
+                a.token_publico, a.criado_em,
+                a.acessos                            AS visitas,
+                a.cliente_id,
+                cl.nome AS cliente_nome,
+                --For generic templates: count fills from child records
               COALESCE(gen.preenchimentos, 0)      AS preenchimentos
             FROM anamneses a
             LEFT JOIN clientes cl ON cl.id = a.cliente_id
-            -- Count filled copies for each generic template
-            LEFT JOIN (
-              SELECT link_origem_id,
-                     COUNT(*) AS preenchimentos
+            --Count filled copies for each generic template
+            LEFT JOIN(
+                    SELECT link_origem_id,
+                    COUNT(*) AS preenchimentos
               FROM anamneses
               WHERE link_origem_id IS NOT NULL
               GROUP BY link_origem_id
-            ) gen ON gen.link_origem_id = a.id
+                ) gen ON gen.link_origem_id = a.id
             WHERE a.consultora_id = $1
-              AND a.link_origem_id IS NULL   -- only template records (not filled copies)
-              AND (
-                (a.subtipo = 'pessoal'  AND a.preenchido = FALSE)  -- pending personal links
-                OR
-                (a.subtipo = 'generico')                            -- all generic templates
+              AND a.link_origem_id IS NULL-- only template records(not filled copies)
+            AND(
+                (a.subtipo = 'pessoal'  AND a.preenchido = FALSE)-- pending personal links
+            OR
+                (a.subtipo = 'generico')-- all generic templates
               )
             ORDER BY a.criado_em DESC`,
             [req.consultora.id]
@@ -299,13 +311,13 @@ router.post('/', async (req, res) => {
             inicioMes.setDate(1); inicioMes.setHours(0, 0, 0, 0);
             const { rows: [{ count }] } = await pool.query(
                 `SELECT COUNT(*) FROM anamneses
-                 WHERE consultora_id=$1 AND criado_em >= $2 AND link_origem_id IS NULL`,
+                 WHERE consultora_id = $1 AND criado_em >= $2 AND link_origem_id IS NULL`,
                 [req.consultora.id, inicioMes]
             );
             const total = parseInt(count);
             if (total >= limites.anamneses_mes_max) {
                 return res.status(403).json({
-                    error: `Você atingiu o limite de ${limites.anamneses_mes_max} anamneses por mês do seu plano. Faça upgrade para continuar.`,
+                    error: `Você atingiu o limite de ${limites.anamneses_mes_max} anamneses por mês do seu plano.Faça upgrade para continuar.`,
                     code: 'LIMIT_REACHED',
                     limit: limites.anamneses_mes_max,
                     current: total,
@@ -315,8 +327,8 @@ router.post('/', async (req, res) => {
         }
 
         const { rows } = await pool.query(
-            `INSERT INTO anamneses (consultora_id, cliente_id, tipo, subtipo, nome_link)
-       VALUES ($1, $2, $3, $4, $5)
+            `INSERT INTO anamneses(consultora_id, cliente_id, tipo, subtipo, nome_link)
+VALUES($1, $2, $3, $4, $5)
        RETURNING id, token_publico, tipo, subtipo, nome_link`,
             [req.consultora.id, cliente_id || null, tipo || 'adulto',
             subtipo || 'pessoal', nome_link || null]

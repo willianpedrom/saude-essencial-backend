@@ -14,6 +14,7 @@ import { renderPublicAnamnesis } from './pages/PublicAnamnesis.js';
 import { renderPublicTestimonial } from './pages/PublicTestimonial.js';
 import { renderPublicProfile } from './pages/PublicProfile.js';
 import { renderReport } from './pages/Report.js';
+import { renderBusinessReport } from './pages/BusinessReport.js';
 import { renderAnamnesisList } from './pages/Anamneses.js';
 import { renderAssinatura } from './pages/Assinatura.js';
 import { renderProfile } from './pages/Profile.js';
@@ -65,6 +66,7 @@ const router = new Router({
     // Public routes (no auth required)
     '/anamnese/:token': ({ token }) => renderPublicAnamnesis(router, token),
     '/protocolo': ({ data }) => renderReport(router, data),
+    '/business-report': ({ data }) => renderBusinessReport(router, data),
     '/depoimento/:slug': ({ slug }) => renderPublicTestimonial(router, slug),
     '/p/:slug': ({ slug }) => renderPublicProfile(router, slug),
     '/vendas': () => renderLandingPage(router),

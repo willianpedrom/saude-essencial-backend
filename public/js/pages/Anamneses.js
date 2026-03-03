@@ -36,7 +36,11 @@ export async function renderAnamnesisList(router) {
       : pessoais.map(a => {
         const url = `${baseUrl}/#/anamnese/${a.token_publico}`;
         const nome = a.nome_link || a.cliente_nome || '(sem nome)';
-        const initials = nome.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
+        const isBusiness = a.tipo === 'recrutamento';
+        const categoryBadge = isBusiness
+          ? `<span style="background:#1e293b;color:#f8fafc;font-size:0.72rem;padding:2px 8px;border-radius:12px;margin-left:6px">💼 Negócios</span>`
+          : `<span style="background:#fef5e7;color:#c05621;font-size:0.72rem;padding:2px 8px;border-radius:12px;margin-left:6px">💧 Saúde</span>`;
+
         return `
           <tr>
             <td>${typeChip('pessoal')}</td>
@@ -44,7 +48,7 @@ export async function renderAnamnesisList(router) {
               <div style="display:flex;align-items:center;gap:8px">
                 <div class="client-avatar-sm" style="width:32px;height:32px;font-size:0.75rem">${initials}</div>
                 <div>
-                  <div style="font-weight:600;font-size:0.9rem">${nome}</div>
+                  <div style="font-weight:600;font-size:0.9rem">${nome} ${categoryBadge}</div>
                   <div style="font-size:0.72rem;color:var(--text-muted);word-break:break-all;max-width:280px">${url}</div>
                 </div>
               </div>
@@ -53,8 +57,7 @@ export async function renderAnamnesisList(router) {
             <td><span class="badge-gold">⏳ Aguardando</span></td>
             <td>
               <div style="display:flex;gap:6px">
-                <button class="btn btn-secondary btn-sm" data-copy="${url}" title="Copiar link">📋</button>
-                <button class="btn btn-secondary btn-sm" data-wa="${url}" data-name="${nome}" title="WhatsApp">📱</button>
+                <button class="btn btn-secondary btn-sm" data-wa="${url}" data-name="${nome}" data-tipo="${a.tipo}" title="WhatsApp">📱</button>
                 <button class="btn btn-danger btn-sm" data-del="${a.id}" data-dname="${nome}">🗑️</button>
               </div>
             </td>
@@ -71,13 +74,19 @@ export async function renderAnamnesisList(router) {
         const preenchi = parseInt(a.preenchimentos || 0);
         const taxa = visitas > 0 ? Math.round((preenchi / visitas) * 100) : 0;
         const taxaColor = taxa >= 50 ? 'var(--green-700)' : taxa >= 20 ? '#d97706' : '#dc2626';
+        const isBusiness = a.tipo === 'recrutamento';
+        const categoryBadge = isBusiness
+          ? `<span style="background:#1e293b;color:#f8fafc;font-size:0.72rem;padding:2px 8px;border-radius:12px;display:inline-block;margin-top:4px">💼 Negócios</span>`
+          : `<span style="background:#fef5e7;color:#c05621;font-size:0.72rem;padding:2px 8px;border-radius:12px;display:inline-block;margin-top:4px">💧 Saúde</span>`;
+
         return `
           <tr>
             <td>${typeChip('generico')}</td>
             <td>
               <div>
                 <div style="font-weight:600;font-size:0.9rem">${nome}</div>
-                <div style="font-size:0.72rem;color:var(--text-muted);word-break:break-all;max-width:280px">${url}</div>
+                ${categoryBadge}
+                <div style="font-size:0.72rem;color:var(--text-muted);word-break:break-all;max-width:280px;margin-top:2px">${url}</div>
               </div>
             </td>
             <td style="white-space:nowrap">${formatDate(a.criado_em)}</td>
@@ -100,7 +109,7 @@ export async function renderAnamnesisList(router) {
             <td>
               <div style="display:flex;gap:6px;flex-wrap:wrap">
                 <button class="btn btn-secondary btn-sm" data-copy="${url}" title="Copiar link">📋</button>
-                <button class="btn btn-secondary btn-sm" data-wa="${url}" data-name="${nome}" title="WhatsApp">📱</button>
+                <button class="btn btn-secondary btn-sm" data-wa="${url}" data-name="${nome}" data-tipo="${a.tipo}" title="WhatsApp">📱</button>
                 ${preenchi > 0 ? `<button class="btn btn-primary btn-sm" data-fills="${a.id}" data-fillname="${nome}">📋 ${preenchi} fichas</button>` : ''}
                 <button class="btn btn-danger btn-sm" data-del="${a.id}" data-dname="${nome}">🗑️</button>
               </div>
@@ -165,15 +174,22 @@ export async function renderAnamnesisList(router) {
       });
     });
 
-    // WhatsApp
     pc.querySelectorAll('[data-wa]').forEach(btn => {
       btn.addEventListener('click', () => {
         const consultant = auth.current;
         const title = getConsultantTitle(consultant?.genero).toLowerCase();
         const nome = consultant?.nome || 'Consultora';
-        const msg = encodeURIComponent(
-          `Olá ${btn.dataset.name}! 💧 Sou ${nome}, ${title} da Gota Essencial.\n\nPreencha sua avaliação de saúde pelo link abaixo e receba seu protocolo personalizado:\n\n${btn.dataset.wa}\n\nDemora apenas ~5 minutos! 💧`
-        );
+        const tipo = btn.dataset.tipo;
+        let msg = '';
+        if (tipo === 'recrutamento') {
+          msg = encodeURIComponent(
+            `Olá ${btn.dataset.name}! Aqui é ${nome}, ${title} da Gota Essencial.\n\nLembra que combinamos de montar seu redirecionamento de carreira?\nPreencha a rápida avaliação de Perfil abaixo para eu mapear seus talentos:\n\n${btn.dataset.wa}\n\nLeva menos de 3 minutinhos e você receberá seu protocolo no final! 🚀`
+          );
+        } else {
+          msg = encodeURIComponent(
+            `Olá ${btn.dataset.name}! 💧 Sou ${nome}, ${title} da Gota Essencial.\n\nPreencha sua avaliação de saúde pelo link abaixo e receba seu protocolo personalizado:\n\n${btn.dataset.wa}\n\nDemora apenas ~5 minutos! 💧`
+          );
+        }
         window.open(`https://wa.me/?text=${msg}`, '_blank');
       });
     });

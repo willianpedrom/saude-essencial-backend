@@ -869,3 +869,78 @@ export function analyzeAnamnesis(answers) {
         primaryAxis,
     };
 }
+
+export const BUSINESS_STEPS = [
+    { id: 'profession', label: 'Momento Atual', icon: '💼' },
+    { id: 'profile', label: 'Análise de Perfil', icon: '🧠' },
+    { id: 'vision', label: 'Visão & Futuro', icon: '🚀' },
+    { id: 'personal', label: 'Seus Dados', icon: '📝' },
+];
+
+export const BUSINESS_QUESTIONS = {
+    profession: {
+        title: 'Momento Profissional', icon: '💼',
+        fields: [
+            { name: 'current_moment', label: 'Qual é o seu momento profissional hoje?', type: 'radio', required: true, options: ['Empregado CLT', 'Autônomo/Profissional Liberal', 'Dono de Negócio', 'Em transição/Buscando oportunidades'] },
+            { name: 'satisfaction', label: 'De 0 a 10, qual o seu nível de satisfação profissional e financeira hoje?', type: 'scale', max: 10, required: true },
+        ]
+    },
+    profile: {
+        title: 'Análise de Perfil', icon: '🧠',
+        fields: [
+            { name: 'disc_profile', label: 'Se você precisasse resolver um problema complexo com um grupo de pessoas hoje, como você agiria naturalmente?', type: 'radio', required: true, options: [
+                'Assumo a liderança imediatamente, divido as tarefas e exijo resultados rápidos.',
+                'Motivo a equipe, foco em manter a energia alta e uso a comunicação para conectar todos.',
+                'Ouço a todos primeiro, organizo o ambiente e sigo um método seguro e passo a passo.',
+                'Analiso os dados detalhadamente, crio regras severas e foco na qualidade e zero erros.'
+            ] },
+            { name: 'main_pain', label: 'Qual destas opções mais te incomoda hoje no mercado de trabalho tradicional?', type: 'radio', required: true, options: [
+                'Falta de reconhecimento e estagnação de ganhos', 
+                'Falta de liberdade de tempo e geográfica', 
+                'Trabalhar muito para construir o sonho dos outros', 
+                'Rotina engessada e falta de propósito'
+            ] },
+        ]
+    },
+    vision: {
+        title: 'Visão & Futuro', icon: '🚀',
+        fields: [
+            { name: 'time_availability', label: 'Acredita ter disponibilidade de tempo semanal para construir um negócio paralelo (sem abandonar sua fonte de renda principal)?', type: 'radio', required: true, options: [
+                '2 a 5 horas/semana', '6 a 12 horas/semana', '12 a 20 horas/semana', 'Integralmente'
+            ] },
+            { name: 'financial_goal', label: 'Se você pudesse iniciar um negócio de baixo risco amanhã, que rentabilidade extra resolveria sua vida hoje (6 a 12 meses)?', type: 'radio', required: true, options: [
+                'R$ 1.500 a R$ 3.000', 'R$ 3.000 a R$ 8.000', 'Mais de R$ 10.000'
+            ] }
+        ]
+    },
+    personal: {
+        title: 'Seus Dados', icon: '📝',
+        fields: [
+            { name: 'full_name', label: 'Nome completo', type: 'text', required: true },
+            { name: 'email', label: 'E-mail', type: 'email', required: true },
+            { name: 'phone', label: 'WhatsApp', type: 'tel', required: true },
+        ]
+    }
+};
+
+export function analyzeBusinessProfile(answers) {
+    const profileText = answers.profile?.disc_profile || '';
+    
+    let archetype = { name: 'Empreendedor Versátil', desc: 'Adaptabilidade e foco em múltiplas frentes.', type: 'Geral' };
+    
+    if (profileText.includes('liderança imediatamente')) {
+        archetype = { name: 'O Trator Realizador', desc: 'Foco absurdo, velocidade na tomada de decisão e orientação a resultados imediatos. Você é uma máquina de fazer acontecer.', type: 'Dominante' };
+    } else if (profileText.includes('Motivo a equipe')) {
+        archetype = { name: 'O Conector Carismático', desc: 'Poder de influência natural, facilidade de abrir portas e criar uma rede sólida através de relacionamentos de confiança.', type: 'Influente' };
+    } else if (profileText.includes('Ouço a todos')) {
+        archetype = { name: 'O Construtor Consistente', desc: 'Visão de longo prazo, lealdade aos propósitos e alta capacidade de retenção de clientes por causa do seu perfil acolhedor e metódico.', type: 'Estável' };
+    } else if (profileText.includes('Analiso os dados')) {
+        archetype = { name: 'O Estrategista Analítico', desc: 'Gestão impecável, facilidade com métodos, organização estrutural do negócio e baixíssima margem de erro na execução.', type: 'Conforme' };
+    }
+    
+    const pain = answers.profile?.main_pain || 'Falta de oportunidades';
+    const goal = answers.vision?.financial_goal || 'Uma renda a mais';
+    const hours = answers.vision?.time_availability || 'Algumas horas por semana';
+
+    return { archetype, pain, goal, hours };
+}

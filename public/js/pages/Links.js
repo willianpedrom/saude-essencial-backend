@@ -54,6 +54,7 @@ export async function renderLinks(router) {
           const subtipo = l.subtipo || 'pessoal';
           const preenchido = l.preenchido;
           const isGenerico = subtipo === 'generico';
+          const isBusiness = l.tipo === 'recrutamento';
 
           // For generic: show "N fills" counter via the fact that the template stays unfilled
           // For personal: show filled/awaiting status
@@ -63,6 +64,10 @@ export async function renderLinks(router) {
               ? `<span style="background:#dcfce7;color:#166534;font-size:0.75rem;padding:2px 8px;border-radius:12px">✅ Preenchido</span>`
               : `<span style="background:#fef9c3;color:#854d0e;font-size:0.75rem;padding:2px 8px;border-radius:12px">⏳ Aguardando</span>`;
 
+          const categoryBadge = isBusiness
+            ? `<span style="background:#1e293b;color:#f8fafc;font-size:0.72rem;padding:2px 8px;border-radius:12px">💼 Negócios</span>`
+            : `<span style="background:#fef5e7;color:#c05621;font-size:0.72rem;padding:2px 8px;border-radius:12px">💧 Saúde</span>`;
+
           return `
           <div class="link-card" style="margin-bottom:10px;align-items:center">
             <div class="link-card-icon">${isGenerico ? '🌐' : '👤'}</div>
@@ -70,13 +75,14 @@ export async function renderLinks(router) {
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;flex-wrap:wrap">
                 <span style="font-weight:600">${nome}</span>
                 ${typeLabel(subtipo)}
+                ${categoryBadge}
                 ${statusBadge}
               </div>
               <div style="font-size:0.78rem;color:var(--text-muted);word-break:break-all">${url}</div>
             </div>
             <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap">
               <button class="btn btn-secondary btn-sm" data-copy="${url}">📋</button>
-              <button class="btn btn-secondary btn-sm" data-whatsapp="${url}" data-name="${nome}">📱</button>
+              <button class="btn btn-secondary btn-sm" data-whatsapp="${url}" data-name="${nome}" data-tipo="${l.tipo}">📱</button>
               <button class="btn btn-secondary btn-sm" data-edit-token="${l.token_publico}" data-edit-name="${nome}">✏️</button>
               <button class="btn btn-danger btn-sm" data-delete-id="${l.id}" data-delete-name="${nome}">🗑️</button>
             </div>
@@ -105,9 +111,17 @@ export async function renderLinks(router) {
       btn.addEventListener('click', () => {
         const title = getConsultantTitle(consultant?.genero).toLowerCase();
         const nome = consultant?.nome || 'Consultora';
-        const msg = encodeURIComponent(
-          `Olá! 💧 Sou ${nome}, ${title} da Gota Essencial.\n\nPara montar seu protocolo personalizado de óleos essenciais, preencha a avaliação pelo link:\n\n${btn.dataset.whatsapp}\n\nLeva apenas ~5 minutos e o protocolo é gerado automaticamente! 💧`
-        );
+        const tipo = btn.dataset.tipo;
+        let msg = '';
+        if (tipo === 'recrutamento') {
+          msg = encodeURIComponent(
+            `Olá! Aqui é ${nome}, ${title} da Gota Essencial.\n\nPara entendermos melhor o seu Perfil Empreendedor e montar um direcionamento estratégico personalizado para você, peço que preencha a rápida avaliação abaixo:\n\n${btn.dataset.whatsapp}\n\nLeva menos de 3 minutinhos e você receberá seu protocolo de perfil ao final! 🚀`
+          );
+        } else {
+          msg = encodeURIComponent(
+            `Olá! 💧 Sou ${nome}, ${title} da Gota Essencial.\n\nPara montar seu protocolo personalizado de saúde natural, preencha a avaliação pelo link:\n\n${btn.dataset.whatsapp}\n\nLeva apenas ~5 minutos e o protocolo é gerado automaticamente! 💧`
+          );
+        }
         window.open(`https://wa.me/?text=${msg}`, '_blank');
       });
     });
@@ -154,19 +168,25 @@ export async function renderLinks(router) {
   function showNewLinkModal() {
     modal('Novo Link de Captação', `
       <div style="margin-bottom:18px">
+        <div class="field-label" style="margin-bottom:10px">Tipo de Avaliação *</div>
+        <select class="field-select" id="link-tipo" style="margin-bottom:16px;">
+          <option value="adulto">💧 Avaliação de Bem-Estar (Saúde)</option>
+          <option value="recrutamento">💼 Análise de Perfil Empreendedor (Negócios)</option>
+        </select>
+        
         <div class="field-label" style="margin-bottom:10px">Tipo de Link *</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <label id="tipo-pessoal-card" style="border:2px solid var(--green-600);border-radius:12px;padding:14px;cursor:pointer;background:#f0fdf4;display:block">
             <input type="radio" name="subtipo" value="pessoal" checked style="display:none" />
             <div style="font-size:1.4rem;margin-bottom:4px">👤</div>
             <div style="font-weight:700;color:#2d4a28;font-size:0.9rem">Pessoal</div>
-            <div style="font-size:0.78rem;color:#4a7c40;margin-top:4px">Enviado a uma pessoa específica. Pode ser preenchido <strong>somente 1 vez</strong>.</div>
+            <div style="font-size:0.78rem;color:#4a7c40;margin-top:4px">Enviado a uma pessoa específica. Só pode ser preenchido <strong>1 vez</strong>.</div>
           </label>
           <label id="tipo-generico-card" style="border:2px solid #e5e7eb;border-radius:12px;padding:14px;cursor:pointer;background:#f9fafb;display:block">
             <input type="radio" name="subtipo" value="generico" style="display:none" />
             <div style="font-size:1.4rem;margin-bottom:4px">🌐</div>
             <div style="font-weight:700;color:#374151;font-size:0.9rem">Genérico</div>
-            <div style="font-size:0.78rem;color:#6b7280;margin-top:4px">Redes sociais ou campanhas. Cada preenchimento cria um <strong>novo cadastro</strong>.</div>
+            <div style="font-size:0.78rem;color:#6b7280;margin-top:4px">Redes sociais ou campanhas. Cadastros <strong>ilimitados</strong>.</div>
           </label>
         </div>
       </div>
@@ -177,11 +197,12 @@ export async function renderLinks(router) {
       confirmLabel: '🔗 Gerar Link',
       onConfirm: async () => {
         const nome = document.getElementById('link-nome')?.value?.trim();
-        const subtipo = document.querySelector('input[name="subtipo"]:checked')?.value || 'pessoal';
+        const tipoReq = document.getElementById('link-tipo')?.value || 'adulto';
+        const subtipoReq = document.querySelector('input[name="subtipo"]:checked')?.value || 'pessoal';
         if (!nome) { toast('Nome obrigatório', 'error'); return; }
         try {
-          await store.createAnamnesis({ tipo: 'adulto', subtipo, nome_link: nome });
-          toast(`Link ${subtipo === 'generico' ? 'genérico' : 'pessoal'} criado! 🔗`);
+          await store.createAnamnesis({ tipo: tipoReq, subtipo: subtipoReq, nome_link: nome });
+          toast(`Link ${subtipoReq === 'generico' ? 'genérico' : 'pessoal'} criado! 🔗`);
           await refresh();
         } catch (err) {
           toast('Erro: ' + err.message, 'error');

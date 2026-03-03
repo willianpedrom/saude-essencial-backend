@@ -1,5 +1,5 @@
 import { store } from '../store.js';
-import { ANAMNESIS_QUESTIONS, ANAMNESIS_STEPS, analyzeAnamnesis } from '../data.js';
+import { ANAMNESIS_QUESTIONS, ANAMNESIS_STEPS, BUSINESS_STEPS, BUSINESS_QUESTIONS } from '../data.js';
 import { toast, injectTrackingScripts } from '../utils.js';
 
 export async function renderPublicAnamnesis(router, token) {
@@ -56,17 +56,26 @@ export async function renderPublicAnamnesis(router, token) {
   let currentStep = 0;
   const answers = {};
 
+  const isBusiness = anamneseData.tipo === 'recrutamento';
+  const STEPS = isBusiness ? BUSINESS_STEPS : ANAMNESIS_STEPS;
+  const QUESTIONS = isBusiness ? BUSINESS_QUESTIONS : ANAMNESIS_QUESTIONS;
+
+  const pageTitle = isBusiness ? 'Seu Perfil <em>Empreendedor</em> e Matriz de Carreira' : 'Seu Protocolo <em>Personalizado</em> de Bem-estar';
+  const pageSubtitle = isBusiness ? 'Responda com sinceridade. Seu perfil gerará um diagnóstico comportamental exclusivo.' : 'Responda com sinceridade. Quanto mais detalhes, mais preciso será seu protocolo exclusivo.';
+  const pageBadge = isBusiness ? 'Análise de Perfil Empreendedor' : 'Avaliação de Saúde Natural';
+  const btnFinalLabel = isBusiness ? '🚀 Gerar Diagnóstico' : '💧 Gerar Meu Protocolo';
+
   function renderStep() {
-    const stepDef = ANAMNESIS_STEPS[currentStep];
-    const section = ANAMNESIS_QUESTIONS[stepDef.id];
-    const isLast = currentStep === ANAMNESIS_STEPS.length - 1;
+    const stepDef = STEPS[currentStep];
+    const section = QUESTIONS[stepDef.id];
+    const isLast = currentStep === STEPS.length - 1;
 
     app.innerHTML = `
     <div class="anamnesis-public-page">
       <div class="anamnesis-hero">
-        <div class="anamnesis-hero-badge">Avaliação de Saúde Natural</div>
-        <h1>Seu Protocolo <em>Personalizado</em> de Bem-estar</h1>
-        <p>Responda com sinceridade. Quanto mais detalhes, mais preciso será seu protocolo exclusivo.</p>
+        <div class="anamnesis-hero-badge">${pageBadge}</div>
+        <h1>${pageTitle}</h1>
+        <p>${pageSubtitle}</p>
       </div>
 
       <div class="anamnesis-consultant-card">
@@ -82,10 +91,10 @@ export async function renderPublicAnamnesis(router, token) {
         <div style="margin-bottom:24px">
           <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,0.5);font-size:0.8rem;margin-bottom:6px">
             <span>${stepDef.icon} ${section.title}</span>
-            <span>${currentStep + 1} de ${ANAMNESIS_STEPS.length}</span>
+            <span>${currentStep + 1} de ${STEPS.length}</span>
           </div>
           <div style="background:rgba(255,255,255,0.12);border-radius:99px;height:6px">
-            <div style="background:linear-gradient(to right,var(--green-400),var(--gold-300));height:6px;border-radius:99px;width:${((currentStep + 1) / ANAMNESIS_STEPS.length * 100).toFixed(0)}%;transition:width 0.4s ease"></div>
+            <div style="background:linear-gradient(to right,var(--green-400),var(--gold-300));height:6px;border-radius:99px;width:${((currentStep + 1) / STEPS.length * 100).toFixed(0)}%;transition:width 0.4s ease"></div>
           </div>
         </div>
 
@@ -99,7 +108,7 @@ export async function renderPublicAnamnesis(router, token) {
         ? `<button class="btn btn-secondary" id="btn-prev" style="background:rgba(255,255,255,0.1);color:white;border-color:rgba(255,255,255,0.2)">← Anterior</button>`
         : '<div></div>'}
           <button class="btn btn-gold btn-lg" id="btn-next">
-            ${isLast ? '💧 Gerar Meu Protocolo' : 'Próximo →'}
+            ${isLast ? btnFinalLabel : 'Próximo →'}
           </button>
         </div>
       </div>
@@ -113,8 +122,9 @@ export async function renderPublicAnamnesis(router, token) {
         const name = document.getElementById('field-full_name')?.value?.trim();
         const email = document.getElementById('field-email')?.value?.trim();
         const phone = document.getElementById('field-phone')?.value?.trim();
+        // gender not required for recruiting
         const gender = document.getElementById('field-gender')?.value;
-        if (!name || !email || !phone || !gender) { toast('Preencha os dados pessoais obrigatórios', 'error'); return; }
+        if (!name || !email || !phone || (!isBusiness && !gender)) { toast('Preencha os dados pessoais obrigatórios', 'error'); return; }
       }
       collectAnswers(stepDef.id);
       if (isLast) {
@@ -207,14 +217,14 @@ export async function renderPublicAnamnesis(router, token) {
 
   function collectAnswers(stepId) {
     const data = {};
-    const fields = ANAMNESIS_QUESTIONS[stepId].fields;
+    const fields = QUESTIONS[stepId].fields;
     if (fields) {
       fields.forEach(f => {
         const el = document.getElementById('field-' + f.name);
         if (el) data[f.name] = el.value;
       });
     }
-    (ANAMNESIS_QUESTIONS[stepId].sections || []).forEach(sec => {
+    (QUESTIONS[stepId].sections || []).forEach(sec => {
       if (sec.type === 'checkbox') {
         data[sec.key] = [...document.querySelectorAll(`input[name="${sec.key}"]:checked`)].map(i => i.value);
       } else if (sec.type === 'scale') {
@@ -247,11 +257,11 @@ export async function renderPublicAnamnesis(router, token) {
         consultant: { name: consultoraNome, genero: anamneseData.consultora_genero, phone: anamneseData.consultora_telefone },
         clientName: allAnswers.full_name || 'Cliente'
       }));
-      router.navigate('/protocolo', { data: encoded });
+      router.navigate(isBusiness ? '/business-report' : '/protocolo', { data: encoded });
 
     } catch (err) {
       toast('Erro ao enviar: ' + err.message, 'error');
-      if (btn) { btn.disabled = false; btn.textContent = '💧 Gerar Meu Protocolo'; }
+      if (btn) { btn.disabled = false; btn.textContent = btnFinalLabel; }
     }
   }
 
