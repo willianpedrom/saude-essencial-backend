@@ -155,6 +155,10 @@ async function runMigration() {
         await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS motivo_perda_recrutamento TEXT`);
         await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS tipo_cadastro VARCHAR(30)`);
 
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS preco_semestral DECIMAL(10,2) DEFAULT NULL`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS preco_anual DECIMAL(10,2) DEFAULT NULL`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS dias_trial INTEGER DEFAULT 0`);
+
         // System settings table (key-value store for admin-configurable settings)
         await pool.query(`CREATE TABLE IF NOT EXISTS configuracoes (
             chave VARCHAR(100) PRIMARY KEY,

@@ -720,9 +720,23 @@ export async function renderAdmin(router) {
             <label class="field-label">Nome do Plano *</label>
             <input class="field-input" id="pp-nome" value="${p.nome || ''}" placeholder="ex: Starter" />
           </div>
+          <div class="form-group" style="display:flex;gap:12px">
+            <div style="flex:1">
+              <label class="field-label">Preço Mensal (R$)</label>
+              <input class="field-input" id="pp-preco" type="number" step="0.01" min="0" value="${p.preco_mensal || 0}" />
+            </div>
+            <div style="flex:1">
+              <label class="field-label">Preço Semestral (R$)</label>
+              <input class="field-input" id="pp-preco-sem" type="number" step="0.01" min="0" value="${p.preco_semestral || ''}" placeholder="Opcional" />
+            </div>
+            <div style="flex:1">
+              <label class="field-label">Preço Anual (R$)</label>
+              <input class="field-input" id="pp-preco-ano" type="number" step="0.01" min="0" value="${p.preco_anual || ''}" placeholder="Opcional" />
+            </div>
+          </div>
           <div class="form-group">
-            <label class="field-label">Preço Mensal (R$)</label>
-            <input class="field-input" id="pp-preco" type="number" step="0.01" min="0" value="${p.preco_mensal || 0}" />
+            <label class="field-label">Dias de Trial Gratuito (0 = sem trial)</label>
+            <input class="field-input" id="pp-trial" type="number" min="0" value="${p.dias_trial || 0}" />
           </div>
           <div class="form-group">
             <label class="field-label">Máx. Clientes (vazio = ilimitado)</label>
@@ -749,6 +763,9 @@ export async function renderAdmin(router) {
             slug: document.getElementById('pp-slug')?.value?.trim(),
             nome: document.getElementById('pp-nome')?.value?.trim(),
             preco_mensal: parseFloat(document.getElementById('pp-preco')?.value) || 0,
+            preco_semestral: parseFloat(document.getElementById('pp-preco-sem')?.value) || null,
+            preco_anual: parseFloat(document.getElementById('pp-preco-ano')?.value) || null,
+            dias_trial: parseInt(document.getElementById('pp-trial')?.value) || 0,
             clientes_max: parseInt(document.getElementById('pp-clientes')?.value) || null,
             anamneses_mes_max: parseInt(document.getElementById('pp-anamneses')?.value) || null,
             hotmart_offer_id: document.getElementById('pp-hotmart')?.value?.trim() || null,

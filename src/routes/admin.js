@@ -264,15 +264,16 @@ router.get('/planos', async (req, res) => {
 
 // POST /api/admin/planos
 router.post('/planos', async (req, res) => {
-    const { slug, nome, preco_mensal, clientes_max, anamneses_mes_max,
+    const { slug, nome, preco_mensal, preco_semestral, preco_anual, dias_trial, clientes_max, anamneses_mes_max,
         tem_integracoes, tem_pipeline, tem_multiusuario, tem_relatorios, hotmart_offer_id } = req.body;
     if (!slug || !nome) return res.status(400).json({ error: 'slug e nome são obrigatórios.' });
     try {
         const { rows } = await pool.query(
-            `INSERT INTO planos (slug, nome, preco_mensal, clientes_max, anamneses_mes_max,
+            `INSERT INTO planos (slug, nome, preco_mensal, preco_semestral, preco_anual, dias_trial, clientes_max, anamneses_mes_max,
                tem_integracoes, tem_pipeline, tem_multiusuario, tem_relatorios, hotmart_offer_id)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
             [slug, nome, preco_mensal || 0,
+                preco_semestral || null, preco_anual || null, dias_trial || 0,
                 clientes_max || null, anamneses_mes_max || null,
                 !!tem_integracoes, tem_pipeline !== false,
                 !!tem_multiusuario, tem_relatorios !== false,
@@ -288,17 +289,18 @@ router.post('/planos', async (req, res) => {
 
 // PUT /api/admin/planos/:id
 router.put('/planos/:id', async (req, res) => {
-    const { nome, preco_mensal, clientes_max, anamneses_mes_max,
+    const { nome, preco_mensal, preco_semestral, preco_anual, dias_trial, clientes_max, anamneses_mes_max,
         tem_integracoes, tem_pipeline, tem_multiusuario, tem_relatorios,
         hotmart_offer_id, ativo } = req.body;
     try {
         const { rows } = await pool.query(
             `UPDATE planos SET
-               nome=$1, preco_mensal=$2, clientes_max=$3, anamneses_mes_max=$4,
-               tem_integracoes=$5, tem_pipeline=$6, tem_multiusuario=$7, tem_relatorios=$8,
-               hotmart_offer_id=$9, ativo=$10, atualizado_em=NOW()
-             WHERE id=$11 RETURNING *`,
+               nome=$1, preco_mensal=$2, preco_semestral=$3, preco_anual=$4, dias_trial=$5, clientes_max=$6, anamneses_mes_max=$7,
+               tem_integracoes=$8, tem_pipeline=$9, tem_multiusuario=$10, tem_relatorios=$11,
+               hotmart_offer_id=$12, ativo=$13, atualizado_em=NOW()
+             WHERE id=$14 RETURNING *`,
             [nome, preco_mensal || 0,
+                preco_semestral || null, preco_anual || null, dias_trial || 0,
                 clientes_max || null, anamneses_mes_max || null,
                 !!tem_integracoes, tem_pipeline !== false,
                 !!tem_multiusuario, tem_relatorios !== false,
