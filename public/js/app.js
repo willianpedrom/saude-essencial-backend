@@ -24,13 +24,7 @@ import { renderLandingPage } from './pages/LandingPage.js';
 
 // Boot
 auth.init();
-(async () => {
-    if (auth.isLoggedIn && typeof auth.current.genero === 'undefined') {
-        try { await auth.refresh(); } catch (e) { console.warn('Auth refresh bypassed', e); }
-    }
 
-    router.start();
-})();
 
 // Remove loader
 window.addEventListener('load', () => {
@@ -79,3 +73,11 @@ const router = new Router({
 
     '*': () => auth.isLoggedIn ? router.navigate('/dashboard') : renderLogin(router),
 });
+
+(async () => {
+    if (auth.isLoggedIn && typeof auth.current.genero === 'undefined') {
+        try { await auth.refresh(); } catch (e) { console.warn('Auth refresh bypassed', e); }
+    }
+
+    router.start();
+})();
