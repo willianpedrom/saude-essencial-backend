@@ -108,6 +108,11 @@ ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS pipeline_stage  VARCHAR(40) DEF
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS pipeline_notas  TEXT;
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS motivo_perda    TEXT;
 
+-- Funil Paralelo de Recrutamento
+ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS recrutamento_stage  VARCHAR(40);
+ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS recrutamento_notas  TEXT;
+ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS motivo_perda_recrutamento TEXT;
+
 -- Links Personaliados da Consultora (Linktree)
 CREATE TABLE IF NOT EXISTS consultora_links (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),

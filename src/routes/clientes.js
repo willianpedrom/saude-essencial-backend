@@ -15,7 +15,8 @@ router.get('/', async (req, res) => {
         // Filtra ativo=TRUE por padrão. Use ?ativo=false para ver inativos, ?ativo=all para todos.
         let queryStr = `
             SELECT id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, ativo, status,
-                   pipeline_stage, pipeline_notas, motivo_perda, criado_em
+                   pipeline_stage, pipeline_notas, motivo_perda,
+                   recrutamento_stage, recrutamento_notas, motivo_perda_recrutamento, criado_em
             FROM clientes
             WHERE consultora_id = $1
         `;

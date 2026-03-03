@@ -150,6 +150,10 @@ async function runMigration() {
         await pool.query(`ALTER TABLE assinaturas ADD COLUMN IF NOT EXISTS hotmart_subscription_id TEXT`);
         await pool.query(`ALTER TABLE assinaturas ADD COLUMN IF NOT EXISTS gateway VARCHAR(20) DEFAULT 'hotmart'`);
 
+        await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS recrutamento_stage VARCHAR(40)`);
+        await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS recrutamento_notas TEXT`);
+        await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS motivo_perda_recrutamento TEXT`);
+
         // System settings table (key-value store for admin-configurable settings)
         await pool.query(`CREATE TABLE IF NOT EXISTS configuracoes (
             chave VARCHAR(100) PRIMARY KEY,

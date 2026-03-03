@@ -289,8 +289,19 @@ export function openClientOffcanvas(client) {
                <div style="color:var(--text-dark);font-weight:500;margin-bottom:12px">${formatDate(client.data_nascimento)} ${client.data_nascimento ? `(${Math.floor((new Date() - new Date(client.data_nascimento)) / 31557600000)} anos)` : ''}</div>
                
                <label class="field-label" style="font-size:0.75rem;margin-bottom:4px">Anotações Fixadas</label>
-               <div style="background:#fffbeb;padding:12px;border:1px solid #fcd34d;border-radius:6px;font-size:0.85rem;color:#b45309;white-space:pre-wrap">
+               <div style="background:#fffbeb;padding:12px;border:1px solid #fcd34d;border-radius:6px;font-size:0.85rem;color:#b45309;white-space:pre-wrap;margin-bottom:12px">
                  ${client.notas || 'Nenhuma anotação geral sobre este cliente.'}
+               </div>
+
+               <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px">
+                 <label class="field-label" style="font-size:0.75rem;margin-bottom:4px">Status no Recrutamento (Downlines)</label>
+                 ${client.recrutamento_stage
+      ? `<div style="color:var(--text-dark);font-weight:600;display:inline-block;padding:4px 10px;background:#e0f2fe;color:#0369a1;border-radius:12px;font-size:0.8rem">
+                        ${client.recrutamento_stage.replace(/_/g, ' ').toUpperCase()}
+                      </div>`
+      : `<button class="btn btn-secondary btn-sm" id="btn-add-recrutamento" style="width:100%">+ Adicionar a este cliente no Funil de Recrutamento</button>
+                      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;text-align:center">Ativar para gerenciar ela como potencial Líder/Consultora.</div>`
+    }
                </div>
              </div>
           </div>
@@ -378,4 +389,26 @@ export function openClientOffcanvas(client) {
       overlay.querySelector('#' + tab.dataset.target).classList.add('active');
     });
   });
+
+  // Action: Adicionar ao Recrutamento
+  const btnAddRecrutamento = overlay.querySelector('#btn-add-recrutamento');
+  if (btnAddRecrutamento) {
+    btnAddRecrutamento.addEventListener('click', async () => {
+      try {
+        btnAddRecrutamento.disabled = true;
+        btnAddRecrutamento.textContent = "Adicionando...";
+        // Importando o store.js dinamicamente pra evitar circular dependency se existir
+        const { store } = await import('./store.js');
+        await store.updateRecrutamentoStage(client.id, 'prospecto_negocio');
+        toast('Cliente adicionado(a) ao Funil de Recrutamento! 🎉', 'success');
+        closeOC();
+        // Recarrega o app pra atualizar views por trás (Clients ou Pipeline)
+        setTimeout(() => window.location.reload(), 800);
+      } catch (err) {
+        toast('Erro ao adicionar ao recrutamento: ' + err.message, 'error');
+        btnAddRecrutamento.disabled = false;
+        btnAddRecrutamento.textContent = "+ Adicionar a este cliente no Funil de Recrutamento";
+      }
+    });
+  }
 }

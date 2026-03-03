@@ -132,6 +132,9 @@ export const store = {
     async updateStage(id, stage, notas, motivo_perda) {
         return api('PATCH', `/api/clientes/${id}/stage`, { stage, notas, motivo_perda });
     },
+    async updateRecrutamentoStage(id, stage, notas, motivo_perda) {
+        return api('PATCH', `/api/clientes/${id}/recrutamento-stage`, { stage, notas, motivo_perda });
+    },
     async deleteClient(_cidOrId, id) {
         const actualId = id !== undefined ? id : _cidOrId;
         return api('DELETE', `/api/clientes/${actualId}`);

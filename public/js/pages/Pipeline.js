@@ -63,6 +63,18 @@ const STAGES = [
   },
 ];
 
+const RECRUTAMENTO_STAGES = [
+  { id: 'prospecto_negocio', label: 'Prospecto de Negócio', icon: '🎯', color: '#3b82f6', bg: '#eff6ff', tip: 'Mostrou interesse na oportunidade' },
+  { id: 'convite_apresentacao', label: 'Convite Feito', icon: '✉️', color: '#8b5cf6', bg: '#f5f3ff', tip: 'Convidado para classe/apresentação' },
+  { id: 'apresentacao_assistida', label: 'Assistiu Apresentação', icon: '📺', color: '#0891b2', bg: '#ecfeff', tip: 'Viu o plano de negócio' },
+  { id: 'acompanhamento_cadastro', label: 'Em Acompanhamento', icon: '⏱️', color: '#d97706', bg: '#fffbeb', tip: 'Tirando dúvidas / Follow-up' },
+  { id: 'cadastrada', label: 'Cadastrada! 🎉', icon: '🏅', color: '#15803d', bg: '#dcfce7', tip: 'Nova consultora na equipe', celebrate: true },
+];
+
+const LOST_STAGE_RECRUTAMENTO = {
+  id: 'nao_tem_interesse_agora', label: 'Sem Interesse', icon: '❌', color: '#9ca3af', bg: '#f9fafb', tip: 'Não quer fazer o negócio no momento'
+};
+
 const LOST_STAGE = {
   id: 'perdido',
   label: 'Perdidos',
@@ -74,19 +86,31 @@ const LOST_STAGE = {
 
 // ── Main render ────────────────────────────────────────────────
 export async function renderPipeline(router) {
-  renderLayout(router, 'Fluxo de Vendas',
+  renderLayout(router, 'Fluxo de Trabalho: Funis',
     `<div style="display:flex;align-items:center;justify-content:center;height:300px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando pipeline...</div>`,
     'pipeline');
 
   let clients = [];
+  let activeFunnel = 'vendas'; // 'vendas' | 'recrutamento'
 
   async function load() {
     clients = await store.getClients().catch(() => []);
     render();
   }
 
+  function getActiveStages() {
+    return activeFunnel === 'vendas' ? STAGES : RECRUTAMENTO_STAGES;
+  }
+  function getActiveLostStage() {
+    return activeFunnel === 'vendas' ? LOST_STAGE : LOST_STAGE_RECRUTAMENTO;
+  }
+  function getClientStage(c) {
+    if (activeFunnel === 'vendas') return c.pipeline_stage || 'lead_captado';
+    return c.recrutamento_stage; // pode ser null/undefined se nunca entrou
+  }
+
   function getStageClients(stageId) {
-    return clients.filter(c => (c.pipeline_stage || 'lead_captado') === stageId);
+    return clients.filter(c => getClientStage(c) === stageId);
   }
 
   function cardHtml(client, stageConfig) {
@@ -165,9 +189,16 @@ export async function renderPipeline(router) {
     const pc = document.getElementById('page-content');
     if (!pc) return;
 
-    const lostClients = getStageClients('perdido');
-    const totalInFunnel = clients.filter(c => (c.pipeline_stage || 'lead_captado') !== 'perdido').length;
-    const converted = getStageClients('primeira_compra').length;
+    const lostClients = getStageClients(getActiveLostStage().id);
+    // Para funil de vendas, exclui não-leads. Para recrutamento, contabiliza só quem está com stage != nulo
+    const totalInFunnel = clients.filter(c => {
+      const s = getClientStage(c);
+      if (activeFunnel === 'vendas') return s && s !== 'perdido';
+      return s && s !== 'nao_tem_interesse_agora';
+    }).length;
+
+    // Contagem de convertidos
+    const converted = getStageClients(activeFunnel === 'vendas' ? 'primeira_compra' : 'cadastrada').length;
     const convRate = totalInFunnel > 0 ? Math.round((converted / totalInFunnel) * 100) : 0;
 
     pc.innerHTML = `
@@ -204,6 +235,11 @@ export async function renderPipeline(router) {
       @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
     </style>
 
+    <div style="display:flex; gap:8px; margin-bottom:20px; border-bottom:1px solid var(--border-light); padding-bottom:16px;">
+      <button class="btn ${activeFunnel === 'vendas' ? 'btn-primary' : 'btn-secondary'}" id="tab-vendas" style="flex:1; border-radius:30px; padding:10px; font-weight:600">🛍️ Funil de Vendas</button>
+      <button class="btn ${activeFunnel === 'recrutamento' ? 'btn-primary' : 'btn-secondary'}" id="tab-recrutamento" style="flex:1; border-radius:30px; padding:10px; font-weight:600">💼 Funil de Recrutamento (Downlines)</button>
+    </div>
+
     <div class="pipeline-summary">
       <div class="pipeline-stat">
         <div class="pipeline-stat-val">${totalInFunnel}</div>
@@ -211,7 +247,7 @@ export async function renderPipeline(router) {
       </div>
       <div class="pipeline-stat">
         <div class="pipeline-stat-val" style="color:#15803d">${converted}</div>
-        <div class="pipeline-stat-label">Compraram</div>
+        <div class="pipeline-stat-label">${activeFunnel === 'vendas' ? 'Compraram' : 'Cadastradas'}</div>
       </div>
       <div class="pipeline-stat">
         <div class="pipeline-stat-val" style="color:#d97706">${convRate}%</div>
@@ -229,20 +265,20 @@ export async function renderPipeline(router) {
     </div>
 
     <div class="pipeline-board">
-      ${STAGES.map(s => stageColumnHtml(s)).join('')}
+      ${getActiveStages().map(s => stageColumnHtml(s)).join('')}
     </div>
 
     <div class="pipeline-lost-toggle">
       <div class="pipeline-lost-header" id="lost-toggle" style="background:#f9fafb;border-bottom:1px solid var(--border)">
         <div style="display:flex;align-items:center;gap:8px">
-          ❌ <span style="color:#ef4444">Leads Perdidos</span> <span style="font-weight:normal;color:var(--text-muted)">(${lostClients.length})</span>
+          ❌ <span style="color:#ef4444">Leads Perdidos (${activeFunnel === 'vendas' ? 'Venda' : 'Recrutamento'})</span> <span style="font-weight:normal;color:var(--text-muted)">(${lostClients.length})</span>
         </div>
         <span id="lost-arrow">▼</span>
       </div>
-      <div class="pipeline-lost-body pipeline-drop-zone" id="lost-body" data-target-stage="perdido" style="display:${lostClients.length > 0 ? 'flex' : 'none'};flex-wrap:wrap;gap:10px;padding:16px;background:#fef2f2;border:2px dashed #fecaca;margin:8px;border-radius:8px">
+      <div class="pipeline-lost-body pipeline-drop-zone" id="lost-body" data-target-stage="${getActiveLostStage().id}" style="display:${lostClients.length > 0 ? 'flex' : 'none'};flex-wrap:wrap;gap:10px;padding:16px;background:#fef2f2;border:2px dashed #fecaca;margin:8px;border-radius:8px">
         ${lostClients.length === 0
         ? '<div style="width:100%;text-align:center;color:#ef4444;font-size:0.9rem;padding:20px;opacity:0.6">Solte os cards de clientes ou leads que desistiram aqui</div>'
-        : lostClients.map(c => cardHtml(c, LOST_STAGE)).join('')}
+        : lostClients.map(c => cardHtml(c, getActiveLostStage())).join('')}
       </div>
     </div>`;
 
@@ -252,6 +288,10 @@ export async function renderPipeline(router) {
   function bindEvents(pc) {
     let draggedId = null;
     let draggedFrom = null;
+
+    // Tabs
+    pc.querySelector('#tab-vendas')?.addEventListener('click', () => { activeFunnel = 'vendas'; render(); });
+    pc.querySelector('#tab-recrutamento')?.addEventListener('click', () => { activeFunnel = 'recrutamento'; render(); });
 
     // Drag start
     pc.querySelectorAll('.pipeline-card').forEach(card => {
@@ -293,11 +333,13 @@ export async function renderPipeline(router) {
         const client = clients.find(c => c.id === draggedId);
         if (!client) return;
 
-        // Se o destino for 'perdido', abre o modal perguntando o motivo
-        if (targetStage === 'perdido') {
-          modal(`Perdemos uma venda? 😢`, `
+        const isLost = targetStage === getActiveLostStage().id;
+
+        // Se o destino for a lixeira 'perdido' ou 'nao_tem_interesse_agora'
+        if (isLost) {
+          modal(`Perda de ${activeFunnel === 'vendas' ? 'Venda' : 'Oportunidade'} 😢`, `
               <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px">
-                Qual foi o principal motivo de ${client.nome || client.name} não ter fechado negócio?
+                Qual foi o principal motivo de ${client.nome || client.name} não ter fechado ${activeFunnel === 'vendas' ? 'negócio' : 'como consultora'}?
               </p>
               <div class="form-group" style="margin-bottom:12px">
                 <label class="field-label">Motivo de Perda</label>
@@ -312,7 +354,7 @@ export async function renderPipeline(router) {
               </div>
               <div class="form-group">
                 <label class="field-label">Detalhes adicionais (Nota)</label>
-                <textarea class="field-textarea" id="note-text" rows="3" placeholder="Ex: O marido não deixou investir agora...">${client.pipeline_notas || ''}</textarea>
+                <textarea class="field-textarea" id="note-text" rows="3" placeholder="Ex: A pessoa não tem limite no cartão agora...">${activeFunnel === 'vendas' ? (client.pipeline_notas || '') : (client.recrutamento_notas || '')}</textarea>
               </div>`, {
             confirmLabel: 'Confirmar Perda',
             cancelLabel: 'Cancelar',
@@ -321,10 +363,17 @@ export async function renderPipeline(router) {
               const note = document.getElementById('note-text')?.value || '';
 
               try {
-                await store.updateStage(draggedId, targetStage, note, motivo);
-                client.pipeline_stage = targetStage;
-                client.motivo_perda = motivo;
-                client.pipeline_notas = note;
+                if (activeFunnel === 'vendas') {
+                  await store.updateStage(draggedId, targetStage, note, motivo);
+                  client.pipeline_stage = targetStage;
+                  client.motivo_perda = motivo;
+                  client.pipeline_notas = note;
+                } else {
+                  await store.updateRecrutamentoStage(draggedId, targetStage, note, motivo);
+                  client.recrutamento_stage = targetStage;
+                  client.motivo_perda_recrutamento = motivo;
+                  client.recrutamento_notas = note;
+                }
                 toast('Lead marcado como PERDIDO. Motivo registrado.', 'success');
                 render();
               } catch (err) {
@@ -340,12 +389,15 @@ export async function renderPipeline(router) {
         }
 
         // Optimistic update para outras colunas
-        client.pipeline_stage = targetStage;
+        if (activeFunnel === 'vendas') client.pipeline_stage = targetStage;
+        else client.recrutamento_stage = targetStage;
         render();
 
         try {
-          await store.updateStage(draggedId, targetStage);
-          const stageConf = [...STAGES, LOST_STAGE].find(s => s.id === targetStage);
+          if (activeFunnel === 'vendas') await store.updateStage(draggedId, targetStage);
+          else await store.updateRecrutamentoStage(draggedId, targetStage);
+
+          const stageConf = [...getActiveStages(), getActiveLostStage()].find(s => s.id === targetStage);
           toast(`Movido para ${stageConf?.icon || ''} ${stageConf?.label || targetStage}`, 'success');
           if (targetStage === 'primeira_compra') {
             setTimeout(() => toast('🎊 Parabéns pela venda! 💰', 'success'), 500);
