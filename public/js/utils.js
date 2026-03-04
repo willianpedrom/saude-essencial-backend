@@ -371,10 +371,11 @@ export function openClientOffcanvas(client) {
 
           <!-- PANE: COMPRAS -->
           <div class="oc-pane" id="pane-compras">
-             <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center;gap:12px;opacity:0.6">
-                <span style="font-size:2rem">🛒</span>
-                <div style="font-size:0.9rem;color:var(--text-dark);font-weight:600">Nenhuma compra importada</div>
-                <div style="font-size:0.8rem;color:var(--text-muted)">Integren com a Hotmart ou cadastre vendas manualmente para exibir LTV e histórico.</div>
+             <div id="oc-compras-container" style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center;gap:12px;opacity:0.6">
+                    <span style="font-size:2rem">🛒</span>
+                    <div style="font-size:0.9rem;color:var(--text-dark);font-weight:600">Buscando histórico...</div>
+                </div>
              </div>
           </div>
 
@@ -501,6 +502,66 @@ export function openClientOffcanvas(client) {
       } catch (err) {
         console.error("Erro ao buscar docs", err);
         dossiesContainer.innerHTML = '<div style="font-size:0.8rem;color:#ef4444">Falha ao buscar dossiês.</div>';
+      }
+    });
+  }
+
+  // Action: Carregar Histórico de Compras (mesclando por email)
+  const comprasContainer = overlay.querySelector('#oc-compras-container');
+  if (comprasContainer) {
+    import('./store.js').then(async ({ store, auth }) => {
+      try {
+        const allClients = await store.getClients().catch(() => []);
+        const targetEmail = (client.email || '').trim().toLowerCase();
+
+        // Acha todos os IDs de cliente que compartilham o mesmo email (ou ID)
+        const matchedIds = allClients
+          .filter(c => c.id === client.id || (targetEmail && (c.email || '').trim().toLowerCase() === targetEmail))
+          .map(c => c.id);
+
+        const uid = auth.current?.id || 'anon';
+        const k = `se_purchases_${uid}`;
+        const dbPurchases = JSON.parse(localStorage.getItem(k) || '[]');
+
+        const myPurchases = dbPurchases
+          .filter(p => matchedIds.includes(p.clientId))
+          .sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
+
+        if (myPurchases.length === 0) {
+          comprasContainer.innerHTML = `
+             <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center;gap:12px;opacity:0.6">
+                <span style="font-size:2rem">🛒</span>
+                <div style="font-size:0.9rem;color:var(--text-dark);font-weight:600">Nenhuma compra importada</div>
+             </div>`;
+          return;
+        }
+
+        const totalSpent = myPurchases.reduce((acc, p) => acc + (Number(p.value) || 0), 0);
+
+        comprasContainer.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#f0fdf4;padding:12px;border-radius:8px;border:1px solid #bbf7d0;margin-bottom:12px">
+            <span style="font-size:0.8rem;color:#166534;font-weight:600">TOTAL INVESTIDO (LTV)</span>
+            <span style="font-size:1.1rem;color:#15803d;font-weight:700">${formatCurrency(totalSpent)}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            ${myPurchases.map(p => `
+              <div style="background:#fff;border:1px solid var(--border);padding:10px;border-radius:8px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                  <span style="font-weight:600;font-size:0.85rem;color:var(--text-dark)">${p.product || 'Produto sem nome'}</span>
+                  <span style="font-weight:700;font-size:0.85rem;color:var(--green-600)">${formatCurrency(p.value)}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-size:0.75rem;color:var(--text-muted)">${formatDate(p.date || p.createdAt)}</span>
+                  ${p.note ? `<span style="font-size:0.75rem;color:#8b5cf6;background:#f5f3ff;padding:2px 8px;border-radius:12px">${p.note}</span>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+
+      } catch (err) {
+        console.error("Erro ao buscar compras", err);
+        comprasContainer.innerHTML = '<div style="font-size:0.8rem;color:#ef4444">Falha ao buscar compras.</div>';
       }
     });
   }

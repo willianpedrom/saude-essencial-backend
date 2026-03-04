@@ -265,18 +265,36 @@ router.get('/', async (req, res) => {
 
 
 
-// GET /api/anamneses/cliente/:clienteId  — all anamneses for a specific client
+// GET /api/anamneses/cliente/:clienteId  — all anamneses for a specific client (and any other client with the same email)
 // IMPORTANT: must be registered BEFORE /:id to avoid route collision
 router.get('/cliente/:clienteId', async (req, res) => {
     try {
-        const { rows } = await pool.query(
-            `SELECT id, tipo, subtipo, dados, preenchido, criado_em, nome_link
-             FROM anamneses
-             WHERE cliente_id = $1 AND consultora_id = $2
-               AND preenchido = TRUE
-             ORDER BY criado_em DESC`,
+        // Find the email of the target client to group distinct client records by email
+        const { rows: clientRows } = await pool.query(
+            'SELECT email FROM clientes WHERE id = $1 AND consultora_id = $2',
             [req.params.clienteId, req.consultora.id]
         );
+        const targetEmail = clientRows.length > 0 ? clientRows[0].email : null;
+
+        let queryStr = `
+             SELECT a.id, a.tipo, a.subtipo, a.dados, a.preenchido, a.criado_em, a.nome_link
+             FROM anamneses a
+             JOIN clientes c ON a.cliente_id = c.id
+             WHERE a.consultora_id = $1
+               AND a.preenchido = TRUE
+               AND (a.cliente_id = $2 `;
+        const queryParams = [req.consultora.id, req.params.clienteId];
+
+        if (targetEmail && targetEmail.trim() !== '') {
+            queryStr += ` OR c.email = $3 )`;
+            queryParams.push(targetEmail);
+        } else {
+            queryStr += ` )`;
+        }
+
+        queryStr += ` ORDER BY a.criado_em DESC`;
+
+        const { rows } = await pool.query(queryStr, queryParams);
         res.json(rows);
     } catch (err) {
         console.error(err);
