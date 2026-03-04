@@ -61,6 +61,17 @@ export function renderBusinessReport(router, dataParam) {
               </p>
             </div>
             
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+              <div style="background:#fefce8;border:1px solid #fef08a;padding:16px;border-radius:12px">
+                <div style="font-size:0.75rem;color:#854d0e;text-transform:uppercase;font-weight:700">Propulsor Principal</div>
+                <div style="color:#713f12;font-weight:600;margin-top:4px">${motor || 'Mudança de Vida'}</div>
+              </div>
+              <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:16px;border-radius:12px">
+                <div style="font-size:0.75rem;color:#166534;text-transform:uppercase;font-weight:700">Nível de Prontidão</div>
+                <div style="color:#14532d;font-weight:600;margin-top:4px">${urgency || 'Moderada'}</div>
+              </div>
+            </div>
+            
             <div style="line-height:1.7;color:#475569;font-size:0.95rem">
               <p style="margin-top:0;margin-bottom:12px">
                 Pessoas com o perfil <strong>${archetype.type}</strong> tendem a ter um desempenho acima da média quando recebem as ferramentas certas. 

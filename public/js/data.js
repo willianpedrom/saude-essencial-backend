@@ -880,16 +880,17 @@ export const BUSINESS_STEPS = [
 export const BUSINESS_QUESTIONS = {
     profession: {
         title: 'Momento Profissional', icon: '💼',
-        fields: [
-            { name: 'current_moment', label: 'Qual é o seu momento profissional hoje?', type: 'radio', required: true, options: ['Empregado CLT', 'Autônomo/Profissional Liberal', 'Dono de Negócio', 'Em transição/Buscando oportunidades'] },
-            { name: 'satisfaction', label: 'De 0 a 10, qual o seu nível de satisfação profissional e financeira hoje?', type: 'scale', max: 10, required: true },
+        sections: [
+            { key: 'current_moment', label: 'Qual é o seu momento profissional hoje?', type: 'radio', required: true, options: ['Empregado CLT', 'Autônomo/Profissional Liberal', 'Dono de Negócio', 'Em transição/Buscando oportunidades'] },
+            { key: 'sales_experience', label: 'Como você avalia sua relação com vendas ou liderança de pessoas?', type: 'radio', required: true, options: ['Tenho experiência e adoro me conectar e negociar.', 'Nunca vendi, mas estou disposto(a) a aprender um método.', 'Tenho um pouco de aversão e prefiro bastidores.'] },
+            { key: 'satisfaction', label: 'De 0 a 10, qual o seu nível de satisfação profissional e financeira hoje?', type: 'scale', max: 10, required: true },
         ]
     },
     profile: {
         title: 'Análise de Perfil', icon: '🧠',
-        fields: [
+        sections: [
             {
-                name: 'disc_profile', label: 'Se você precisasse resolver um problema complexo com um grupo de pessoas hoje, como você agiria naturalmente?', type: 'radio', required: true, options: [
+                key: 'disc_profile', label: 'Se você precisasse resolver um problema complexo com um grupo de pessoas hoje, como você agiria naturalmente?', type: 'radio', required: true, options: [
                     'Assumo a liderança imediatamente, divido as tarefas e exijo resultados rápidos.',
                     'Motivo a equipe, foco em manter a energia alta e uso a comunicação para conectar todos.',
                     'Ouço a todos primeiro, organizo o ambiente e sigo um método seguro e passo a passo.',
@@ -897,7 +898,15 @@ export const BUSINESS_QUESTIONS = {
                 ]
             },
             {
-                name: 'main_pain', label: 'Qual destas opções mais te incomoda hoje no mercado de trabalho tradicional?', type: 'radio', required: true, options: [
+                key: 'inner_motor', label: 'Qual o seu maior motivador para construir um negócio livre nos próximos 5 anos?', type: 'radio', required: true, options: [
+                    'Segurança absoluta e tempo inegociável com a minha família.',
+                    'Liberdade geográfica extrema (trabalhar de qualquer lugar do mundo).',
+                    'Status, reconhecimento e criar independência financeira real.',
+                    'Propósito: Ajudar milhares de pessoas a melhorarem de vida.'
+                ]
+            },
+            {
+                key: 'main_pain', label: 'Qual destas opções mais te incomoda hoje no mercado de trabalho tradicional?', type: 'radio', required: true, options: [
                     'Falta de reconhecimento e estagnação de ganhos',
                     'Falta de liberdade de tempo e geográfica',
                     'Trabalhar muito para construir o sonho dos outros',
@@ -908,15 +917,43 @@ export const BUSINESS_QUESTIONS = {
     },
     vision: {
         title: 'Visão & Futuro', icon: '🚀',
-        fields: [
+        sections: [
             {
-                name: 'time_availability', label: 'Acredita ter disponibilidade de tempo semanal para construir um negócio paralelo (sem abandonar sua fonte de renda principal)?', type: 'radio', required: true, options: [
+                key: 'product_relation', label: 'Como é a sua relação com soluções naturais e óleos essenciais hoje?', type: 'radio', required: true, options: [
+                    'Já sou um usuário apaixonado, os produtos fazem parte da minha rotina.',
+                    'Acho incrível a filosofia, mas ainda não tenho conhecimento profundo, quero aprender.',
+                    'Uso muitos remédios tradicionais hoje, mas sinto extrema necessidade de mudar de vida.'
+                ]
+            },
+            {
+                key: 'network_radar', label: 'Se olharmos para o seu círculo social ou contatos no WhatsApp hoje, como você se descreve?', type: 'radio', required: true, options: [
+                    'Sou ativo e comunicativo, conheço muitas pessoas e costumam pedir meus conselhos.',
+                    'Tenho uma rede de contatos boa, mas mais restrita ao meu trabalho e família.',
+                    'Sou reservado, meu foco inicial seria aprender estratégias digitais para não depender de contatos.'
+                ]
+            },
+            {
+                key: 'time_availability', label: 'Acredita ter disponibilidade de tempo semanal para construir um negócio paralelo?', type: 'radio', required: true, options: [
                     '2 a 5 horas/semana', '6 a 12 horas/semana', '12 a 20 horas/semana', 'Integralmente'
                 ]
             },
             {
-                name: 'financial_goal', label: 'Se você pudesse iniciar um negócio de baixo risco amanhã, que rentabilidade extra resolveria sua vida hoje (6 a 12 meses)?', type: 'radio', required: true, options: [
+                key: 'financial_goal', label: 'Que rentabilidade extra resolveria sua vida hoje (6 a 12 meses)?', type: 'radio', required: true, options: [
                     'R$ 1.500 a R$ 3.000', 'R$ 3.000 a R$ 8.000', 'Mais de R$ 10.000'
+                ]
+            },
+            {
+                key: 'investment_posture', label: 'Todo negócio estruturado requer ferramentas. Se encontrasse o modelo ideal hoje, como viabilizaria seu início?', type: 'radio', required: true, options: [
+                    'Tenho margem e estou pronto para investir em algo seguro amanhã.',
+                    'Precisaria de algumas semanas para me planejar financeiramente e separar o investimento.',
+                    'Meu orçamento está no limite, precisaria começar com o fluxo mínimo possível.'
+                ]
+            },
+            {
+                key: 'readiness', label: 'Se você tivesse em mãos o plano perfeito, testado e com mentoria, qual seria a sua atitude hoje?', type: 'radio', required: true, options: [
+                    'Começaria imediatamente, estou com muita sede de mudança.',
+                    'Começaria nas próximas 4 semanas, estou me organizando.',
+                    'Preciso de alguns meses para pensar se é meu momento.'
                 ]
             }
         ]
@@ -937,6 +974,8 @@ export const BUSINESS_QUESTIONS = {
 
 export function analyzeBusinessProfile(answers) {
     const profileText = answers.profile?.disc_profile || '';
+    const readinessText = answers.vision?.readiness || '';
+    const motorText = answers.profile?.inner_motor || '';
 
     let archetype = { name: 'Empreendedor Versátil', desc: 'Adaptabilidade e foco em múltiplas frentes.', type: 'Geral' };
 
@@ -950,9 +989,20 @@ export function analyzeBusinessProfile(answers) {
         archetype = { name: 'O Estrategista Analítico', desc: 'Gestão impecável, facilidade com métodos, organização estrutural do negócio e baixíssima margem de erro na execução.', type: 'Conforme' };
     }
 
+    let urgency = 'Neutro';
+    if (readinessText.includes('imediatamente')) urgency = '🔥 Altíssima (Longo Prazo/Urgente)';
+    if (readinessText.includes('semanas')) urgency = '🟡 Moderada (Em planejamento)';
+    if (readinessText.includes('meses')) urgency = '❄️ Fria (Longo Prazo)';
+
+    let motor = 'Mudança de Vida';
+    if (motorText.includes('Segurança')) motor = 'Segurança Familiar';
+    if (motorText.includes('Liberdade gráfica')) motor = 'Liberdade Geográfica';
+    if (motorText.includes('Status')) motor = 'Independência Financeira e Reconhecimento';
+    if (motorText.includes('Propósito')) motor = 'Impacto e Propósito Causa';
+
     const pain = answers.profile?.main_pain || 'Falta de oportunidades';
     const goal = answers.vision?.financial_goal || 'Uma renda a mais';
     const hours = answers.vision?.time_availability || 'Algumas horas por semana';
 
-    return { archetype, pain, goal, hours };
+    return { archetype, pain, goal, hours, urgency, motor };
 }
