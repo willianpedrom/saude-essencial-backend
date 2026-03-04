@@ -14,12 +14,18 @@ export function renderReport(router, dataParam) {
     }
   } catch {
     app.innerHTML = `<div class="report-page"><div class="report-card" style="text-align:center;padding:60px">
-      <div style="font-size:3rem">😕</div><h2>Erro ao gerar protocolo</h2></div></div>`;
+      <div style="font-size:3rem">😕</div><h2>Erro de Dados ou Sessão Expirada</h2><p>Tente preencher o formulário novamente.</p><br><button onclick="window.location.reload()" style="padding:10px 20px;background:#3b82f6;color:white;border:none;border-radius:8px">Recarregar Formulário</button></div></div>`;
     return;
   }
 
   const { answers = {}, consultant = {}, clientName = 'você' } = payload;
-  const analysis = analyzeAnamnesis(answers);
+  let analysis = { protocols: [], mainSymptoms: [] };
+  try {
+    analysis = analyzeAnamnesis(answers);
+  } catch (e) {
+    console.error(e);
+  }
+
   const firstName = clientName.split(' ')[0] || 'você';
   const cTitle = getConsultantTitle(consultant.genero);
   const isMasc = cTitle === 'Consultor';

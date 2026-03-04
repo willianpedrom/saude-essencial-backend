@@ -22,15 +22,22 @@ export function renderBusinessReport(router, dataParam) {
     app.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;text-align:center;padding:20px">
         <div style="font-size:3rem;margin-bottom:10px">⚠️</div>
-        <h2 style="color:var(--text-dark)">Dados inválidos</h2>
-        <p style="color:var(--text-muted)">Não foi possível carregar seu relatório.</p>
+        <h2 style="color:var(--text-dark)">Dados inválidos ou expirados</h2>
+        <p style="color:var(--text-muted)">Não foi possível carregar seu relatório. Tente reenviar o formulário.</p>
+        <button onclick="window.location.reload()" style="margin-top:20px;padding:10px 20px;background:#3b82f6;color:white;border:none;border-radius:8px">Recarregar Página</button>
       </div>`;
     return;
   }
 
-  const { answers, consultant, clientName } = payload;
-  const analysis = analyzeBusinessProfile(answers);
-  const { archetype, pain, goal, hours } = analysis;
+  const { answers = {}, consultant = {}, clientName = 'Empreendedor' } = payload;
+  let analysis = {};
+  try {
+    analysis = analyzeBusinessProfile(answers);
+  } catch (e) {
+    console.error("Analysis generation failed:", e);
+    analysis = { archetype: { name: 'Perfil não mapeado', desc: '', type: '' }, pain: 'Não definida', goal: 'renda extra', hours: 'algumas horas' };
+  }
+  const { archetype = {}, pain = '', goal = '', hours = '', urgency = '', motor = '' } = analysis;
 
   app.innerHTML = `
     <div class="report-page">

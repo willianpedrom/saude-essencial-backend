@@ -284,28 +284,53 @@ export async function renderPublicAnamnesis(router, token) {
 
   async function submitAnamnesis() {
     const btn = document.getElementById('btn-next');
-    if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando...'; }
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Processando...'; }
 
     const allAnswers = Object.values(answers).reduce((acc, v) => ({ ...acc, ...v }), {});
 
     try {
-      // Save to backend
-      await store.submitAnamnesis(token, allAnswers);
+      console.log("[Anamnesis] Starting submit process...");
+      console.log("[Anamnesis] Payload to be saved:", allAnswers);
 
-      // Navigate to protocol
+      // Save to backend - Com timeout pra não travar pra sempre se o DB engasgar
+      const savePromise = store.submitAnamnesis(token, allAnswers);
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout salvando no banco')), 6000));
+
+      try {
+        await Promise.race([savePromise, timeoutPromise]);
+        console.log("[Anamnesis] Salvo no DB com sucesso!");
+      } catch (dbErr) {
+        console.warn("[Anamnesis] Falha leve ao salvar DB (Prosseguindo para o laudo):", dbErr);
+        toast('O form foi salvo localmente, mas a nuvem pode ter falhado.', 'warning');
+      }
+
+      // Prepare UI transition
       const rawPayload = JSON.stringify({
         answers: allAnswers,
         consultant: { name: consultoraNome, genero: anamneseData.consultora_genero, phone: anamneseData.consultora_telefone, link: window.location.origin + '/#anamnese/' + token },
-        clientName: allAnswers.full_name || 'Cliente'
+        clientName: allAnswers.full_name || 'Empreendedor'
       });
 
-      // Salva na memória do navegador ao invés de sujar a URL, que pode estourar limites
+      console.log("[Anamnesis] Saving to sessionStorage...");
       sessionStorage.setItem('tempAnamnesisPayload', rawPayload);
-      router.navigate(isBusiness ? '/business-report' : '/protocolo');
+
+      console.log("[Anamnesis] Routing to next page...");
+      const nextRoute = isBusiness ? '/business-report' : '/protocolo';
+
+      // Delay minúsculo pra garantir gravação no DOM e sessionStorage antes da quebra da Hash
+      setTimeout(() => {
+        try {
+          router.navigate(nextRoute);
+        } catch (routeErr) {
+          console.error("[Anamnesis] Router falhou. Forçando window.location.hash");
+          window.location.hash = '#' + nextRoute;
+        }
+      }, 100);
 
     } catch (err) {
-      toast('Erro ao enviar: ' + err.message, 'error');
-      if (btn) { btn.disabled = false; btn.textContent = btnFinalLabel; }
+      console.error("[Anamnesis] Fatal Error:", err);
+      toast('Sessão expirada. Recarregando.', 'error');
+      setTimeout(() => window.location.reload(), 2000);
     }
   }
 
