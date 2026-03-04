@@ -105,7 +105,14 @@ export async function renderPipeline(router) {
     return activeFunnel === 'vendas' ? LOST_STAGE : LOST_STAGE_RECRUTAMENTO;
   }
   function getClientStage(c) {
-    if (activeFunnel === 'vendas') return c.pipeline_stage || 'lead_captado';
+    if (activeFunnel === 'vendas') {
+      if (c.pipeline_stage && c.pipeline_stage !== 'none') return c.pipeline_stage;
+      // Se o cliente nasceu do formulário de recrutamento, ele tem recrutamento_stage mas não pipeline_stage.
+      // Oculta do funil de vendas por padrão (somente aparece se a usuária arrastar ele para uma coluna de vendas depois).
+      if (!c.pipeline_stage && c.recrutamento_stage) return 'none';
+
+      return 'lead_captado'; // Fallback padrão (Links de saúde/públicos)
+    }
     return c.recrutamento_stage; // pode ser null/undefined se nunca entrou
   }
 
