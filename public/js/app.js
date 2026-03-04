@@ -65,8 +65,8 @@ const router = new Router({
 
     // Public routes (no auth required)
     '/anamnese/:token': ({ token }) => renderPublicAnamnesis(router, token),
-    '/protocolo': ({ data }) => renderReport(router, data),
-    '/business-report': ({ data }) => renderBusinessReport(router, data),
+    '/protocolo': (params) => renderReport(router, params?.data),
+    '/business-report': (params) => renderBusinessReport(router, params?.data),
     '/depoimento/:slug': ({ slug }) => renderPublicTestimonial(router, slug),
     '/p/:slug': ({ slug }) => renderPublicProfile(router, slug),
     '/vendas': () => renderLandingPage(router),
