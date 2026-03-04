@@ -973,9 +973,9 @@ export const BUSINESS_QUESTIONS = {
 };
 
 export function analyzeBusinessProfile(answers) {
-    const profileText = answers.profile?.disc_profile || '';
-    const readinessText = answers.vision?.readiness || '';
-    const motorText = answers.profile?.inner_motor || '';
+    const profileText = answers.disc_profile || answers.profile?.disc_profile || '';
+    const readinessText = answers.readiness || answers.vision?.readiness || '';
+    const motorText = answers.inner_motor || answers.profile?.inner_motor || '';
 
     let archetype = { name: 'Empreendedor Versátil', desc: 'Adaptabilidade e foco em múltiplas frentes.', type: 'Geral' };
 
@@ -1000,9 +1000,9 @@ export function analyzeBusinessProfile(answers) {
     if (motorText.includes('Status')) motor = 'Independência Financeira e Reconhecimento';
     if (motorText.includes('Propósito')) motor = 'Impacto e Propósito Causa';
 
-    const pain = answers.profile?.main_pain || 'Falta de oportunidades';
-    const goal = answers.vision?.financial_goal || 'Uma renda a mais';
-    const hours = answers.vision?.time_availability || 'Algumas horas por semana';
+    const pain = answers.main_pain || answers.profile?.main_pain || 'Falta de oportunidades';
+    const goal = answers.financial_goal || answers.vision?.financial_goal || 'Uma renda a mais';
+    const hours = answers.time_availability || answers.vision?.time_availability || 'Algumas horas por semana';
 
     return { archetype, pain, goal, hours, urgency, motor };
 }
