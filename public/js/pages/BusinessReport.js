@@ -1,23 +1,30 @@
 import { analyzeBusinessProfile } from '../data.js';
 
-export function renderBusinessReport(router, payload) {
-    const app = document.getElementById('app');
+export function renderBusinessReport(router, dataParam) {
+  const app = document.getElementById('app');
+  let payload;
 
-    if (!payload || !payload.answers) {
-        app.innerHTML = `
+  try {
+    payload = JSON.parse(decodeURIComponent(dataParam || '{}'));
+  } catch {
+    payload = null;
+  }
+
+  if (!payload || !payload.answers) {
+    app.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;text-align:center;padding:20px">
         <div style="font-size:3rem;margin-bottom:10px">⚠️</div>
         <h2 style="color:var(--text-dark)">Dados inválidos</h2>
         <p style="color:var(--text-muted)">Não foi possível carregar seu relatório.</p>
       </div>`;
-        return;
-    }
+    return;
+  }
 
-    const { answers, consultant, clientName } = payload;
-    const analysis = analyzeBusinessProfile(answers);
-    const { archetype, pain, goal, hours } = analysis;
+  const { answers, consultant, clientName } = payload;
+  const analysis = analyzeBusinessProfile(answers);
+  const { archetype, pain, goal, hours } = analysis;
 
-    app.innerHTML = `
+  app.innerHTML = `
     <div class="anamnesis-public-page">
       <div class="anamnesis-hero" style="background:linear-gradient(135deg, #1e293b, #0f172a)">
         <div class="anamnesis-hero-badge" style="background:#334155;color:#f8fafc;border:none">Seu Resultado</div>
@@ -83,13 +90,13 @@ export function renderBusinessReport(router, payload) {
       </div>
     </div>`;
 
-    document.getElementById('btn-schedule')?.addEventListener('click', () => {
-        const text = encodeURIComponent(
-            "Olá " + consultant.name + ", acabei de finalizar a Análise de Perfil Empreendedor!\n\n" +
-            "🧠 Meu Arquétipo: *" + archetype.name + "*\n" +
-            "🎯 Meu Alvo: *" + goal + "*\n\n" +
-            "Gostaria de agendar a reunião estratégica para entender o modelo de negócios."
-        );
-        window.open("https://wa.me/55" + consultant.phone.replace(/\\D/g, '') + "?text=" + text, '_blank');
-    });
+  document.getElementById('btn-schedule')?.addEventListener('click', () => {
+    const text = encodeURIComponent(
+      "Olá " + consultant.name + ", acabei de finalizar a Análise de Perfil Empreendedor!\n\n" +
+      "🧠 Meu Arquétipo: *" + archetype.name + "*\n" +
+      "🎯 Meu Alvo: *" + goal + "*\n\n" +
+      "Gostaria de agendar a reunião estratégica para entender o modelo de negócios."
+    );
+    window.open("https://wa.me/55" + consultant.phone.replace(/\\D/g, '') + "?text=" + text, '_blank');
+  });
 }
