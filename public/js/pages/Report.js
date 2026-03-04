@@ -5,7 +5,13 @@ export function renderReport(router, dataParam) {
   const app = document.getElementById('app');
   let payload;
   try {
-    payload = JSON.parse(decodeURIComponent(dataParam || '{}'));
+    const storedData = sessionStorage.getItem('tempAnamnesisPayload');
+    if (storedData) {
+      payload = JSON.parse(storedData);
+      sessionStorage.removeItem('tempAnamnesisPayload');
+    } else {
+      payload = JSON.parse(decodeURIComponent(dataParam || '{}'));
+    }
   } catch {
     app.innerHTML = `<div class="report-page"><div class="report-card" style="text-align:center;padding:60px">
       <div style="font-size:3rem">😕</div><h2>Erro ao gerar protocolo</h2></div></div>`;

@@ -295,12 +295,13 @@ export async function renderPublicAnamnesis(router, token) {
       // Navigate to protocol
       const rawPayload = JSON.stringify({
         answers: allAnswers,
-        consultant: { name: consultoraNome, genero: anamneseData.consultora_genero, phone: anamneseData.consultora_telefone },
+        consultant: { name: consultoraNome, genero: anamneseData.consultora_genero, phone: anamneseData.consultora_telefone, link: window.location.origin + '/#anamnese/' + token },
         clientName: allAnswers.full_name || 'Cliente'
       });
 
-      // O router.navigate já usa URLSearchParams que faz o encodeURIComponent automático!
-      router.navigate(isBusiness ? '/business-report' : '/protocolo', { data: rawPayload });
+      // Salva na memória do navegador ao invés de sujar a URL, que pode estourar limites
+      sessionStorage.setItem('tempAnamnesisPayload', rawPayload);
+      router.navigate(isBusiness ? '/business-report' : '/protocolo');
 
     } catch (err) {
       toast('Erro ao enviar: ' + err.message, 'error');

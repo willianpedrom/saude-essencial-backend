@@ -5,7 +5,15 @@ export function renderBusinessReport(router, dataParam) {
   let payload;
 
   try {
-    payload = JSON.parse(decodeURIComponent(dataParam || '{}'));
+    // Busca do storage primeiro para evitar URLs imensas que quebram no celular
+    const storedData = sessionStorage.getItem('tempAnamnesisPayload');
+    if (storedData) {
+      payload = JSON.parse(storedData);
+      sessionStorage.removeItem('tempAnamnesisPayload');
+    } else {
+      // Fallback p/ URLs originais antigas
+      payload = JSON.parse(decodeURIComponent(dataParam || '{}'));
+    }
   } catch {
     payload = null;
   }
