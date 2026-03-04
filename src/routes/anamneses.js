@@ -178,7 +178,7 @@ router.put('/public/:token', async (req, res) => {
                 "UPDATE clientes " +
                 "SET recrutamento_stage = 'prospecto_negocio', " +
                 "    status = 'lead', " +
-                "    tipo_cadastro = 'consultora' " +
+                "    tipo_cadastro = 'lead' " +
                 "WHERE id = $1",
                 [clienteId]
             );
