@@ -106,7 +106,7 @@ export function renderBusinessReport(router, dataParam) {
             </h3>
             <p style="color:#1e40af;margin-bottom:24px;font-size:0.95rem;line-height:1.6;margin-top:0">
               Eu sou <strong>${consultant.name || 'Consultor'}</strong>, Especialista em Transição Estratégica. 
-              Quero te mostrar uma oportunidade de negócio <em>turn-key</em>, de baixo custo e alta escalabilidade, desenhada exatamente para perfis como o seu faturarem os <strong>${goal}</strong> desejados.
+              Quero te mostrar uma oportunidade de negócio de baixo custo e alto retorno, desenhada para que pessoas com o seu perfil faturem os <strong>${goal}</strong> desejados.
             </p>
             
             <button id="btn-schedule" style="width:100%;font-size:1.05rem;padding:16px;background:linear-gradient(135deg, #2563eb, #1d4ed8);border:none;border-radius:8px;color:white;cursor:pointer;font-weight:600;box-shadow: 0 4px 14px rgba(37,99,235,0.25);transition: transform 0.2s">
