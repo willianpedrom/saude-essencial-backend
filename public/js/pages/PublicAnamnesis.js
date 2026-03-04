@@ -147,72 +147,102 @@ export async function renderPublicAnamnesis(router, token) {
   }
 
   function renderFields(section, saved) {
+    let html = '';
+
     if (section.fields) {
-      return section.fields.map(f => {
-        const val = saved[f.name] || '';
+      html += section.fields.map(f => {
+        const key = f.name || f.key;
+        const val = saved[key] || '';
+
         if (['text', 'email', 'tel', 'date'].includes(f.type)) {
           return `<div class="form-group" style="margin-bottom:14px">
               <label class="field-label">${f.label}${f.required ? ' *' : ''}</label>
-              <input class="field-input" id="field-${f.name}" type="${f.type}" value="${val}" placeholder="${f.placeholder || ''}" ${f.required ? 'required' : ''} />
+              <input class="field-input" id="field-${key}" type="${f.type}" value="${val}" placeholder="${f.placeholder || ''}" ${f.required ? 'required' : ''} />
             </div>`;
         }
         if (f.type === 'select') {
           return `<div class="form-group" style="margin-bottom:14px">
               <label class="field-label">${f.label}${f.required ? ' *' : ''}</label>
-              <select class="field-input" id="field-${f.name}" ${f.required ? 'required' : ''} style="padding:12px 14px;border-radius:10px">
+              <select class="field-input" id="field-${key}" ${f.required ? 'required' : ''} style="padding:12px 14px;border-radius:10px">
                 <option value="">— Selecionar —</option>
                 ${(f.options || []).map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('')}
               </select>
             </div>`;
         }
+        if (f.type === 'radio') {
+          return `<div style="margin-bottom:22px">
+            <div style="font-weight:600;margin-bottom:10px;font-size:0.9rem;color:var(--text-body)">${f.label}</div>
+            <div class="radio-group">
+              ${f.options.map(opt => `
+                <label class="radio-pill">
+                  <input type="radio" name="${key}" value="${opt}" ${val === opt ? 'checked' : ''} /> ${opt}
+                </label>`).join('')}
+            </div>
+          </div>`;
+        }
+        if (f.type === 'scale') {
+          const selVal = typeof val === 'number' ? val : (f.max === 10 ? 5 : 3);
+          return `<div style="margin-bottom:22px">
+            <div style="font-weight:600;margin-bottom:10px;font-size:0.9rem;color:var(--text-body)">${f.label}</div>
+            <div class="scale-group" data-scale-key="${key}">
+              ${Array.from({ length: f.max }, (_, i) => i + 1).map(n => `
+                <button type="button" class="scale-btn ${n === selVal ? 'selected' : ''}" data-val="${n}">${n}</button>`).join('')}
+              ${f.scaleLabel ? `<span class="scale-label">${f.scaleLabel[0]} → ${f.scaleLabel[f.scaleLabel.length - 1]}</span>` : ''}
+            </div>
+          </div>`;
+        }
         return '';
       }).join('');
     }
 
-    return (section.sections || []).map(sec => {
-      const sv = saved[sec.key];
-      if (sec.type === 'checkbox') {
-        return `<div style="margin-bottom:22px">
-          <div style="font-weight:600;margin-bottom:10px;font-size:0.9rem;color:var(--text-body)">${sec.label}</div>
-          <div class="checkbox-grid">
-            ${sec.options.map(opt => `
-              <label class="checkbox-item">
-                <input type="checkbox" name="${sec.key}" value="${opt}" ${Array.isArray(sv) && sv.includes(opt) ? 'checked' : ''} />
-                <div class="checkbox-mark"></div> ${opt}
-              </label>`).join('')}
-          </div>
-        </div>`;
-      }
-      if (sec.type === 'scale') {
-        const selVal = typeof sv === 'number' ? sv : (sec.max === 10 ? 5 : 3);
-        return `<div style="margin-bottom:22px">
-          <div style="font-weight:600;margin-bottom:10px;font-size:0.9rem;color:var(--text-body)">${sec.label}</div>
-          <div class="scale-group" data-scale-key="${sec.key}">
-            ${Array.from({ length: sec.max }, (_, i) => i + 1).map(n => `
-              <button type="button" class="scale-btn ${n === selVal ? 'selected' : ''}" data-val="${n}">${n}</button>`).join('')}
-            ${sec.scaleLabel ? `<span class="scale-label">${sec.scaleLabel[0]} → ${sec.scaleLabel[sec.scaleLabel.length - 1]}</span>` : ''}
-          </div>
-        </div>`;
-      }
-      if (sec.type === 'radio') {
-        return `<div style="margin-bottom:22px">
-          <div style="font-weight:600;margin-bottom:10px;font-size:0.9rem;color:var(--text-body)">${sec.label}</div>
-          <div class="radio-group">
-            ${sec.options.map(opt => `
-              <label class="radio-pill">
-                <input type="radio" name="${sec.key}" value="${opt}" ${sv === opt ? 'checked' : ''} /> ${opt}
-              </label>`).join('')}
-          </div>
-        </div>`;
-      }
-      if (sec.type === 'textarea') {
-        return `<div style="margin-bottom:22px">
-          <div style="font-weight:600;margin-bottom:8px;font-size:0.9rem;color:var(--text-body)">${sec.label}</div>
-          <textarea class="field-textarea" name="${sec.key}" placeholder="${sec.placeholder || ''}">${sv || ''}</textarea>
-        </div>`;
-      }
-      return '';
-    }).join('');
+    if (section.sections) {
+      html += section.sections.map(sec => {
+        const sv = saved[sec.key];
+        if (sec.type === 'checkbox') {
+          return `<div style="margin-bottom:22px">
+            <div style="font-weight:600;margin-bottom:10px;font-size:0.9rem;color:var(--text-body)">${sec.label}</div>
+            <div class="checkbox-grid">
+              ${sec.options.map(opt => `
+                <label class="checkbox-item">
+                  <input type="checkbox" name="${sec.key}" value="${opt}" ${Array.isArray(sv) && sv.includes(opt) ? 'checked' : ''} />
+                  <div class="checkbox-mark"></div> ${opt}
+                </label>`).join('')}
+            </div>
+          </div>`;
+        }
+        if (sec.type === 'scale') {
+          const selVal = typeof sv === 'number' ? sv : (sec.max === 10 ? 5 : 3);
+          return `<div style="margin-bottom:22px">
+            <div style="font-weight:600;margin-bottom:10px;font-size:0.9rem;color:var(--text-body)">${sec.label}</div>
+            <div class="scale-group" data-scale-key="${sec.key}">
+              ${Array.from({ length: sec.max }, (_, i) => i + 1).map(n => `
+                <button type="button" class="scale-btn ${n === selVal ? 'selected' : ''}" data-val="${n}">${n}</button>`).join('')}
+              ${sec.scaleLabel ? `<span class="scale-label">${sec.scaleLabel[0]} → ${sec.scaleLabel[sec.scaleLabel.length - 1]}</span>` : ''}
+            </div>
+          </div>`;
+        }
+        if (sec.type === 'radio') {
+          return `<div style="margin-bottom:22px">
+            <div style="font-weight:600;margin-bottom:10px;font-size:0.9rem;color:var(--text-body)">${sec.label}</div>
+            <div class="radio-group">
+              ${sec.options.map(opt => `
+                <label class="radio-pill">
+                  <input type="radio" name="${sec.key}" value="${opt}" ${sv === opt ? 'checked' : ''} /> ${opt}
+                </label>`).join('')}
+            </div>
+          </div>`;
+        }
+        if (sec.type === 'textarea') {
+          return `<div style="margin-bottom:22px">
+            <div style="font-weight:600;margin-bottom:8px;font-size:0.9rem;color:var(--text-body)">${sec.label}</div>
+            <textarea class="field-textarea" name="${sec.key}" placeholder="${sec.placeholder || ''}">${sv || ''}</textarea>
+          </div>`;
+        }
+        return '';
+      }).join('');
+    }
+
+    return html;
   }
 
   function collectAnswers(stepId) {
@@ -220,10 +250,20 @@ export async function renderPublicAnamnesis(router, token) {
     const fields = QUESTIONS[stepId].fields;
     if (fields) {
       fields.forEach(f => {
-        const el = document.getElementById('field-' + f.name);
-        if (el) data[f.name] = el.value;
+        const key = f.name || f.key;
+        if (['text', 'email', 'tel', 'date', 'select'].includes(f.type)) {
+          const el = document.getElementById('field-' + key);
+          if (el) data[key] = el.value;
+        } else if (f.type === 'radio') {
+          const sel = document.querySelector(`input[name="${key}"]:checked`);
+          data[key] = sel ? sel.value : null;
+        } else if (f.type === 'scale') {
+          const sel = document.querySelector(`[data-scale-key="${key}"] .scale-btn.selected`);
+          data[key] = sel ? parseInt(sel.dataset.val) : null;
+        }
       });
     }
+
     (QUESTIONS[stepId].sections || []).forEach(sec => {
       if (sec.type === 'checkbox') {
         data[sec.key] = [...document.querySelectorAll(`input[name="${sec.key}"]:checked`)].map(i => i.value);
@@ -238,6 +278,7 @@ export async function renderPublicAnamnesis(router, token) {
         data[sec.key] = ta ? ta.value : '';
       }
     });
+
     answers[stepId] = data;
   }
 
@@ -252,12 +293,14 @@ export async function renderPublicAnamnesis(router, token) {
       await store.submitAnamnesis(token, allAnswers);
 
       // Navigate to protocol
-      const encoded = encodeURIComponent(JSON.stringify({
+      const rawPayload = JSON.stringify({
         answers: allAnswers,
         consultant: { name: consultoraNome, genero: anamneseData.consultora_genero, phone: anamneseData.consultora_telefone },
         clientName: allAnswers.full_name || 'Cliente'
-      }));
-      router.navigate(isBusiness ? '/business-report' : '/protocolo', { data: encoded });
+      });
+
+      // O router.navigate já usa URLSearchParams que faz o encodeURIComponent automático!
+      router.navigate(isBusiness ? '/business-report' : '/protocolo', { data: rawPayload });
 
     } catch (err) {
       toast('Erro ao enviar: ' + err.message, 'error');
