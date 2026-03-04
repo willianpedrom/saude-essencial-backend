@@ -321,6 +321,13 @@ export function openClientOffcanvas(client) {
                       <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;text-align:center">Ativar para gerenciar ela como potencial Líder/Consultora.</div>`
     }
                </div>
+
+               <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px">
+                 <label class="field-label" style="font-size:0.75rem;margin-bottom:8px">Dossiês e Testes Preenchidos</label>
+                 <div id="oc-dossies-container" style="display:flex;flex-direction:column;gap:8px">
+                    <span style="font-size:0.8rem;color:var(--text-muted)">⏳ Buscando dados...</span>
+                 </div>
+               </div>
              </div>
           </div>
 
@@ -448,6 +455,52 @@ export function openClientOffcanvas(client) {
         toast('Erro ao adicionar ao recrutamento: ' + err.message, 'error');
         btnAddRecrutamento.disabled = false;
         btnAddRecrutamento.textContent = "+ Adicionar a este cliente no Funil de Recrutamento";
+      }
+    });
+  }
+
+  // Action: Carregar Dossiês Preenchidos
+  const dossiesContainer = overlay.querySelector('#oc-dossies-container');
+  if (dossiesContainer) {
+    import('./store.js').then(async ({ store }) => {
+      try {
+        const anamneses = await store.getClientAnamneses(client.id);
+        if (!anamneses || anamneses.length === 0) {
+          dossiesContainer.innerHTML = '<div style="font-size:0.85rem;color:var(--text-muted);font-style:italic">Nenhum dossiê preenchido por este cliente.</div>';
+          return;
+        }
+
+        dossiesContainer.innerHTML = '';
+        anamneses.forEach(a => {
+          const isBusiness = a.tipo === 'recrutamento' || a.subtipo === 'recrutamento';
+          const title = isBusiness ? '💼 Análise de Perfil Empreendedor' : '🌿 Protocolo de Saúde (Anamnese)';
+          const color = isBusiness ? '#2563eb' : '#059669';
+          const bg = isBusiness ? '#eff6ff' : '#f0fdf4';
+          const border = isBusiness ? '#bfdbfe' : '#bbf7d0';
+
+          const btn = document.createElement('button');
+          btn.className = 'btn';
+          btn.style.cssText = `width:100%;text-align:left;justify-content:space-between;background:${bg};border:1px solid ${border};color:${color};padding:12px;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;margin-bottom:6px;transition: transform 0.1s`;
+          btn.innerHTML = `<span>${title}</span> <span style="font-size:0.7rem;color:#64748b;font-weight:500;background:rgba(255,255,255,0.8);padding:2px 6px;border-radius:4px">${formatDate(a.criado_em)}</span>`;
+
+          btn.onclick = () => {
+            // Prepara o payload cru que as páginas de Dossiê esperam
+            const rawPayload = JSON.stringify({
+              answers: a.dados || {},
+              consultant: { name: 'Consultor CRM', genero: 'Consultora', phone: '' },
+              clientName: client.nome || 'Cliente'
+            });
+            // Salva na Storage temporário como fizemos p/ submit
+            sessionStorage.setItem('tempAnamnesisPayload', rawPayload);
+            // Abre o laudo em uma nova Aba limpa!
+            const route = isBusiness ? '#/business-report' : '#/protocolo';
+            window.open(window.location.origin + window.location.pathname + route, '_blank');
+          };
+          dossiesContainer.appendChild(btn);
+        });
+      } catch (err) {
+        console.error("Erro ao buscar docs", err);
+        dossiesContainer.innerHTML = '<div style="font-size:0.8rem;color:#ef4444">Falha ao buscar dossiês.</div>';
       }
     });
   }
