@@ -106,8 +106,9 @@ export async function renderTestimonials(router) {
                     <div class="testimonial-author-avatar" style="background:#f1f5f9;color:#334155">${(t.cliente_nome[0] || 'C').toUpperCase()}</div>
                     <div>
                       <div class="testimonial-author-name">${t.cliente_nome} <span style="font-weight:400;color:var(--text-muted);font-size:0.82rem;margin-left:6px">${t.origem === 'link' ? '(Link Público)' : '(Manual)'}</span></div>
-                      ${t.cliente_email ? `<div class="testimonial-author-sub">${t.cliente_email}</div>` : ''}
-                      <div class="testimonial-author-sub">${formatDate(t.criado_em)}</div>
+                      ${t.cliente_telefone ? `<div class="testimonial-author-sub" style="color:var(--text-muted);font-size:0.85rem">📱 ${t.cliente_telefone}</div>` : ''}
+                      ${t.cliente_email ? `<div class="testimonial-author-sub" style="color:var(--text-muted);font-size:0.85rem">✉️ ${t.cliente_email}</div>` : ''}
+                      <div class="testimonial-author-sub" style="margin-top:4px">${formatDate(t.criado_em)}</div>
                     </div>
                   </div>
                   <div style="text-align:right">

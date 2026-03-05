@@ -144,6 +144,7 @@ CREATE TABLE IF NOT EXISTS depoimentos (
   consultora_id   UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
   cliente_nome    VARCHAR(200) NOT NULL,
   cliente_email   VARCHAR(200),
+  cliente_telefone VARCHAR(30),
   texto           TEXT NOT NULL,
   nota            SMALLINT DEFAULT 10,
   aprovado        BOOLEAN DEFAULT FALSE,
@@ -153,6 +154,7 @@ CREATE TABLE IF NOT EXISTS depoimentos (
 );
 
 ALTER TABLE depoimentos ADD COLUMN IF NOT EXISTS consentimento BOOLEAN DEFAULT FALSE;
+ALTER TABLE depoimentos ADD COLUMN IF NOT EXISTS cliente_telefone VARCHAR(30);
 
 -- Relação N:N entre depoimentos e etiquetas
 CREATE TABLE IF NOT EXISTS depoimentos_etiquetas (

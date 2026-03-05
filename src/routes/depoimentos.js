@@ -35,8 +35,8 @@ router.get('/public/:slug', async (req, res) => {
 
 // POST /api/depoimentos/public/:slug — client submits testimonial
 router.post('/public/:slug', async (req, res) => {
-    const { cliente_nome, cliente_email, texto, nota, consentimento } = req.body;
-    if (!cliente_nome || !texto) return res.status(400).json({ error: 'Nome e depoimento são obrigatórios.' });
+    const { cliente_nome, cliente_email, cliente_telefone, texto, nota, consentimento } = req.body;
+    if (!cliente_nome || !texto || !cliente_email || !cliente_telefone) return res.status(400).json({ error: 'Nome, E-mail, Telefone e Depoimento são obrigatórios.' });
     if (!consentimento) return res.status(400).json({ error: 'É necessário concordar com os termos para enviar o depoimento.' });
 
     try {
@@ -46,9 +46,9 @@ router.post('/public/:slug', async (req, res) => {
         if (consultoras.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });
         const { id: consultora_id, rastreamento } = consultoras[0];
         const { rows } = await pool.query(
-            `INSERT INTO depoimentos (consultora_id, cliente_nome, cliente_email, texto, nota, aprovado, consentimento, origem)
-             VALUES ($1, $2, $3, $4, $5, FALSE, $6, 'link') RETURNING id`,
-            [consultora_id, cliente_nome, cliente_email || null, texto, Math.min(10, Math.max(0, parseInt(nota) || 10)), !!consentimento]
+            `INSERT INTO depoimentos (consultora_id, cliente_nome, cliente_email, cliente_telefone, texto, nota, aprovado, consentimento, origem)
+             VALUES ($1, $2, $3, $4, $5, $6, FALSE, $7, 'link') RETURNING id`,
+            [consultora_id, cliente_nome, cliente_email, cliente_telefone, texto, Math.min(10, Math.max(0, parseInt(nota) || 10)), !!consentimento]
         );
 
         // Fire Meta CAPI 'CompleteRegistration' (non-blocking)
@@ -113,13 +113,13 @@ router.get('/link', async (req, res) => {
 
 // POST /api/depoimentos — create manually
 router.post('/', async (req, res) => {
-    const { cliente_nome, cliente_email, texto, nota, consentimento } = req.body;
+    const { cliente_nome, cliente_email, cliente_telefone, texto, nota, consentimento } = req.body;
     if (!cliente_nome || !texto) return res.status(400).json({ error: 'Nome e depoimento são obrigatórios.' });
     try {
         const { rows } = await pool.query(
-            `INSERT INTO depoimentos (consultora_id, cliente_nome, cliente_email, texto, nota, aprovado, consentimento, origem)
-             VALUES ($1, $2, $3, $4, $5, TRUE, $6, 'manual') RETURNING *`,
-            [req.consultora.id, cliente_nome, cliente_email || null, texto, Math.min(10, Math.max(0, parseInt(nota) || 10)), !!consentimento]
+            `INSERT INTO depoimentos (consultora_id, cliente_nome, cliente_email, cliente_telefone, texto, nota, aprovado, consentimento, origem)
+             VALUES ($1, $2, $3, $4, $5, $6, TRUE, $7, 'manual') RETURNING *`,
+            [req.consultora.id, cliente_nome, cliente_email || null, cliente_telefone || null, texto, Math.min(10, Math.max(0, parseInt(nota) || 10)), !!consentimento]
         );
         res.status(201).json({ ...rows[0], etiquetas: [] });
     } catch (err) {

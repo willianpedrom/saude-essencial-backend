@@ -74,7 +74,7 @@ export async function renderPublicTestimonial(router, slug) {
             ${consultora.foto_url ? `<img src="${consultora.foto_url}" alt="${consultora.nome}" />` : (consultora.nome || 'C')[0]}
           </div>
           <div class="dep-name">${consultora.nome}</div>
-          <div class="dep-sub">Gota Essencial · Deixe seu depoimento</div>
+          <div class="dep-sub" style="text-transform:none;letter-spacing:normal;font-size:0.9rem;line-height:1.4">Escreva abaixo seu depoimento de transformação para inpirar outras pessoas com a sua história</div>
         </div>
 
         <div class="dep-group">
@@ -82,7 +82,11 @@ export async function renderPublicTestimonial(router, slug) {
           <input class="dep-input" id="dep-nome" placeholder="Como prefere ser chamado(a)?" />
         </div>
         <div class="dep-group">
-          <label class="dep-label">E-mail (opcional)</label>
+          <label class="dep-label">Telefone / WhatsApp *</label>
+          <input class="dep-input" id="dep-telefone" placeholder="(11) 99999-9999" />
+        </div>
+        <div class="dep-group">
+          <label class="dep-label">E-mail *</label>
           <input class="dep-input" id="dep-email" type="email" placeholder="seuemail@exemplo.com" />
         </div>
         <div class="dep-group">
@@ -127,14 +131,15 @@ export async function renderPublicTestimonial(router, slug) {
     // Submit
     document.getElementById('dep-submit')?.addEventListener('click', async () => {
       const nome = document.getElementById('dep-nome')?.value?.trim();
+      const telefone = document.getElementById('dep-telefone')?.value?.trim();
       const email = document.getElementById('dep-email')?.value?.trim();
       const texto = document.getElementById('dep-texto')?.value?.trim();
       const consentimento = document.getElementById('dep-consentimento')?.checked;
       const errEl = document.getElementById('dep-error');
       const btn = document.getElementById('dep-submit');
 
-      if (!nome || !texto) {
-        errEl.textContent = 'Por favor, preencha seu nome e depoimento.';
+      if (!nome || !texto || !email || !telefone) {
+        errEl.textContent = 'Por favor, preencha todos os campos obrigatórios (Nome, Telefone, E-mail e Depoimento).';
         errEl.style.display = 'block';
         return;
       }
@@ -151,6 +156,7 @@ export async function renderPublicTestimonial(router, slug) {
         await api('POST', `/api/depoimentos/public/${slug}`, {
           cliente_nome: nome,
           cliente_email: email,
+          cliente_telefone: telefone,
           texto,
           nota: rating,
           consentimento: true
