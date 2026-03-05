@@ -116,6 +116,9 @@ app.use('/api/publico', require('./routes/publico'));
 app.use('/api/hotmart', require('./routes/hotmart'));
 app.use('/api/links', require('./routes/links'));
 
+// Rota pública raiz para SEO / Open Graph (Prévias de Link)
+app.use('/convite', require('./routes/share'));
+
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '../public')));
 

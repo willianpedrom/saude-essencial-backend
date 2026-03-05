@@ -34,7 +34,7 @@ export async function renderAnamnesisList(router) {
     const pessoaisHtml = pessoais.length === 0
       ? `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.9rem">Nenhum link pessoal aguardando preenchimento</div>`
       : pessoais.map(a => {
-        const url = `${baseUrl}/#/anamnese/${a.token_publico}`;
+        const url = `${baseUrl}/convite/${a.token_publico}`;
         const nome = a.nome_link || a.cliente_nome || '(sem nome)';
         const isBusiness = a.tipo === 'recrutamento';
         const categoryBadge = isBusiness
@@ -68,7 +68,7 @@ export async function renderAnamnesisList(router) {
     const genericosHtml = genericos.length === 0
       ? `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.9rem">Nenhum link genérico criado. <a href="#/links" style="color:var(--green-600)">Criar em Links de Captação</a></div>`
       : genericos.map(a => {
-        const url = `${baseUrl}/#/anamnese/${a.token_publico}`;
+        const url = `${baseUrl}/convite/${a.token_publico}`;
         const nome = a.nome_link || 'Campanha';
         const visitas = parseInt(a.visitas || a.acessos || 0);
         const preenchi = parseInt(a.preenchimentos || 0);

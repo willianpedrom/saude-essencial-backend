@@ -190,20 +190,20 @@ export async function renderProfile(router) {
               <div style="margin-bottom:12px">
                 <label style="font-size:0.82rem;font-weight:600;color:#166534;display:block;margin-bottom:6px">🔗 Seu link personalizado</label>
                 <div style="display:flex;align-items:center;gap:0;border:2px solid #86efac;border-radius:10px;overflow:hidden;background:white">
-                  <span style="padding:10px 12px;background:#f0fdf4;color:#166534;font-size:0.82rem;white-space:nowrap;border-right:1px solid #86efac">${window.location.origin}/#/p/</span>
+                  <span style="padding:10px 12px;background:#f0fdf4;color:#166534;font-size:0.82rem;white-space:nowrap;border-right:1px solid #86efac">${window.location.origin}/convite/</span>
                   <input type="text" id="slug-input" value="${profile.slug}"
                     style="flex:1;border:none;padding:10px 12px;font-size:0.92rem;font-weight:600;color:#166534;outline:none;min-width:80px"
                     placeholder="seu-nome" maxlength="60" />
                 </div>
                 <div id="slug-preview" style="font-size:0.75rem;color:#6b7280;margin-top:6px">
-                  Link atual: <span style="color:#166534;font-weight:500">${window.location.origin}/#/p/${profile.slug}</span>
+                  Link atual: <span style="color:#166534;font-weight:500">${window.location.origin}/convite/${profile.slug}</span>
                 </div>
                 <div id="slug-error" style="font-size:0.78rem;color:#dc2626;margin-top:4px;display:none"></div>
               </div>
 
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 <button type="button" class="btn btn-primary btn-sm" id="btn-save-slug" style="background:#166534">✅ Salvar Link</button>
-                <a href="${window.location.origin}/#/p/${profile.slug}" target="_blank" class="btn btn-secondary btn-sm">👁️ Ver página</a>
+                <a href="${window.location.origin}/convite/${profile.slug}" target="_blank" class="btn btn-secondary btn-sm">👁️ Ver página</a>
                 <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-profile-link">🔗 Copiar link</button>
               </div>
 
@@ -298,7 +298,7 @@ export async function renderProfile(router) {
         .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-');
       if (slugPreview) {
         slugPreview.innerHTML = 'Preview: <span style="color:#166534;font-weight:500">' +
-          window.location.origin + '/#/p/' + (v || '...') + '</span>';
+          window.location.origin + '/convite/' + (v || '...') + '</span>';
       }
       if (slugError) slugError.style.display = 'none';
     });
@@ -326,11 +326,11 @@ export async function renderProfile(router) {
         user.slug = res.slug;
         sessionStorage.setItem('se_user', JSON.stringify(user));
 
-        toast('Link atualizado com sucesso! ✅ Seu novo link: ' + window.location.origin + '/#/p/' + res.slug);
+        toast('Link atualizado com sucesso! ✅ Seu novo link: ' + window.location.origin + '/convite/' + res.slug);
 
         if (slugPreview) {
           slugPreview.innerHTML = 'Link atual: <span style="color:#166534;font-weight:500">' +
-            window.location.origin + '/#/p/' + res.slug + '</span>';
+            window.location.origin + '/convite/' + res.slug + '</span>';
         }
         slugInput.value = res.slug;
         if (slugError) slugError.style.display = 'none';
@@ -345,7 +345,7 @@ export async function renderProfile(router) {
     // Copy public profile link (use current slug from input)
     pc.querySelector('#btn-copy-profile-link')?.addEventListener('click', () => {
       const currentSlug = slugInput?.value?.trim() || profile.slug;
-      const url = `${window.location.origin}/#/p/${currentSlug}`;
+      const url = `${window.location.origin}/convite/${currentSlug}`;
       navigator.clipboard.writeText(url).then(() => toast('Link copiado! ✅')).catch(() => toast('Erro ao copiar', 'error'));
     });
 

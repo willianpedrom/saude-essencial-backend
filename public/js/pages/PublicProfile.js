@@ -85,7 +85,7 @@ export async function renderPublicProfile(router, slug) {
   const title = genero === 'masculino' ? 'Consultor' : 'Consultora';
   const pageUrl = window.location.href;
   const whatsLink = telefone ? `https://wa.me/55${telefone.replace(/\D/g, '')}?text=Olá%20${encodeURIComponent(nome)}!%20Conheci%20seu%20perfil%20e%20gostaria%20de%20saber%20mais.` : null;
-  const anamneseLink = anamnese_token ? `${window.location.origin}/#/anamnese/${anamnese_token}` : null;
+  const anamneseLink = anamnese_token ? `${window.location.origin}/convite/${anamnese_token}` : null;
 
   // Inject tracking
   injectTrackingScripts(consultor.rastreamento);

@@ -49,7 +49,9 @@ export async function renderLinks(router) {
              <p>Clique em <strong>+ Gerar Novo Link</strong> para começar</p>
            </div>`
         : links.map(l => {
-          const url = `${baseUrl}/#/anamnese/${l.token_publico}`;
+          // Substituindo o hash client-side pela nova rota amigável SSR configurada no back-end
+          // O token agora passará pelo interceptador do WhatsApp/Metatags antes de iniciar a SPA
+          const url = `${baseUrl}/convite/${l.token_publico}`;
           const nome = l.nome_link || 'Link sem nome';
           const subtipo = l.subtipo || 'pessoal';
           const preenchido = l.preenchido;
