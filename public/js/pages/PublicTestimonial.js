@@ -74,7 +74,7 @@ export async function renderPublicTestimonial(router, slug) {
             ${consultora.foto_url ? `<img src="${consultora.foto_url}" alt="${consultora.nome}" />` : (consultora.nome || 'C')[0]}
           </div>
           <div class="dep-name">${consultora.nome}</div>
-          <div class="dep-sub" style="text-transform:none;letter-spacing:normal;font-size:0.9rem;line-height:1.4">Escreva abaixo seu depoimento de transformação para inpirar outras pessoas com a sua história</div>
+          <div class="dep-sub" style="text-transform:none;letter-spacing:normal;font-size:0.9rem;line-height:1.4">Escreva abaixo seu depoimento de transformação para inspirar outras pessoas com a sua história</div>
         </div>
 
         <div class="dep-group">
