@@ -122,23 +122,36 @@ router.put('/public/:token', async (req, res) => {
         const data_nasc = (dados.birthdate && dados.birthdate.length > 5) ? dados.birthdate : null;
         const cidade = dados.city || dados.cidade || null;
 
-        // 4. Upsert client
+        // 4. Upsert client (prevents duplicates across ALL links, including business and health)
         let clienteId = null;
-        // For personal links: upsert by email (same person)
-        if (subtipo !== 'generico' && email) {
-            const { rows: existing } = await client.query(
-                'SELECT id FROM clientes WHERE email = $1 AND consultora_id = $2 LIMIT 1',
-                [email, consultora_id]
-            );
+
+        // Try to find an existing client by email or phone
+        if (email || telefone) {
+            let queryStr = 'SELECT id FROM clientes WHERE consultora_id = $1 AND (';
+            let params = [consultora_id];
+            let conditions = [];
+            if (email) {
+                conditions.push(`email = $${params.length + 1}`);
+                params.push(email);
+            }
+            if (telefone) {
+                conditions.push(`telefone = $${params.length + 1}`);
+                params.push(telefone);
+            }
+            queryStr += conditions.join(' OR ') + ') LIMIT 1';
+
+            const { rows: existing } = await client.query(queryStr, params);
             if (existing.length > 0) {
                 clienteId = existing[0].id;
+                // Update missing client info with the new form data
                 await client.query(
-                    'UPDATE clientes SET nome=$1, telefone=$2, data_nascimento=$3, cidade=$4 WHERE id=$5',
-                    [nome, telefone, data_nasc, cidade, clienteId]
+                    'UPDATE clientes SET nome=COALESCE($1, nome), telefone=COALESCE($2, telefone), email=COALESCE($3, email), data_nascimento=COALESCE($4, data_nascimento), cidade=COALESCE($5, cidade) WHERE id=$6',
+                    [nome || null, telefone || null, email || null, data_nasc || null, cidade || null, clienteId]
                 );
             }
         }
-        // Generic always creates a new client record
+
+        // If no client was found, create a new record
         if (!clienteId) {
             // Verify plan limit before adding new client
             const { rows: limitRows } = await client.query(`
