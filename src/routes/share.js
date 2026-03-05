@@ -9,18 +9,21 @@ router.get('/:slug', async (req, res) => {
     try {
         let isAnamnese = false;
         let queryResult = await pool.query(
-            "SELECT nome, avatar_url FROM consultoras WHERE slug = $1 LIMIT 1",
+            "SELECT nome, foto_url FROM consultoras WHERE slug = $1 LIMIT 1",
             [slug]
         );
 
         if (queryResult.rows.length === 0) {
-            // Tenta buscar no gerador de links genéricos (Público de Anamneses)
-            queryResult = await pool.query(
-                "SELECT c.nome, c.avatar_url FROM anamneses a JOIN consultoras c ON a.consultora_id = c.id WHERE a.token_publico = $1 LIMIT 1",
-                [slug]
-            );
-            if (queryResult.rows.length > 0) {
-                isAnamnese = true;
+            // Tenta buscar no gerador de links genéricos (Público de Anamneses) apenas se for um UUID
+            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+            if (isUUID) {
+                queryResult = await pool.query(
+                    "SELECT c.nome, c.foto_url FROM anamneses a JOIN consultoras c ON a.consultora_id = c.id WHERE a.token_publico = $1 LIMIT 1",
+                    [slug]
+                );
+                if (queryResult.rows.length > 0) {
+                    isAnamnese = true;
+                }
             }
         }
 
@@ -31,8 +34,8 @@ router.get('/:slug', async (req, res) => {
         if (queryResult.rows.length > 0) {
             const row = queryResult.rows[0];
             nome = row.nome;
-            if (row.avatar_url && row.avatar_url.trim() !== '') {
-                foto = row.avatar_url;
+            if (row.foto_url && row.foto_url.trim() !== '') {
+                foto = row.foto_url;
                 defaultImage = false;
             }
         }
