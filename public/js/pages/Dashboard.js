@@ -384,29 +384,6 @@ export async function renderDashboard(router) {
         </div>
       </div>` : ''}
 
-      <!-- Anamneses Pendentes -->
-      <div class="card">
-        <div class="card-header">
-          <h3>📋 Anamneses Pendentes</h3>
-        </div>
-        <div class="card-body">
-          ${anamnesesPendentes.length === 0
-        ? '<div class="empty-state" style="padding:20px 0"><div class="empty-state-icon" style="font-size:2rem;margin-bottom:8px">✅</div><p style="font-size:0.85rem">Todas respondidas</p></div>'
-        : anamnesesPendentes.map(a => {
-          const cl = clients.find(c => c.id === (a.cliente_id || a.clienteId));
-          const nomeC = cl?.name || cl?.nome || 'Cliente';
-          const dt = a.created_at || a.createdAt || '';
-          return '<div style="display:flex;flex-direction:column;border-bottom:1px solid var(--border);padding:10px 0;cursor:pointer" onclick="location.hash=\'#/anamnesis\'">' +
-            '<div style="display:flex;justify-content:space-between;align-items:center">' +
-            '<div style="font-weight:600;font-size:0.85rem">' + nomeC + '</div>' +
-            '<span style="font-size:0.7rem;padding:2px 6px;border-radius:6px;background:#fef3c7;color:#92400e;font-weight:600">⏳ Revisar</span>' +
-            '</div>' +
-            (dt ? '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px">Enviada ' + formatDate(dt) + '</div>' : '') +
-            '</div>';
-        }).join('')}
-        </div>
-      </div>
-
       <!-- Aniversariantes -->
       <div class="card">
         <div class="card-header">
