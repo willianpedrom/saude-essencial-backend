@@ -384,7 +384,7 @@ export async function renderDashboard(router) {
     </div>
 
     <!-- Aniversariantes -->
-    <div class="card col-span-2">
+    <div class="card">
       <div class="card-header">
         <h3>🎂 Aniversariantes</h3>
       </div>
