@@ -435,35 +435,6 @@ export async function renderDashboard(router) {
         </div>
       </div>
       
-      <!-- Clientes Recentes -->
-      <div class="card">
-        <div class="card-header">
-          <h3>👥 Cadastros Mais Recentes</h3>
-          <button class="btn btn-secondary btn-sm" onclick="location.hash='#/clients'">Ir</button>
-        </div>
-        <div class="card-body" style="padding:0; overflow-x:auto;">
-          ${clients.length === 0
-        ? '<div class="empty-state"><div class="empty-state-icon" style="font-size:1.8rem">👥</div><p style="font-size:0.85rem">Nenhum cliente ainda</p></div>'
-        : `
-          <table class="data-table" style="font-size:0.85rem">
-            <tbody>
-              ${[...clients]
-          .sort((a, b) => new Date(b.created_at || b.createdAt || 0) - new Date(a.created_at || a.createdAt || 0))
-          .slice(0, 4)
-          .map(c => `
-                <tr style="cursor:pointer" onclick="window.dashboardEditClient('${c.id}')">
-                  <td>
-                    <div style="font-weight:600; color:var(--text-dark)">${c.nome || c.name || '—'}</div>
-                    <div style="color:var(--text-muted);font-size:0.75rem">${c.status === 'active' ? 'Ativo' : c.status === 'inactive' ? 'Inativo' : 'Lead'}</div>
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-          `}
-        </div>
-      </div>
-
       <!-- Próximas Reuniões -->
       <div class="card">
         <div class="card-header">
