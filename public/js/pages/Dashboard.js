@@ -234,7 +234,7 @@ export async function renderDashboard(router) {
     Object.keys(stageLabels).forEach(s => { stageCounts[s] = 0; });
 
     // Etapas do Kanban/Pipeline de Recrutamento
-    const recStageLabels = { prospecto_negocio: 'Prospecto de Negócio', convite_feito: 'Convite Feito', assistiu_apresentacao: 'Assistiu Apresentação', em_acompanhamento: 'Em Acompanhamento', cadastrou: 'Cadastrada!' };
+    const recStageLabels = { prospecto_negocio: 'Prospecto de Negócio', convite_apresentacao: 'Convite Feito', apresentacao_assistida: 'Assistiu Apresentação', acompanhamento_cadastro: 'Em Acompanhamento', cadastrada: 'Cadastrada!' };
     const recStageCounts = {};
     Object.keys(recStageLabels).forEach(s => { recStageCounts[s] = 0; });
 
@@ -324,16 +324,18 @@ export async function renderDashboard(router) {
         <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
       </div>
       <div class="card-body">
-        ${Object.values(stageCounts).reduce((a, b) => a + b, 0) === 0
-        ? '<div class="empty-state"><div class="empty-state-icon">📈</div><p>Cadastre clientes para ver o funil</p></div>'
-        : funnelBar('Lead', stageCounts.lead_captado || 0, totalClients, '#6366f1', '🟣') +
-        funnelBar('Contato', stageCounts.primeiro_contato || 0, totalClients, '#3b82f6', '🔵') +
-        funnelBar('Interesse', stageCounts.interesse_confirmado || 0, totalClients, '#06b6d4', '🟢') +
-        funnelBar('Apresentação', stageCounts.protocolo_apresentado || 0, totalClients, '#10b981', '📗') +
-        funnelBar('Proposta', stageCounts.proposta_enviada || 0, totalClients, '#f59e0b', '📄') +
-        funnelBar('Negociação', stageCounts.negociando || 0, totalClients, '#f97316', '🟡') +
-        funnelBar('Fechado (1ª Compra)', stageCounts.primeira_compra || 0, totalClients, '#22c55e', '🟢')
-      }
+        ${(() => {
+        const totalSales = Object.values(stageCounts).reduce((a, b) => a + b, 0);
+        if (totalSales === 0) return '<div class="empty-state"><div class="empty-state-icon">📈</div><p>Cadastre clientes para ver o funil</p></div>';
+
+        return funnelBar('Lead', stageCounts.lead_captado || 0, totalSales, '#6366f1', '🟣') +
+          funnelBar('Contato', stageCounts.primeiro_contato || 0, totalSales, '#3b82f6', '🔵') +
+          funnelBar('Interesse', stageCounts.interesse_confirmado || 0, totalSales, '#06b6d4', '🟢') +
+          funnelBar('Apresentação', stageCounts.protocolo_apresentado || 0, totalSales, '#10b981', '📗') +
+          funnelBar('Proposta', stageCounts.proposta_enviada || 0, totalSales, '#f59e0b', '📄') +
+          funnelBar('Negociação', stageCounts.negociando || 0, totalSales, '#f97316', '🟡') +
+          funnelBar('Fechado (1ª Compra)', stageCounts.primeira_compra || 0, totalSales, '#22c55e', '🟢');
+      })()}
       </div>
     </div>
 
@@ -344,14 +346,16 @@ export async function renderDashboard(router) {
         <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
       </div>
       <div class="card-body">
-        ${Object.values(recStageCounts).reduce((a, b) => a + b, 0) === 0
-        ? '<div class="empty-state"><div class="empty-state-icon">💼</div><p>Cadastre prospectos de negócio para ver o funil</p></div>'
-        : funnelBar('Prospecto', recStageCounts.prospecto_negocio || 0, totalClients, '#8b5cf6', '🎯') +
-        funnelBar('Convite Feito', recStageCounts.convite_feito || 0, totalClients, '#d946ef', '✉️') +
-        funnelBar('Assistiu Apres.', recStageCounts.assistiu_apresentacao || 0, totalClients, '#3b82f6', '📺') +
-        funnelBar('Em Acompanham.', recStageCounts.em_acompanhamento || 0, totalClients, '#f59e0b', '⏱️') +
-        funnelBar('Cadastrou!', recStageCounts.cadastrou || 0, totalClients, '#22c55e', '🏅')
-      }
+        ${(() => {
+        const totalRec = Object.values(recStageCounts).reduce((a, b) => a + b, 0);
+        if (totalRec === 0) return '<div class="empty-state"><div class="empty-state-icon">💼</div><p>Cadastre prospectos de negócio para ver o funil</p></div>';
+
+        return funnelBar('Prospecto', recStageCounts.prospecto_negocio || 0, totalRec, '#8b5cf6', '🎯') +
+          funnelBar('Convite Feito', recStageCounts.convite_apresentacao || 0, totalRec, '#d946ef', '✉️') +
+          funnelBar('Assistiu Apres.', recStageCounts.apresentacao_assistida || 0, totalRec, '#3b82f6', '📺') +
+          funnelBar('Em Acompanham.', recStageCounts.acompanhamento_cadastro || 0, totalRec, '#f59e0b', '⏱️') +
+          funnelBar('Cadastrou!', recStageCounts.cadastrada || 0, totalRec, '#22c55e', '🏅');
+      })()}
       </div>
     </div>
 
