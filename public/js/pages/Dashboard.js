@@ -184,9 +184,13 @@ export async function renderDashboard(router) {
   const consultant = auth.current;
   const firstName = getNome(consultant).split(' ')[0];
 
+  // ── Mensagem do Assistente ──
+  const assistantMsg = "Você tem ótimas novidades para conferir hoje! 🔥";
+
   // Render layout immediately with loading state
   renderLayout(router, `Olá, ${firstName}! 👋`,
-    `<div style="display:flex;align-items:center;justify-content:center;height:300px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando dashboard...</div>`,
+    `<p style="color:var(--text-muted);margin:-10px 0 20px;font-size:0.95rem">${assistantMsg}</p>
+     <div style="display:flex;align-items:center;justify-content:center;height:300px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando dashboard...</div>`,
     'dashboard'
   );
 
@@ -275,56 +279,55 @@ export async function renderDashboard(router) {
     // ════════════════════════════════════════════════════
     // BUILD HTML
     // ════════════════════════════════════════════════════
+    // Dicas dinâmicas para o título
+    let metaText = "Tudo tranquilo por enquanto. Tire um tempo para prospecção!";
+    if (urgentFollowups.length > 0) metaText = `Você tem <strong>${urgentFollowups.length} clientes</strong> precisando do seu contato urgente agora! 🔥`;
+    else if (anamnesesPendentes.length > 0) metaText = `Você recebeu novas anamneses! Há <strong>${anamnesesPendentes.length} pendentes</strong> esperando sua revisão. 📋`;
+
     const contentHtml = `
+  <p style="color:var(--text-muted);margin:-10px 0 24px;font-size:0.95rem">${metaText}</p>
+
   <div class="stats-grid">
-    <div class="stat-card green" style="cursor:pointer" onclick="location.hash='#/clients'">
+    <div class="stat-card green" style="cursor:pointer; border-top: 4px solid var(--green-500)" onclick="location.hash='#/clients'">
       <div class="stat-icon">👥</div>
       <div class="stat-value">${totalClients}</div>
       <div class="stat-label">Total de Clientes</div>
       <div class="stat-trend trend-up">
-        ${activeClients} ativos · ${leadClients} leads
+        📈 ${activeClients} ativos · ${leadClients} leads
       </div>
     </div>
-    <div class="stat-card gold" style="cursor:pointer" onclick="location.hash='#/anamnesis'">
+    <div class="stat-card gold" style="cursor:pointer; border-top: 4px solid var(--gold-500)" onclick="location.hash='#/anamnesis'">
       <div class="stat-icon">📋</div>
       <div class="stat-value">${totalAnamneses}</div>
       <div class="stat-label">Anamneses</div>
-      <div class="stat-trend">${anamnesesPendentes.length > 0 ? '⏳ ' + anamnesesPendentes.length + ' pendentes' : '✅ Todas respondidas'}</div>
+      <div class="stat-trend">${anamnesesPendentes.length > 0 ? '⏳ ' + anamnesesPendentes.length + ' aguardando' : '✅ 100% lidas'}</div>
     </div>
-    <div class="stat-card blue" style="cursor:pointer" onclick="location.hash='#/pipeline'">
+    <div class="stat-card blue" style="cursor:pointer; border-top: 4px solid #3b82f6" onclick="location.hash='#/pipeline'">
       <div class="stat-icon">📈</div>
       <div class="stat-value">${stageCounts.primeira_compra || 0}</div>
       <div class="stat-label">Vendas Fechadas</div>
-      <div class="stat-trend trend-up">↑ ${monthClients} novos este mês</div>
+      <div class="stat-trend trend-up">↑ ${monthClients} leads novos este mês</div>
     </div>
-    <div class="stat-card rose" style="cursor:pointer" onclick="location.hash='#/followup'">
+    <div class="stat-card rose" style="cursor:pointer; border-top: 4px solid #e11d48" onclick="location.hash='#/followup'">
       <div class="stat-icon">💬</div>
       <div class="stat-value">${totalFollowups}</div>
-      <div class="stat-label">Follow-ups Pendentes</div>
-      ${fuTrendHtml}
+      <div class="stat-label">Tarefas & Follow-ups</div>
+      ${fuTrendHtml || '<div class="stat-trend trend-up">✅ Tudo em dia!</div>'}
     </div>
   </div>
 
   <div class="dashboard-grid">
-    ${urgentFollowups.length > 0 ? `
-    <div class="card col-span-2" style="border-left:4px solid #f59e0b">
-      <div class="card-header">
-        <h3>🔥 Follow-ups Urgentes</h3>
-        <button class="btn btn-secondary btn-sm" onclick="location.hash='#/followup'">Ver todos</button>
-      </div>
-      <div class="card-body">
-        ${urgentFollowups.map(f => fuRow(f, clients)).join('')}
-      </div>
-    </div>` : ''}
-
-    <!-- Funil de Vendas -->
-    <div class="card">
-      <div class="card-header">
-        <h3>📈 Funil de Vendas</h3>
-        <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
-      </div>
-      <div class="card-body">
-        ${(() => {
+    
+    <!-- TORRE ESQUERDA (GRÁFICOS E DADOS) -->
+    <div class="dashboard-col left-col">
+      <!-- Funil de Vendas -->
+      <div class="card">
+        <div class="card-header">
+          <h3>📈 Funil de Vendas (Produtos)</h3>
+          <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
+        </div>
+        <div class="card-body">
+          ${(() => {
         const totalSales = Object.values(stageCounts).reduce((a, b) => a + b, 0);
         if (totalSales === 0) return '<div class="empty-state"><div class="empty-state-icon">📈</div><p>Cadastre clientes para ver o funil</p></div>';
 
@@ -336,17 +339,17 @@ export async function renderDashboard(router) {
           funnelBar('Negociação', stageCounts.negociando || 0, totalSales, '#f97316', '🟡') +
           funnelBar('Fechado (1ª Compra)', stageCounts.primeira_compra || 0, totalSales, '#22c55e', '🟢');
       })()}
+        </div>
       </div>
-    </div>
 
-    <!-- Funil de Recrutamento (Cadastro) -->
-    <div class="card">
-      <div class="card-header">
-        <h3>💼 Funil de Cadastro (Downlines)</h3>
-        <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
-      </div>
-      <div class="card-body">
-        ${(() => {
+      <!-- Funil de Recrutamento (Cadastro) -->
+      <div class="card">
+        <div class="card-header">
+          <h3>💼 Funil de Cadastro (Downlines)</h3>
+          <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
+        </div>
+        <div class="card-body">
+          ${(() => {
         const totalRec = Object.values(recStageCounts).reduce((a, b) => a + b, 0);
         if (totalRec === 0) return '<div class="empty-state"><div class="empty-state-icon">💼</div><p>Cadastre prospectos de negócio para ver o funil</p></div>';
 
@@ -356,83 +359,124 @@ export async function renderDashboard(router) {
           funnelBar('Em Acompanham.', recStageCounts.acompanhamento_cadastro || 0, totalRec, '#f59e0b', '⏱️') +
           funnelBar('Cadastrou!', recStageCounts.cadastrada || 0, totalRec, '#22c55e', '🏅');
       })()}
+        </div>
+      </div>
+      
+      <!-- Clientes Recentes -->
+      <div class="card">
+        <div class="card-header">
+          <h3>👥 Cadastros Mais Recentes</h3>
+          <button class="btn btn-secondary btn-sm" onclick="location.hash='#/clients'">Ver todos</button>
+        </div>
+        <div class="card-body" style="padding:0; overflow-x:auto;">
+          ${clients.length === 0
+        ? '<div class="empty-state"><div class="empty-state-icon">👥</div><p>Nenhum cliente cadastrado ainda</p><button class="btn btn-primary" onclick="window.dashboardAddClient()" style="margin-top:10px">+ Cadastrar Cliente</button></div>'
+        : `
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>CLIENTE</th>
+                <th>E-MAIL</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${[...clients]
+          .sort((a, b) => new Date(b.created_at || b.createdAt || 0) - new Date(a.created_at || a.createdAt || 0))
+          .slice(0, 5)
+          .map(c => `
+                <tr style="cursor:pointer" onclick="window.dashboardEditClient('${c.id}')">
+                  <td>
+                    <div style="font-weight:600; color:var(--text-dark)">${c.nome || c.name || '—'}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted)">${c.telefone || c.phone || 'Sem telefone'}</div>
+                  </td>
+                  <td>${c.email || '—'}</td>
+                  <td>
+                    ${c.status === 'active' ? '<span class="status-badge status-active">Ativo</span>'
+              : c.status === 'inactive' ? '<span class="status-badge status-inactive">Inativo</span>'
+                : '<span class="status-badge status-lead">Lead</span>'}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          `}
+        </div>
       </div>
     </div>
-
-    <!-- Anamneses Pendentes -->
-    <div class="card">
-      <div class="card-header">
-        <h3>📋 Anamneses Pendentes</h3>
-        <button class="btn btn-secondary btn-sm" onclick="location.hash='#/anamnesis'">Ver todas</button>
+    
+    <!-- TORRE DIREITA (AÇÕES E FEED) -->
+    <div class="dashboard-col right-col">
+      
+      <!-- Quick Actions -->
+      <div class="quick-actions" style="display:flex;gap:10px;margin-bottom:8px">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="window.dashboardAddClient()">+ Cliente</button>
+        <button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="location.hash='#/links'">🔗 Links</button>
       </div>
-      <div class="card-body">
-        ${anamnesesPendentes.length === 0
-        ? '<div class="empty-state"><div class="empty-state-icon">✅</div><p>Todas as anamneses foram respondidas</p></div>'
+
+      <!-- Follow-ups Urgentes -->
+      ${urgentFollowups.length > 0 ? `
+      <div class="card" style="border-left:4px solid #f59e0b">
+        <div class="card-header" style="background:var(--orange-50)">
+          <h3 style="color:#b45309">🔥 Follow-ups Urgentes</h3>
+          <button class="btn btn-secondary btn-sm" onclick="location.hash='#/followup'">Ir</button>
+        </div>
+        <div class="card-body">
+          ${urgentFollowups.map(f => fuRow(f, clients)).join('')}
+        </div>
+      </div>` : ''}
+
+      <!-- Anamneses Pendentes -->
+      <div class="card">
+        <div class="card-header">
+          <h3>📋 Anamneses Pendentes</h3>
+        </div>
+        <div class="card-body">
+          ${anamnesesPendentes.length === 0
+        ? '<div class="empty-state" style="padding:20px 0"><div class="empty-state-icon" style="font-size:2rem;margin-bottom:8px">✅</div><p style="font-size:0.85rem">Todas respondidas</p></div>'
         : anamnesesPendentes.map(a => {
           const cl = clients.find(c => c.id === (a.cliente_id || a.clienteId));
           const nomeC = cl?.name || cl?.nome || 'Cliente';
           const dt = a.created_at || a.createdAt || '';
-          return '<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding:8px 0">' +
-            '<div>' +
-            '<div style="font-weight:600;font-size:0.9rem">' + nomeC + '</div>' +
-            (dt ? '<div style="font-size:0.75rem;color:var(--text-muted)">Enviada em ' + formatDate(dt) + '</div>' : '') +
+          return '<div style="display:flex;flex-direction:column;border-bottom:1px solid var(--border);padding:10px 0;cursor:pointer" onclick="location.hash=\'#/anamnesis\'">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center">' +
+            '<div style="font-weight:600;font-size:0.85rem">' + nomeC + '</div>' +
+            '<span style="font-size:0.7rem;padding:2px 6px;border-radius:6px;background:#fef3c7;color:#92400e;font-weight:600">⏳ Revisar</span>' +
             '</div>' +
-            '<span style="font-size:0.75rem;padding:3px 8px;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:600">⏳ Aguardando</span>' +
+            (dt ? '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px">Enviada ' + formatDate(dt) + '</div>' : '') +
             '</div>';
         }).join('')}
+        </div>
       </div>
-    </div>
 
-    <!-- Aniversariantes -->
-    <div class="card">
-      <div class="card-header">
-        <h3>🎂 Aniversariantes</h3>
-      </div>
-      <div class="card-body">
-        ${aniversariantes.length === 0
-        ? '<div class="empty-state"><div class="empty-state-icon">🎂</div><p>Nenhum aniversário próximo esta semana</p></div>'
+      <!-- Aniversariantes -->
+      <div class="card">
+        <div class="card-header">
+          <h3>🎂 Aniversários Próximos</h3>
+        </div>
+        <div class="card-body" style="padding-bottom:10px">
+          ${aniversariantes.length === 0
+        ? '<div class="empty-state" style="padding:20px 0"><div class="empty-state-icon" style="font-size:2rem;margin-bottom:8px">🎈</div><p style="font-size:0.85rem">Nenhum próximo esta semana</p></div>'
         : aniversariantes.map(c => `
-          <div class="birthday-item" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:12px;">
-            <div style="display:flex; align-items:center; gap:12px;">
-              <span class="birthday-icon" style="font-size:1.8rem">🎉</span>
-              <div>
-                <div class="birthday-name" style="font-weight:600; color:var(--text-body)">${c.nome}</div>
-                <div class="birthday-date" style="font-size:0.85rem; color:var(--text-muted)">${formatDate(c.data_nascimento)}</div>
-              </div>
-            </div>
-            <div style="text-align:right">
-              ${c.is_today
-            ? '<span class="birthday-today" style="display:block; font-size:0.8rem; color:#d97706; font-weight:bold; margin-bottom:6px;">HOJE! 🎊</span>'
-            : '<span class="birthday-today" style="display:inline-block; font-size:0.75rem; background:#d1fae5; color:#065f46; padding:3px 8px; border-radius:12px; margin-bottom:6px;">em 7d</span>'}
-              ${c.whatsapp_link
-            ? `<a href="${c.whatsapp_link}" target="_blank" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px; font-size:0.8rem; padding:6px 12px; background:#25D366; color:white; border:none; border-radius:6px; text-decoration:none;">
-                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-                     Mandar Parabéns
-                   </a>`
+            <div class="birthday-item" style="display:flex; flex-direction:column; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                  <div class="birthday-name" style="font-weight:600; font-size:0.88rem; color:var(--text-body)">${c.nome}</div>
+                  <div class="birthday-date" style="font-size:0.75rem; color:var(--text-muted)">${formatDate(c.data_nascimento)}</div>
+                  ${c.is_today ? '<span style="font-size:0.7rem; color:#d97706; font-weight:bold; margin-top:2px; display:inline-block">HOJE! 🎉</span>' : '<span style="font-size:0.7rem; color:#065f46; margin-top:2px; display:inline-block">em 7 dias</span>'}
+                </div>
+                ${c.whatsapp_link
+            ? `<a href="${c.whatsapp_link}" target="_blank" class="btn btn-secondary btn-sm" style="padding:4px 8px; font-size:0.75rem; background:#25D366; color:white; border:none;">
+                       <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                       Parabéns
+                     </a>`
             : ''}
-            </div>
-          </div>`).join('')}
+              </div>
+            </div>`).join('')}
+        </div>
       </div>
-    </div>
-
-    <!-- Clientes Recentes -->
-    <div class="card col-span-2">
-      <div class="card-header">
-        <h3>👥 Clientes Recentes</h3>
-        <button class="btn btn-secondary btn-sm" onclick="location.hash='#/clients'">Ver todos</button>
-      </div>
-      <div class="card-body" style="padding:0">
-        ${clients.length === 0
-        ? '<div class="empty-state"><div class="empty-state-icon">👥</div><p>Nenhum cliente ainda.</p><button class="btn btn-primary" onclick="location.hash=\'#/clients\'">+ Adicionar Cliente</button></div>'
-        : '<table class="clients-table"><thead><tr><th>Cliente</th><th>E-mail</th><th>Status</th></tr></thead><tbody>' +
-        clients.slice(0, 5).map(c => '<tr>' +
-          '<td><div class="client-name-cell"><div class="client-avatar-sm">' + getInitials(c.name || c.nome || 'C') + '</div><div>' + (c.name || c.nome || '—') + '</div></div></td>' +
-          '<td style="font-size:0.8rem">' + (c.email || '—') + '</td>' +
-          '<td><span class="status-badge status-' + (c.status || 'active') + '">' + ({ active: 'Ativo', lead: 'Lead', inactive: 'Inativo' }[c.status] || 'Ativo') + '</span></td>' +
-          '</tr>').join('') +
-        '</tbody></table>'}
-      </div>
-    </div>
+      
+    </div> <!-- Fim Torre Direita -->
 
     <!-- Próximas Reuniões -->
     <div class="card col-span-2">
