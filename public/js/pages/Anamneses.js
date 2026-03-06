@@ -40,6 +40,7 @@ export async function renderAnamnesisList(router) {
         const categoryBadge = isBusiness
           ? `<span style="background:#1e293b;color:#f8fafc;font-size:0.72rem;padding:2px 8px;border-radius:12px;margin-left:6px">💼 Negócios</span>`
           : `<span style="background:#fef5e7;color:#c05621;font-size:0.72rem;padding:2px 8px;border-radius:12px;margin-left:6px">💧 Saúde</span>`;
+        const initials = nome ? nome.charAt(0).toUpperCase() : '?';
 
         return `
           <tr>
