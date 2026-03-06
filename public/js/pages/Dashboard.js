@@ -228,14 +228,16 @@ export async function renderDashboard(router) {
     const leadClients = clients.filter(c => c.status === 'lead').length;
     const inactiveClients = clients.filter(c => c.status === 'inactive').length;
 
-    // Etapas do Kanban/Pipeline
-    const stageLabels = { lead: 'Lead', contact: 'Contato', negotiation: 'Negociação', closed: 'Fechado' };
+    // Etapas do Kanban/Pipeline de Vendas
+    const stageLabels = { lead_captado: 'Lead', primeiro_contato: 'Contato', interesse_confirmado: 'Interesse', protocolo_apresentado: 'Apresentação', proposta_enviada: 'Proposta', negociando: 'Negociação', primeira_compra: 'Fechado' };
     const stageCounts = {};
     Object.keys(stageLabels).forEach(s => { stageCounts[s] = 0; });
     clients.forEach(c => {
-      const stage = c.stage || (c.status === 'lead' ? 'lead' : 'contact');
+      // Ignora leads que estão somente no Funil de Recrutamento
+      if (c.pipeline_stage === 'none' || (!c.pipeline_stage && c.recrutamento_stage)) return;
+
+      const stage = c.pipeline_stage || 'lead_captado';
       if (stageCounts[stage] !== undefined) stageCounts[stage]++;
-      else stageCounts['contact']++;
     });
 
     // ── Anamneses pendentes (enviadas mas não respondidas) ──
@@ -279,7 +281,7 @@ export async function renderDashboard(router) {
     </div>
     <div class="stat-card blue" style="cursor:pointer" onclick="location.hash='#/pipeline'">
       <div class="stat-icon">📈</div>
-      <div class="stat-value">${stageCounts.closed || 0}</div>
+      <div class="stat-value">${stageCounts.primeira_compra || 0}</div>
       <div class="stat-label">Vendas Fechadas</div>
       <div class="stat-trend trend-up">↑ ${monthClients} novos este mês</div>
     </div>
@@ -310,12 +312,16 @@ export async function renderDashboard(router) {
         <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
       </div>
       <div class="card-body">
-        ${totalClients === 0
+        ${Object.values(stageCounts).reduce((a, b) => a + b, 0) === 0
         ? '<div class="empty-state"><div class="empty-state-icon">📈</div><p>Cadastre clientes para ver o funil</p></div>'
-        : funnelBar('Lead', stageCounts.lead, totalClients, '#6366f1', '🟣') +
-        funnelBar('Contato', stageCounts.contact, totalClients, '#3b82f6', '🔵') +
-        funnelBar('Negociação', stageCounts.negotiation, totalClients, '#f59e0b', '🟡') +
-        funnelBar('Fechado', stageCounts.closed, totalClients, '#22c55e', '🟢')}
+        : funnelBar('Lead', stageCounts.lead_captado || 0, totalClients, '#6366f1', '🟣') +
+        funnelBar('Contato', stageCounts.primeiro_contato || 0, totalClients, '#3b82f6', '🔵') +
+        funnelBar('Interesse', stageCounts.interesse_confirmado || 0, totalClients, '#06b6d4', '🟢') +
+        funnelBar('Apresentação', stageCounts.protocolo_apresentado || 0, totalClients, '#10b981', '📗') +
+        funnelBar('Proposta', stageCounts.proposta_enviada || 0, totalClients, '#f59e0b', '📄') +
+        funnelBar('Negociação', stageCounts.negociando || 0, totalClients, '#f97316', '🟡') +
+        funnelBar('Fechado (1ª Compra)', stageCounts.primeira_compra || 0, totalClients, '#22c55e', '🟢')
+      }
       </div>
     </div>
 
