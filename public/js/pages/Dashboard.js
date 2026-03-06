@@ -232,12 +232,24 @@ export async function renderDashboard(router) {
     const stageLabels = { lead_captado: 'Lead', primeiro_contato: 'Contato', interesse_confirmado: 'Interesse', protocolo_apresentado: 'Apresentação', proposta_enviada: 'Proposta', negociando: 'Negociação', primeira_compra: 'Fechado' };
     const stageCounts = {};
     Object.keys(stageLabels).forEach(s => { stageCounts[s] = 0; });
-    clients.forEach(c => {
-      // Ignora leads que estão somente no Funil de Recrutamento
-      if (c.pipeline_stage === 'none' || (!c.pipeline_stage && c.recrutamento_stage)) return;
 
-      const stage = c.pipeline_stage || 'lead_captado';
-      if (stageCounts[stage] !== undefined) stageCounts[stage]++;
+    // Etapas do Kanban/Pipeline de Recrutamento
+    const recStageLabels = { prospecto_negocio: 'Prospecto de Negócio', convite_feito: 'Convite Feito', assistiu_apresentacao: 'Assistiu Apresentação', em_acompanhamento: 'Em Acompanhamento', cadastrou: 'Cadastrada!' };
+    const recStageCounts = {};
+    Object.keys(recStageLabels).forEach(s => { recStageCounts[s] = 0; });
+
+    clients.forEach(c => {
+      // Funil de Vendas
+      if (c.pipeline_stage !== 'none' && !(!c.pipeline_stage && c.recrutamento_stage)) {
+        const stage = c.pipeline_stage || 'lead_captado';
+        if (stageCounts[stage] !== undefined) stageCounts[stage]++;
+      }
+
+      // Funil de Recrutamento
+      if (c.recrutamento_stage && c.recrutamento_stage !== 'none') {
+        const recStage = c.recrutamento_stage;
+        if (recStageCounts[recStage] !== undefined) recStageCounts[recStage]++;
+      }
     });
 
     // ── Anamneses pendentes (enviadas mas não respondidas) ──
@@ -321,6 +333,24 @@ export async function renderDashboard(router) {
         funnelBar('Proposta', stageCounts.proposta_enviada || 0, totalClients, '#f59e0b', '📄') +
         funnelBar('Negociação', stageCounts.negociando || 0, totalClients, '#f97316', '🟡') +
         funnelBar('Fechado (1ª Compra)', stageCounts.primeira_compra || 0, totalClients, '#22c55e', '🟢')
+      }
+      </div>
+    </div>
+
+    <!-- Funil de Recrutamento (Cadastro) -->
+    <div class="card">
+      <div class="card-header">
+        <h3>💼 Funil de Cadastro (Downlines)</h3>
+        <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
+      </div>
+      <div class="card-body">
+        ${Object.values(recStageCounts).reduce((a, b) => a + b, 0) === 0
+        ? '<div class="empty-state"><div class="empty-state-icon">💼</div><p>Cadastre prospectos de negócio para ver o funil</p></div>'
+        : funnelBar('Prospecto', recStageCounts.prospecto_negocio || 0, totalClients, '#8b5cf6', '🎯') +
+        funnelBar('Convite Feito', recStageCounts.convite_feito || 0, totalClients, '#d946ef', '✉️') +
+        funnelBar('Assistiu Apres.', recStageCounts.assistiu_apresentacao || 0, totalClients, '#3b82f6', '📺') +
+        funnelBar('Em Acompanham.', recStageCounts.em_acompanhamento || 0, totalClients, '#f59e0b', '⏱️') +
+        funnelBar('Cadastrou!', recStageCounts.cadastrou || 0, totalClients, '#22c55e', '🏅')
       }
       </div>
     </div>
