@@ -287,39 +287,38 @@ export async function renderDashboard(router) {
     const contentHtml = `
   <p style="color:var(--text-muted);margin:-10px 0 24px;font-size:0.95rem">${metaText}</p>
 
-  <div class="stats-grid">
-    <div class="stat-card green" style="cursor:pointer; border-top: 4px solid var(--green-500)" onclick="location.hash='#/clients'">
-      <div class="stat-icon">👥</div>
-      <div class="stat-value">${totalClients}</div>
-      <div class="stat-label">Total de Clientes</div>
-      <div class="stat-trend trend-up">
-        📈 ${activeClients} ativos · ${leadClients} leads
-      </div>
-    </div>
-    <div class="stat-card gold" style="cursor:pointer; border-top: 4px solid var(--gold-500)" onclick="location.hash='#/anamnesis'">
-      <div class="stat-icon">📋</div>
-      <div class="stat-value">${totalAnamneses}</div>
-      <div class="stat-label">Anamneses</div>
-      <div class="stat-trend">${anamnesesPendentes.length > 0 ? '⏳ ' + anamnesesPendentes.length + ' aguardando' : '✅ 100% lidas'}</div>
-    </div>
-    <div class="stat-card blue" style="cursor:pointer; border-top: 4px solid #3b82f6" onclick="location.hash='#/pipeline'">
-      <div class="stat-icon">📈</div>
-      <div class="stat-value">${stageCounts.primeira_compra || 0}</div>
-      <div class="stat-label">Vendas Fechadas</div>
-      <div class="stat-trend trend-up">↑ ${monthClients} leads novos este mês</div>
-    </div>
-    <div class="stat-card rose" style="cursor:pointer; border-top: 4px solid #e11d48" onclick="location.hash='#/followup'">
-      <div class="stat-icon">💬</div>
-      <div class="stat-value">${totalFollowups}</div>
-      <div class="stat-label">Tarefas & Follow-ups</div>
-      ${fuTrendHtml || '<div class="stat-trend trend-up">✅ Tudo em dia!</div>'}
-    </div>
-  </div>
-
   <div class="dashboard-grid">
     
-    <!-- TORRE ESQUERDA (GRÁFICOS E DADOS) -->
+    <!-- TORRE ESQUERDA (GRÁFICOS E DADOS E STATS) -->
     <div class="dashboard-col left-col">
+      <div class="stats-grid">
+        <div class="stat-card green" style="cursor:pointer; border-top: 4px solid var(--green-500)" onclick="location.hash='#/clients'">
+          <div class="stat-icon">👥</div>
+          <div class="stat-value">${totalClients}</div>
+          <div class="stat-label">Total de Clientes</div>
+          <div class="stat-trend trend-up">
+            📈 ${activeClients} ativos · ${leadClients} leads
+          </div>
+        </div>
+        <div class="stat-card gold" style="cursor:pointer; border-top: 4px solid var(--gold-500)" onclick="location.hash='#/anamnesis'">
+          <div class="stat-icon">📋</div>
+          <div class="stat-value">${totalAnamneses}</div>
+          <div class="stat-label">Anamneses</div>
+          <div class="stat-trend">${anamnesesPendentes.length > 0 ? '⏳ ' + anamnesesPendentes.length + ' aguardando' : '✅ 100% lidas'}</div>
+        </div>
+        <div class="stat-card blue" style="cursor:pointer; border-top: 4px solid #3b82f6" onclick="location.hash='#/pipeline'">
+          <div class="stat-icon">📈</div>
+          <div class="stat-value">${stageCounts.primeira_compra || 0}</div>
+          <div class="stat-label">Vendas Fechadas</div>
+          <div class="stat-trend trend-up">↑ ${monthClients} leads novos este mês</div>
+        </div>
+        <div class="stat-card rose" style="cursor:pointer; border-top: 4px solid #e11d48" onclick="location.hash='#/followup'">
+          <div class="stat-icon">💬</div>
+          <div class="stat-value">${totalFollowups}</div>
+          <div class="stat-label">Tarefas & Follow-ups</div>
+          ${fuTrendHtml || '<div class="stat-trend trend-up">✅ Tudo em dia!</div>'}
+        </div>
+      </div>
       <!-- Funil de Vendas -->
       <div class="card">
         <div class="card-header">
