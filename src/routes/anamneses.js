@@ -189,9 +189,18 @@ router.put('/public/:token', async (req, res) => {
         if (tipo === 'recrutamento') {
             await client.query(
                 "UPDATE clientes " +
-                "SET recrutamento_stage = 'prospecto_negocio', " +
+                "SET recrutamento_stage = COALESCE(recrutamento_stage, 'prospecto_negocio'), " +
                 "    status = 'lead', " +
-                "    tipo_cadastro = 'lead' " +
+                "    tipo_cadastro = COALESCE(tipo_cadastro, 'lead') " +
+                "WHERE id = $1",
+                [clienteId]
+            );
+        } else {
+            await client.query(
+                "UPDATE clientes " +
+                "SET pipeline_stage = COALESCE(pipeline_stage, 'lead_captado'), " +
+                "    status = 'lead', " +
+                "    tipo_cadastro = COALESCE(tipo_cadastro, 'lead') " +
                 "WHERE id = $1",
                 [clienteId]
             );
