@@ -120,7 +120,14 @@ app.use('/api/links', require('./routes/links'));
 app.use('/convite', require('./routes/share'));
 
 // Serve frontend static files
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../public'), {
+    maxAge: 0,
+    setHeaders: (res, path) => {
+        if (path.endsWith('.html') || path.endsWith('.js')) {
+            res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+        }
+    }
+}));
 
 // SPA fallback — all non-API routes serve index.html
 app.get('*', (req, res) => {
