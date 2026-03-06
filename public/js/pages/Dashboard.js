@@ -362,47 +362,6 @@ export async function renderDashboard(router) {
         </div>
       </div>
       
-      <!-- Clientes Recentes -->
-      <div class="card">
-        <div class="card-header">
-          <h3>👥 Cadastros Mais Recentes</h3>
-          <button class="btn btn-secondary btn-sm" onclick="location.hash='#/clients'">Ver todos</button>
-        </div>
-        <div class="card-body" style="padding:0; overflow-x:auto;">
-          ${clients.length === 0
-        ? '<div class="empty-state"><div class="empty-state-icon">👥</div><p>Nenhum cliente cadastrado ainda</p><button class="btn btn-primary" onclick="window.dashboardAddClient()" style="margin-top:10px">+ Cadastrar Cliente</button></div>'
-        : `
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>CLIENTE</th>
-                <th>E-MAIL</th>
-                <th>STATUS</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${[...clients]
-          .sort((a, b) => new Date(b.created_at || b.createdAt || 0) - new Date(a.created_at || a.createdAt || 0))
-          .slice(0, 5)
-          .map(c => `
-                <tr style="cursor:pointer" onclick="window.dashboardEditClient('${c.id}')">
-                  <td>
-                    <div style="font-weight:600; color:var(--text-dark)">${c.nome || c.name || '—'}</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted)">${c.telefone || c.phone || 'Sem telefone'}</div>
-                  </td>
-                  <td>${c.email || '—'}</td>
-                  <td>
-                    ${c.status === 'active' ? '<span class="status-badge status-active">Ativo</span>'
-              : c.status === 'inactive' ? '<span class="status-badge status-inactive">Inativo</span>'
-                : '<span class="status-badge status-lead">Lead</span>'}
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-          `}
-        </div>
-      </div>
     </div>
     
     <!-- TORRE DIREITA (AÇÕES E FEED) -->
@@ -476,23 +435,53 @@ export async function renderDashboard(router) {
         </div>
       </div>
       
+      <!-- Clientes Recentes -->
+      <div class="card">
+        <div class="card-header">
+          <h3>👥 Cadastros Mais Recentes</h3>
+          <button class="btn btn-secondary btn-sm" onclick="location.hash='#/clients'">Ir</button>
+        </div>
+        <div class="card-body" style="padding:0; overflow-x:auto;">
+          ${clients.length === 0
+        ? '<div class="empty-state"><div class="empty-state-icon" style="font-size:1.8rem">👥</div><p style="font-size:0.85rem">Nenhum cliente ainda</p></div>'
+        : `
+          <table class="data-table" style="font-size:0.85rem">
+            <tbody>
+              ${[...clients]
+          .sort((a, b) => new Date(b.created_at || b.createdAt || 0) - new Date(a.created_at || a.createdAt || 0))
+          .slice(0, 4)
+          .map(c => `
+                <tr style="cursor:pointer" onclick="window.dashboardEditClient('${c.id}')">
+                  <td>
+                    <div style="font-weight:600; color:var(--text-dark)">${c.nome || c.name || '—'}</div>
+                    <div style="color:var(--text-muted);font-size:0.75rem">${c.status === 'active' ? 'Ativo' : c.status === 'inactive' ? 'Inativo' : 'Lead'}</div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          `}
+        </div>
+      </div>
+
+      <!-- Próximas Reuniões -->
+      <div class="card">
+        <div class="card-header">
+          <h3>📅 Próximas Reuniões</h3>
+          <button class="btn btn-secondary btn-sm" onclick="location.hash='#/schedule'">Agenda</button>
+        </div>
+        <div class="card-body">
+          ${upcoming.length === 0
+        ? '<div class="empty-state" style="padding:15px 0"><div class="empty-state-icon" style="font-size:1.8rem">📅</div><p style="font-size:0.85rem;margin-bottom:8px">Nenhuma reunião agendada</p><button class="btn btn-primary btn-sm" onclick="location.hash=\'#/schedule\'">+ Agendar Hoje</button></div>'
+        : upcoming.map(e => '<div class="schedule-event" style="margin-bottom:8px;padding-bottom:10px;border-bottom:1px solid var(--border)">' +
+          '<div class="schedule-event-title" style="font-size:0.9rem;font-weight:600;color:var(--text-dark)">' + (e.titulo || e.title || 'Reunião') + '</div>' +
+          '<div class="schedule-event-meta" style="font-size:0.75rem;color:#b45309;margin-top:2px">📅 ' + formatDate(e.data_hora || e.date) + '</div>' +
+          '</div>').join('')}
+        </div>
+      </div>
+      
     </div> <!-- Fim Torre Direita -->
 
-    <!-- Próximas Reuniões -->
-    <div class="card col-span-2">
-      <div class="card-header">
-        <h3>📅 Próximas Reuniões</h3>
-        <button class="btn btn-secondary btn-sm" onclick="location.hash='#/schedule'">Agenda</button>
-      </div>
-      <div class="card-body">
-        ${upcoming.length === 0
-        ? '<div class="empty-state"><div class="empty-state-icon">📅</div><p>Nenhuma reunião agendada</p><button class="btn btn-primary btn-sm" onclick="location.hash=\'#/schedule\'">+ Nova Reunião</button></div>'
-        : upcoming.map(e => '<div class="schedule-event" style="margin-bottom:8px">' +
-          '<div class="schedule-event-title">' + (e.titulo || e.title || 'Reunião') + '</div>' +
-          '<div class="schedule-event-meta">📅 ' + formatDate(e.data_hora || e.date) + '</div>' +
-          '</div>').join('')}
-      </div>
-    </div>
   </div>`;
 
     // Update page-content with real data (no full re-render to avoid losing sidebar)
