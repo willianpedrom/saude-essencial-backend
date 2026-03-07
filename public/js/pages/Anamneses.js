@@ -184,11 +184,11 @@ export async function renderAnamnesisList(router) {
         let msg = '';
         if (tipo === 'recrutamento') {
           msg = encodeURIComponent(
-            `Olá ${btn.dataset.name}! Aqui é ${nome}, ${title} da Gota App.\n\nLembra que combinamos de montar seu redirecionamento de carreira?\nPreencha a rápida avaliação de Perfil abaixo para eu mapear seus talentos:\n\n${btn.dataset.wa}\n\nLeva menos de 3 minutinhos e você receberá seu protocolo no final! 🚀`
+            `Olá ${btn.dataset.name}! Aqui é ${nome}, ${title}.\n\nLembra que combinamos de montar seu redirecionamento de carreira?\nPreencha a rápida avaliação de Perfil abaixo para eu mapear seus talentos:\n\n${btn.dataset.wa}\n\nLeva menos de 3 minutinhos e você receberá seu protocolo no final! 🚀`
           );
         } else {
           msg = encodeURIComponent(
-            `Olá ${btn.dataset.name}! 💧 Sou ${nome}, ${title} da Gota App.\n\nPreencha sua avaliação de saúde pelo link abaixo e receba seu protocolo personalizado:\n\n${btn.dataset.wa}\n\nDemora apenas ~5 minutos! 💧`
+            `Olá ${btn.dataset.name}! 💧 Sou ${nome}, ${title}.\n\nPreencha sua avaliação de saúde pelo link abaixo e receba seu protocolo personalizado:\n\n${btn.dataset.wa}\n\nDemora apenas ~5 minutos! 💧`
           );
         }
         window.open(`https://wa.me/?text=${msg}`, '_blank');
