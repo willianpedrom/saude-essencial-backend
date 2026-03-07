@@ -208,7 +208,7 @@ export function renderReport(router, dataParam) {
           <div style="width:36px;height:36px;border-radius:50%;background:#2d5016;color:white;display:flex;align-items:center;justify-content:center;font-size:0.9rem">🌿</div>
           <div>
             <div style="font-weight:600;font-size:0.9rem">${consultant.name || cTitle}</div>
-            <div style="font-size:0.78rem;color:#888">${cTitle} de Saúde Natural · Gota App</div>
+            <div style="font-size:0.78rem;color:#888">${cTitle} de Saúde Natural</div>
           </div>
         </div>
         ${phone ? `<div style="font-size:0.82rem;color:#888">📱 +${waPhone}</div>` : ''}
