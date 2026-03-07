@@ -124,7 +124,9 @@ app.use(express.static(path.join(__dirname, '../public'), {
     maxAge: 0,
     setHeaders: (res, path) => {
         if (path.endsWith('.html') || path.endsWith('.js')) {
-            res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
         }
     }
 }));
