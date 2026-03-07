@@ -169,7 +169,8 @@ export async function renderClients(router) {
         const encoded = encodeURIComponent(JSON.stringify({
           answers: dados,
           consultant: { name: consultant?.nome || consultant?.name, phone: consultant?.telefone || consultant?.phone, genero: consultant?.genero },
-          clientName: client.name
+          clientName: client.name,
+          clientMessage: client.protocolo_mensagem
         }));
         router.navigate('/protocolo', { data: encoded });
       }
@@ -307,7 +308,13 @@ export async function renderClients(router) {
           </select>
         </div>
         <div class="form-group form-field-full">
-          <label class="field-label">Observações</label>
+          <label class="field-label" style="display:flex;align-items:center;gap:6px">
+             <span>Mensagem no Protocolo (Visível ao Cliente)</span> <span style="font-size:0.8rem">🌿</span>
+          </label>
+          <textarea class="field-textarea" id="m-protocolo-mensagem" placeholder="Digite uma mensagem ou recomendação personalizada que aparecerá em destaque no protocolo online gerado..." style="min-height:80px;border-color:#16a34a">${client?.protocolo_mensagem || ''}</textarea>
+        </div>
+        <div class="form-group form-field-full">
+          <label class="field-label">Observações Internas</label>
           <textarea class="field-textarea" id="m-notes">${client?.notes || ''}</textarea>
         </div>
       </div>`, {
@@ -321,6 +328,7 @@ export async function renderClients(router) {
           city: document.getElementById('m-city').value.trim(),
           genero: document.getElementById('m-genero').value,
           status: document.getElementById('m-status').value,
+          protocolo_mensagem: document.getElementById('m-protocolo-mensagem').value.trim(),
           notes: document.getElementById('m-notes').value.trim(),
         };
         if (!data.name) { toast('Nome é obrigatório', 'error'); return; }
