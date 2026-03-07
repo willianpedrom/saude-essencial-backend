@@ -16,7 +16,7 @@ export function renderLogin(router) {
     </div>
     <div class="auth-card">
       <div class="auth-logo" style="margin-bottom:12px">
-        <img src="/logo.png" alt="Gota Essencial" style="height:120px;width:auto;object-fit:contain" />
+        <img src="/logo.png" alt="Gota App" style="height:120px;width:auto;object-fit:contain" />
       </div>
 
       <!-- LOGIN -->
@@ -297,7 +297,7 @@ export function renderResetPassword(router) {
     </div>
     <div class="auth-card">
       <div class="auth-logo" style="margin-bottom:12px">
-        <img src="/logo.png" alt="Gota Essencial" style="height:120px;width:auto;object-fit:contain" />
+        <img src="/logo.png" alt="Gota App" style="height:120px;width:auto;object-fit:contain" />
       </div>
 
       ${!resetToken ? `

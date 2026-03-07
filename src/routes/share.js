@@ -27,7 +27,7 @@ router.get('/:slug', async (req, res) => {
             }
         }
 
-        let nome = "Gota Essencial";
+        let nome = "Gota App";
         let foto = "https://gotaessencial.com.br/logo.jpg";
         let defaultImage = true;
 

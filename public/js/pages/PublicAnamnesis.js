@@ -40,7 +40,7 @@ export async function renderPublicAnamnesis(router, token) {
     return;
   }
 
-  const consultoraNome = anamneseData.consultora_nome || 'Consultora Gota Essencial';
+  const consultoraNome = anamneseData.consultora_nome || 'Consultora Gota App';
 
   // Inject consultant's tracking scripts (Meta Pixel, Clarity, GA4, etc.)
   injectTrackingScripts(anamneseData.consultora_rastreamento);

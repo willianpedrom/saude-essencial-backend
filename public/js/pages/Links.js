@@ -117,11 +117,11 @@ export async function renderLinks(router) {
         let msg = '';
         if (tipo === 'recrutamento') {
           msg = encodeURIComponent(
-            `Olá! Aqui é ${nome}, ${title} da Gota Essencial.\n\nPara entendermos melhor o seu Perfil Empreendedor e montar um direcionamento estratégico personalizado para você, peço que preencha a rápida avaliação abaixo:\n\n${btn.dataset.whatsapp}\n\nLeva menos de 3 minutinhos e você receberá seu protocolo de perfil ao final! 🚀`
+            `Olá! Aqui é ${nome}, ${title} da Gota App.\n\nPara entendermos melhor o seu Perfil Empreendedor e montar um direcionamento estratégico personalizado para você, peço que preencha a rápida avaliação abaixo:\n\n${btn.dataset.whatsapp}\n\nLeva menos de 3 minutinhos e você receberá seu protocolo de perfil ao final! 🚀`
           );
         } else {
           msg = encodeURIComponent(
-            `Olá! 💧 Sou ${nome}, ${title} da Gota Essencial.\n\nPara montar seu protocolo personalizado de saúde natural, preencha a avaliação pelo link:\n\n${btn.dataset.whatsapp}\n\nLeva apenas ~5 minutos e o protocolo é gerado automaticamente! 💧`
+            `Olá! 💧 Sou ${nome}, ${title} da Gota App.\n\nPara montar seu protocolo personalizado de saúde natural, preencha a avaliação pelo link:\n\n${btn.dataset.whatsapp}\n\nLeva apenas ~5 minutos e o protocolo é gerado automaticamente! 💧`
           );
         }
         window.open(`https://wa.me/?text=${msg}`, '_blank');

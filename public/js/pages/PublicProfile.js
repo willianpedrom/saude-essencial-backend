@@ -267,7 +267,7 @@ export async function renderPublicProfile(router, slug) {
 
     <!-- Footer -->
     <footer style="background:#071a0f;padding:20px 24px;text-align:center">
-      <p style="color:rgba(255,255,255,0.3);font-size:0.78rem">Powered by <strong style="color:rgba(255,255,255,0.5)">Gota Essencial</strong> · Gestão de Relacionamento</p>
+      <p style="color:rgba(255,255,255,0.3);font-size:0.78rem">Powered by <strong style="color:rgba(255,255,255,0.5)">Gota App</strong> · Gestão de Relacionamento</p>
     </footer>
 
     <!-- Botão Flutuante do WhatsApp -->

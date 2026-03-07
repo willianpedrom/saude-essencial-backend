@@ -508,18 +508,18 @@ router.post('/send-test-email', async (req, res) => {
             const apiKey = process.env.BREVO_API_KEY;
             const fromEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_USER;
             const body = {
-                sender: { email: fromEmail, name: 'Gota Essencial' },
+                sender: { email: fromEmail, name: 'Gota App' },
                 to: [{ email, name: nome }],
-                subject: '🧪 Teste de Email — Gota Essencial',
+                subject: '🧪 Teste de Email — Gota App',
                 htmlContent: `<div style="font-family:sans-serif;padding:24px;max-width:500px;margin:0 auto;border:1px solid #e2e8f0;border-radius:12px">
                   <h2 style="color:#0a4a2a">✅ Email de Teste</h2>
                   <p>Olá <strong>${nome}</strong>,</p>
-                  <p>Este é um teste de envio de email da plataforma <strong>Gota Essencial</strong>.</p>
+                  <p>Este é um teste de envio de email da plataforma <strong>Gota App</strong>.</p>
                   <p>Se você recebeu esta mensagem, a configuração de email está funcionando corretamente! 🎉</p>
                   <hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0">
                   <small style="color:#94a3b8">Enviado por: ${fromEmail}</small>
                 </div>`,
-                textContent: `Olá ${nome}, este é um teste de email da Gota Essencial. Se você recebeu, está funcionando!`,
+                textContent: `Olá ${nome}, este é um teste de email da Gota App. Se você recebeu, está funcionando!`,
             };
 
             const response = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -548,8 +548,8 @@ router.post('/send-test-email', async (req, res) => {
             const info = await transport.sendMail({
                 from: process.env.SMTP_FROM || process.env.SMTP_USER,
                 to: email,
-                subject: '🧪 Teste de Email — Gota Essencial',
-                text: `Olá ${nome}, este é um teste de email da Gota Essencial. Funcionou!`,
+                subject: '🧪 Teste de Email — Gota App',
+                text: `Olá ${nome}, este é um teste de email da Gota App. Funcionou!`,
             });
             console.log(`[Admin] 🧪 Email de teste enviado para ${email} via SMTP:`, info.messageId);
             return res.json({ success: true, sentTo: email, method: 'smtp', messageId: info.messageId });

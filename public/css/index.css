@@ -1,5 +1,5 @@
 /* ============================================
-   GOTA ESSENCIAL – DESIGN SYSTEM
+   GOTA APP – DESIGN SYSTEM
    ============================================ */
 
 *,
@@ -11,7 +11,7 @@
 }
 
 :root {
-  /* Tons extraídos da nova identidade visual "Gota Essencial" */
+  /* Tons extraídos da nova identidade visual "Gota App" */
   --green-950: #06120b;
   /* Fundo hiper escuro da logo */
   --green-900: #0a1711;

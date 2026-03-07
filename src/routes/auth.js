@@ -287,14 +287,14 @@ router.post('/forgot-password', async (req, res, next) => {
             if (mailer.isBrevoConfigured()) {
                 const fromEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_USER;
                 const body = {
-                    sender: { email: fromEmail, name: 'Gota Essencial' },
+                    sender: { email: fromEmail, name: 'Gota App' },
                     to: [{ email: email.trim(), name: nome }],
-                    subject: '🔐 Recuperação de Senha — Gota Essencial',
+                    subject: '🔐 Recuperação de Senha — Gota App',
                     htmlContent: `<!DOCTYPE html><html lang="pt-BR"><body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Arial,sans-serif">
 <div style="max-width:560px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08)">
   <div style="background:linear-gradient(135deg,#0a4a2a,#1a7a45);padding:36px 32px;text-align:center">
     <div style="font-size:2rem">💧</div>
-    <h1 style="color:#fff;margin:8px 0 0;font-size:1.4rem">Gota Essencial</h1>
+    <h1 style="color:#fff;margin:8px 0 0;font-size:1.4rem">Gota App</h1>
   </div>
   <div style="padding:36px 32px">
     <h2 style="color:#1a2e1a;font-size:1.1rem;margin:0 0 16px">Olá, ${nome}!</h2>
@@ -307,7 +307,7 @@ router.post('/forgot-password', async (req, res, next) => {
     <p style="font-size:0.8rem;color:#94a3b8">Ou copie este link: <a href="${resetUrl}" style="color:#0a4a2a;word-break:break-all">${resetUrl}</a></p>
   </div>
   <div style="background:#f8fafb;padding:16px 32px;text-align:center;font-size:0.77rem;color:#94a3b8;border-top:1px solid #e2e8f0">
-    Gota Essencial • E-mail automático, não responda.
+    Gota App • E-mail automático, não responda.
   </div>
 </div></body></html>`,
                     textContent: `Olá ${nome},\n\nClique no link para redefinir sua senha (válido por 1 hora):\n${resetUrl}\n\nSe você não solicitou, ignore este e-mail.`,

@@ -1,5 +1,5 @@
 /*!
- * Gota Essencial - Landing Page Oficial de Conversão SaaS
+ * Gota App - Landing Page Oficial de Conversão SaaS
  */
 import { store } from '../store.js';
 
@@ -21,7 +21,7 @@ export async function renderLandingPage(router) {
         <nav style="display:flex;justify-content:space-between;align-items:center;padding:20px 5%;background:white;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,0.05)">
             <div style="display:flex;align-items:center;gap:12px">
                 <div style="width:40px;height:40px;background:var(--green-600);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem">💧</div>
-                <span style="font-weight:700;font-size:1.2rem;color:var(--text-dark)">Gota Essencial CRM</span>
+                <span style="font-weight:700;font-size:1.2rem;color:var(--text-dark)">Gota App CRM</span>
             </div>
             <div style="display:flex;gap:16px;align-items:center">
                 <a href="/#" style="color:var(--text-muted);text-decoration:none;font-weight:500;font-size:0.95rem">Entrar no Sistema</a>
@@ -114,7 +114,7 @@ export async function renderLandingPage(router) {
 
     const footer = `
         <footer style="padding:40px 5%;background:#111827;color:rgba(255,255,255,0.6);text-align:center;font-size:0.9rem">
-            © ${new Date().getFullYear()} Gota Essencial. Todos os direitos reservados.
+            © ${new Date().getFullYear()} Gota App. Todos os direitos reservados.
         </footer>
     `;
 

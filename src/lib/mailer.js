@@ -9,7 +9,7 @@ const nodemailer = require('nodemailer');
 // ── Configuração dinâmica (lida a cada chamada, não no boot) ──────────────
 
 function getFrom() {
-  return process.env.SMTP_FROM || `"Gota Essencial" <${process.env.SMTP_USER || process.env.BREVO_SENDER_EMAIL}>`;
+  return process.env.SMTP_FROM || `"Gota App" <${process.env.SMTP_USER || process.env.BREVO_SENDER_EMAIL}>`;
 }
 
 function getPlatformUrl() {
@@ -33,7 +33,7 @@ function isConfigured() {
 async function sendViaBrevo({ to, toName, subject, html, text }) {
   const apiKey = process.env.BREVO_API_KEY;
   const fromEmail = process.env.BREVO_SENDER_EMAIL || process.env.SMTP_USER;
-  const fromName = process.env.BREVO_SENDER_NAME || 'Gota Essencial';
+  const fromName = process.env.BREVO_SENDER_NAME || 'Gota App';
 
   const body = {
     sender: { email: fromEmail, name: fromName },
@@ -190,7 +190,7 @@ async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnEr
 <div class="container">
   <div class="header">
     <div class="logo">💧</div>
-    <h1>Gota Essencial</h1>
+    <h1>Gota App</h1>
     <p>Plataforma para Consultoras de Bem-Estar</p>
   </div>
   <div class="body">
@@ -212,7 +212,7 @@ async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnEr
       ${senhaProvisoria ? '<div class="step"><div class="step-num">4</div><div class="step-text"><strong>Troque a senha provisória</strong> em Meu Perfil → Segurança</div></div>' : ''}
     </div>
   </div>
-  <div class="footer">Gota Essencial • E-mail automático, não responda.</div>
+  <div class="footer">Gota App • E-mail automático, não responda.</div>
 </div>
 </body></html>`;
 
@@ -220,8 +220,8 @@ async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnEr
     to: email,
     toName: nome,
     subject: senhaProvisoria
-      ? `🎉 Bem-vindo(a) à Gota Essencial! Seus dados de acesso estão aqui`
-      : `📧 Seus dados de acesso — Gota Essencial`,
+      ? `🎉 Bem-vindo(a) à Gota App! Seus dados de acesso estão aqui`
+      : `📧 Seus dados de acesso — Gota App`,
     html,
     text: `Olá ${nome}!\n\nE-mail: ${email}${senhaProvisoria ? `\nSenha provisória: ${senhaProvisoria}` : ''}\n\nAcesse: ${loginUrl}`,
     throwOnError,
@@ -233,7 +233,7 @@ async function sendCancellationEmail({ nome, email }) {
   return sendEmail({
     to: email,
     toName: nome,
-    subject: `Sua assinatura Gota Essencial foi cancelada`,
+    subject: `Sua assinatura Gota App foi cancelada`,
     html: `<p>Olá ${nome},</p><p>Sua assinatura foi cancelada. Para reativar acesse <a href="${url}">${url}</a>.</p>`,
     text: `Olá ${nome},\n\nSua assinatura foi cancelada. Para reativar: ${url}`,
   });
