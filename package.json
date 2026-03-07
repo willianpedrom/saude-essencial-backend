@@ -1,7 +1,7 @@
 {
-  "name": "saude-essencial-backend",
+  "name": "gota-essencial-backend",
   "version": "1.0.0",
-  "description": "Backend API para o sistema Saúde Essencial CRM",
+  "description": "Backend API para o sistema Gota Essencial CRM",
   "main": "src/index.js",
   "type": "commonjs",
   "scripts": {
