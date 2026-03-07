@@ -78,8 +78,11 @@ export function renderReport(router, dataParam) {
 
       <!-- HEADER -->
       <div class="report-header" style="background:linear-gradient(135deg,#2d5016,#1a4527);padding:32px 28px;text-align:center">
-        <h1 style="font-size:1.4rem;letter-spacing:2px;margin-bottom:4px;font-weight:600">PROTOCOLO AROMATERAPÊUTICO INTEGRATIVO</h1>
-        <p style="opacity:0.8;font-size:0.85rem">Personalizado para ${clientName}</p>
+        <div style="font-family:'Georgia', serif; font-size:1.8rem; color:#f0f7ed; margin-bottom:12px; font-style:italic; font-weight:400">
+          Olá, ${firstName}! 🌱
+        </div>
+        <h1 style="font-size:1.2rem;letter-spacing:2px;margin-bottom:4px;font-weight:600;text-transform:uppercase">SEU PROTOCOLO AROMATERAPÊUTICO</h1>
+        <p style="opacity:0.8;font-size:0.85rem">Criado exclusivamente para ${clientName}</p>
         ${focusText ? `<div style="margin-top:12px;display:inline-block;background:rgba(255,255,255,0.15);padding:4px 16px;border-radius:20px;font-size:0.8rem">Foco: ${focusText}</div>` : ''}
       </div>
 
@@ -163,7 +166,7 @@ export function renderReport(router, dataParam) {
         <!-- Emotional CTA -->
         <div style="background:linear-gradient(135deg,#f0fff4,#fffbeb);border:1px solid #d4e8c2;border-radius:12px;padding:24px;margin:24px 0;text-align:center">
           <h3 style="color:#2d5016;font-size:1.1rem;margin-bottom:8px">
-            Você merece viver com mais saúde, energia e leveza.
+            ${firstName}, você merece viver com mais saúde, energia e leveza.
           </h3>
           <p style="color:#666;font-size:0.88rem;max-width:480px;margin:0 auto">
             ${consultant.name || `Seu ${cTitle.toLowerCase()}`} está pront${isMasc ? 'o' : 'a'} para guiar você nesta transformação.
