@@ -88,6 +88,13 @@ export function renderReport(router, dataParam) {
 
       <div class="report-body" style="padding:24px 28px">
 
+        <!-- ANCORAGEM DE VALOR -->
+        <div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:16px;margin-bottom:24px;border-radius:0 8px 8px 0">
+          <p style="font-size:0.85rem;color:#92400e;margin:0;line-height:1.5">
+            <strong>💎 Valor da Avaliação:</strong> Uma consulta integrativa presencial como esta custa em média R$ 350,00. Hoje, através deste convite exclusivo, seu diagnóstico foi <strong>totalmente isento</strong>.
+          </p>
+        </div>
+
         <!-- 1. OBJETIVO TERAPÊUTICO -->
         <div style="margin-bottom:24px">
           <h2 style="font-size:1rem;color:#2d5016;font-weight:700;margin-bottom:8px;border-bottom:2px solid #2d5016;padding-bottom:4px">1. OBJETIVO TERAPÊUTICO</h2>
@@ -157,34 +164,47 @@ export function renderReport(router, dataParam) {
         </div>
         `).join('') : ''}
 
-        <!-- RESULTADOS ESPERADOS -->
-        <div style="margin-bottom:24px">
-          <h2 style="font-size:1rem;color:#2d5016;font-weight:700;margin-bottom:8px;border-bottom:2px solid #2d5016;padding-bottom:4px">${4 + specificProts.length}. RESULTADOS ESPERADOS</h2>
-          <p style="font-size:0.85rem;color:#333;line-height:1.6">${expectedResults || 'Melhora geral na qualidade de vida, mais energia, equilíbrio emocional e bem-estar.'}</p>
+        <!-- RESULTADOS ESPERADOS (CURIOSITY GAP) -->
+        <div style="margin-bottom:24px;position:relative">
+          <h2 style="font-size:1rem;color:#2d5016;font-weight:700;margin-bottom:8px;border-bottom:2px solid #2d5016;padding-bottom:4px">${4 + specificProts.length}. RESULTADOS CLÍNICOS 🔒</h2>
+          <div style="filter:blur(5px);opacity:0.5;pointer-events:none;user-select:none">
+            <p style="font-size:0.85rem;color:#333;line-height:1.6">A restauração completa do seu eixo saúde garantirá uma imunidade alta e estável ao longo de todas as estações do ano, com picos de energia constantes e descanso reparador ininterrupto à noite.</p>
+          </div>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:100%">
+            <div style="background:rgba(255,255,255,0.95);padding:10px 20px;border-radius:20px;display:inline-block;box-shadow:0 10px 25px rgba(0,0,0,0.1);border:1px solid #ddd">
+              <span style="font-size:1.2rem">🔒</span> <strong style="font-size:0.85rem;color:#d97706">Área Restrita</strong>
+              <div style="font-size:0.75rem;color:#666;margin-top:2px">Chame sua consultora para liberar a chave do prognóstico.</div>
+            </div>
+          </div>
         </div>
 
         <!-- Emotional CTA -->
         <div style="background:linear-gradient(135deg,#f0fff4,#fffbeb);border:1px solid #d4e8c2;border-radius:12px;padding:24px;margin:24px 0;text-align:center">
           <h3 style="color:#2d5016;font-size:1.1rem;margin-bottom:8px">
-            ${firstName}, você merece viver com mais saúde, energia e leveza.
+            Como iniciar meu tratamento hoje? 📦
           </h3>
-          <p style="color:#666;font-size:0.88rem;max-width:480px;margin:0 auto">
-            ${consultant.name || `Seu ${cTitle.toLowerCase()}`} está pront${isMasc ? 'o' : 'a'} para guiar você nesta transformação.
-            El${isMasc ? 'e' : 'a'} é especialista em terapias naturais e vai te ajudar a implementar este protocolo.
+          <p style="color:#666;font-size:0.88rem;max-width:480px;margin:0 auto 16px">
+            Seu corpo precisa das ferramentas certas para iniciar o processo. Adquira os óleos puros diretamente da fábrica (doTERRA) com desconto de atacado (25%), garantindo o acompanhamento VIP de <strong>${consultant.name?.split(' ')[0] || cTitle}</strong>.
           </p>
-        </div>
-
-        <!-- WhatsApp CTA -->
-        <a class="report-cta" href="https://wa.me/${waPhone}?text=${whatsappMsg}" target="_blank" style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:linear-gradient(135deg,#25d366,#128c7e);color:white;border-radius:12px;text-decoration:none;margin-bottom:16px">
-          <div style="font-size:1.5rem">💬</div>
-          <div>
-            <strong>Falar com ${consultant.name?.split(' ')[0] || `${isMasc ? 'meu' : 'minha'} ${cTitle.toLowerCase()}`} no WhatsApp</strong>
-            <div style="font-size:0.82rem;opacity:0.9">Quero começar meu protocolo personalizado agora!</div>
+          <div style="background:white;padding:12px;border-radius:8px;border:1px dashed #25d366;display:inline-block;margin-bottom:16px">
+            <span style="color:#25d366;font-weight:bold;font-size:0.9rem">⏳ BÔNUS POR TEMPO LIMITADO</span><br>
+            <span style="font-size:0.8rem;color:#555">Diga "Eu quero" no botão abaixo agora para verificar se você se qualifica para Frete Grátis ou um Óleo de Brinde.</span>
           </div>
-        </a>
 
-        <div style="text-align:center;color:#999;font-size:0.8rem">
-          <a href="#" onclick="window.print();return false" style="color:#2d5016">Imprimir este protocolo</a>
+          <!-- WhatsApp CTA -->
+          <a class="report-cta" href="https://wa.me/${waPhone}?text=${whatsappMsg}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 20px;background:linear-gradient(135deg,#25d366,#128c7e);color:white;border-radius:12px;text-decoration:none;margin-bottom:16px;box-shadow:0 8px 20px rgba(37,211,102,0.3);transition:transform 0.2s">
+            <div style="font-size:1.5rem">💬</div>
+            <div style="text-align:left">
+              <strong style="display:block;font-size:0.95rem">Adquirir Meu Kit de Tratamento</strong>
+              <div style="font-size:0.75rem;opacity:0.9">Falar com ${consultant.name?.split(' ')[0] || cTitle} no WhatsApp</div>
+            </div>
+          </a>
+
+          <div style="text-align:center;margin-top:24px">
+            <a href="#" onclick="window.print();return false" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:#f3f4f6;color:#4b5563;text-decoration:none;border-radius:20px;font-size:0.85rem;font-weight:600;transition:all 0.2s">
+              🖨️ Baixar Minha Rotina (PDF)
+            </a>
+          </div>
         </div>
       </div>
 

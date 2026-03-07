@@ -65,6 +65,44 @@ export async function renderPublicAnamnesis(router, token) {
   const pageBadge = isBusiness ? 'Análise de Perfil Empreendedor' : 'Avaliação de Saúde Natural';
   const btnFinalLabel = isBusiness ? '🚀 Gerar Diagnóstico' : '💧 Gerar Meu Protocolo';
 
+  function showTransitionEffect(callback) {
+    app.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;text-align:center;padding:20px;">
+        <div style="font-size:3rem;animation:pulse 1s infinite">✨</div>
+        <h3 style="color:#2d5016;margin-top:16px">Analisando suas respostas...</h3>
+        <p style="color:#888;font-size:0.9rem">Preparando a próxima etapa.</p>
+      </div>
+      <style>@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }</style>
+    `;
+    setTimeout(callback, 1200);
+  }
+
+  function showProcessingEffect(callback) {
+    app.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;text-align:center;padding:20px;">
+        <div style="font-size:3.5rem;animation:pulse 1s infinite">🤖</div>
+        <h3 style="color:#2d5016;margin-top:16px" id="proc-text">Compilando sintomas...</h3>
+        <p style="color:#888;font-size:0.9em" id="proc-sub">Aguarde, nosso sistema está montando seu protocolo.</p>
+        <div style="width:200px;background:#eee;border-radius:99px;height:8px;margin-top:20px;overflow:hidden">
+          <div id="proc-bar" style="width:0%;height:100%;background:linear-gradient(to right, #25d366, #128c7e);transition:width 0.5s ease"></div>
+        </div>
+      </div>
+      <style>@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }</style>
+    `;
+    setTimeout(() => {
+      const t = document.getElementById('proc-text'); if (t) t.innerText = 'Cruzando informações e banco de óleos...';
+      const b = document.getElementById('proc-bar'); if (b) b.style.width = '40%';
+    }, 1200);
+    setTimeout(() => {
+      const t = document.getElementById('proc-text'); if (t) t.innerText = 'Gerando seu protocolo personalizado...';
+      const b = document.getElementById('proc-bar'); if (b) b.style.width = '80%';
+    }, 2800);
+    setTimeout(() => {
+      const b = document.getElementById('proc-bar'); if (b) b.style.width = '100%';
+    }, 4000);
+    setTimeout(callback, 4500);
+  }
+
   function renderStep() {
     const stepDef = STEPS[currentStep];
     const section = QUESTIONS[stepDef.id];
@@ -76,6 +114,12 @@ export async function renderPublicAnamnesis(router, token) {
         <div class="anamnesis-hero-badge">${pageBadge}</div>
         <h1>${pageTitle}</h1>
         <p>${pageSubtitle}</p>
+        ${currentStep === 0 && !isBusiness ? `
+          <div style="margin-top:20px;background:rgba(217,119,6,0.1);border:1px solid rgba(217,119,6,0.3);padding:14px;border-radius:12px;text-align:left;font-size:0.85rem;color:#b45309;line-height:1.5;box-shadow:0 4px 12px rgba(217,119,6,0.05)">
+            <strong style="display:block;margin-bottom:4px">⚠️ Vagas Limitadas</strong>
+            A(o) <strong>${consultoraNome.split(' ')[0]}</strong> libera apenas <strong>5 protocolos gratuitos</strong> por semana devido à alta demanda de acompanhamento. Preencha até o fim agora para garantir a análise individual do seu caso.
+          </div>
+        ` : ''}
       </div>
 
       <div class="anamnesis-consultant-card">
@@ -128,11 +172,13 @@ export async function renderPublicAnamnesis(router, token) {
       }
       collectAnswers(stepDef.id);
       if (isLast) {
-        submitAnamnesis();
+        showProcessingEffect(submitAnamnesis);
       } else {
-        currentStep++;
-        renderStep();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showTransitionEffect(() => {
+          currentStep++;
+          renderStep();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
       }
     });
 
