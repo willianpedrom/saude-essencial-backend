@@ -532,10 +532,11 @@ export async function renderProfile(router) {
         if (auth.current) {
           auth.current.nome = data.nome;
           auth.current.genero = data.genero;
+          sessionStorage.setItem('se_user', JSON.stringify(auth.current));
         }
         toast('Perfil salvo com sucesso! ✅');
         profile = { ...profile, ...data };
-        render(); // re-render with updated data
+        setTimeout(() => window.location.reload(), 800);
       } catch (err) {
         toast('Erro ao salvar: ' + err.message, 'error');
         btn.disabled = false;
