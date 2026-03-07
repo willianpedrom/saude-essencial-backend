@@ -83,7 +83,7 @@ export function renderReport(router, dataParam) {
         </div>
         <h1 style="font-size:1.2rem;letter-spacing:2px;margin-bottom:4px;font-weight:600;text-transform:uppercase">SEU PROTOCOLO AROMATERAPÊUTICO</h1>
         <p style="opacity:0.8;font-size:0.85rem">Criado exclusivamente para ${clientName}</p>
-        ${focusText ? `<div style="margin-top:12px;display:inline-block;background:rgba(255,255,255,0.15);padding:4px 16px;border-radius:20px;font-size:0.8rem">Foco: ${focusText}</div>` : ''}
+        ${focusText ? `<div style="margin-top:12px;display:inline-block;background:rgba(255,255,255,0.25);color:#ffffff;padding:4px 16px;border-radius:20px;font-size:0.85rem;font-weight:600;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">Foco: ${focusText}</div>` : ''}
       </div>
 
       <div class="report-body" style="padding:24px 28px">
@@ -188,23 +188,17 @@ export function renderReport(router, dataParam) {
           </p>
           <div style="background:white;padding:12px;border-radius:8px;border:1px dashed #25d366;display:inline-block;margin-bottom:16px">
             <span style="color:#25d366;font-weight:bold;font-size:0.9rem">⏳ BÔNUS POR TEMPO LIMITADO</span><br>
-            <span style="font-size:0.8rem;color:#555">Diga "Eu quero" no botão abaixo agora para verificar se você se qualifica para Frete Grátis ou um Óleo de Brinde.</span>
+            <span style="font-size:0.8rem;color:#555">Envie uma mensagem para ${consultant.name?.split(' ')[0] || cTitle} agora e verifique se você se qualifica para Frete Grátis ou um Óleo de Brinde.</span>
           </div>
 
           <!-- WhatsApp CTA -->
           <a class="report-cta" href="https://wa.me/${waPhone}?text=${whatsappMsg}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 20px;background:linear-gradient(135deg,#25d366,#128c7e);color:white;border-radius:12px;text-decoration:none;margin-bottom:16px;box-shadow:0 8px 20px rgba(37,211,102,0.3);transition:transform 0.2s">
             <div style="font-size:1.5rem">💬</div>
             <div style="text-align:left">
-              <strong style="display:block;font-size:0.95rem">Adquirir Meu Kit de Tratamento</strong>
-              <div style="font-size:0.75rem;opacity:0.9">Falar com ${consultant.name?.split(' ')[0] || cTitle} no WhatsApp</div>
+              <strong style="display:block;font-size:0.95rem">LIBERE SEU PROTOCOLO COMPLETO NO WHATSAPP</strong>
+              <div style="font-size:0.75rem;opacity:0.9">Fale com ${consultant.name?.split(' ')[0] || cTitle} no WhatsApp</div>
             </div>
           </a>
-
-          <div style="text-align:center;margin-top:24px">
-            <a href="#" onclick="window.print();return false" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:#f3f4f6;color:#4b5563;text-decoration:none;border-radius:20px;font-size:0.85rem;font-weight:600;transition:all 0.2s">
-              🖨️ Baixar Minha Rotina (PDF)
-            </a>
-          </div>
         </div>
       </div>
 

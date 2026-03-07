@@ -2,26 +2,26 @@
    APP.JS – Orquestrador principal do Sistema Saúde Essencial
    ============================================================ */
 
-import { auth } from './store.js?v=22';
-import { Router } from './utils.js?v=22';
-import { renderLogin, renderResetPassword } from './pages/Login.js?v=22';
-import { renderDashboard } from './pages/Dashboard.js?v=22';
-import { renderClients } from './pages/Clients.js?v=22';
-import { renderLinks } from './pages/Links.js?v=22';
-import { renderSchedule, renderFollowup } from './pages/Schedule.js?v=22';
-import { renderTestimonials, renderPurchases } from './pages/Extras.js?v=22';
-import { renderPublicAnamnesis } from './pages/PublicAnamnesis.js?v=22';
-import { renderPublicTestimonial } from './pages/PublicTestimonial.js?v=22';
-import { renderPublicProfile } from './pages/PublicProfile.js?v=22';
-import { renderReport } from './pages/Report.js?v=22';
-import { renderBusinessReport } from './pages/BusinessReport.js?v=22';
-import { renderAnamnesisList } from './pages/Anamneses.js?v=22';
-import { renderAssinatura } from './pages/Assinatura.js?v=22';
-import { renderProfile } from './pages/Profile.js?v=22';
-import { renderAdmin } from './pages/Admin.js?v=22';
-import { renderPipeline } from './pages/Pipeline.js?v=22';
-import { renderIntegrations } from './pages/Integracoes.js?v=22';
-import { renderLandingPage } from './pages/LandingPage.js?v=22';
+import { auth } from './store.js?v=23';
+import { Router } from './utils.js?v=23';
+import { renderLogin, renderResetPassword } from './pages/Login.js?v=23';
+import { renderDashboard } from './pages/Dashboard.js?v=23';
+import { renderClients } from './pages/Clients.js?v=23';
+import { renderLinks } from './pages/Links.js?v=23';
+import { renderSchedule, renderFollowup } from './pages/Schedule.js?v=23';
+import { renderTestimonials, renderPurchases } from './pages/Extras.js?v=23';
+import { renderPublicAnamnesis } from './pages/PublicAnamnesis.js?v=23';
+import { renderPublicTestimonial } from './pages/PublicTestimonial.js?v=23';
+import { renderPublicProfile } from './pages/PublicProfile.js?v=23';
+import { renderReport } from './pages/Report.js?v=23';
+import { renderBusinessReport } from './pages/BusinessReport.js?v=23';
+import { renderAnamnesisList } from './pages/Anamneses.js?v=23';
+import { renderAssinatura } from './pages/Assinatura.js?v=23';
+import { renderProfile } from './pages/Profile.js?v=23';
+import { renderAdmin } from './pages/Admin.js?v=23';
+import { renderPipeline } from './pages/Pipeline.js?v=23';
+import { renderIntegrations } from './pages/Integracoes.js?v=23';
+import { renderLandingPage } from './pages/LandingPage.js?v=23';
 
 // Boot
 auth.init();
