@@ -43,6 +43,7 @@ export function normalizeClient(c) {
         notes: c.observacoes || c.notes || '',
         status: c.status || 'active',
         genero: c.genero || 'feminino',
+        protocolo_mensagem: c.protocolo_mensagem || '',
     };
 }
 
@@ -56,6 +57,7 @@ export function clientToApi(data) {
         notas: data.notes || data.notas || data.observacoes || '',
         status: data.status || 'active',
         genero: data.genero || 'feminino',
+        protocolo_mensagem: data.protocolo_mensagem || '',
     };
 }
 

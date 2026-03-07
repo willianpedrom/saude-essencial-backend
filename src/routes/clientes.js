@@ -58,7 +58,7 @@ router.get('/:id', async (req, res) => {
 
 // POST /api/clientes
 router.post('/', async (req, res) => {
-    const { nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status, tipo_cadastro } = req.body;
+    const { nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status, tipo_cadastro, protocolo_mensagem } = req.body;
     if (!nome) return res.status(400).json({ error: 'Nome é obrigatório.' });
 
     try {
@@ -87,10 +87,10 @@ router.post('/', async (req, res) => {
         }
 
         const { rows } = await pool.query(
-            `INSERT INTO clientes (consultora_id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status, tipo_cadastro)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            `INSERT INTO clientes (consultora_id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status, tipo_cadastro, protocolo_mensagem)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
-            [req.consultora.id, nome, email, telefone, cpf, data_nascimento || null, genero, cidade, notas, status || 'active', tipo_cadastro || null]
+            [req.consultora.id, nome, email, telefone, cpf, data_nascimento || null, genero, cidade, notas, status || 'active', tipo_cadastro || null, protocolo_mensagem || '']
         );
         res.status(201).json(rows[0]);
     } catch (err) {
