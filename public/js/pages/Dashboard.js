@@ -6,6 +6,14 @@ function getNome(consultant) {
   return consultant?.nome || consultant?.name || getConsultantTitle(consultant?.genero);
 }
 
+window.dashboardAddClient = () => {
+  window.location.hash = '#/clients';
+  setTimeout(() => {
+    const btn = document.getElementById('btn-add-client');
+    if (btn) btn.click();
+  }, 100);
+};
+
 // ── Shared Layout (sidebar + header) ────────────────────────
 export function renderLayout(router, pageTitle, pageContent, activeNav) {
   const consultant = auth.current;
