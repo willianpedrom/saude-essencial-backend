@@ -14,6 +14,19 @@ window.dashboardAddClient = () => {
   }, 100);
 };
 
+window.dismissBanner = async (id) => {
+  const el = document.getElementById('banner-' + id);
+  if (el) {
+    el.style.opacity = '0';
+    setTimeout(() => el.style.display = 'none', 300);
+  }
+  const dismissed = JSON.parse(localStorage.getItem('dismissed_banners') || '[]');
+  if (!dismissed.includes(id)) {
+    dismissed.push(id);
+    localStorage.setItem('dismissed_banners', JSON.stringify(dismissed));
+  }
+};
+
 // ── Helpers de Avisos por Modal ────────────────────────────────
 function processNextAviso(avisos, index) {
   if (index >= avisos.length) return; // Fim da fila
@@ -240,15 +253,19 @@ export async function renderDashboard(router) {
     ]);
 
     // ── Prepara Banners de Avisos ──
-    const bannersHtml = avisosBanners.length > 0 ? avisosBanners.map(a => `
-      <div style="background:${a.tipo === 'danger' ? '#fee2e2' : a.tipo === 'success' ? '#dcfce7' : a.tipo === 'warning' ? '#fef3c7' : '#e0e7ff'};
+    const dismissedBanners = JSON.parse(localStorage.getItem('dismissed_banners') || '[]');
+    const bannersToShow = avisosBanners.filter(a => !dismissedBanners.includes(a.id));
+
+    const bannersHtml = bannersToShow.length > 0 ? bannersToShow.map(a => `
+      <div id="banner-${a.id}" style="background:${a.tipo === 'danger' ? '#fee2e2' : a.tipo === 'success' ? '#dcfce7' : a.tipo === 'warning' ? '#fef3c7' : '#e0e7ff'};
                   border-left: 4px solid ${a.tipo === 'danger' ? '#ef4444' : a.tipo === 'success' ? '#22c55e' : a.tipo === 'warning' ? '#f59e0b' : '#6366f1'};
-                  padding:12px 16px; margin-bottom: 20px; border-radius: 4px; display:flex; gap:12px; align-items:flex-start;">
+                  padding:12px 16px; margin-bottom: 20px; border-radius: 4px; display:flex; gap:12px; align-items:flex-start; transition: opacity 0.3s ease;">
         <span style="font-size:1.4rem">${a.tipo === 'danger' ? '🔴' : a.tipo === 'success' ? '🟢' : a.tipo === 'warning' ? '🟡' : '🔵'}</span>
-        <div>
+        <div style="flex:1">
           <b style="color:var(--text-dark);font-size:0.95rem">${a.titulo}</b>
           <p style="margin:4px 0 0;font-size:0.85rem;color:var(--text-muted);white-space:pre-wrap;">${a.mensagem}</p>
         </div>
+        <button onclick="window.dismissBanner('${a.id}')" style="background:transparent;border:none;font-size:1.3rem;color:var(--text-muted);cursor:pointer;padding:0 4px;line-height:1;transition:color 0.2s" onmouseover="this.style.color='#000'" onmouseout="this.style.color='var(--text-muted)'" title="Fechar">×</button>
       </div>
     `).join('') : '';
 
