@@ -10,64 +10,139 @@ export async function renderSchedule(router) {
 
   let clients = [];
   let events = [];
+  let currentYear = new Date().getFullYear();
+  let currentMonth = new Date().getMonth(); // 0-based
+  let selectedDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+  const MONTH_NAMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  const TYPES = { meeting: '🤝 Reunião', call: '📞 Ligação', followup: '💬 Follow-up', delivery: '📦 Entrega', other: '📌 Outro' };
 
   async function refresh() {
     [clients, events] = await Promise.all([
       store.getClients().catch(() => []),
       store.getAgendamentos().catch(() => []),
     ]);
-    renderEvents();
+    renderCalendar();
+    renderDayPanel(selectedDate);
   }
 
-  function getDateHora(e) {
-    return e.data_hora || (e.date ? e.date + 'T' + (e.time || '00:00') : null);
+  function getDateStr(e) {
+    const dt = e.data_hora || (e.date ? e.date + 'T' + (e.time || '00:00') : null);
+    return dt ? dt.slice(0, 10) : null;
   }
 
-  function eventCard(e, isPast = false) {
-    const clienteId = e.cliente_id || e.clienteId || e.clientId;
-    const c = clients.find(cl => cl.id === clienteId);
-    const types = { meeting: '🤝 Reunião', call: '📞 Ligação', followup: '💬 Follow-up', delivery: '📦 Entrega', other: '📌 Outro' };
-    const tipo = e.tipo || e.type || 'other';
-    const titulo = e.titulo || e.title || 'Evento';
-    const obs = e.observacoes || e.notes || '';
-    const dt = getDateHora(e);
-    return `
-      <div class="schedule-event ${isPast ? '' : 'gold'}" style="margin-bottom:10px;opacity:${isPast ? 0.6 : 1}">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div>
-            <div class="schedule-event-title">${titulo}</div>
-            <div class="schedule-event-meta">
-              ${types[tipo] || '📌'} · 📅 ${formatDate(dt)}${c ? ' · 👤 ' + (c.name || c.nome) : ''}
-            </div>
-            ${obs ? `<div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px">${obs}</div>` : ''}
-          </div>
-          ${!isPast ? `<button class="btn btn-danger btn-sm" data-del-event="${e.id}">🗑️</button>` : ''}
-        </div>
-      </div>`;
+  function getEventsForDate(dateStr) {
+    return events.filter(e => getDateStr(e) === dateStr)
+      .sort((a, b) => (a.data_hora || '').localeCompare(b.data_hora || ''));
   }
 
-  function renderEvents() {
-    const pc = document.getElementById('page-content');
-    if (!pc) return;
+  function getDotColor(tipo) {
+    const map = { meeting: '#6366f1', call: '#0891b2', followup: '#16a34a', delivery: '#d97706', other: '#9ca3af' };
+    return map[tipo] || '#9ca3af';
+  }
 
-    // Ensure page structure is built
-    if (!pc.querySelector('#events-list')) { buildPage(); }
+  // ── Calendar Grid ─────────────────────────────────────────────
+  function renderCalendar() {
+    const grid = document.getElementById('cal-grid');
+    const title = document.getElementById('cal-title');
+    if (!grid || !title) return;
 
+    title.textContent = `${MONTH_NAMES[currentMonth]} ${currentYear}`;
+
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    const startDow = (firstDay.getDay() + 6) % 7; // Mon=0
     const today = new Date().toISOString().slice(0, 10);
-    const upcoming = events.filter(e => { const dt = getDateHora(e); return dt && dt.slice(0, 10) >= today; });
-    const past = events.filter(e => { const dt = getDateHora(e); return dt && dt.slice(0, 10) < today; });
-    const container = pc.querySelector('#events-list');
-    if (!container) return;
 
-    container.innerHTML = upcoming.length === 0 && past.length === 0
-      ? `<div class="empty-state"><div class="empty-state-icon">📅</div><h4>Nenhuma reunião agendada</h4><p>Agende reuniões com seus clientes</p></div>`
-      : `
-          ${upcoming.length > 0 ? `<div style="font-size:0.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">PRÓXIMAS</div>
-          ${upcoming.map(e => eventCard(e)).join('')}` : ''}
-          ${past.length > 0 ? `<div style="font-size:0.8rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px">REALIZADAS</div>
-          ${past.map(e => eventCard(e, true)).join('')}` : ''}`;
+    // Build a map: dateStr -> events[]
+    const eventMap = {};
+    events.forEach(e => {
+      const d = getDateStr(e);
+      if (d) { if (!eventMap[d]) eventMap[d] = []; eventMap[d].push(e); }
+    });
 
-    container.querySelectorAll('[data-del-event]').forEach(btn => {
+    let cells = '';
+
+    // Empty cells before first day
+    for (let i = 0; i < startDow; i++) {
+      cells += `<div class="cal-cell cal-cell-empty"></div>`;
+    }
+
+    // Day cells
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+      const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const dayEvents = eventMap[dateStr] || [];
+      const isToday = dateStr === today;
+      const isSelected = dateStr === selectedDate;
+      const hasFuture = dayEvents.some(e => getDateStr(e) >= today);
+
+      const dots = dayEvents.slice(0, 3).map(e =>
+        `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${getDotColor(e.tipo || 'other')};margin:0 1px"></span>`
+      ).join('');
+
+      cells += `
+        <div class="cal-cell${isToday ? ' cal-today' : ''}${isSelected ? ' cal-selected' : ''}"
+             data-date="${dateStr}" onclick="window.calSelectDay('${dateStr}')">
+          <span class="cal-day-num">${d}</span>
+          ${dayEvents.length > 0 ? `<div class="cal-dots">${dots}${dayEvents.length > 3 ? `<span style="font-size:0.6rem;color:var(--text-muted)">+${dayEvents.length - 3}</span>` : ''}</div>` : ''}
+        </div>`;
+    }
+
+    grid.innerHTML = cells;
+  }
+
+  // ── Day Panel ─────────────────────────────────────────────────
+  function renderDayPanel(dateStr) {
+    const panel = document.getElementById('cal-day-panel');
+    const panelTitle = document.getElementById('cal-day-title');
+    if (!panel || !panelTitle) return;
+
+    const dayEvents = getEventsForDate(dateStr);
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const dateObj = new Date(year, month - 1, day);
+    const dayName = dateObj.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+    panelTitle.textContent = dayName.charAt(0).toUpperCase() + dayName.slice(1);
+
+    if (dayEvents.length === 0) {
+      panel.innerHTML = `
+        <div style="text-align:center;padding:32px 16px;color:var(--text-muted)">
+          <div style="font-size:2.2rem;margin-bottom:8px">📅</div>
+          <div style="font-size:0.9rem">Nenhum evento neste dia</div>
+          <button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="window.calAddEvent('${dateStr}')">+ Agendar</button>
+        </div>`;
+      return;
+    }
+
+    panel.innerHTML = dayEvents.map(e => {
+      const clienteId = e.cliente_id || e.clienteId;
+      const c = clients.find(cl => cl.id === clienteId);
+      const tipo = e.tipo || 'other';
+      const titulo = e.titulo || e.title || 'Evento';
+      const obs = e.observacoes || e.notes || '';
+      const dt = e.data_hora;
+      const timeStr = dt ? new Date(dt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+      const isPast = (e.data_hora || '').slice(0, 10) < new Date().toISOString().slice(0, 10);
+      const dotColor = getDotColor(tipo);
+
+      return `
+        <div style="padding:12px 14px;border-radius:10px;margin-bottom:8px;
+                    background:${isPast ? '#f9fafb' : 'white'};border:1px solid var(--border);
+                    border-left:4px solid ${dotColor};opacity:${isPast ? 0.7 : 1}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div style="font-weight:600;font-size:0.92rem;color:var(--text-dark)">${titulo}</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);margin-top:3px">
+                ${TYPES[tipo] || '📌'} ${timeStr ? '· ' + timeStr : ''}${c ? ' · 👤 ' + (c.nome || c.name) : ''}
+              </div>
+              ${obs ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;font-style:italic">${obs}</div>` : ''}
+            </div>
+            ${!isPast ? `<button class="btn btn-danger btn-sm" data-del-event="${e.id}" style="flex-shrink:0;margin-left:8px">🗑️</button>` : ''}
+          </div>
+        </div>`;
+    }).join('') + `
+      <button class="btn btn-primary btn-sm" style="width:100%;margin-top:8px" onclick="window.calAddEvent('${dateStr}')">+ Adicionar Evento</button>`;
+
+    panel.querySelectorAll('[data-del-event]').forEach(btn => {
       btn.addEventListener('click', async () => {
         await store.deleteAgendamento(btn.dataset.delEvent).catch(() => { });
         toast('Evento removido.', 'warning');
@@ -76,20 +151,12 @@ export async function renderSchedule(router) {
     });
   }
 
-  function buildPage() {
-    const pc = document.getElementById('page-content');
-    if (!pc) return;
-    pc.innerHTML = `
-        <div style="display:flex;justify-content:flex-end;margin-bottom:20px">
-          <button class="btn btn-primary" id="btn-add-event">+ Agendar Compromisso</button>
-        </div>
-        <div id="events-list"></div>`;
-    pc.querySelector('#btn-add-event').addEventListener('click', showAddModal);
-  }
-
-  function showAddModal() {
+  // ── Show add modal ─────────────────────────────────────────────
+  function showAddModal(prefillDate = '') {
     const clientOpts = clients.map(c =>
-      `<option value="${c.id}">${c.name || c.nome}</option>`).join('');
+      `<option value="${c.id}">${c.nome || c.name}</option>`).join('');
+    const defaultDate = prefillDate || new Date().toISOString().slice(0, 10);
+
     modal('Nova Reunião / Compromisso', `
       <div class="form-grid">
         <div class="form-group form-field-full">
@@ -115,7 +182,7 @@ export async function renderSchedule(router) {
         </div>
         <div class="form-group">
           <label class="field-label">Data *</label>
-          <input class="field-input" id="ev-date" type="date" value="${new Date().toISOString().slice(0, 10)}" />
+          <input class="field-input" id="ev-date" type="date" value="${defaultDate}" />
         </div>
         <div class="form-group">
           <label class="field-label">Horário</label>
@@ -132,7 +199,7 @@ export async function renderSchedule(router) {
         if (!titulo) { toast('Título obrigatório', 'error'); return; }
         const date = document.getElementById('ev-date').value;
         const time = document.getElementById('ev-time').value;
-        const data_hora = time ? `${date}T${time}:00` : `${date}T00:00:00`;
+        const data_hora = time ? `${date}T${time}:00` : `${date}T09:00:00`;
         try {
           await store.addAgendamento({
             titulo,
@@ -142,6 +209,10 @@ export async function renderSchedule(router) {
             observacoes: document.getElementById('ev-notes').value,
           });
           toast('Compromisso agendado! 📅');
+          // Navigate calendar to the month of the new event
+          const [y, m] = date.split('-').map(Number);
+          currentYear = y; currentMonth = m - 1;
+          selectedDate = date;
           await refresh();
         } catch (err) {
           toast('Erro: ' + err.message, 'error');
@@ -150,11 +221,114 @@ export async function renderSchedule(router) {
     });
   }
 
+  // ── Global handlers ────────────────────────────────────────────
+  window.calSelectDay = (dateStr) => {
+    selectedDate = dateStr;
+    renderCalendar();
+    renderDayPanel(dateStr);
+    // On mobile, scroll to the panel
+    document.getElementById('cal-day-panel-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  window.calAddEvent = (dateStr) => showAddModal(dateStr);
+
+  // ── Build page HTML ────────────────────────────────────────────
+  const pc = document.getElementById('page-content');
+  if (!pc) return;
+
+  pc.innerHTML = `
+    <style>
+      .cal-wrap { display:grid; grid-template-columns:1fr 280px; gap:20px; }
+      @media (max-width: 768px) { .cal-wrap { grid-template-columns:1fr; } }
+
+      .cal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+      .cal-nav { display:flex; gap:8px; align-items:center; }
+      .cal-nav-btn { background:white; border:1px solid var(--border); border-radius:8px; padding:6px 12px; cursor:pointer; font-size:0.85rem; font-weight:600; transition:all 0.15s; }
+      .cal-nav-btn:hover { background:var(--green-50); border-color:var(--green-400); }
+      .cal-title-text { font-size:1.1rem; font-weight:700; color:var(--text-dark); min-width:160px; text-align:center; }
+
+      .cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-bottom:4px; }
+      .cal-weekday { text-align:center; font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; padding:6px 0; }
+
+      .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+      .cal-cell { min-height:68px; background:white; border:1px solid var(--border); border-radius:8px; padding:6px 7px; cursor:pointer; transition:all 0.15s; position:relative; }
+      .cal-cell:hover { border-color:var(--green-400); background:var(--green-50); }
+      .cal-cell-empty { background:transparent; border:1px solid transparent; cursor:default; }
+      .cal-today { border-color:var(--green-500) !important; background:var(--green-50) !important; }
+      .cal-today .cal-day-num { background:var(--green-600); color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-weight:700; }
+      .cal-selected { border-color:#6366f1 !important; background:#eef2ff !important; box-shadow: 0 0 0 2px #6366f133; }
+      .cal-day-num { font-size:0.8rem; font-weight:600; color:var(--text-dark); display:block; margin-bottom:3px; }
+      .cal-dots { display:flex; align-items:center; gap:1px; flex-wrap:wrap; }
+
+      .cal-panel { position:sticky; top:20px; }
+      .cal-panel-card { background:white; border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+      .cal-panel-header { padding:14px 16px; border-bottom:1px solid var(--border); background:var(--green-50); }
+      .cal-panel-title { font-size:0.9rem; font-weight:700; color:var(--text-dark); }
+      .cal-panel-body { padding:12px; min-height:200px; }
+    </style>
+
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+      <button class="btn btn-primary" id="btn-add-event">+ Agendar Compromisso</button>
+    </div>
+
+    <div class="cal-wrap">
+      <!-- Left: Calendar -->
+      <div>
+        <div class="cal-header">
+          <div class="cal-nav">
+            <button class="cal-nav-btn" id="cal-prev">‹</button>
+            <span class="cal-title-text" id="cal-title">...</span>
+            <button class="cal-nav-btn" id="cal-next">›</button>
+          </div>
+          <button class="cal-nav-btn" id="cal-today-btn" title="Ir para hoje">Hoje</button>
+        </div>
+
+        <div class="cal-weekdays">
+          ${['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(d => `<div class="cal-weekday">${d}</div>`).join('')}
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+
+      <!-- Right: Day detail panel -->
+      <div class="cal-panel" id="cal-day-panel-wrap">
+        <div class="cal-panel-card">
+          <div class="cal-panel-header">
+            <div class="cal-panel-title" id="cal-day-title">Selecione um dia</div>
+          </div>
+          <div class="cal-panel-body" id="cal-day-panel">
+            <div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">
+              Clique em um dia no calendário para ver os eventos
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // Bind header buttons
+  pc.querySelector('#btn-add-event').addEventListener('click', () => showAddModal(selectedDate));
+  pc.querySelector('#cal-prev').addEventListener('click', () => {
+    currentMonth--;
+    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+    renderCalendar();
+  });
+  pc.querySelector('#cal-next').addEventListener('click', () => {
+    currentMonth++;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    renderCalendar();
+  });
+  pc.querySelector('#cal-today-btn').addEventListener('click', () => {
+    const now = new Date();
+    currentYear = now.getFullYear();
+    currentMonth = now.getMonth();
+    selectedDate = now.toISOString().slice(0, 10);
+    renderCalendar();
+    renderDayPanel(selectedDate);
+  });
+
   await refresh();
-  buildPage();
 }
 
-// ───────────── FOLLOW-UP ─────────────
+
 export async function renderFollowup(router) {
   renderLayout(router, 'Follow-up Pós-venda',
     `<div style="display:flex;align-items:center;justify-content:center;height:200px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando...</div>`,
