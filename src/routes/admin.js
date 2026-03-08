@@ -614,6 +614,73 @@ router.get('/test-smtp', async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════
+//  CENTRAL DE AVISOS DO SISTEMA
+// ══════════════════════════════════════════════════════════════
+
+// GET /api/admin/avisos — Lista todos os avisos do sistema
+router.get('/avisos', async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            `SELECT a.*, 
+            (SELECT COUNT(*) FROM avisos_lidos WHERE aviso_id = a.id) as leituras
+            FROM avisos_sistema a 
+            ORDER BY criado_em DESC`
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao listar avisos.' });
+    }
+});
+
+// POST /api/admin/avisos — Cria um novo aviso
+router.post('/avisos', async (req, res) => {
+    const { titulo, mensagem, tipo, exibicao, ativo } = req.body;
+    if (!titulo || !mensagem) return res.status(400).json({ error: 'Título e Mensagem são obrigatórios.' });
+    try {
+        const { rows } = await pool.query(
+            `INSERT INTO avisos_sistema (titulo, mensagem, tipo, exibicao, ativo)
+             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [titulo, mensagem, tipo || 'info', exibicao || 'ambos', ativo !== false]
+        );
+        res.status(201).json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao criar aviso.' });
+    }
+});
+
+// PUT /api/admin/avisos/:id — Edita um aviso existente
+router.put('/avisos/:id', async (req, res) => {
+    const { titulo, mensagem, tipo, exibicao, ativo } = req.body;
+    try {
+        const { rows } = await pool.query(
+            `UPDATE avisos_sistema 
+             SET titulo=$1, mensagem=$2, tipo=$3, exibicao=$4, ativo=$5, atualizado_em=NOW()
+             WHERE id=$6 RETURNING *`,
+            [titulo, mensagem, tipo || 'info', exibicao || 'ambos', ativo !== false, req.params.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Aviso não encontrado.' });
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao atualizar aviso.' });
+    }
+});
+
+// DELETE /api/admin/avisos/:id — Exclui aviso e suas confirmações de leitura em cascata
+router.delete('/avisos/:id', async (req, res) => {
+    try {
+        await pool.query('DELETE FROM avisos_sistema WHERE id=$1', [req.params.id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao excluir aviso.' });
+    }
+});
+
+
+// ══════════════════════════════════════════════════════════════
 //  SYSTEM SETTINGS (payment gateway, etc.)
 // ══════════════════════════════════════════════════════════════
 

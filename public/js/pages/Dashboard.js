@@ -14,6 +14,33 @@ window.dashboardAddClient = () => {
   }, 100);
 };
 
+// ── Helpers de Avisos por Modal ────────────────────────────────
+function processNextAviso(avisos, index) {
+  if (index >= avisos.length) return; // Fim da fila
+  const a = avisos[index];
+
+  import('../utils.js').then(({ modal }) => {
+    modal(
+      `${a.tipo === 'danger' ? '🔴' : a.tipo === 'success' ? '🟢' : a.tipo === 'warning' ? '🟡' : '🔵'} ${a.titulo}`,
+      `<p style="font-size:0.95rem;white-space:pre-wrap;color:var(--text-dark)">${a.mensagem}</p>`,
+      {
+        confirmLabel: 'Entendi e Li as Informações',
+        onConfirm: async () => {
+          try {
+            await store.marcarAvisoLido(a.id);
+            processNextAviso(avisos, index + 1);
+            return true;
+          } catch (e) {
+            console.error('Erro ao marcar lido', e);
+            processNextAviso(avisos, index + 1);
+            return true;
+          }
+        }
+      }
+    );
+  });
+}
+
 // ── Shared Layout (sidebar + header) ────────────────────────
 export function renderLayout(router, pageTitle, pageContent, activeNav) {
   const consultant = auth.current;
@@ -203,12 +230,27 @@ export async function renderDashboard(router) {
   );
 
   try {
-    const [clients, anamneses, agendamentos, aniversariantes] = await Promise.all([
+    const [clients, anamneses, agendamentos, aniversariantes, avisosBanners, avisosModais] = await Promise.all([
       store.getClients().catch(() => []),
       store.getAnamneses().catch(() => []),
       store.getAgendamentos().catch(() => []),
       store.getAniversariantes().catch(() => []),
+      store.getAvisosBanner().catch(() => []),
+      store.getAvisosNaoLidos().catch(() => [])
     ]);
+
+    // ── Prepara Banners de Avisos ──
+    const bannersHtml = avisosBanners.length > 0 ? avisosBanners.map(a => `
+      <div style="background:${a.tipo === 'danger' ? '#fee2e2' : a.tipo === 'success' ? '#dcfce7' : a.tipo === 'warning' ? '#fef3c7' : '#e0e7ff'};
+                  border-left: 4px solid ${a.tipo === 'danger' ? '#ef4444' : a.tipo === 'success' ? '#22c55e' : a.tipo === 'warning' ? '#f59e0b' : '#6366f1'};
+                  padding:12px 16px; margin-bottom: 20px; border-radius: 4px; display:flex; gap:12px; align-items:flex-start;">
+        <span style="font-size:1.4rem">${a.tipo === 'danger' ? '🔴' : a.tipo === 'success' ? '🟢' : a.tipo === 'warning' ? '🟡' : '🔵'}</span>
+        <div>
+          <b style="color:var(--text-dark);font-size:0.95rem">${a.titulo}</b>
+          <p style="margin:4px 0 0;font-size:0.85rem;color:var(--text-muted);white-space:pre-wrap;">${a.mensagem}</p>
+        </div>
+      </div>
+    `).join('') : '';
 
     // ── Follow-ups do localStorage ──
     const followupsArr = [];
@@ -293,6 +335,7 @@ export async function renderDashboard(router) {
     else if (anamnesesPendentes.length > 0) metaText = `Você recebeu novas anamneses! Há <strong>${anamnesesPendentes.length} pendentes</strong> esperando sua revisão. 📋`;
 
     const contentHtml = `
+  ${bannersHtml}
   <p style="color:var(--text-muted);margin:-10px 0 24px;font-size:0.95rem">${metaText}</p>
 
   <div class="dashboard-grid">
@@ -446,6 +489,11 @@ export async function renderDashboard(router) {
     // Update page-content with real data (no full re-render to avoid losing sidebar)
     const pc = document.getElementById('page-content');
     if (pc) pc.innerHTML = contentHtml;
+
+    // ── Inicia processamento de Modais de Aviso Não Lidos ──
+    if (avisosModais && avisosModais.length > 0) {
+      setTimeout(() => processNextAviso(avisosModais, 0), 600);
+    }
 
   } catch (err) {
     console.error('Dashboard error:', err);

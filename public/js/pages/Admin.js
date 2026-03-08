@@ -22,6 +22,11 @@ const adminApi = {
   getHistorico: (id) => api('GET', `/api/admin/users/${id}/historico`),
   getPagamentos: (id) => api('GET', `/api/admin/users/${id}/pagamentos`),
   reenviarAcesso: (id) => api('POST', `/api/admin/users/${id}/reenviar-acesso`, {}),
+  // Avisos
+  getAvisos: () => api('GET', '/api/admin/avisos'),
+  createAviso: (data) => api('POST', '/api/admin/avisos', data),
+  updateAviso: (id, data) => api('PUT', `/api/admin/avisos/${id}`, data),
+  deleteAviso: (id) => api('DELETE', `/api/admin/avisos/${id}`),
 };
 
 const PLAN_LABELS = {
@@ -88,6 +93,11 @@ export async function renderAdmin(router) {
   let filterStatus = '';
   let filterPlano = '';
   let planos = [];
+  let avisos = [];
+
+  async function loadAvisos() {
+    try { avisos = await adminApi.getAvisos(); } catch { avisos = []; }
+  }
 
   async function loadPlanos() {
     try { planos = await adminApi.getPlanos(); } catch { planos = []; }
@@ -161,10 +171,10 @@ export async function renderAdmin(router) {
       </div>
 
       <!-- Abas -->
-      <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--border-light)">
-        ${['membros', 'planos', 'gateway'].map(tab => `
-          <button id="tab-${tab}" class="btn ${activeTab === tab ? 'btn-primary' : 'btn-secondary'}" style="border-radius:8px 8px 0 0;border-bottom:none;padding:8px 18px;font-size:0.85rem" data-tab="${tab}">
-            ${{ membros: '👥 Membros', planos: '📦 Planos', gateway: '💳 Gateway' }[tab]}
+      <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--border-light);overflow-x:auto">
+        ${['membros', 'planos', 'avisos', 'gateway'].map(tab => `
+          <button id="tab-${tab}" class="btn ${activeTab === tab ? 'btn-primary' : 'btn-secondary'}" style="border-radius:8px 8px 0 0;border-bottom:none;padding:8px 18px;font-size:0.85rem;white-space:nowrap" data-tab="${tab}">
+            ${{ membros: '👥 Membros', planos: '📦 Planos', avisos: '🔔 Avisos', gateway: '💳 Gateway' }[tab]}
           </button>`).join('')}
       </div>
 
@@ -194,6 +204,7 @@ export async function renderAdmin(router) {
     const tabContent = pc.querySelector('#tab-content');
     if (activeTab === 'membros') renderMembros(tabContent);
     else if (activeTab === 'planos') renderPlanosSection(tabContent);
+    else if (activeTab === 'avisos') renderAvisosSection(tabContent);
     else if (activeTab === 'gateway') renderGatewaySection(tabContent);
   }
 
@@ -657,6 +668,148 @@ export async function renderAdmin(router) {
     });
     setTimeout(() => document.getElementById('ac-dias')?.focus(), 100);
   }
+
+  // ── Aba Avisos ─────────────────────────────────────────────────
+  async function renderAvisosSection(container) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">⏳ Carregando avisos...</div>`;
+    await loadAvisos();
+
+    const renderTable = () => `
+      <div class="card">
+        <div style="padding:14px 18px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between">
+          <h3 style="margin:0;font-size:0.95rem">🔔 Histórico de Avisos</h3>
+          <button class="btn btn-primary btn-sm" id="btn-novo-aviso">+ Criar Aviso</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="clients-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Título</th>
+                <th>Tipo</th>
+                <th>Local</th>
+                <th>Status</th>
+                <th>Leituras (Modais)</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${avisos.length === 0 ? '<tr><td colspan="7" style="text-align:center;padding:30px">Nenhum aviso disparado.</td></tr>' : avisos.map(a => `
+                <tr>
+                  <td style="font-size:0.8rem">${formatDate(a.criado_em)}</td>
+                  <td><strong>${a.titulo}</strong></td>
+                  <td><span style="font-size:0.75rem;padding:2px 8px;border-radius:10px;background:${a.tipo === 'danger' ? '#fee2e2;color:#991b1b' : a.tipo === 'success' ? '#dcfce7;color:#166534' : a.tipo === 'warning' ? '#fef3c7;color:#92400e' : '#e0e7ff;color:#3730a3'}">${a.tipo}</span></td>
+                  <td style="font-size:0.8rem">${a.exibicao === 'ambos' ? 'Modal + Banner' : a.exibicao}</td>
+                  <td>${a.ativo ? '✅ Ativo' : '⛔ Inativo'}</td>
+                  <td style="text-align:center">${a.exibicao === 'banner' ? '—' : a.leituras || 0}</td>
+                  <td>
+                    <div style="display:flex;gap:4px">
+                      <button class="btn btn-secondary btn-sm" data-edit-aviso='${JSON.stringify(a)}' title="Editar">✏️</button>
+                      <button class="btn btn-danger btn-sm" data-del-aviso-id="${a.id}" data-del-aviso-nome="${a.titulo}" title="Excluir">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    function showAvisoModal(aviso = null) {
+      const a = aviso || { ativo: true, tipo: 'info', exibicao: 'ambos' };
+      modal(`${aviso ? '✏️ Editar' : '➕ Disparar'} Aviso`, `
+        <div class="form-grid">
+          <div class="form-group form-field-full">
+            <label class="field-label">Título do Aviso *</label>
+            <input class="field-input" id="av_titulo" value="${a.titulo || ''}" placeholder="Ex: Manutenção Programada ou Nova Atualização!" />
+          </div>
+          <div class="form-group form-field-full">
+            <label class="field-label">Mensagem Completa *</label>
+            <textarea class="field-textarea" id="av_mensagem" rows="3" placeholder="Escreva o texto do aviso... Pode usar emojis!">${a.mensagem || ''}</textarea>
+          </div>
+          <div class="form-group">
+            <label class="field-label">Tipo Visual</label>
+            <select class="field-select" id="av_tipo">
+              <option value="info" ${a.tipo === 'info' ? 'selected' : ''}>🔵 Informativo</option>
+              <option value="success" ${a.tipo === 'success' ? 'selected' : ''}>🟢 Sucesso / Novidade</option>
+              <option value="warning" ${a.tipo === 'warning' ? 'selected' : ''}>🟡 Alerta / Importante</option>
+              <option value="danger" ${a.tipo === 'danger' ? 'selected' : ''}>🔴 Urgente / Erro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="field-label">Local de Exibição</label>
+            <select class="field-select" id="av_exibicao">
+              <option value="ambos" ${a.exibicao === 'ambos' ? 'selected' : ''}>Modal Obrigatório + Banner no Topo</option>
+              <option value="modal" ${a.exibicao === 'modal' ? 'selected' : ''}>Apenas Modal (Pop-up)</option>
+              <option value="banner" ${a.exibicao === 'banner' ? 'selected' : ''}>Apenas Banner Fixo (Silencioso)</option>
+            </select>
+          </div>
+          <div class="form-group form-field-full" style="display:flex;gap:16px;margin-top:8px">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.9rem">
+              <input type="checkbox" id="av_ativo" ${a.ativo ? 'checked' : ''} style="width:16px;height:16px"> 
+              Deixar ativo (Visível imediatamente para as consultoras)
+            </label>
+          </div>
+        </div>
+        ${!aviso ? '<div style="margin-top:10px;font-size:0.8rem;color:#b45309;padding:10px;background:#fffbeb;border-radius:8px">⚠️ <strong>Atenção:</strong> Ao salvar, este aviso será disparado imediatamente para todas as usuárias ativas!</div>' : ''}
+      `, {
+        confirmLabel: aviso ? '💾 Salvar Alterações' : '🚀 Disparar Aviso',
+        onConfirm: async () => {
+          const payload = {
+            titulo: document.getElementById('av_titulo')?.value?.trim(),
+            mensagem: document.getElementById('av_mensagem')?.value?.trim(),
+            tipo: document.getElementById('av_tipo')?.value,
+            exibicao: document.getElementById('av_exibicao')?.value,
+            ativo: document.getElementById('av_ativo')?.checked,
+          };
+          if (!payload.titulo || !payload.mensagem) {
+            toast('Título e mensagem são obrigatórios.', 'error');
+            return false;
+          }
+          try {
+            if (aviso) await adminApi.updateAviso(aviso.id, payload);
+            else await adminApi.createAviso(payload);
+            toast(`Aviso ${aviso ? 'atualizado' : 'disparado'} com sucesso! ✅`);
+            await loadAvisos();
+            container.innerHTML = renderTable();
+            bindAvisoEvents();
+            return true;
+          } catch (err) {
+            toast('Erro: ' + err.message, 'error');
+            return false;
+          }
+        }
+      });
+    }
+
+    function bindAvisoEvents() {
+      container.querySelector('#btn-novo-aviso')?.addEventListener('click', () => showAvisoModal());
+      container.querySelectorAll('[data-edit-aviso]').forEach(btn => {
+        btn.addEventListener('click', () => showAvisoModal(JSON.parse(btn.dataset.editAviso)));
+      });
+      container.querySelectorAll('[data-del-aviso-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          modal('🗑️ Excluir Aviso', `<p>Apagar permanentemente o aviso <strong>${btn.dataset.delAvisoNome}</strong>?</p><p style="font-size:0.8rem;color:var(--text-muted)">Isso vai retirá-lo dos banners e limpar do banco de dados.</p>`, {
+            confirmLabel: 'Excluir', confirmClass: 'btn-danger',
+            onConfirm: async () => {
+              try {
+                await adminApi.deleteAviso(btn.dataset.delAvisoId);
+                toast('Aviso deletado.');
+                await loadAvisos();
+                container.innerHTML = renderTable();
+                bindAvisoEvents();
+              } catch (err) { toast('Erro: ' + err.message, 'error'); }
+            }
+          });
+        });
+      });
+    }
+
+    container.innerHTML = renderTable();
+    bindAvisoEvents();
+  }
+
 
   // ── Aba Planos ─────────────────────────────────────────────────
   async function renderPlanosSection(container) {

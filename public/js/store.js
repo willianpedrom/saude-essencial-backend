@@ -191,5 +191,10 @@ export const store = {
     /* ---- PROFILE ---- */
     getProfile() { return api('GET', '/api/auth/profile'); },
     updateProfile(data) { return api('PUT', '/api/auth/profile', data); },
+
+    /* ---- AVISOS DO SISTEMA ---- */
+    getAvisosNaoLidos() { return api('GET', '/api/avisos/nao-lidos'); },
+    getAvisosBanner() { return api('GET', '/api/avisos/banner'); },
+    marcarAvisoLido(id) { return api('POST', `/api/avisos/${id}/lido`); }
 };
 

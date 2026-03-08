@@ -222,3 +222,30 @@ ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMPTZ;
 
 -- ── Trial de 7 dias (era 14) ────────────────────────────────────────────────
 ALTER TABLE assinaturas ALTER COLUMN trial_fim SET DEFAULT (NOW() + INTERVAL '7 days');
+-- ==========================================
+-- CENTRAL DE AVISOS DO SISTEMA
+-- ==========================================
+
+-- Avisos criados pelo Admin
+CREATE TABLE IF NOT EXISTS avisos_sistema (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  titulo        VARCHAR(255) NOT NULL,
+  mensagem      TEXT NOT NULL,
+  tipo          VARCHAR(50) DEFAULT 'info', -- info, success, warning, danger
+  exibicao      VARCHAR(50) DEFAULT 'ambos', -- modal, banner, ambos
+  ativo         BOOLEAN DEFAULT TRUE,
+  criado_em     TIMESTAMPTZ DEFAULT NOW(),
+  atualizado_em TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Controle de avisos já lidos pelas consultoras (para não exibir modais repetidos)
+CREATE TABLE IF NOT EXISTS avisos_lidos (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  aviso_id      UUID NOT NULL REFERENCES avisos_sistema(id) ON DELETE CASCADE,
+  consultora_id UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+  lido_em       TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(aviso_id, consultora_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_avisos_lidos_consultora ON avisos_lidos(consultora_id);
+CREATE INDEX IF NOT EXISTS idx_avisos_lidos_aviso ON avisos_lidos(aviso_id);

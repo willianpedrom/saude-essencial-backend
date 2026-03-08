@@ -115,6 +115,7 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/publico', require('./routes/publico'));
 app.use('/api/hotmart', require('./routes/hotmart'));
 app.use('/api/links', require('./routes/links'));
+app.use('/api/avisos', require('./routes/avisos'));
 
 // Rota pública raiz para SEO / Open Graph (Prévias de Link)
 app.use('/convite', require('./routes/share'));
