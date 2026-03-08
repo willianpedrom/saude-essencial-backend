@@ -160,16 +160,8 @@ export async function renderFollowup(router) {
     `<div style="display:flex;align-items:center;justify-content:center;height:200px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando...</div>`,
     'followup');
 
-  const clients = await store.getClients().catch(() => []);
-
-  const storageKey = `se_followups_${auth.current?.id}`;
-
-  function getFollowups() {
-    try { return JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch { return []; }
-  }
-  function saveFollowups(list) {
-    localStorage.setItem(storageKey, JSON.stringify(list));
-  }
+  let clients = [];
+  let followups = [];
 
   // ── Browser Notification helper ────────────────────────────────
   async function requestNotifPermission() {
@@ -180,12 +172,12 @@ export async function renderFollowup(router) {
   }
 
   function scheduleNotification(followup, clientName) {
-    if (!followup.dueDateTime) return;
-    const fireAt = new Date(followup.dueDateTime).getTime();
+    const dueRaw = followup.due_date_time || followup.dueDateTime;
+    if (!dueRaw) return;
+    const fireAt = new Date(dueRaw).getTime();
     const now = Date.now();
-    const MAX_DELAY = 7 * 24 * 60 * 60 * 1000; // 7 days
+    const MAX_DELAY = 7 * 24 * 60 * 60 * 1000;
 
-    // 3 reminder points: 1 day, 1 hour, 10 minutes before
     const reminders = [
       { offset: 24 * 60 * 60 * 1000, label: '1 dia antes ⏰', body: `Oi ${clientName}, amanhã entraremos em contato! Fique de olho no WhatsApp. 💚` },
       { offset: 60 * 60 * 1000, label: '1 hora antes ⏰', body: `Oi ${clientName}, em 1 hora vou entrar em contato com você! 💚` },
@@ -200,7 +192,7 @@ export async function renderFollowup(router) {
           new Notification(`${label} — ${clientName}`, {
             body,
             icon: '/favicon.ico',
-            tag: `fu-${followup.id}-${offset}`, // prevent duplicates
+            tag: `fu-${followup.id}-${offset}`,
           });
         }
       }, delay);
@@ -208,71 +200,45 @@ export async function renderFollowup(router) {
   }
 
   function makeGoogleCalendarUrl(followup, clientName, clientPhone) {
-    if (!followup.dueDateTime) return null;
-    const start = new Date(followup.dueDateTime);
-    const end = new Date(start.getTime() + 30 * 60 * 1000); // 30min
+    const dueRaw = followup.due_date_time || followup.dueDateTime;
+    if (!dueRaw) return null;
+    const start = new Date(dueRaw);
+    const end = new Date(start.getTime() + 30 * 60 * 1000);
     const fmt = d => d.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
-
-    // details with phone if available
     const phone = (clientPhone || '').replace(/\D/g, '');
     const details = [
-      followup.note,
+      followup.nota || followup.note,
       phone ? `\nWhatsApp: https://wa.me/55${phone}` : ''
     ].filter(Boolean).join('');
-
     const params = new URLSearchParams({
       action: 'TEMPLATE',
       text: `💬 Follow-up: ${clientName}`,
       details,
       dates: `${fmt(start)}/${fmt(end)}`,
-      // Lembretes: 1 dia antes (1440 min) + na hora (0 min)
-      crm: 'POPUP',
-      cr: '1440',
     });
-    // Google Calendar aceita múltiplos rem=X na URL
-    const url = `https://calendar.google.com/calendar/render?${params}&rem=1440&rem=0`;
-    return url;
+    return `https://calendar.google.com/calendar/render?${params}&rem=1440&rem=0`;
   }
 
   function makeWhatsAppUrl(followup, client) {
-    const phone = (client?.phone || client?.telefone || '').replace(/\D/g, '');
-    const clientName = client?.name || client?.nome || 'você';
-
-    // Short, direct message as requested
+    const phone = (client?.telefone || client?.phone || '').replace(/\D/g, '');
+    const clientName = client?.nome || client?.name || 'você';
     const msg = encodeURIComponent(
       `Oi ${clientName}, combinamos que eu entraria em contato hoje com você. Lembra? Podemos conversar agora? 💚`
     );
-    return phone
-      ? `https://wa.me/55${phone}?text=${msg}`
-      : `https://wa.me/?text=${msg}`;
+    return phone ? `https://wa.me/55${phone}?text=${msg}` : `https://wa.me/?text=${msg}`;
   }
 
+  // ── Render list ────────────────────────────────────────────────
   function renderList() {
-    const followups = getFollowups().sort((a, b) => {
-      // 1. Status: Overdue > Pending > Done
-      const sA = a.status === 'pending' && a.dueDateTime && new Date(a.dueDateTime) < new Date() ? 'overdue' : a.status;
-      const sB = b.status === 'pending' && b.dueDateTime && new Date(b.dueDateTime) < new Date() ? 'overdue' : b.status;
-
-      const priority = { overdue: 0, pending: 1, done: 2 };
-      if (priority[sA] !== priority[sB]) return priority[sA] - priority[sB];
-
-      // 2. Data ascendente (mais próximos primeiro)
-      if (sA !== 'done') {
-        const dA = a.dueDateTime ? new Date(a.dueDateTime).getTime() : Infinity;
-        const dB = b.dueDateTime ? new Date(b.dueDateTime).getTime() : Infinity;
-        return dA - dB;
-      }
-
-      // Concluidos: mais recentes primeiro
-      const cA = new Date(a.createdAt).getTime();
-      const cB = new Date(b.createdAt).getTime();
-      return cB - cA;
-    });
-
     const container = document.getElementById('followup-list');
     if (!container) return;
+
     const pending = followups.filter(f => f.status !== 'done');
     const done = followups.filter(f => f.status === 'done');
+
+    // Update counter in header
+    const counter = document.getElementById('fu-counter');
+    if (counter) counter.textContent = `${pending.length} pendente(s)`;
 
     if (followups.length === 0) {
       container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💬</div><h4>Nenhum follow-up</h4>
@@ -281,39 +247,36 @@ export async function renderFollowup(router) {
     }
 
     function renderCard(f) {
-      const c = clients.find(cl => cl.id === f.clientId);
-      const clientName = c?.name || c?.nome || 'Cliente';
-      let statusLabel = '';
-      let statusColor = '';
-      let statusBg = '';
+      // Normalize campos — API retorna snake_case, localStorage usava camelCase
+      const clienteId = f.cliente_id || f.clientId;
+      const nota = f.nota || f.note || '';
+      const dueRaw = f.due_date_time || f.dueDateTime;
+      const clientName = f.cliente_nome || clients.find(c => c.id === clienteId)?.nome || clients.find(c => c.id === clienteId)?.name || 'Cliente';
+      const clientPhone = f.cliente_telefone || clients.find(c => c.id === clienteId)?.telefone || clients.find(c => c.id === clienteId)?.phone || '';
+      const clientEmail = f.cliente_email || clients.find(c => c.id === clienteId)?.email || '';
+
+      let statusLabel = '', statusColor = '', statusBg = '';
 
       if (f.status === 'done') {
-        statusLabel = '✅ Concluído';
-        statusColor = '#166534'; statusBg = '#dcfce7';
+        statusLabel = '✅ Concluído'; statusColor = '#166534'; statusBg = '#dcfce7';
       } else {
         const now = new Date();
-        const due = f.dueDateTime ? new Date(f.dueDateTime) : null;
+        const due = dueRaw ? new Date(dueRaw) : null;
         if (!due) {
-          statusLabel = '⏳ Pendente';
-          statusColor = '#854d0e'; statusBg = '#fef9c3';
+          statusLabel = '⏳ Pendente'; statusColor = '#854d0e'; statusBg = '#fef9c3';
         } else if (due < now && due.toDateString() !== now.toDateString()) {
-          statusLabel = '⚠️ Atrasado';
-          statusColor = '#991b1b'; statusBg = '#fee2e2'; // Vermelho mais forte
+          statusLabel = '⚠️ Atrasado'; statusColor = '#991b1b'; statusBg = '#fee2e2';
         } else if (due.toDateString() === now.toDateString()) {
-          statusLabel = '🔥 HOJE';
-          statusColor = '#b45309'; statusBg = '#ffedd5'; // Laranja destaque
+          statusLabel = '🔥 HOJE'; statusColor = '#b45309'; statusBg = '#ffedd5';
         } else {
-          statusLabel = '⏳ Pendente';
-          statusColor = '#1e40af'; statusBg = '#dbeafe'; // Azul para futuro
+          statusLabel = '⏳ Pendente'; statusColor = '#1e40af'; statusBg = '#dbeafe';
         }
       }
 
-      const gcalUrl = makeGoogleCalendarUrl(f, clientName, c?.phone || c?.telefone);
-      const waUrl = makeWhatsAppUrl(f, c);
-
+      const fakeClient = { nome: clientName, telefone: clientPhone };
+      const gcalUrl = makeGoogleCalendarUrl(f, clientName, clientPhone);
+      const waUrl = makeWhatsAppUrl(f, fakeClient);
       const initials = clientName.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
-
-      // Determine card border color based on statusLabel mapping
       const borderColor = { '✅ Concluído': '#22c55e', '⏳ Pendente': '#3b82f6', '⚠️ Atrasado': '#ef4444', '🔥 HOJE': '#f59e0b' }[statusLabel] || '#f59e0b';
 
       return `
@@ -326,22 +289,18 @@ export async function renderFollowup(router) {
                   <span style="font-weight:700;font-size:0.95rem">${clientName}</span>
                   <span style="background:${statusBg};color:${statusColor};font-size:0.72rem;padding:2px 8px;border-radius:10px">${statusLabel}</span>
                 </div>
-                <div style="color:var(--text-body);font-size:0.88rem;margin-bottom:8px">${f.note}</div>
+                <div style="color:var(--text-body);font-size:0.88rem;margin-bottom:8px">${nota}</div>
                 <div style="font-size:0.78rem;color:var(--text-muted);display:flex;gap:12px;flex-wrap:wrap">
-                  ${f.dueDateTime ? `<span>📅 ${new Date(f.dueDateTime).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })} às ${new Date(f.dueDateTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>` : ''}
-                  ${c?.email ? `<span>✉️ ${c.email}</span>` : ''}
-                  ${(c?.phone || c?.telefone) ? `<span>📱 ${c?.phone || c?.telefone}</span>` : ''}
+                  ${dueRaw ? `<span>📅 ${new Date(dueRaw).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })} às ${new Date(dueRaw).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>` : ''}
+                  ${clientEmail ? `<span>✉️ ${clientEmail}</span>` : ''}
+                  ${clientPhone ? `<span>📱 ${clientPhone}</span>` : ''}
                 </div>
               </div>
               <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;align-items:flex-end">
                 ${f.status !== 'done' ? `<button class="btn btn-primary btn-sm" data-done="${f.id}">✅ Concluir</button>` : ''}
                 <a class="btn btn-sm" style="background:#25D366;color:white;text-decoration:none;display:flex;align-items:center;gap:4px"
-                  href="${waUrl}" target="_blank" title="Enviar WhatsApp com mensagem personalizada">
-                  📱 WhatsApp
-                </a>
-                ${gcalUrl ? `<a class="btn btn-secondary btn-sm" href="${gcalUrl}" target="_blank" style="text-decoration:none;display:flex;align-items:center;gap:4px" title="Adicionar ao Google Agenda">
-                  📆 Agenda
-                </a>` : ''}
+                  href="${waUrl}" target="_blank">📱 WhatsApp</a>
+                ${gcalUrl ? `<a class="btn btn-secondary btn-sm" href="${gcalUrl}" target="_blank" style="text-decoration:none;display:flex;align-items:center;gap:4px">📆 Agenda</a>` : ''}
                 <button class="btn btn-sm" style="background:#f3f4f6;color:#374151;font-size:0.72rem" data-del-fu="${f.id}" title="Excluir">🗑️</button>
               </div>
             </div>
@@ -361,30 +320,38 @@ export async function renderFollowup(router) {
         </div>
         ${done.map(renderCard).join('')}` : ''}`;
 
+    // Bind events
     container.querySelectorAll('[data-done]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const list = getFollowups();
-        const idx = list.findIndex(f => f.id === btn.dataset.done);
-        if (idx >= 0) { list[idx].status = 'done'; saveFollowups(list); }
-        renderList();
-        toast('Follow-up concluído! ✅');
+      btn.addEventListener('click', async () => {
+        try {
+          await store.updateFollowupStatus(btn.dataset.done, 'done');
+          const fu = followups.find(f => f.id === btn.dataset.done);
+          if (fu) fu.status = 'done';
+          renderList();
+          toast('Follow-up concluído! ✅');
+        } catch (e) {
+          toast('Erro ao atualizar: ' + e.message, 'error');
+        }
       });
     });
 
     container.querySelectorAll('[data-del-fu]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const list = getFollowups().filter(f => f.id !== btn.dataset.delFu);
-        saveFollowups(list);
-        renderList();
-        toast('Follow-up removido.', 'warning');
+      btn.addEventListener('click', async () => {
+        try {
+          await store.deleteFollowup(btn.dataset.delFu);
+          followups = followups.filter(f => f.id !== btn.dataset.delFu);
+          renderList();
+          toast('Follow-up removido.', 'warning');
+        } catch (e) {
+          toast('Erro ao remover: ' + e.message, 'error');
+        }
       });
     });
   }
 
+  // ── Show add modal ─────────────────────────────────────────────
   async function showAddModal() {
-    // Request notification permission
-    const notifStatus = await requestNotifPermission();
-
+    await requestNotifPermission();
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const defaultDate = tomorrow.toISOString().slice(0, 10);
@@ -394,19 +361,13 @@ export async function renderFollowup(router) {
         <div class="form-group form-field-full">
           <label class="field-label">Cliente *</label>
           <div style="position:relative">
-            <input
-              class="field-input"
-              id="fu-client-search"
-              placeholder="🔍 Buscar cliente pelo nome..."
-              autocomplete="off"
-            />
+            <input class="field-input" id="fu-client-search" placeholder="🔍 Buscar cliente pelo nome..." autocomplete="off" />
             <input type="hidden" id="fu-client" />
-            <div
-              id="fu-client-dropdown"
+            <div id="fu-client-dropdown"
               style="display:none;position:absolute;top:100%;left:0;right:0;z-index:999;
                      background:#fff;border:1px solid var(--border);border-radius:10px;
-                     box-shadow:0 8px 24px rgba(0,0,0,0.12);max-height:220px;overflow-y:auto;margin-top:4px"
-            ></div>
+                     box-shadow:0 8px 24px rgba(0,0,0,0.12);max-height:220px;overflow-y:auto;margin-top:4px">
+            </div>
           </div>
         </div>
         <div class="form-group form-field-full">
@@ -414,7 +375,7 @@ export async function renderFollowup(router) {
           <textarea class="field-textarea" id="fu-note" rows="3" placeholder="Ex: Verificar resultado após 30 dias, enviar protocolo atualizado..."></textarea>
         </div>
         <div class="form-group">
-          <label class="field-label">📅 Data do lembrete *</label>
+          <label class="field-label">📅 Data do lembrete</label>
           <input class="field-input" id="fu-date" type="date" value="${defaultDate}" />
         </div>
         <div class="form-group">
@@ -423,7 +384,6 @@ export async function renderFollowup(router) {
         </div>
         <div style="background:#f0fdf4;border-radius:8px;padding:12px;font-size:0.82rem;color:#1a4731" class="form-group form-field-full">
           📅 Após salvar, clique em <strong>📆 Adicionar ao Google Agenda</strong> no card do follow-up.
-          Os lembretes serão configurados automaticamente: <strong>1 dia antes</strong> e <strong>na hora do contato</strong>.
         </div>
       </div>`, {
       confirmLabel: '💾 Salvar Follow-up',
@@ -434,33 +394,27 @@ export async function renderFollowup(router) {
 
         function renderDropdown(query) {
           const q = query.toLowerCase().trim();
-          const matches = q
-            ? clients.filter(c => (c.name || c.nome || '').toLowerCase().includes(q))
-            : clients;
-
+          const matches = q ? clients.filter(c => (c.nome || c.name || '').toLowerCase().includes(q)) : clients;
           if (!matches.length) {
-            dropdown.innerHTML = `<div style="padding:12px 16px;color:var(--text-muted);font-size:0.9rem">Nenhuma cliente encontrada</div>`;
+            dropdown.innerHTML = `<div style="padding:12px 16px;color:var(--text-muted);font-size:0.9rem">Nenhum cliente encontrado</div>`;
           } else {
             dropdown.innerHTML = matches.map(c => {
-              const name = c.name || c.nome || '';
-              const phone = c.phone || c.telefone || '';
-              const highlighted = name.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
+              const name = c.nome || c.name || '';
+              const phone = c.telefone || c.phone || '';
+              const hl = name.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
                 '<strong style="color:var(--green-700)">$1</strong>');
-              return `<div
-                data-id="${c.id}"
-                data-name="${name}"
+              return `<div data-id="${c.id}" data-name="${name}"
                 style="padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;
                        border-bottom:1px solid var(--border);transition:background 0.15s"
                 onmouseover="this.style.background='var(--green-50)'"
-                onmouseout="this.style.background=''"
-              >
+                onmouseout="this.style.background=''">
                 <div style="width:32px;height:32px;border-radius:50%;background:var(--green-100);
                             color:var(--green-700);font-weight:700;display:flex;align-items:center;
                             justify-content:center;flex-shrink:0;font-size:0.85rem">
                   ${name[0]?.toUpperCase() || '?'}
                 </div>
                 <div>
-                  <div style="font-size:0.92rem">${highlighted}</div>
+                  <div style="font-size:0.92rem">${hl}</div>
                   ${phone ? `<div style="font-size:0.75rem;color:var(--text-muted)">${phone}</div>` : ''}
                 </div>
               </div>`;
@@ -469,75 +423,61 @@ export async function renderFollowup(router) {
           dropdown.style.display = 'block';
         }
 
-        searchInput.addEventListener('input', () => {
-          hiddenInput.value = '';
-          renderDropdown(searchInput.value);
-        });
-
-        searchInput.addEventListener('focus', () => {
-          renderDropdown(searchInput.value);
-        });
-
-        dropdown.addEventListener('mousedown', (e) => {
+        searchInput.addEventListener('input', () => { hiddenInput.value = ''; renderDropdown(searchInput.value); });
+        searchInput.addEventListener('focus', () => renderDropdown(searchInput.value));
+        dropdown.addEventListener('mousedown', e => {
           const item = e.target.closest('[data-id]');
           if (!item) return;
           hiddenInput.value = item.dataset.id;
           searchInput.value = item.dataset.name;
           dropdown.style.display = 'none';
         });
-
-        document.addEventListener('click', (e) => {
-          if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.style.display = 'none';
-          }
-        }, { once: false, capture: true });
+        document.addEventListener('click', e => {
+          if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) dropdown.style.display = 'none';
+        }, { capture: true });
       },
       onConfirm: async () => {
         const clientId = document.getElementById('fu-client').value;
-        const note = document.getElementById('fu-note').value.trim();
-        if (!clientId) { toast('Selecione uma cliente na lista de sugestões', 'error'); return; }
-        if (!note) { toast('Preencha a anotação / tarefa', 'error'); return; }
-
+        const nota = document.getElementById('fu-note').value.trim();
+        if (!clientId) { toast('Selecione um cliente na lista de sugestões', 'error'); return; }
+        if (!nota) { toast('Preencha a anotação / tarefa', 'error'); return; }
         const date = document.getElementById('fu-date').value;
         const time = document.getElementById('fu-time').value || '09:00';
-        const dueDateTime = date ? `${date}T${time}:00` : null;
-        const wantsNotif = document.getElementById('fu-notif')?.checked !== false;
-
-        const followup = {
-          id: Date.now().toString(),
-          clientId,
-          note,
-          dueDateTime,
-          status: 'pending',
-          createdAt: new Date().toISOString()
-        };
-        const list = getFollowups();
-        list.push(followup);
-        saveFollowups(list);
-        toast('Follow-up salvo! 💬 Clique em "📆 Agenda" para adicionar ao Google Calendar com lembretes.', 'success');
-        renderList();
+        const due_date_time = date ? `${date}T${time}:00` : null;
+        try {
+          const novo = await store.addFollowup({ cliente_id: clientId, nota, due_date_time });
+          followups.unshift(novo);
+          toast('Follow-up salvo! 💬 Clique em "📆 Agenda" para adicionar ao Google Calendar.', 'success');
+          renderList();
+          return true;
+        } catch (e) {
+          toast('Erro ao salvar: ' + e.message, 'error');
+        }
       }
     });
   }
 
-  // Schedule notifications for existing pending followups
-  (async () => {
-    const perm = await requestNotifPermission();
-    if (perm === 'granted') {
-      getFollowups()
-        .filter(f => f.status === 'pending' && f.dueDateTime)
-        .forEach(f => {
-          const c = clients.find(cl => cl.id === f.clientId);
-          scheduleNotification(f, c?.name || c?.nome || 'Cliente');
-        });
-    }
-  })();
+  // ── Load ───────────────────────────────────────────────────────
+  [clients, followups] = await Promise.all([
+    store.getClients().catch(() => []),
+    store.getFollowups().catch(() => []),
+  ]);
 
+  // ── Agendar notificações dos pendentes ──
+  const perm = await requestNotifPermission();
+  if (perm === 'granted') {
+    followups.filter(f => f.status === 'pending' && (f.due_date_time || f.dueDateTime)).forEach(f => {
+      const name = f.cliente_nome || clients.find(c => c.id === (f.cliente_id || f.clientId))?.nome || 'Cliente';
+      scheduleNotification(f, name);
+    });
+  }
+
+  // ── Build page ─────────────────────────────────────────────────
   const pc = document.getElementById('page-content');
   if (pc) pc.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <div style="font-size:0.9rem;color:var(--text-muted)">
-        ${getFollowups().filter(f => f.status === 'pending').length} pendente(s)
+      <div id="fu-counter" style="font-size:0.9rem;color:var(--text-muted)">
+        ${followups.filter(f => f.status === 'pending').length} pendente(s)
       </div>
       <button class="btn btn-primary" id="btn-add-fu">+ Novo Follow-up</button>
     </div>

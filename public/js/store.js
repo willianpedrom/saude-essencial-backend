@@ -176,8 +176,15 @@ export const store = {
     setTestimonialTags(id, etiqueta_ids) { return api('PATCH', `/api/depoimentos/${id}/etiquetas`, { etiqueta_ids }); },
     deleteTestimonial(id) { return api('DELETE', `/api/depoimentos/${id}`); },
 
-    /* ---- NOT YET IN BACKEND — return empty arrays ---- */
-    getFollowups(_cid) { return Promise.resolve([]); },
+    /* ---- FOLLOW-UPS (banco de dados) ---- */
+    async getFollowups() {
+        const list = await api('GET', '/api/followups');
+        return Array.isArray(list) ? list : [];
+    },
+    addFollowup(data) { return api('POST', '/api/followups', data); },
+    updateFollowupStatus(id, status) { return api('PATCH', `/api/followups/${id}/status`, { status }); },
+    deleteFollowup(id) { return api('DELETE', `/api/followups/${id}`); },
+
     getPurchases(_cid) { return Promise.resolve([]); },
     addPurchase(_cid, _data) { return Promise.resolve({}); },
 

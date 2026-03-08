@@ -249,3 +249,22 @@ CREATE TABLE IF NOT EXISTS avisos_lidos (
 
 CREATE INDEX IF NOT EXISTS idx_avisos_lidos_consultora ON avisos_lidos(consultora_id);
 CREATE INDEX IF NOT EXISTS idx_avisos_lidos_aviso ON avisos_lidos(aviso_id);
+
+-- ==========================================
+-- FOLLOW-UPS DE PÓS-VENDA
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS followups (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  consultora_id UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+  cliente_id    UUID REFERENCES clientes(id) ON DELETE SET NULL,
+  nota          TEXT NOT NULL,
+  due_date_time TIMESTAMPTZ,
+  status        VARCHAR(20) DEFAULT 'pending',  -- pending, done
+  criado_em     TIMESTAMPTZ DEFAULT NOW(),
+  atualizado_em TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_followups_consultora ON followups(consultora_id);
+CREATE INDEX IF NOT EXISTS idx_followups_cliente    ON followups(cliente_id);
+CREATE INDEX IF NOT EXISTS idx_followups_status     ON followups(status);
