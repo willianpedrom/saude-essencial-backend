@@ -627,24 +627,31 @@ export async function renderDashboard(router) {
     // ── Metas Mensais ──────────────────────────────────────────────
     const consultantId = consultant?.id || 'default';
     const metasKey = `se_metas_${consultantId}`;
-    const metasDefault = { vendas: 5, clientes: 10, followups: 20 };
+    const metasDefault = { leads: 20, vendas: 5, clientes: 10, cadastros: 3, followups: 20 };
     let metas;
     try { metas = { ...metasDefault, ...JSON.parse(localStorage.getItem(metasKey) || '{}') }; }
     catch { metas = { ...metasDefault }; }
 
     // Calcular progresso real do mês
+    const leadsMes = clients.filter(c =>
+      (c.pipeline_stage === 'lead_captado' || !c.pipeline_stage)
+      && new Date(c.criado_em || c.created_at || 0) >= thisMonth).length;
     const vendasMes = clients.filter(c => c.pipeline_stage === 'primeira_compra'
       && new Date(c.updated_at || c.criado_em || 0) >= thisMonth).length;
     const clientesMes = monthClients;
+    const cadastrosMes = clients.filter(c =>
+      c.recrutamento_stage === 'cadastrada'
+      && new Date(c.updated_at || c.criado_em || 0) >= thisMonth).length;
     const followupsMes = followupsArr.filter(f =>
       f.status === 'completed'
       && new Date(f.completed_at || f.updated_at || 0) >= thisMonth
     ).length;
 
-    function goalBar(label, icon, atual, meta, id) {
+    function goalBar(label, icon, atual, meta, id, barColorBase = '#60a5fa,#3b82f6') {
       const pctG = meta > 0 ? Math.min(100, Math.round((atual / meta) * 100)) : 0;
       const done = pctG >= 100;
-      const barColor = done ? 'linear-gradient(90deg,#22c55e,#16a34a)' : 'linear-gradient(90deg,#60a5fa,#3b82f6)';
+      const barColor = done ? 'linear-gradient(90deg,#22c55e,#16a34a)' : `linear-gradient(90deg,${barColorBase})`;
+      const bgColor = done ? '#bbf7d0' : '#dbeafe';
       return `
         <div style="margin-bottom:14px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
@@ -657,10 +664,12 @@ export async function renderDashboard(router) {
               </button>
             </div>
           </div>
-          <div style="height:7px;background:${done ? '#bbf7d0' : '#dbeafe'};border-radius:4px;overflow:hidden">
+          <div style="height:7px;background:${bgColor};border-radius:4px;overflow:hidden">
             <div style="height:100%;width:${pctG}%;background:${barColor};border-radius:4px;transition:width 0.8s ease"></div>
           </div>
-          ${done ? `<div style="font-size:0.72rem;color:#16a34a;font-weight:600;margin-top:3px">Meta batida! Parabéns! 🏆</div>` : `<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">${pctG}% — faltam ${meta - atual}</div>`}
+          ${done
+          ? `<div style="font-size:0.72rem;color:#16a34a;font-weight:600;margin-top:3px">Meta batida! Parabéns! 🏆</div>`
+          : `<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">${pctG}% — faltam ${meta - atual}</div>`}
         </div>`;
     }
 
@@ -671,9 +680,11 @@ export async function renderDashboard(router) {
           <span style="font-size:0.72rem;color:var(--text-muted)">${now.toLocaleString('pt-BR', { month: 'long' }).replace(/^./, s => s.toUpperCase())}</span>
         </div>
         <div class="card-body">
-          ${goalBar('Vendas Fechadas', '💰', vendasMes, metas.vendas, 'vendas')}
-          ${goalBar('Novos Clientes', '👥', clientesMes, metas.clientes, 'clientes')}
-          ${goalBar('Follow-ups Feitos', '✅', followupsMes, metas.followups, 'followups')}
+          ${goalBar('Leads Captados', '💧', leadsMes, metas.leads, 'leads', '#a78bfa,#7c3aed')}
+          ${goalBar('Vendas Fechadas', '💰', vendasMes, metas.vendas, 'vendas', '#34d399,#059669')}
+          ${goalBar('Novos Clientes', '👥', clientesMes, metas.clientes, 'clientes', '#60a5fa,#3b82f6')}
+          ${goalBar('Cadastros (Recrutamento)', '💼', cadastrosMes, metas.cadastros, 'cadastros', '#f97316,#ea580c')}
+          ${goalBar('Follow-ups Concluídos', '✅', followupsMes, metas.followups, 'followups', '#fb7185,#e11d48')}
         </div>
       </div>`;
 
@@ -889,7 +900,8 @@ document.body.addEventListener('click', e => {
   if (!btn) return;
   const id = btn.dataset.metaId;
   const currentVal = parseInt(btn.dataset.metaVal) || 0;
-  const labels = { vendas: 'Vendas Fechadas', clientes: 'Novos Clientes', followups: 'Follow-ups Feitos' };
+  const labels = { leads: 'Leads Captados', vendas: 'Vendas Fechadas', clientes: 'Novos Clientes', cadastros: 'Cadastros (Recrutamento)', followups: 'Follow-ups Concluídos' };
+
   const newVal = parseInt(prompt(`🎯 Nova meta de ${labels[id] || id} para este mês:`, currentVal));
   if (isNaN(newVal) || newVal < 0) return;
   try {
