@@ -130,7 +130,6 @@ export async function renderPipeline(router) {
     const phone = client.phone || client.telefone || '';
     const notes = client.pipeline_notas || '';
 
-    // Mensagens de quebra-gelo personalizadas por estágio (sem emojis complexos para compatibilidade com WhatsApp)
     const icebreakers = {
       lead_captado: `Oi ${firstName}, tudo bem com voce? Vi que voce demonstrou interesse em cuidar mais da sua saude. Posso te contar algo que pode fazer toda a diferenca no seu dia a dia?`,
       primeiro_contato: `Oi ${firstName}! Tudo bem? Lembrei de voce e queria saber como esta se sentindo. Tenho uma novidade que acho que combina muito com voce! Posso te contar?`,
@@ -147,6 +146,12 @@ export async function renderPipeline(router) {
     const waPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
     const waUrl = phone ? `https://wa.me/${waPhone}?text=${encodeURIComponent(message)}` : null;
 
+    // Get prev/next stage for mobile move buttons
+    const activeStages = getActiveStages();
+    const currentStageIdx = activeStages.findIndex(s => s.id === stageConfig.id);
+    const prevStage = currentStageIdx > 0 ? activeStages[currentStageIdx - 1] : null;
+    const nextStage = currentStageIdx !== -1 && currentStageIdx < activeStages.length - 1 ? activeStages[currentStageIdx + 1] : null;
+
     return `
     <div class="pipeline-card"
          draggable="true"
@@ -157,7 +162,7 @@ export async function renderPipeline(router) {
       <div class="pipeline-card-header">
         <div class="pipeline-card-avatar" style="background:linear-gradient(135deg,${stageConfig.color}88,${stageConfig.color}cc)">${initials}</div>
         <div class="pipeline-card-info">
-          <div class="pipeline-card-name">${fullName || '—'} ${client.tipo_cadastro === 'preferencial' ? ' 🛍️' : client.tipo_cadastro === 'consultora' ? ' 💼' : ''}</div>
+          <div class="pipeline-card-name">${fullName || '—'} ${client.tipo_cadastro === 'preferencial' ? ' 🛒' : client.tipo_cadastro === 'consultora' ? ' 💼' : ''}</div>
           ${phone ? `<div class="pipeline-card-phone">📱 ${phone}</div>` : ''}
         </div>
         <div class="pipeline-card-actions">
@@ -167,6 +172,10 @@ export async function renderPipeline(router) {
       </div>
       ${client.motivo_perda ? `<div class="pipeline-card-note" style="color:#ef4444;font-style:normal;font-weight:600;margin-bottom:2px">🛑 Motivo: ${client.motivo_perda}</div>` : ''}
       ${notes ? `<div class="pipeline-card-note">${notes}</div>` : ''}
+      <div class="pipeline-card-move-btns">
+        ${prevStage ? `<button class="pipeline-move-btn" data-move-id="${client.id}" data-move-to="${prevStage.id}" title="Mover para ${prevStage.label}">← ${prevStage.label.split(' ')[0]}</button>` : '<span></span>'}
+        ${nextStage ? `<button class="pipeline-move-btn pipeline-move-btn-next" data-move-id="${client.id}" data-move-to="${nextStage.id}" title="Avançar para ${nextStage.label}">${nextStage.label.split(' ')[0]} →</button>` : '<span></span>'}
+      </div>
     </div>`;
   }
 
@@ -243,6 +252,13 @@ export async function renderPipeline(router) {
       .pipeline-lost-header { padding:12px 16px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; font-size:0.88rem; font-weight:600; color:var(--text-muted); }
       .pipeline-lost-body { display:none; padding:8px; border-top:1px solid var(--border); display:flex; gap:10px; flex-wrap:wrap; }
       @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+      /* Mobile move buttons — visible on touch screens only */
+      .pipeline-card-move-btns { display:none; justify-content:space-between; gap:6px; margin-top:8px; padding-top:7px; border-top:1px solid var(--border); }
+      .pipeline-move-btn { flex:1; font-size:0.7rem; padding:4px 6px; border:1px solid var(--border); border-radius:6px; background:#f8fafc; color:var(--text-dark); cursor:pointer; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .pipeline-move-btn-next { background:var(--green-600); color:white; border-color:var(--green-600); }
+      @media (pointer: coarse), (max-width: 768px) {
+        .pipeline-card-move-btns { display:flex; }
+      }
     </style>
 
     <div style="display:flex; gap:8px; margin-bottom:20px; border-bottom:1px solid var(--border-light); padding-bottom:16px;">
@@ -293,129 +309,139 @@ export async function renderPipeline(router) {
     </div>`;
 
     bindEvents(pc);
+    initSortable(pc);
+  }
+
+  // ── Sortable.js: touch-friendly drag for all columns ──────────
+  function initSortable(pc) {
+    function loadSortable(cb) {
+      if (window.Sortable) { cb(); return; }
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js';
+      s.onload = cb;
+      document.head.appendChild(s);
+    }
+
+    loadSortable(() => {
+      pc.querySelectorAll('.pipeline-drop-zone').forEach(zone => {
+        new window.Sortable(zone, {
+          group: 'pipeline',
+          animation: 150,
+          ghostClass: 'pipeline-card-ghost',
+          chosenClass: 'pipeline-card-chosen',
+          dragClass: 'pipeline-card-dragging',
+          delay: 150,           // Required for better touch support
+          delayOnTouchOnly: true,
+          touchStartThreshold: 5,
+          onEnd: async (evt) => {
+            const targetStage = evt.to.dataset.targetStage;
+            const sourceStage = evt.from.dataset.targetStage;
+            const cardId = evt.item.dataset.id;
+            if (!targetStage || targetStage === sourceStage) return;
+            await moveCard(cardId, sourceStage, targetStage, pc);
+          },
+        });
+      });
+    });
+  }
+
+  // ── Shared move logic (used by DnD + mobile buttons) ──────────
+  async function moveCard(clientId, fromStage, targetStage, pc) {
+    const client = clients.find(c => c.id === clientId);
+    if (!client) return;
+    const isLost = targetStage === getActiveLostStage().id;
+
+    if (isLost) {
+      modal(`Perda de ${activeFunnel === 'vendas' ? 'Venda' : 'Oportunidade'} 😢`, `
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px">
+            Qual foi o principal motivo de ${client.nome || client.name} não ter fechado ${activeFunnel === 'vendas' ? 'negócio' : 'como consultora'}?
+          </p>
+          <div class="form-group" style="margin-bottom:12px">
+            <label class="field-label">Motivo de Perda</label>
+            <select class="field-input" id="input-motivo-perda">
+              <option value="Sem Resposta / Sumiu">Sem Resposta / Sumiu</option>
+              <option value="Achou Caro / Sem Dinheiro">Achou Caro / Sem Dinheiro</option>
+              <option value="Comprou com Outro (Concorrente)">Comprou com Outro (Concorrente)</option>
+              <option value="Desistiu / Adiou a Compra">Desistiu / Adiou a Compra</option>
+              <option value="Não era o momento certo">Não era o momento certo</option>
+              <option value="Outro">Outro (especificar nas notas)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="field-label">Detalhes adicionais (Nota)</label>
+            <textarea class="field-textarea" id="note-text" rows="3" placeholder="Ex: A pessoa não tem limite no cartão agora...">${activeFunnel === 'vendas' ? (client.pipeline_notas || '') : (client.recrutamento_notas || '')}</textarea>
+          </div>`, {
+        confirmLabel: 'Confirmar Perda',
+        cancelLabel: 'Cancelar',
+        onConfirm: async () => {
+          const motivo = document.getElementById('input-motivo-perda')?.value || 'Sem Resposta';
+          const note = document.getElementById('note-text')?.value || '';
+          try {
+            if (activeFunnel === 'vendas') {
+              await store.updateStage(clientId, targetStage, note, motivo);
+              client.pipeline_stage = targetStage;
+              client.motivo_perda = motivo;
+              client.pipeline_notas = note;
+            } else {
+              await store.updateRecrutamentoStage(clientId, targetStage, note, motivo);
+              client.recrutamento_stage = targetStage;
+              client.motivo_perda_recrutamento = motivo;
+              client.recrutamento_notas = note;
+            }
+            toast('Lead marcado como PERDIDO. Motivo registrado.', 'success');
+            render();
+          } catch (err) {
+            toast('Erro ao mover card: ' + err.message, 'error');
+            await load();
+          }
+        },
+        onCancel: () => render()
+      });
+      return;
+    }
+
+    // Optimistic update
+    if (activeFunnel === 'vendas') client.pipeline_stage = targetStage;
+    else client.recrutamento_stage = targetStage;
+    render();
+
+    try {
+      if (activeFunnel === 'vendas') await store.updateStage(clientId, targetStage);
+      else await store.updateRecrutamentoStage(clientId, targetStage);
+      const stageConf = [...getActiveStages(), getActiveLostStage()].find(s => s.id === targetStage);
+      toast(`Movido para ${stageConf?.icon || ''} ${stageConf?.label || targetStage}`, 'success');
+      if (targetStage === 'primeira_compra') {
+        setTimeout(() => toast('🎊 Parabéns pela venda! 💰', 'success'), 500);
+      }
+    } catch (err) {
+      toast('Erro ao mover card: ' + err.message, 'error');
+      await load();
+    }
   }
 
   function bindEvents(pc) {
-    let draggedId = null;
-    let draggedFrom = null;
-
     // Tabs
     pc.querySelector('#tab-vendas')?.addEventListener('click', () => { activeFunnel = 'vendas'; render(); });
     pc.querySelector('#tab-recrutamento')?.addEventListener('click', () => { activeFunnel = 'recrutamento'; render(); });
 
-    // Drag start
+    // Click on card opens offcanvas
     pc.querySelectorAll('.pipeline-card').forEach(card => {
-      card.addEventListener('dragstart', e => {
-        draggedId = card.dataset.id;
-        draggedFrom = card.dataset.stage;
-        card.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-      });
-      card.addEventListener('dragend', () => {
-        card.classList.remove('dragging');
-        pc.querySelectorAll('.pipeline-drop-zone').forEach(z => z.classList.remove('drag-over'));
-      });
-      // Click on card opens offcanvas
       card.addEventListener('click', e => {
-        if (e.target.closest('.pipeline-card-btn')) return; // Ignore action buttons
+        if (e.target.closest('.pipeline-card-btn, .pipeline-move-btn')) return;
         const c = clients.find(cl => cl.id === card.dataset.id);
         if (c) openClientOffcanvas(c);
       });
     });
 
-    // Drop zones
-    pc.querySelectorAll('.pipeline-drop-zone').forEach(zone => {
-      zone.addEventListener('dragover', e => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        pc.querySelectorAll('.pipeline-drop-zone').forEach(z => z.classList.remove('drag-over'));
-        zone.classList.add('drag-over');
-      });
-      zone.addEventListener('dragleave', e => {
-        if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over');
-      });
-      zone.addEventListener('drop', async e => {
-        e.preventDefault();
-        zone.classList.remove('drag-over');
-        const targetStage = zone.dataset.targetStage;
-        if (!draggedId || !targetStage || targetStage === draggedFrom) return;
-
-        const client = clients.find(c => c.id === draggedId);
-        if (!client) return;
-
-        const isLost = targetStage === getActiveLostStage().id;
-
-        // Se o destino for a lixeira 'perdido' ou 'nao_tem_interesse_agora'
-        if (isLost) {
-          modal(`Perda de ${activeFunnel === 'vendas' ? 'Venda' : 'Oportunidade'} 😢`, `
-              <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px">
-                Qual foi o principal motivo de ${client.nome || client.name} não ter fechado ${activeFunnel === 'vendas' ? 'negócio' : 'como consultora'}?
-              </p>
-              <div class="form-group" style="margin-bottom:12px">
-                <label class="field-label">Motivo de Perda</label>
-                <select class="field-input" id="input-motivo-perda">
-                  <option value="Sem Resposta / Sumiu">Sem Resposta / Sumiu</option>
-                  <option value="Achou Caro / Sem Dinheiro">Achou Caro / Sem Dinheiro</option>
-                  <option value="Comprou com Outro (Concorrente)">Comprou com Outro (Concorrente)</option>
-                  <option value="Desistiu / Adiou a Compra">Desistiu / Adiou a Compra</option>
-                  <option value="Não era o momento certo">Não era o momento certo</option>
-                  <option value="Outro">Outro (especificar nas notas)</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="field-label">Detalhes adicionais (Nota)</label>
-                <textarea class="field-textarea" id="note-text" rows="3" placeholder="Ex: A pessoa não tem limite no cartão agora...">${activeFunnel === 'vendas' ? (client.pipeline_notas || '') : (client.recrutamento_notas || '')}</textarea>
-              </div>`, {
-            confirmLabel: 'Confirmar Perda',
-            cancelLabel: 'Cancelar',
-            onConfirm: async () => {
-              const motivo = document.getElementById('input-motivo-perda')?.value || 'Sem Resposta';
-              const note = document.getElementById('note-text')?.value || '';
-
-              try {
-                if (activeFunnel === 'vendas') {
-                  await store.updateStage(draggedId, targetStage, note, motivo);
-                  client.pipeline_stage = targetStage;
-                  client.motivo_perda = motivo;
-                  client.pipeline_notas = note;
-                } else {
-                  await store.updateRecrutamentoStage(draggedId, targetStage, note, motivo);
-                  client.recrutamento_stage = targetStage;
-                  client.motivo_perda_recrutamento = motivo;
-                  client.recrutamento_notas = note;
-                }
-                toast('Lead marcado como PERDIDO. Motivo registrado.', 'success');
-                render();
-              } catch (err) {
-                toast('Erro ao mover card: ' + err.message, 'error');
-                await load();
-              }
-            },
-            onCancel: () => {
-              render(); // force re-render to snap back
-            }
-          });
-          return; // Espera a decisão do Modal
-        }
-
-        // Optimistic update para outras colunas
-        if (activeFunnel === 'vendas') client.pipeline_stage = targetStage;
-        else client.recrutamento_stage = targetStage;
-        render();
-
-        try {
-          if (activeFunnel === 'vendas') await store.updateStage(draggedId, targetStage);
-          else await store.updateRecrutamentoStage(draggedId, targetStage);
-
-          const stageConf = [...getActiveStages(), getActiveLostStage()].find(s => s.id === targetStage);
-          toast(`Movido para ${stageConf?.icon || ''} ${stageConf?.label || targetStage}`, 'success');
-          if (targetStage === 'primeira_compra') {
-            setTimeout(() => toast('🎊 Parabéns pela venda! 💰', 'success'), 500);
-          }
-        } catch (err) {
-          toast('Erro ao mover card: ' + err.message, 'error');
-          await load();
-        }
+    // Mobile move buttons (← Reverter / Avançar →)
+    pc.querySelectorAll('[data-move-id]').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        e.stopPropagation();
+        const clientId = btn.dataset.moveId;
+        const targetStage = btn.dataset.moveTo;
+        const card = btn.closest('.pipeline-card');
+        const fromStage = card?.dataset.stage;
+        await moveCard(clientId, fromStage, targetStage, pc);
       });
     });
 
@@ -434,10 +460,10 @@ export async function renderPipeline(router) {
         e.stopPropagation();
         const { noteId, noteName, noteCurrent } = btn.dataset;
         modal(`📝 Nota – ${noteName}`, `
-          <div class="form-group">
-            <label class="field-label">Nota sobre esse lead</label>
-            <textarea class="field-textarea" id="note-text" rows="4" placeholder="Ex: Interessada em kit Iniciante, aguarda resposta marido...">${noteCurrent || ''}</textarea>
-          </div>`, {
+            <div class="form-group">
+              <label class="field-label">Nota sobre esse lead</label>
+              <textarea class="field-textarea" id="note-text" rows="4" placeholder="Ex: Interessada em kit Iniciante, aguarda resposta marido...">${noteCurrent || ''}</textarea>
+            </div>`, {
           confirmLabel: 'Salvar',
           onConfirm: async () => {
             const note = document.getElementById('note-text')?.value || '';
@@ -458,13 +484,13 @@ export async function renderPipeline(router) {
     // Add all clients button
     document.getElementById('btn-add-all-clients')?.addEventListener('click', () => {
       modal('Adicionar Clientes ao Pipeline', `
-        <p style="margin-bottom:12px;color:var(--text-muted);font-size:0.9rem">
-          Clientes sem estágio definido serão adicionados como <strong>Lead Captado</strong>.
-        </p>
-        <p style="color:var(--text-muted);font-size:0.85rem">
-          Total de clientes: <strong>${clients.length}</strong><br>
-          Já no pipeline: <strong>${clients.filter(c => c.pipeline_stage).length}</strong>
-        </p>`, {
+          <p style="margin-bottom:12px;color:var(--text-muted);font-size:0.9rem">
+            Clientes sem estágio definido serão adicionados como <strong>Lead Captado</strong>.
+          </p>
+          <p style="color:var(--text-muted);font-size:0.85rem">
+            Total de clientes: <strong>${clients.length}</strong><br>
+            Já no pipeline: <strong>${clients.filter(c => c.pipeline_stage).length}</strong>
+          </p>`, {
         confirmLabel: 'Confirmar',
         onConfirm: async () => {
           const toAdd = clients.filter(c => !c.pipeline_stage || c.pipeline_stage === 'lead_captado');
