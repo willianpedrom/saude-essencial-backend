@@ -101,8 +101,11 @@ app.get('/health', (req, res) => res.json({
     db: !!process.env.DATABASE_URL, env: process.env.NODE_ENV,
 }));
 
-// DB diagnostic endpoint
+// DB diagnostic endpoint — ONLY available in development
 app.get('/debug-db', async (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+        return res.status(404).json({ error: 'Not found.' });
+    }
     const url = process.env.DATABASE_URL || '';
     const masked = url.replace(/:([^@]+)@/, ':***@');
     let testResult = 'not tested';
