@@ -337,6 +337,8 @@ export async function renderPipeline(router) {
           ghostClass: 'pipeline-card-ghost',
           chosenClass: 'pipeline-card-chosen',
           dragClass: 'pipeline-card-dragging',
+          forceFallback: true,        // Ignore unstable native HTML5 DnD on Desktop
+          fallbackClass: 'pipeline-card-dragging',
           delay: 150,           // Required for better touch support
           delayOnTouchOnly: true,
           touchStartThreshold: 5,
