@@ -505,87 +505,72 @@ export async function renderDashboard(router) {
     `).join('') : '';
 
 
-    // ── Follow-ups via API (já migrados) ──
-    const followupsApi = await store.getFollowups().catch(() => []);
-    const pendentes = followupsApi.filter(f => f.status === 'pending');
-    const totalFollowups = pendentes.length;
-    const now2 = new Date();
-    const hojeStr = now2.toDateString();
-    const hojeFollowups2 = pendentes.filter(f => f.due_date_time && new Date(f.due_date_time).toDateString() === hojeStr);
-    const atrasadosFollowups2 = pendentes.filter(f => f.due_date_time && new Date(f.due_date_time) < now2 && new Date(f.due_date_time).toDateString() !== hojeStr);
+    // ── Follow-ups via API ──
+    let followupsArr = [];
+    try {
+      followupsArr = await store.getFollowups().catch(() => []);
+    } catch (e) { }
 
-    // ── Onboarding Checklist ──────────────────────────────────────
+    // ── Onboarding Checklist ──
     const onboardingDismissed = localStorage.getItem('onboarding_dismissed_' + consultant.id) === '1';
     const hasProfile = !!(consultant?.nome && consultant?.telefone);
     const hasClient = clients.length > 0;
     const hasAnamnese = anamneses.length > 0;
-    const hasFollowup = followupsApi.length > 0;
-    const hasCaptureLink = anamneses.some(a => a.subtipo === 'generico');
+    const hasFollowup = followupsArr.length > 0;
 
     const onboardingSteps = [
       { done: hasProfile, label: 'Complete seu perfil', sub: 'Adicione sua foto e telefone', action: "location.hash='#/profile'", btn: 'Completar →' },
       { done: hasClient, label: 'Adicione seu primeiro cliente', sub: 'Cadastre alguém que você já atende', action: "window.dashboardAddClient()", btn: 'Adicionar →' },
-      { done: hasAnamnese, label: 'Configure seu link de anamnese', sub: 'Crie um formulário de saúde personalizado', action: "location.hash='#/anamnesis'", btn: 'Configurar →' },
+      { done: hasAnamnese, label: 'Configure seu link de anamnese', sub: 'Crie um formulário de saúde personalizado', action: "location.hash='#/anamnesis'", btn: 'Criar →' },
       { done: hasFollowup, label: 'Crie seu primeiro follow-up', sub: 'Registre o acompanhamento de uma cliente', action: "location.hash='#/followup'", btn: 'Criar →' },
-      { done: hasCaptureLink, label: 'Link de captação genérico', sub: 'Crie um link para novos leads (sem cliente específico)', action: "location.hash='#/links'", btn: 'Criar →' },
+      { done: anamneses.some(a => a.subtipo === 'generico'), label: 'Link de captação genérico', sub: 'Para novos leads sem cliente específico', action: "location.hash='#/links'", btn: 'Criar →' },
     ];
-
     const doneCount = onboardingSteps.filter(s => s.done).length;
     const pct = Math.round((doneCount / onboardingSteps.length) * 100);
     const allDone = doneCount === onboardingSteps.length;
 
     const onboardingHtml = (!onboardingDismissed && !allDone) ? `
-      <div id="onboarding-card" style="background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);border:1.5px solid #86efac;border-radius:16px;padding:20px 24px;margin-bottom:24px;position:relative;">
-        <button onclick="localStorage.setItem('onboarding_dismissed_${consultant.id}','1');document.getElementById('onboarding-card').style.display='none'"
-          style="position:absolute;top:12px;right:14px;background:transparent;border:none;font-size:1.1rem;color:#9ca3af;cursor:pointer;" title="Fechar">×</button>
+      <div id="onboarding-card" style="background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1.5px solid #86efac;border-radius:16px;padding:20px 24px;margin-bottom:24px;position:relative;">
+        <button onclick="localStorage.setItem('onboarding_dismissed_${consultant.id}','1');document.getElementById('onboarding-card').style.display='none'" style="position:absolute;top:12px;right:14px;background:transparent;border:none;font-size:1.2rem;color:#9ca3af;cursor:pointer;line-height:1;" title="Fechar">×</button>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
           <div style="font-size:1.4rem">🌱</div>
-          <div>
+          <div style="flex:1">
             <div style="font-weight:700;font-size:1rem;color:#166534">Bem-vinda ao Gota App!</div>
             <div style="font-size:0.78rem;color:#15803d">${doneCount} de ${onboardingSteps.length} passos concluídos</div>
           </div>
-          <div style="margin-left:auto;text-align:right">
-            <div style="font-size:1.1rem;font-weight:800;color:#166534">${pct}%</div>
-          </div>
+          <div style="font-size:1.1rem;font-weight:800;color:#166534">${pct}%</div>
         </div>
-        <div style="height:6px;background:#bbf7d0;border-radius:3px;margin-bottom:16px;overflow:hidden">
+        <div style="height:6px;background:#bbf7d0;border-radius:3px;margin-bottom:14px;overflow:hidden">
           <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:3px;transition:width 0.6s ease"></div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;flex-direction:column;gap:7px">
           ${onboardingSteps.map(step => `
-            <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${step.done ? 'rgba(134,239,172,0.2)' : 'white'};border-radius:10px;border:1px solid ${step.done ? '#86efac' : '#e5e7eb'}">
-              <div style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.8rem;font-weight:700;
-                background:${step.done ? '#22c55e' : '#f3f4f6'};color:${step.done ? 'white' : '#9ca3af'}">
-                ${step.done ? '✓' : '○'}
-              </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${step.done ? 'rgba(134,239,172,0.15)' : 'white'};border-radius:9px;border:1px solid ${step.done ? '#86efac' : '#e5e7eb'}">
+              <div style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.78rem;font-weight:700;background:${step.done ? '#22c55e' : '#f3f4f6'};color:${step.done ? 'white' : '#9ca3af'}">${step.done ? '✓' : '○'}</div>
               <div style="flex:1;min-width:0">
-                <div style="font-size:0.87rem;font-weight:${step.done ? '500' : '600'};color:${step.done ? '#6b7280' : '#111827'};${step.done ? 'text-decoration:line-through' : ''}">${step.label}</div>
-                ${!step.done ? `<div style="font-size:0.72rem;color:#6b7280">${step.sub}</div>` : ''}
+                <div style="font-size:0.86rem;font-weight:${step.done ? '400' : '600'};color:${step.done ? '#9ca3af' : '#111827'};${step.done ? 'text-decoration:line-through' : ''}">${step.label}</div>
+                ${!step.done ? `<div style="font-size:0.72rem;color:#9ca3af">${step.sub}</div>` : ''}
               </div>
-              ${!step.done ? `<button onclick="${step.action}" style="background:#166534;color:white;border:none;border-radius:8px;padding:5px 12px;font-size:0.75rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">${step.btn}</button>` : ''}
+              ${!step.done ? `<button onclick="${step.action}" style="background:#166534;color:white;border:none;border-radius:7px;padding:5px 11px;font-size:0.74rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">${step.btn}</button>` : ''}
             </div>
           `).join('')}
         </div>
       </div>` : '';
 
-    // ════════════════════════════════════════════════════
-    // BUILD HTML
-    // ════════════════════════════════════════════════════
-    // Dicas dinâmicas para o título
-    let metaText = "Tudo tranquilo por enquanto. Tire um tempo para prospecção!";
-    if (urgentFollowups.length > 0) metaText = `Você tem <strong>${urgentFollowups.length} clientes</strong> precisando do seu contato urgente agora! 🔥`;
-    else if (anamnesesPendentes.length > 0) metaText = `Você recebeu novas anamneses! Há <strong>${anamnesesPendentes.length} pendentes</strong> esperando sua revisão. 📋`;
+    const pendentes = followupsArr.filter(f => f.status === 'pending');
+    const totalFollowups = pendentes.length;
 
-    const contentHtml = `
-  ${bannersHtml}
-  ${onboardingHtml}
-  <p style="color:var(--text-muted);margin:-10px 0 24px;font-size:0.95rem">${metaText}</p>
+    const now = new Date();
+    const hojeStr = now.toDateString();
 
-    // Top 5 urgentes (usando dados da API)
-    const urgentFollowups = [...atrasadosFollowups2, ...hojeFollowups2]
-      .sort((a, b) => new Date(a.due_date_time) - new Date(b.due_date_time)).slice(0, 5);
+    const hojeFollowups = pendentes.filter(f => f.dueDateTime && new Date(f.dueDateTime).toDateString() === hojeStr);
+    const atrasadosFollowups = pendentes.filter(f => f.dueDateTime && new Date(f.dueDateTime) < now && new Date(f.dueDateTime).toDateString() !== hojeStr);
 
-    const thisMonth = new Date(now2.getFullYear(), now2.getMonth(), 1);
+    // Top 5 urgentes
+    const urgentFollowups = [...atrasadosFollowups, ...hojeFollowups]
+      .sort((a, b) => new Date(a.dueDateTime) - new Date(b.dueDateTime)).slice(0, 5);
+
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const totalClients = clients.length;
     const monthClients = clients.filter(c => new Date(c.created_at || c.createdAt || 0) >= thisMonth).length;
     const totalAnamneses = anamneses.length;
@@ -633,10 +618,10 @@ export async function renderDashboard(router) {
 
     // ── Follow-up trend text ──
     let fuTrendHtml = '';
-    if (hojeFollowups2.length > 0) {
-      fuTrendHtml = '<div class="stat-trend trend-down" style="color:#b45309">🔥 ' + hojeFollowups2.length + ' hoje</div>';
-    } else if (atrasadosFollowups2.length > 0) {
-      fuTrendHtml = '<div class="stat-trend trend-down">⚠️ ' + atrasadosFollowups2.length + ' atrasados</div>';
+    if (hojeFollowups.length > 0) {
+      fuTrendHtml = '<div class="stat-trend trend-down" style="color:#b45309">🔥 ' + hojeFollowups.length + ' hoje</div>';
+    } else if (atrasadosFollowups.length > 0) {
+      fuTrendHtml = '<div class="stat-trend trend-down">⚠️ ' + atrasadosFollowups.length + ' atrasados</div>';
     }
 
     // ════════════════════════════════════════════════════
@@ -645,10 +630,11 @@ export async function renderDashboard(router) {
     // Dicas dinâmicas para o título
     let metaText = "Tudo tranquilo por enquanto. Tire um tempo para prospecção!";
     if (urgentFollowups.length > 0) metaText = `Você tem <strong>${urgentFollowups.length} clientes</strong> precisando do seu contato urgente agora! 🔥`;
-    else if (anamnesesPendentes.length > 0) metaText = `Você recebeu novas anamneses! Há < strong > ${ anamnesesPendentes.length } pendentes</strong > esperando sua revisão. 📋`;
+    else if (anamnesesPendentes.length > 0) metaText = `Você recebeu novas anamneses! Há <strong>${anamnesesPendentes.length} pendentes</strong> esperando sua revisão. 📋`;
 
     const contentHtml = `
-  ${ bannersHtml }
+  ${bannersHtml}
+  ${onboardingHtml}
   <p style="color:var(--text-muted);margin:-10px 0 24px;font-size:0.95rem">${metaText}</p>
 
   <div class="dashboard-grid">
@@ -812,11 +798,11 @@ export async function renderDashboard(router) {
     console.error('Dashboard error:', err);
     const pc = document.getElementById('page-content');
     if (pc) pc.innerHTML = `
-      < div class="empty-state" >
+      <div class="empty-state">
         <div class="empty-state-icon">⚠️</div>
         <p>Erro ao carregar dashboard: ${err.message}</p>
         <button class="btn btn-primary" onclick="location.reload()">Recarregar</button>
-      </div > `;
+      </div>`;
   }
 }
 
