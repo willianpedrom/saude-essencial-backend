@@ -74,7 +74,27 @@ app.use(helmet({
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
 
-app.use(cors({ origin: true, credentials: true }));
+// ─── CORS — Whitelist de origens ─────────────────────────────────────────────
+// Em produção: somente os domínios da plataforma são aceitos.
+// Configure ALLOWED_ORIGINS no Railway como lista separada por vírgula.
+// Ex: ALLOWED_ORIGINS=https://gotaessencial.com.br,https://app.gotaessencial.com.br
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+    : ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000'];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        // Permite requisições sem origin (ex: apps mobile, curl, Postman em dev)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+            callback(null, true);
+        } else {
+            callback(new Error(`CORS: origem não permitida — ${origin}`));
+        }
+    },
+    credentials: true,
+}));
+
 
 // ─── Rate Limiting ───────────────────────────────────────────────────────────
 // General API limit: 100 requests per minute per IP
