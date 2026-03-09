@@ -61,7 +61,31 @@ app.use(helmet({
 }));
 
 app.use(cors({ origin: true, credentials: true }));
-app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 500 }));
+
+// ─── Rate Limiting ───────────────────────────────────────────────────────────
+// General API limit: 100 requests per minute per IP
+const generalLimiter = rateLimit({
+    windowMs: 60 * 1000,          // 1 minute
+    max: 100,
+    standardHeaders: true,         // Return RateLimit-* headers
+    legacyHeaders: false,
+    message: { error: 'Muitas requisições. Tente novamente em um momento.' },
+    skip: (req) => req.path === '/health', // never limit health checks
+});
+
+// Strict limit for auth endpoints: 10 attempts per 15 minutes per IP
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,     // 15 minutes
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Muitas tentativas de login. Aguarde 15 minutos e tente novamente.' },
+});
+
+app.use('/api', generalLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+
 
 // Force Referrer-Policy to allow Meta Pixel domain verification.
 // Helmet defaults to "no-referrer" which blocks fbq from verifying the origin domain.
