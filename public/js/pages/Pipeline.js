@@ -333,12 +333,13 @@ export async function renderPipeline(router) {
       pc.querySelectorAll('.pipeline-drop-zone').forEach(zone => {
         new window.Sortable(zone, {
           group: 'pipeline',
+          draggable: '.pipeline-card', // Apenas cards são arrastáveis
+          filter: 'button, a, .pipeline-card-btn, .pipeline-move-btn', // Evita arrastar quando clica num botão
+          preventOnFilter: false,
           animation: 150,
           ghostClass: 'pipeline-card-ghost',
           chosenClass: 'pipeline-card-chosen',
           dragClass: 'pipeline-card-dragging',
-          forceFallback: true,        // Ignore unstable native HTML5 DnD on Desktop
-          fallbackClass: 'pipeline-card-dragging',
           delay: 150,           // Required for better touch support
           delayOnTouchOnly: true,
           touchStartThreshold: 5,
