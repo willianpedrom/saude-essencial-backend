@@ -123,7 +123,13 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
             <div class="main-header-sub">${new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</div>
           </div>
         </div>
-        <div class="main-header-actions" id="header-actions"></div>
+        <div class="main-header-actions" id="header-actions">
+          <button id="global-search-btn" title="Buscar (⌘K)" style="background:white;border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--text-muted);transition:all 0.15s;" onmouseover="this.style.borderColor='var(--green-400)'" onmouseout="this.style.borderColor='var(--border)'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span class="search-hint" style="font-size:0.78rem">Buscar...</span>
+            <kbd style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;padding:1px 5px;font-size:0.68rem;color:#6b7280;font-family:monospace;">⌘K</kbd>
+          </button>
+        </div>
       </header>
       <div class="page-content" id="page-content">${pageContent}</div>
     </div>
@@ -177,6 +183,235 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
   document.getElementById('sidebar-user-btn')?.addEventListener('click', () => {
     closeSidebar();
     router.navigate('/profile');
+  });
+
+  // ── Global Search button + ⌘K shortcut ────────────────────────
+  function openGlobalSearch() {
+    // Avoid duplicate overlays
+    if (document.getElementById('global-search-overlay')) return;
+
+    // Cache data once per open (lazy fetch)
+    let clients = [], anamneses = [], agendamentos = [];
+    let currentFocus = -1;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'global-search-overlay';
+    overlay.innerHTML = `
+      <style>
+        #global-search-overlay {
+          position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.45);
+          display:flex;justify-content:center;padding-top:80px;
+          animation:gsOverlayIn 0.15s ease;
+        }
+        @keyframes gsOverlayIn { from{opacity:0} to{opacity:1} }
+        #global-search-box {
+          background:white;border-radius:16px;width:100%;max-width:580px;
+          max-height:70vh;overflow:hidden;display:flex;flex-direction:column;
+          box-shadow:0 24px 60px rgba(0,0,0,0.25);
+          animation:gsBoxIn 0.15s ease;
+          margin:0 16px;
+        }
+        @keyframes gsBoxIn { from{transform:scale(0.96);opacity:0} to{transform:scale(1);opacity:1} }
+        #global-search-input-wrap {
+          display:flex;align-items:center;gap:10px;padding:14px 18px;
+          border-bottom:1px solid var(--border);
+        }
+        #global-search-input {
+          flex:1;border:none;outline:none;font-size:1rem;color:var(--text-dark);
+          background:transparent;
+        }
+        #global-search-results {
+          overflow-y:auto;padding:8px 0;
+        }
+        .gs-section-label {
+          padding:6px 18px 4px;font-size:0.65rem;font-weight:700;
+          text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);
+        }
+        .gs-item {
+          display:flex;align-items:center;gap:12px;
+          padding:9px 18px;cursor:pointer;transition:background 0.1s;
+        }
+        .gs-item:hover, .gs-item.focused {
+          background:var(--green-50);
+        }
+        .gs-item-icon {
+          width:32px;height:32px;border-radius:8px;background:var(--green-100);
+          display:flex;align-items:center;justify-content:center;
+          font-size:0.85rem;flex-shrink:0;
+        }
+        .gs-item-main { flex:1;min-width:0; }
+        .gs-item-title { font-size:0.88rem;font-weight:600;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+        .gs-item-sub { font-size:0.74rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+        .gs-item-badge { font-size:0.65rem;background:#f3f4f6;color:#6b7280;padding:2px 6px;border-radius:6px;white-space:nowrap; }
+        .gs-empty { text-align:center;padding:28px;color:var(--text-muted);font-size:0.88rem; }
+        .gs-footer { padding:8px 18px;border-top:1px solid var(--border);font-size:0.72rem;color:var(--text-muted);display:flex;gap:16px; }
+      </style>
+      <div id="global-search-box">
+        <div id="global-search-input-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="global-search-input" placeholder="Buscar clientes, anamneses, eventos..." autocomplete="off" />
+          <kbd style="background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;padding:2px 6px;font-size:0.7rem;color:#9ca3af;cursor:pointer;" id="gs-esc">ESC</kbd>
+        </div>
+        <div id="global-search-results"><div class="gs-empty">⌨️ Digite para buscar...</div></div>
+        <div class="gs-footer">
+          <span>↑↓ navegar</span>
+          <span>↵ abrir</span>
+          <span>ESC fechar</span>
+        </div>
+      </div>`;
+
+    document.body.appendChild(overlay);
+    const input = document.getElementById('global-search-input');
+    const resultsEl = document.getElementById('global-search-results');
+    input.focus();
+
+    function close() {
+      overlay.style.animation = 'none';
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 100);
+    }
+
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    document.getElementById('gs-esc')?.addEventListener('click', close);
+
+    // Load data once overlay opens
+    Promise.all([
+      store.getClients().catch(() => []),
+      store.getAnamneses().catch(() => []),
+      store.getAgendamentos().catch(() => []),
+    ]).then(([c, a, ag]) => { clients = c; anamneses = a; agendamentos = ag; if (input.value) doSearch(input.value); });
+
+    function highlight(text, q) {
+      if (!q) return text;
+      const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+      return (text || '').replace(re, '<mark style="background:#fef9c3;border-radius:2px">$1</mark>');
+    }
+
+    function doSearch(q) {
+      q = q.trim();
+      currentFocus = -1;
+      if (!q) { resultsEl.innerHTML = '<div class="gs-empty">⌨️ Digite para buscar...</div>'; return; }
+      const ql = q.toLowerCase();
+
+      const clientResults = clients.filter(c =>
+        (c.nome || c.name || '').toLowerCase().includes(ql) ||
+        (c.email || '').toLowerCase().includes(ql) ||
+        (c.telefone || c.phone || '').includes(ql)
+      ).slice(0, 5);
+
+      const anamneseResults = anamneses.filter(a =>
+        (a.cliente_nome || a.nome_link || '').toLowerCase().includes(ql)
+      ).slice(0, 3);
+
+      const eventResults = agendamentos.filter(e =>
+        (e.titulo || e.title || '').toLowerCase().includes(ql) ||
+        (e.cliente_nome || '').toLowerCase().includes(ql)
+      ).slice(0, 3);
+
+      const total = clientResults.length + anamneseResults.length + eventResults.length;
+      if (total === 0) { resultsEl.innerHTML = `<div class="gs-empty">🔍 Nenhum resultado para "${q}"</div>`; return; }
+
+      let html = '';
+
+      if (clientResults.length > 0) {
+        html += `<div class="gs-section-label">👥 Clientes</div>`;
+        html += clientResults.map(c => {
+          const name = c.nome || c.name || '—';
+          const sub = [c.email, c.telefone || c.phone].filter(Boolean).join(' · ');
+          const badge = c.status === 'active' ? 'Ativo' : 'Inativo';
+          return `<div class="gs-item" data-type="client" data-id="${c.id}">
+            <div class="gs-item-icon">👤</div>
+            <div class="gs-item-main">
+              <div class="gs-item-title">${highlight(name, q)}</div>
+              ${sub ? `<div class="gs-item-sub">${highlight(sub, q)}</div>` : ''}
+            </div>
+            <span class="gs-item-badge">${badge}</span>
+          </div>`;
+        }).join('');
+      }
+
+      if (anamneseResults.length > 0) {
+        html += `<div class="gs-section-label">📋 Anamneses</div>`;
+        html += anamneseResults.map(a => {
+          const name = a.cliente_nome || a.nome_link || '—';
+          const status = a.status === 'filled' ? '✅ Preenchida' : '⏳ Aguardando';
+          return `<div class="gs-item" data-type="anamnesis" data-id="${a.id}">
+            <div class="gs-item-icon">📋</div>
+            <div class="gs-item-main">
+              <div class="gs-item-title">${highlight(name, q)}</div>
+              <div class="gs-item-sub">${status}</div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      if (eventResults.length > 0) {
+        html += `<div class="gs-section-label">📅 Agenda</div>`;
+        html += eventResults.map(e => {
+          const title = e.titulo || e.title || 'Evento';
+          const dt = e.data_hora ? new Date(e.data_hora).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+          return `<div class="gs-item" data-type="schedule" data-id="${e.id}">
+            <div class="gs-item-icon">📅</div>
+            <div class="gs-item-main">
+              <div class="gs-item-title">${highlight(title, q)}</div>
+              ${dt ? `<div class="gs-item-sub">${dt}</div>` : ''}
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      resultsEl.innerHTML = html;
+
+      resultsEl.querySelectorAll('.gs-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const type = item.dataset.type;
+          const id = item.dataset.id;
+          close();
+          if (type === 'client') router.navigate('/clients');
+          else if (type === 'anamnesis') router.navigate('/anamnesis');
+          else if (type === 'schedule') router.navigate('/schedule');
+        });
+      });
+    }
+
+    let debounce;
+    input.addEventListener('input', () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => doSearch(input.value), 200);
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function gsKeydown(e) {
+      if (!document.getElementById('global-search-overlay')) {
+        document.removeEventListener('keydown', gsKeydown);
+        return;
+      }
+      const items = [...resultsEl.querySelectorAll('.gs-item')];
+      if (e.key === 'Escape') { close(); document.removeEventListener('keydown', gsKeydown); }
+      else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        currentFocus = Math.min(currentFocus + 1, items.length - 1);
+        items.forEach((el, i) => el.classList.toggle('focused', i === currentFocus));
+        items[currentFocus]?.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        currentFocus = Math.max(currentFocus - 1, 0);
+        items.forEach((el, i) => el.classList.toggle('focused', i === currentFocus));
+        items[currentFocus]?.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter' && currentFocus >= 0) {
+        items[currentFocus]?.click();
+      }
+    });
+  }
+
+  document.getElementById('global-search-btn')?.addEventListener('click', openGlobalSearch);
+
+  // ⌘K / Ctrl+K global shortcut
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      openGlobalSearch();
+    }
   });
 
   return document.getElementById('page-content');
