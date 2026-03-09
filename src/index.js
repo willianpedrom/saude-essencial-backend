@@ -6,6 +6,20 @@ const rateLimit = require('express-rate-limit');
 const fs = require('fs');
 const path = require('path');
 
+// ─── Validação de variáveis de ambiente obrigatórias ──────────────────────────
+// Em produção, o servidor aborta imediatamente se JWT_SECRET não estiver definido.
+// Isso evita tokens assinados com 'dev_secret' chegarem em produção.
+const REQUIRED_ENVS = ['JWT_SECRET', 'DATABASE_URL'];
+const missing = REQUIRED_ENVS.filter(k => !process.env[k]);
+if (missing.length > 0 && process.env.NODE_ENV === 'production') {
+    console.error(`❌ FATAL: Variáveis de ambiente obrigatórias ausentes: ${missing.join(', ')}`);
+    console.error('   Configure essas variáveis no Railway/Heroku antes de iniciar.');
+    process.exit(1);
+}
+if (missing.length > 0) {
+    console.warn(`⚠️  [DEV] Variáveis ausentes: ${missing.join(', ')} — usando fallbacks de desenvolvimento.`);
+}
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 const VERSION = '1.8';
