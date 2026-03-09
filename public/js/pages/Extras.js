@@ -62,52 +62,43 @@ export async function renderTestimonials(router) {
       };
 
       pc.innerHTML = `
-        <!-- Header Card: Link + Tags -->
-        <div style="background:linear-gradient(135deg,#0a1f0f 0%,#16402a 100%);border-radius:16px;padding:24px 28px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:24px;align-items:stretch">
-          <div style="flex:1;min-width:280px">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-              <span style="font-size:1.5rem">🔗</span>
-              <h3 style="color:#fff;margin:0;font-size:1.1rem;font-weight:700">Seu Link de Depoimentos</h3>
-            </div>
-            <p style="color:rgba(255,255,255,0.6);font-size:0.83rem;margin:0 0 14px">
-              Compartilhe com clientes para coletar avaliações e provas sociais automaticamente.
-            </p>
-            <div style="display:flex;gap:8px">
-              <input type="text" readonly value="${publicUrl}"
-                style="flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;
-                       padding:9px 12px;color:rgba(255,255,255,0.9);font-size:0.82rem;outline:none" />
-              <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${publicUrl}');window.toast('Link copiado! 🔗')"
-                style="background:#22c55e;border-color:#22c55e;white-space:nowrap;font-weight:600">
-                📋 Copiar
-              </button>
+        <!-- Header clean: Link de Depoimentos -->
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 20px;margin-bottom:16px;
+                    display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <div style="width:34px;height:34px;border-radius:8px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🔗</div>
+            <div>
+              <div style="font-size:0.72rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Link Público</div>
+              <div style="font-size:0.78rem;color:#64748b;line-height:1.2">Compartilhe para coletar avaliações</div>
             </div>
           </div>
-          <div style="width:1px;background:rgba(255,255,255,0.1);flex-shrink:0"></div>
-          <div style="flex:1;min-width:260px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-              <div style="display:flex;align-items:center;gap:8px">
-                <span style="font-size:1.2rem">🏷️</span>
-                <span style="color:#fff;font-weight:700;font-size:0.95rem">Etiquetas de Prova Social</span>
-              </div>
-              <button class="btn btn-sm" id="btn-add-tag"
-                style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);font-size:0.78rem">
-                + Nova Etiqueta
-              </button>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:7px">
-              ${localTags.map(tag => `
-                <span style="background:${tag.cor}22;border:1px solid ${tag.cor}55;color:${tag.cor};
-                             padding:5px 10px;border-radius:20px;font-size:0.78rem;font-weight:600;
-                             display:flex;align-items:center;gap:6px">
-                  ${tag.nome}
-                  <button data-deltag="${tag.id}" style="background:none;border:none;color:${tag.cor};cursor:pointer;
-                          padding:0;font-size:1rem;line-height:1;opacity:0.7" title="Remover">×</button>
-                </span>
-              `).join('')}
-              ${localTags.length === 0
-          ? '<span style="color:rgba(255,255,255,0.4);font-size:0.8rem;font-style:italic">Nenhuma etiqueta criada ainda.</span>'
-          : ''}
-            </div>
+          <div style="flex:1;min-width:220px;display:flex;gap:8px">
+            <input type="text" readonly value="${publicUrl}"
+              style="flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;
+                     padding:8px 12px;color:#334155;font-size:0.82rem;outline:none;cursor:text" />
+            <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${publicUrl}');window.toast('Link copiado! 🔗')"
+              style="background:#16a34a;border-color:#16a34a;white-space:nowrap;font-weight:600;font-size:0.83rem;padding:8px 14px">
+              📋 Copiar
+            </button>
+          </div>
+          <div style="height:36px;width:1px;background:#e2e8f0;flex-shrink:0"></div>
+          <!-- Tags inline -->
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;min-width:180px">
+            <span style="font-size:0.72rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap">🏷️ Etiquetas:</span>
+            ${localTags.map(tag => `
+              <span style="background:${tag.cor}12;border:1px solid ${tag.cor}40;color:${tag.cor};
+                           padding:4px 10px;border-radius:20px;font-size:0.76rem;font-weight:600;
+                           display:inline-flex;align-items:center;gap:5px">
+                ${tag.nome}
+                <button data-deltag="${tag.id}" style="background:none;border:none;color:${tag.cor};cursor:pointer;
+                        padding:0;font-size:0.9rem;line-height:1;opacity:0.6;margin-top:-1px" title="Remover">×</button>
+              </span>
+            `).join('')}
+            ${localTags.length === 0 ? '<span style="color:#cbd5e1;font-size:0.78rem;font-style:italic">Nenhuma</span>' : ''}
+            <button class="btn btn-secondary btn-sm" id="btn-add-tag"
+              style="font-size:0.76rem;padding:4px 10px;height:auto;border-style:dashed">
+              + Nova
+            </button>
           </div>
         </div>
 
@@ -256,36 +247,36 @@ export async function renderTestimonials(router) {
 
 
     function bindEvents() {
-    // Tags Toggle
-    document.querySelectorAll('[data-filtertag]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const val = btn.dataset.filtertag;
-        activeTagFilter = val === "null" ? null : val;
-        renderView();
+      // Tags Toggle
+      document.querySelectorAll('[data-filtertag]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const val = btn.dataset.filtertag;
+          activeTagFilter = val === "null" ? null : val;
+          renderView();
+        });
       });
-    });
 
-    // Approvation
-    document.querySelectorAll('[data-approve]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.dataset.approve;
-        btn.disabled = true; btn.textContent = '...';
-        try {
-          await store.approveTestimonial(id, true);
-          localTestimonials = localTestimonials.map(t => t.id === id ? { ...t, aprovado: true } : t);
-          renderView(); window.toast('Aprovado com sucesso! ✅');
-        } catch (e) { window.toast(e.message, 'error'); renderView(); }
+      // Approvation
+      document.querySelectorAll('[data-approve]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.approve;
+          btn.disabled = true; btn.textContent = '...';
+          try {
+            await store.approveTestimonial(id, true);
+            localTestimonials = localTestimonials.map(t => t.id === id ? { ...t, aprovado: true } : t);
+            renderView(); window.toast('Aprovado com sucesso! ✅');
+          } catch (e) { window.toast(e.message, 'error'); renderView(); }
+        });
       });
-    });
 
-    // Assign Tags
-    document.querySelectorAll('[data-assign]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.assign;
-        const t = localTestimonials.find(x => x.id === id);
-        const activeIds = (t.etiquetas || []).map(x => x.id);
+      // Assign Tags
+      document.querySelectorAll('[data-assign]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.assign;
+          const t = localTestimonials.find(x => x.id === id);
+          const activeIds = (t.etiquetas || []).map(x => x.id);
 
-        modal('Gerenciar Etiquetas', `
+          modal('Gerenciar Etiquetas', `
             <p style="margin-bottom:12px;font-size:0.9rem">Selecione quais temas se aplicam a este depoimento (ex: problema que foi resolvido):</p>
             <div style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto">
               ${localTags.map(tag => `
@@ -297,39 +288,39 @@ export async function renderTestimonials(router) {
               ${localTags.length === 0 ? '<p class="text-muted">Você ainda não criou nenhuma etiqueta no topo da página.</p>' : ''}
             </div>
           `, {
-          confirmLabel: 'Salvar',
-          onConfirm: async () => {
-            const checked = Array.from(document.querySelectorAll('.tag-check:checked')).map(cb => cb.value);
-            try {
-              await store.setTestimonialTags(id, checked);
-              t.etiquetas = localTags.filter(tg => checked.includes(tg.id));
-              renderView(); window.toast('Etiquetas salvas!');
-            } catch (e) { window.toast(e.message, 'error'); }
-          }
+            confirmLabel: 'Salvar',
+            onConfirm: async () => {
+              const checked = Array.from(document.querySelectorAll('.tag-check:checked')).map(cb => cb.value);
+              try {
+                await store.setTestimonialTags(id, checked);
+                t.etiquetas = localTags.filter(tg => checked.includes(tg.id));
+                renderView(); window.toast('Etiquetas salvas!');
+              } catch (e) { window.toast(e.message, 'error'); }
+            }
+          });
         });
       });
-    });
 
-    // Delete Testimonial
-    document.querySelectorAll('[data-delete]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.delete;
-        modal('Apagar Depoimento', '<p>Tem certeza que deseja apagar este depoimento do sistema? Esta ação é irreversível.</p>', {
-          danger: true, confirmLabel: 'Apagar',
-          onConfirm: async () => {
-            try {
-              await store.deleteTestimonial(id);
-              localTestimonials = localTestimonials.filter(x => x.id !== id);
-              renderView(); window.toast('Depoimento apagado.');
-            } catch (e) { window.toast(e.message, 'error'); }
-          }
+      // Delete Testimonial
+      document.querySelectorAll('[data-delete]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.delete;
+          modal('Apagar Depoimento', '<p>Tem certeza que deseja apagar este depoimento do sistema? Esta ação é irreversível.</p>', {
+            danger: true, confirmLabel: 'Apagar',
+            onConfirm: async () => {
+              try {
+                await store.deleteTestimonial(id);
+                localTestimonials = localTestimonials.filter(x => x.id !== id);
+                renderView(); window.toast('Depoimento apagado.');
+              } catch (e) { window.toast(e.message, 'error'); }
+            }
+          });
         });
       });
-    });
 
-    // Create Tag
-    document.getElementById('btn-add-tag')?.addEventListener('click', () => {
-      modal('Nova Etiqueta', `
+      // Create Tag
+      document.getElementById('btn-add-tag')?.addEventListener('click', () => {
+        modal('Nova Etiqueta', `
           <div class="form-group">
             <label class="field-label">Problema / Benefício</label>
             <input class="field-input" id="new-tag-name" placeholder="Ex: Emagrecimento, Dor Crônica..." />
@@ -339,46 +330,46 @@ export async function renderTestimonials(router) {
             <input type="color" id="new-tag-color" value="#059669" style="width:100%;height:40px;border:none;border-radius:8px;cursor:pointer;padding:0" />
           </div>
         `, {
-        confirmLabel: 'Criar Etiqueta',
-        onConfirm: async () => {
-          const nome = document.getElementById('new-tag-name').value.trim();
-          const cor = document.getElementById('new-tag-color').value;
-          if (!nome) { window.toast('O nome é obrigatório.', 'error'); return; }
-          try {
-            const res = await store.addTag({ nome, cor });
-            localTags.push(res);
-            renderView(); window.toast('Etiqueta criada! 🏷️');
-          } catch (e) { window.toast(e.message, 'error'); }
-        }
-      });
-    });
-
-    // Delete Tag
-    document.querySelectorAll('[data-deltag]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = btn.dataset.deltag;
-        modal('Apagar Etiqueta', '<p>Deseja apagar esta etiqueta? Ela será removida de todos os depoimentos vinculados.</p>', {
-          danger: true, confirmLabel: 'Apagar',
+          confirmLabel: 'Criar Etiqueta',
           onConfirm: async () => {
+            const nome = document.getElementById('new-tag-name').value.trim();
+            const cor = document.getElementById('new-tag-color').value;
+            if (!nome) { window.toast('O nome é obrigatório.', 'error'); return; }
             try {
-              await store.deleteTag(id);
-              localTags = localTags.filter(x => x.id !== id);
-              // Also remove it from local cached testimonials immediately
-              localTestimonials.forEach(t => {
-                if (t.etiquetas) t.etiquetas = t.etiquetas.filter(e => e.id !== id);
-              });
-              if (activeTagFilter === id) activeTagFilter = null;
-              renderView(); window.toast('Etiqueta removida.');
+              const res = await store.addTag({ nome, cor });
+              localTags.push(res);
+              renderView(); window.toast('Etiqueta criada! 🏷️');
             } catch (e) { window.toast(e.message, 'error'); }
           }
         });
       });
-    });
 
-    // Manual Add
-    document.getElementById('btn-add-t')?.addEventListener('click', () => {
-      modal('Registrar Depoimento Manual', `
+      // Delete Tag
+      document.querySelectorAll('[data-deltag]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.deltag;
+          modal('Apagar Etiqueta', '<p>Deseja apagar esta etiqueta? Ela será removida de todos os depoimentos vinculados.</p>', {
+            danger: true, confirmLabel: 'Apagar',
+            onConfirm: async () => {
+              try {
+                await store.deleteTag(id);
+                localTags = localTags.filter(x => x.id !== id);
+                // Also remove it from local cached testimonials immediately
+                localTestimonials.forEach(t => {
+                  if (t.etiquetas) t.etiquetas = t.etiquetas.filter(e => e.id !== id);
+                });
+                if (activeTagFilter === id) activeTagFilter = null;
+                renderView(); window.toast('Etiqueta removida.');
+              } catch (e) { window.toast(e.message, 'error'); }
+            }
+          });
+        });
+      });
+
+      // Manual Add
+      document.getElementById('btn-add-t')?.addEventListener('click', () => {
+        modal('Registrar Depoimento Manual', `
           <div class="form-grid">
             <div class="form-group form-field-full">
               <label class="field-label">Nome da Cliente *</label>
@@ -393,29 +384,29 @@ export async function renderTestimonials(router) {
               <textarea class="field-textarea" id="m-texto" placeholder="A cliente relatou que..."></textarea>
             </div>
           </div>`, {
-        confirmLabel: 'Salvar',
-        onConfirm: async () => {
-          const cliente_nome = document.getElementById('m-nome').value.trim();
-          const texto = document.getElementById('m-texto').value.trim();
-          const nota = parseInt(document.getElementById('m-nota').value) || 10;
-          if (!cliente_nome || !texto) { window.toast('Preencha os campos obrigatórios', 'error'); return; }
+          confirmLabel: 'Salvar',
+          onConfirm: async () => {
+            const cliente_nome = document.getElementById('m-nome').value.trim();
+            const texto = document.getElementById('m-texto').value.trim();
+            const nota = parseInt(document.getElementById('m-nota').value) || 10;
+            if (!cliente_nome || !texto) { window.toast('Preencha os campos obrigatórios', 'error'); return; }
 
-          try {
-            const res = await store.addTestimonial({ cliente_nome, texto, nota, consentimento: true }); // manual implies you got consent
-            localTestimonials.unshift(res);
-            renderView(); window.toast('Registrado! ⭐');
-          } catch (e) { window.toast(e.message, 'error'); }
-        }
+            try {
+              const res = await store.addTestimonial({ cliente_nome, texto, nota, consentimento: true }); // manual implies you got consent
+              localTestimonials.unshift(res);
+              renderView(); window.toast('Registrado! ⭐');
+            } catch (e) { window.toast(e.message, 'error'); }
+          }
+        });
       });
-    });
+    }
+
+    renderView();
+
+  } catch (err) {
+    const pc = document.getElementById('page-content');
+    if (pc) pc.innerHTML = `<div class="empty-state">Erro ao carregar dados: ${err.message}</div>`;
   }
-
-  renderView();
-
-} catch (err) {
-  const pc = document.getElementById('page-content');
-  if (pc) pc.innerHTML = `<div class="empty-state">Erro ao carregar dados: ${err.message}</div>`;
-}
 }
 
 // ═══════════════ COMPRAS ═══════════════
