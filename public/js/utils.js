@@ -91,11 +91,82 @@ export function modal(title, bodyHtml, { onConfirm, onOpen, confirmLabel = 'Conf
   function close() { m.classList.remove('open'); setTimeout(() => m.remove(), 250); }
   m.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', close));
   m.addEventListener('click', e => { if (e.target === m) close(); });
+
   if (onConfirm) {
-    m.querySelector('[data-confirm]').addEventListener('click', () => { onConfirm(m); close(); });
+    const confirmBtn = m.querySelector('[data-confirm]');
+    confirmBtn.addEventListener('click', async () => {
+      // Show loading state
+      const origText = confirmBtn.innerHTML;
+      confirmBtn.disabled = true;
+      confirmBtn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px">
+        <svg style="animation:spin 0.7s linear infinite;flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        Salvando...</span>`;
+      if (!document.getElementById('modal-spin-style')) {
+        const s = document.createElement('style');
+        s.id = 'modal-spin-style';
+        s.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+        document.head.appendChild(s);
+      }
+      try {
+        const result = await onConfirm(m);
+        if (result === false) {
+          // Caller returned false — stay open, restore button
+          confirmBtn.disabled = false;
+          confirmBtn.innerHTML = origText;
+          return;
+        }
+        // Success flash
+        confirmBtn.innerHTML = '✅ Salvo!';
+        confirmBtn.style.background = '#16a34a';
+        await new Promise(r => setTimeout(r, 600));
+        close();
+      } catch {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = origText;
+      }
+    });
   }
   return { close, el: m };
 }
+
+/**
+ * Utility to set a button into a loading / success state outside of modals.
+ * Usage:
+ *   const restore = btnLoading(btn, 'Salvando...');
+ *   await apiCall();
+ *   restore(true); // shows ✅ and restores after 800ms
+ */
+export function btnLoading(btn, loadingText = 'Salvando...') {
+  const origText = btn.innerHTML;
+  const origDisabled = btn.disabled;
+  btn.disabled = true;
+  if (!document.getElementById('modal-spin-style')) {
+    const s = document.createElement('style');
+    s.id = 'modal-spin-style';
+    s.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+    document.head.appendChild(s);
+  }
+  btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px">
+    <svg style="animation:spin 0.7s linear infinite;flex-shrink:0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+    ${loadingText}</span>`;
+  return function restore(success = true) {
+    if (success) {
+      btn.innerHTML = '✅ Salvo!';
+      btn.style.background = '#16a34a';
+      btn.style.color = 'white';
+      setTimeout(() => {
+        btn.innerHTML = origText;
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.disabled = origDisabled;
+      }, 900);
+    } else {
+      btn.innerHTML = origText;
+      btn.disabled = origDisabled;
+    }
+  };
+}
+
 
 export function formatDate(iso, opts = {}) {
   if (!iso) return '—';

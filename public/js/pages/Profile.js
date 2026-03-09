@@ -1,6 +1,7 @@
 import { auth, store, api } from '../store.js';
 import { renderLayout } from './Dashboard.js';
-import { toast } from '../utils.js';
+import { toast, btnLoading } from '../utils.js';
+
 
 export async function renderProfile(router) {
   renderLayout(router, 'Meu Perfil',
@@ -482,19 +483,18 @@ export async function renderProfile(router) {
       }
 
       const btn = pc.querySelector('#btn-change-password');
-      btn.disabled = true; btn.textContent = '⏳ Alterando...';
+      const restore = btnLoading(btn, 'Alterando...');
       try {
         await api('PUT', '/api/auth/change-password', { senhaAtual, novaSenha, confirmarSenha });
-        toast('✅ Senha alterada com sucesso! Use a nova senha no próximo acesso.');
-        // Clear fields
+        restore(true);
+        toast('Senha alterada com sucesso!');
         pc.querySelector('#p-senha-atual').value = '';
         pc.querySelector('#p-nova-senha').value = '';
         pc.querySelector('#p-confirmar-senha').value = '';
         pc.querySelector('#senha-strength').textContent = '';
       } catch (err) {
+        restore(false);
         toast('Erro: ' + err.message, 'error');
-      } finally {
-        btn.disabled = false; btn.textContent = '🔐 Alterar Senha';
       }
     });
 
@@ -502,8 +502,7 @@ export async function renderProfile(router) {
     pc.querySelector('#profile-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = pc.querySelector('#btn-save');
-      btn.disabled = true;
-      btn.textContent = '⏳ Salvando...';
+      const restore = btnLoading(btn, 'Salvando...');
 
       const data = {
         nome: pc.querySelector('#p-nome')?.value?.trim(),
@@ -521,26 +520,24 @@ export async function renderProfile(router) {
 
       if (!data.nome) {
         toast('Nome obrigatório', 'error');
-        btn.disabled = false;
-        btn.textContent = '💾 Salvar Perfil';
+        restore(false);
         return;
       }
 
       try {
         await store.updateProfile(data);
-        // Update auth cache
         if (auth.current) {
           auth.current.nome = data.nome;
           auth.current.genero = data.genero;
           sessionStorage.setItem('se_user', JSON.stringify(auth.current));
         }
-        toast('Perfil salvo com sucesso! ✅');
+        restore(true);
+        toast('Perfil salvo com sucesso!');
         profile = { ...profile, ...data };
-        setTimeout(() => window.location.reload(), 800);
+        setTimeout(() => window.location.reload(), 1000);
       } catch (err) {
+        restore(false);
         toast('Erro ao salvar: ' + err.message, 'error');
-        btn.disabled = false;
-        btn.textContent = '💾 Salvar Perfil';
       }
     });
   }
