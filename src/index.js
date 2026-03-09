@@ -203,8 +203,14 @@ app.get('*', (req, res) => {
 
 // Central error handler — catches next(err) from async routes
 app.use((err, req, res, next) => {
-    console.error('❌ Erro:', err.message);
-    res.status(500).json({ error: 'Erro interno do servidor.', details: err.message });
+    const isProd = process.env.NODE_ENV === 'production';
+    // Sempre loga no servidor (invisível ao usuário)
+    console.error('❌ Erro:', err.stack || err.message);
+    // Em produção: nunca expõe détalhes técnicos ao cliente
+    res.status(err.status || 500).json({
+        error: isProd ? 'Erro interno do servidor.' : (err.message || 'Erro interno.'),
+        ...(isProd ? {} : { stack: err.stack }),
+    });
 });
 
 // Auto-run schema migration
