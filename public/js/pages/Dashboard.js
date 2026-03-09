@@ -761,9 +761,7 @@ export async function renderDashboard(router) {
         <div class="card-body">
           ${goalBar('Leads Captados', '💧', leadsMes, metas.leads, 'leads', '#a78bfa,#7c3aed')}
           ${goalBar('Vendas Fechadas', '💰', vendasMes, metas.vendas, 'vendas', '#34d399,#059669')}
-          ${goalBar('Novos Clientes', '👥', clientesMes, metas.clientes, 'clientes', '#60a5fa,#3b82f6')}
           ${goalBar('Cadastros (Recrutamento)', '💼', cadastrosMes, metas.cadastros, 'cadastros', '#f97316,#ea580c')}
-          ${goalBar('Follow-ups Concluídos', '✅', followupsMes, metas.followups, 'followups', '#fb7185,#e11d48')}
         </div>
       </div>`;
 
