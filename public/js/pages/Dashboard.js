@@ -717,9 +717,10 @@ export async function renderDashboard(router) {
     catch { metas = { ...metasDefault }; }
 
     // Calcular progresso real do mês
+    // Leads captados no mês = todos os clientes cadastrados neste mês
+    // (independente do estágio atual — quem avançou no funil também foi lead)
     const leadsMes = clients.filter(c =>
-      (c.pipeline_stage === 'lead_captado' || !c.pipeline_stage)
-      && new Date(c.criado_em || c.created_at || 0) >= thisMonth).length;
+      new Date(c.criado_em || c.created_at || 0) >= thisMonth).length;
     const vendasMes = clients.filter(c => c.pipeline_stage === 'primeira_compra'
       && new Date(c.updated_at || c.criado_em || 0) >= thisMonth).length;
     const clientesMes = monthClients;
