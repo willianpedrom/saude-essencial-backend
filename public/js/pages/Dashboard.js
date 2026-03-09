@@ -479,9 +479,14 @@ function buildFunnel(steps) {
   });
 
   const last = steps[steps.length - 1];
-  const convRate = top > 0 ? Math.round((last.count / top) * 100) : 0;
+  // Total correto = soma de todos os estágios
+  // (pessoas que avançaram no funil já saíram do estágio "topo",
+  //  então usar só steps[0].count como denominador causaria 100% errado)
+  const totalFunil = steps.reduce((sum, s) => sum + s.count, 0);
+  const convRate = totalFunil > 0 ? Math.round((last.count / totalFunil) * 100) : 0;
   const rateColor = convRate >= 10 ? '#16a34a' : convRate >= 5 ? '#f59e0b' : '#ef4444';
   const rateBg = convRate >= 10 ? '#dcfce7' : convRate >= 5 ? '#fef9c3' : '#fee2e2';
+
 
   return `
     <div style="padding:4px 0">${rows.join('')}</div>
