@@ -154,7 +154,6 @@ export async function renderPipeline(router) {
 
     return `
     <div class="pipeline-card"
-         draggable="true"
          data-id="${client.id}"
          data-stage="${stageConfig.id}"
          data-name="${fullName.replace(/"/g, '&quot;')}"
@@ -163,6 +162,7 @@ export async function renderPipeline(router) {
         <div class="pipeline-card-avatar" style="background:linear-gradient(135deg,${stageConfig.color}88,${stageConfig.color}cc)">${initials}</div>
         <div class="pipeline-card-info">
           <div class="pipeline-card-name">${fullName || '—'} ${client.tipo_cadastro === 'preferencial' ? ' 🛒' : client.tipo_cadastro === 'consultora' ? ' 💼' : ''}</div>
+
           ${phone ? `<div class="pipeline-card-phone">📱 ${phone}</div>` : ''}
         </div>
         <div class="pipeline-card-actions">
@@ -316,7 +316,14 @@ export async function renderPipeline(router) {
   function initSortable(pc) {
     function loadSortable(cb) {
       if (window.Sortable) { cb(); return; }
+      if (document.getElementById('sortable-script')) {
+        const check = setInterval(() => {
+          if (window.Sortable) { clearInterval(check); cb(); }
+        }, 100);
+        return;
+      }
       const s = document.createElement('script');
+      s.id = 'sortable-script';
       s.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js';
       s.onload = cb;
       document.head.appendChild(s);
