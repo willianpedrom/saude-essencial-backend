@@ -554,22 +554,90 @@ export async function renderDashboard(router) {
   // ── Mensagem do Assistente ──
   const assistantMsg = "Você tem ótimas novidades para conferir hoje! 🔥";
 
-  // Render layout immediately with loading state
+  // Render layout immediately with skeleton loading state
+  const skeletonHtml = `
+    <style>
+      @keyframes skeletonPulse {
+        0%,100%{opacity:1} 50%{opacity:0.4}
+      }
+      .sk { background:#e5e7eb; border-radius:6px; animation:skeletonPulse 1.6s ease-in-out infinite; }
+      .sk-dark { background:#d1d5db; }
+    </style>
+    <!-- Skeleton KPI cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px">
+      ${[1, 2, 3, 4].map(() => `
+        <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.07)">
+          <div class="sk" style="width:32px;height:32px;border-radius:8px;margin-bottom:12px"></div>
+          <div class="sk" style="width:60%;height:28px;margin-bottom:8px"></div>
+          <div class="sk" style="width:40%;height:14px"></div>
+        </div>`).join('')}
+    </div>
+    <!-- Skeleton main content -->
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:20px">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.07)">
+          <div class="sk" style="width:180px;height:20px;margin-bottom:16px"></div>
+          ${[1, 2, 3, 4, 5, 6, 7].map(() => `
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div class="sk" style="width:90px;height:14px;flex-shrink:0"></div>
+              <div class="sk" style="flex:1;height:28px;border-radius:6px"></div>
+              <div class="sk" style="width:30px;height:14px;flex-shrink:0"></div>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.07)">
+          <div class="sk" style="width:140px;height:20px;margin-bottom:16px"></div>
+          ${[1, 2, 3].map(() => `
+            <div style="margin-bottom:16px">
+              <div class="sk" style="width:100%;height:14px;margin-bottom:8px"></div>
+              <div class="sk" style="width:100%;height:8px;border-radius:4px"></div>
+            </div>`).join('')}
+        </div>
+        <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.07)">
+          <div class="sk" style="width:160px;height:20px;margin-bottom:16px"></div>
+          ${[1, 2].map(() => `
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div class="sk" style="width:42px;height:42px;border-radius:50%;flex-shrink:0"></div>
+              <div style="flex:1">
+                <div class="sk" style="width:70%;height:14px;margin-bottom:6px"></div>
+                <div class="sk" style="width:50%;height:12px"></div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
   renderLayout(router, `Olá, ${firstName}! 👋`,
     `<p style="color:var(--text-muted);margin:-10px 0 20px;font-size:0.95rem">${assistantMsg}</p>
-     <div style="display:flex;align-items:center;justify-content:center;height:300px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando dashboard...</div>`,
+     ${skeletonHtml}`,
     'dashboard'
   );
 
   try {
-    const [clients, anamneses, agendamentos, aniversariantes, avisosBanners, avisosModais] = await Promise.all([
-      store.getClients().catch(() => []),
-      store.getAnamneses().catch(() => []),
-      store.getAgendamentos().catch(() => []),
-      store.getAniversariantes().catch(() => []),
-      store.getAvisosBanner().catch(() => []),
-      store.getAvisosNaoLidos().catch(() => [])
+    // Promise.allSettled: se uma API falhar, o dashboard carrega parcialmente
+    // ao invés de mostrar erro total (anteriamente com Promise.all)
+    const results = await Promise.allSettled([
+      store.getClients(),
+      store.getAnamneses(),
+      store.getAgendamentos(),
+      store.getAniversariantes(),
+      store.getAvisosBanner(),
+      store.getAvisosNaoLidos()
     ]);
+
+    const [clients, anamneses, agendamentos, aniversariantes, avisosBanners, avisosModais] = results.map(
+      r => r.status === 'fulfilled' ? r.value : []
+    );
+
+    // Log parcial de falhas para debug (não bloqueia o dashboard)
+    results.forEach((r, i) => {
+      if (r.status === 'rejected') {
+        const names = ['clientes', 'anamneses', 'agendamentos', 'aniversariantes', 'avisosBanners', 'avisosModais'];
+        console.warn(`[Dashboard] API '${names[i]}' falhou:`, r.reason?.message);
+      }
+    });
+
 
     // ── Prepara Banners de Avisos ──
     const dismissedBanners = JSON.parse(localStorage.getItem('dismissed_banners') || '[]');
