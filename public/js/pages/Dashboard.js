@@ -417,7 +417,50 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
   return document.getElementById('page-content');
 }
 
-// ── Helper: build a horizontal bar for funnel ────────────────
+// ── Helper: Visual funnel with centered bars and conversion rates ──
+function buildFunnel(steps) {
+  // steps = [{ label, count, icon, color }]
+  const top = steps[0]?.count || 0;
+  if (top === 0) return '<div class="empty-state"><div class="empty-state-icon">📊</div><p>Sem dados no funil ainda</p></div>';
+
+  // Min width: 18%, max 100% — centered bar like a triangle
+  const bars = steps.map((s, i) => {
+    const pctOfTop = Math.round((s.count / top) * 100);
+    const barW = Math.max(18, pctOfTop); // minimum visual width
+    const next = steps[i + 1];
+    const dropPct = next && s.count > 0 ? Math.round((next.count / s.count) * 100) : null;
+    const isLast = i === steps.length - 1;
+    return `
+      <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:2px">
+        <!-- Label row -->
+        <div style="display:flex;justify-content:space-between;width:100%;margin-bottom:3px">
+          <span style="font-size:0.76rem;color:var(--text-muted);white-space:nowrap">${s.icon} ${s.label}</span>
+          <span style="font-size:0.76rem;font-weight:700;color:${s.color}">${s.count}</span>
+        </div>
+        <!-- Centered trapezoid bar -->
+        <div style="width:100%;display:flex;justify-content:center">
+          <div style="width:${barW}%;height:24px;background:${s.color}${isLast ? '' : '22'};border:2px solid ${s.color};border-radius:5px;display:flex;align-items:center;justify-content:center;transition:width 0.6s ease;position:relative">
+            <span style="font-size:0.72rem;font-weight:700;color:${s.color};white-space:nowrap">${pctOfTop}% do topo</span>
+          </div>
+        </div>
+        <!-- Drop-off arrow between steps -->
+        ${dropPct !== null ? `<div style="font-size:0.68rem;color:${dropPct < 40 ? '#ef4444' : dropPct < 70 ? '#f59e0b' : '#22c55e'};margin:4px 0;font-weight:600">↓ ${dropPct}% avançaram</div>` : ''}
+      </div>`;
+  });
+
+  // Overall conversion rate
+  const last = steps[steps.length - 1];
+  const convRate = top > 0 ? Math.round((last.count / top) * 100) : 0;
+  const convColor = convRate >= 10 ? '#16a34a' : convRate >= 5 ? '#f59e0b' : '#ef4444';
+
+  return bars.join('') + `
+    <div style="margin-top:12px;padding:10px;background:#f8fafc;border-radius:8px;border-top:2px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:0.78rem;color:var(--text-muted)">Taxa de Conversão Total</span>
+      <span style="font-size:1.1rem;font-weight:800;color:${convColor}">${convRate}%</span>
+    </div>`;
+}
+
+// compat shim (still used in some places)
 function funnelBar(label, count, total, color, emoji) {
   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
   return '<div style="margin-bottom:10px">' +
@@ -430,6 +473,7 @@ function funnelBar(label, count, total, color, emoji) {
     '</div>' +
     '</div>';
 }
+
 
 // ── Helper: build a single follow-up row ─────────────────────
 function fuRow(f, clients) {
@@ -741,40 +785,35 @@ export async function renderDashboard(router) {
           <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
         </div>
         <div class="card-body">
-          ${(() => {
-        const totalSales = Object.values(stageCounts).reduce((a, b) => a + b, 0);
-        if (totalSales === 0) return '<div class="empty-state"><div class="empty-state-icon">📈</div><p>Cadastre clientes para ver o funil</p></div>';
-
-        return funnelBar('Lead', stageCounts.lead_captado || 0, totalSales, '#6366f1', '🟣') +
-          funnelBar('Contato', stageCounts.primeiro_contato || 0, totalSales, '#3b82f6', '🔵') +
-          funnelBar('Interesse', stageCounts.interesse_confirmado || 0, totalSales, '#06b6d4', '🟢') +
-          funnelBar('Apresentação', stageCounts.protocolo_apresentado || 0, totalSales, '#10b981', '📗') +
-          funnelBar('Proposta', stageCounts.proposta_enviada || 0, totalSales, '#f59e0b', '📄') +
-          funnelBar('Negociação', stageCounts.negociando || 0, totalSales, '#f97316', '🟡') +
-          funnelBar('Fechado (1ª Compra)', stageCounts.primeira_compra || 0, totalSales, '#22c55e', '🟢');
-      })()}
+          ${buildFunnel([
+      { label: 'Lead Captado', icon: '💧', count: stageCounts.lead_captado || 0, color: '#6366f1' },
+      { label: 'Primeiro Contato', icon: '📞', count: stageCounts.primeiro_contato || 0, color: '#3b82f6' },
+      { label: 'Interesse', icon: '💬', count: stageCounts.interesse_confirmado || 0, color: '#06b6d4' },
+      { label: 'Protocolo Apres.', icon: '🌿', count: stageCounts.protocolo_apresentado || 0, color: '#10b981' },
+      { label: 'Proposta Envia.', icon: '📦', count: stageCounts.proposta_enviada || 0, color: '#f59e0b' },
+      { label: 'Negociando', icon: '🤝', count: stageCounts.negociando || 0, color: '#f97316' },
+      { label: 'Fechado! 🎉', icon: '💰', count: stageCounts.primeira_compra || 0, color: '#22c55e' },
+    ])}
         </div>
       </div>
 
       <!-- Funil de Recrutamento (Cadastro) -->
       <div class="card">
         <div class="card-header">
-          <h3>💼 Funil de Cadastro (Downlines)</h3>
+          <h3>💼 Funil de Recrutamento (Downlines)</h3>
           <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
         </div>
         <div class="card-body">
-          ${(() => {
-        const totalRec = Object.values(recStageCounts).reduce((a, b) => a + b, 0);
-        if (totalRec === 0) return '<div class="empty-state"><div class="empty-state-icon">💼</div><p>Cadastre prospectos de negócio para ver o funil</p></div>';
-
-        return funnelBar('Prospecto', recStageCounts.prospecto_negocio || 0, totalRec, '#8b5cf6', '🎯') +
-          funnelBar('Convite Feito', recStageCounts.convite_apresentacao || 0, totalRec, '#d946ef', '✉️') +
-          funnelBar('Assistiu Apres.', recStageCounts.apresentacao_assistida || 0, totalRec, '#3b82f6', '📺') +
-          funnelBar('Em Acompanham.', recStageCounts.acompanhamento_cadastro || 0, totalRec, '#f59e0b', '⏱️') +
-          funnelBar('Cadastrou!', recStageCounts.cadastrada || 0, totalRec, '#22c55e', '🏅');
-      })()}
+          ${buildFunnel([
+      { label: 'Prospecto de Negócio', icon: '🎯', count: recStageCounts.prospecto_negocio || 0, color: '#8b5cf6' },
+      { label: 'Convite Feito', icon: '✉️', count: recStageCounts.convite_apresentacao || 0, color: '#d946ef' },
+      { label: 'Assistiu Apres.', icon: '📺', count: recStageCounts.apresentacao_assistida || 0, color: '#3b82f6' },
+      { label: 'Acompanhamento', icon: '⏱️', count: recStageCounts.acompanhamento_cadastro || 0, color: '#f59e0b' },
+      { label: 'Cadastrada! 🏅', icon: '💼', count: recStageCounts.cadastrada || 0, color: '#22c55e' },
+    ])}
         </div>
       </div>
+
       
     </div>
     
