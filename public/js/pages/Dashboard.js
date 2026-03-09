@@ -624,6 +624,60 @@ export async function renderDashboard(router) {
       fuTrendHtml = '<div class="stat-trend trend-down">⚠️ ' + atrasadosFollowups.length + ' atrasados</div>';
     }
 
+    // ── Metas Mensais ──────────────────────────────────────────────
+    const consultantId = consultant?.id || 'default';
+    const metasKey = `se_metas_${consultantId}`;
+    const metasDefault = { vendas: 5, clientes: 10, followups: 20 };
+    let metas;
+    try { metas = { ...metasDefault, ...JSON.parse(localStorage.getItem(metasKey) || '{}') }; }
+    catch { metas = { ...metasDefault }; }
+
+    // Calcular progresso real do mês
+    const vendasMes = clients.filter(c => c.pipeline_stage === 'primeira_compra'
+      && new Date(c.updated_at || c.criado_em || 0) >= thisMonth).length;
+    const clientesMes = monthClients;
+    const followupsMes = followupsArr.filter(f =>
+      f.status === 'completed'
+      && new Date(f.completed_at || f.updated_at || 0) >= thisMonth
+    ).length;
+
+    function goalBar(label, icon, atual, meta, id) {
+      const pctG = meta > 0 ? Math.min(100, Math.round((atual / meta) * 100)) : 0;
+      const done = pctG >= 100;
+      const barColor = done ? 'linear-gradient(90deg,#22c55e,#16a34a)' : 'linear-gradient(90deg,#60a5fa,#3b82f6)';
+      return `
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <span style="font-size:0.82rem;font-weight:600;color:var(--text-dark)">${icon} ${label}</span>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:0.78rem;color:var(--text-muted)">${atual}/${meta}${done ? ' 🎉' : ''}</span>
+              <button class="btn-meta-edit" data-meta-id="${id}" data-meta-val="${meta}"
+                style="font-size:0.68rem;padding:2px 7px;border:1px solid var(--border);border-radius:5px;background:transparent;cursor:pointer;color:var(--text-muted)">
+                ✏️
+              </button>
+            </div>
+          </div>
+          <div style="height:7px;background:${done ? '#bbf7d0' : '#dbeafe'};border-radius:4px;overflow:hidden">
+            <div style="height:100%;width:${pctG}%;background:${barColor};border-radius:4px;transition:width 0.8s ease"></div>
+          </div>
+          ${done ? `<div style="font-size:0.72rem;color:#16a34a;font-weight:600;margin-top:3px">Meta batida! Parabéns! 🏆</div>` : `<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">${pctG}% — faltam ${meta - atual}</div>`}
+        </div>`;
+    }
+
+    const metasHtml = `
+      <div class="card" style="border-left:4px solid #3b82f6;margin-bottom:10px" id="metas-card">
+        <div class="card-header" style="background:#eff6ff">
+          <h3 style="color:#1d4ed8">🎯 Metas do Mês</h3>
+          <span style="font-size:0.72rem;color:var(--text-muted)">${now.toLocaleString('pt-BR', { month: 'long' }).replace(/^./, s => s.toUpperCase())}</span>
+        </div>
+        <div class="card-body">
+          ${goalBar('Vendas Fechadas', '💰', vendasMes, metas.vendas, 'vendas')}
+          ${goalBar('Novos Clientes', '👥', clientesMes, metas.clientes, 'clientes')}
+          ${goalBar('Follow-ups Feitos', '✅', followupsMes, metas.followups, 'followups')}
+        </div>
+      </div>`;
+
+
     // ════════════════════════════════════════════════════
     // BUILD HTML
     // ════════════════════════════════════════════════════
@@ -715,7 +769,10 @@ export async function renderDashboard(router) {
     
     <!-- TORRE DIREITA (AÇÕES E FEED) -->
     <div class="dashboard-col right-col">
-      
+
+      <!-- Metas Mensais -->
+      ${metasHtml}
+
       <!-- Quick Actions -->
       <div class="quick-actions" style="display:flex;gap:10px;margin-bottom:8px">
         <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="window.dashboardAddClient()">+ Cliente</button>
@@ -825,3 +882,24 @@ window.dashboardDoneFu = function (id) {
     }
   } catch (e) { }
 };
+
+// Edição inline de metas mensais (event delegation no body)
+document.body.addEventListener('click', e => {
+  const btn = e.target.closest('.btn-meta-edit');
+  if (!btn) return;
+  const id = btn.dataset.metaId;
+  const currentVal = parseInt(btn.dataset.metaVal) || 0;
+  const labels = { vendas: 'Vendas Fechadas', clientes: 'Novos Clientes', followups: 'Follow-ups Feitos' };
+  const newVal = parseInt(prompt(`🎯 Nova meta de ${labels[id] || id} para este mês:`, currentVal));
+  if (isNaN(newVal) || newVal < 0) return;
+  try {
+    const raw = sessionStorage.getItem('se_user');
+    const consultantId = raw ? JSON.parse(raw).id : 'default';
+    const metasKey = `se_metas_${consultantId}`;
+    const saved = JSON.parse(localStorage.getItem(metasKey) || '{}');
+    saved[id] = newVal;
+    localStorage.setItem(metasKey, JSON.stringify(saved));
+    location.reload();
+  } catch { }
+});
+
