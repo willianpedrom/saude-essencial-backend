@@ -15,9 +15,12 @@ export async function renderClients(router) {
   let tipoFilter = 'all';
   let sortOrder = 'name';
   let search = '';
+  let currentPage = 1;
+  const PAGE_SIZE = 50;
 
   async function refresh() {
     clients = await store.getClients().catch(() => []);
+    currentPage = 1;
     renderTable();
   }
 
@@ -29,9 +32,9 @@ export async function renderClients(router) {
         c.tipo_cadastro === tipoFilter;
       const q = search.toLowerCase();
       const matchSearch = !q
-        || (c.name || '').toLowerCase().includes(q)
+        || (c.nome || c.name || '').toLowerCase().includes(q)
         || (c.email || '').toLowerCase().includes(q)
-        || (c.phone || '').toLowerCase().includes(q);
+        || (c.telefone || c.phone || '').toLowerCase().includes(q);
       return matchStatus && matchTipo && matchSearch;
     });
 
@@ -40,33 +43,47 @@ export async function renderClients(router) {
     } else if (sortOrder === 'oldest') {
       list.sort((a, b) => new Date(a.criado_em) - new Date(b.criado_em));
     } else {
-      // name a-z
-      list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      list.sort((a, b) => (a.nome || a.name || '').localeCompare(b.nome || b.name || ''));
     }
     return list;
+  }
+
+  function paginated(list) {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return list.slice(start, start + PAGE_SIZE);
   }
 
   function renderTable() {
     const pc = document.getElementById('page-content');
     if (!pc) return;
-    const list = filtered();
+    const allFiltered = filtered();
+    const totalFiltered = allFiltered.length;
+    const totalPages = Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    const list = paginated(allFiltered);
+
     const tbody = pc.querySelector('#clients-tbody');
     if (!tbody) { buildPage(); return; }
-    tbody.innerHTML = list.length === 0
-      ? `<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">👥</div><h4>Nenhum cliente encontrado</h4>
+
+    tbody.innerHTML = allFiltered.length === 0
+      ? `<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">👥</div><h4>Nenhum cliente encontrado</h4>
                <p>Cadastre clientes ou compartilhe seu link de anamnese</p>
                <button class="btn btn-primary" id="btn-add-client-empty">+ Adicionar Cliente</button></div></td></tr>`
-      : list.map(c => `
+      : list.map(c => {
+        const name = c.nome || c.name || '—';
+        const phone = c.telefone || c.phone || '—';
+        const city = c.cidade || c.city || '—';
+        return `
         <tr class="client-row" data-id="${c.id}" style="cursor:pointer" title="Ver ficha completa">
           <td><div class="client-name-cell">
-            <div class="client-avatar-sm">${getInitials(c.name || '?')}</div>
-            <div><div style="font-weight:600">${c.name || '—'} ${c.tipo_cadastro === 'preferencial' ? '🛍️' : c.tipo_cadastro === 'consultora' ? '💼' : ''}</div>
+            <div class="client-avatar-sm">${getInitials(name)}</div>
+            <div><div style="font-weight:600">${name} ${c.tipo_cadastro === 'preferencial' ? '🛍️' : c.tipo_cadastro === 'consultora' ? '💼' : ''}</div>
             <div style="font-size:0.75rem;color:var(--text-muted)">${c.email || ''}</div></div>
           </div></td>
-          <td>${c.phone || '—'}</td>
+          <td>${phone}</td>
           <td>${c.genero === 'masculino' ? '♂ Masc.' : '♀ Fem.'}</td>
-          <td>${formatDate(c.birthdate) || '—'}</td>
-          <td>${c.city || '—'}</td>
+          <td>${formatDate(c.data_nascimento || c.birthdate) || '—'}</td>
+          <td>${city}</td>
           <td><span class="status-badge status-${c.status || 'active'}">${{ active: 'Ativo', inactive: 'Inativo' }[c.status] || 'Ativo'}</span></td>
           <td>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -75,7 +92,28 @@ export async function renderClients(router) {
               <button class="btn btn-danger btn-sm" data-action="delete" data-id="${c.id}">🗑️</button>
             </div>
           </td>
-        </tr>`).join('');
+        </tr>`;
+      }).join('');
+
+    // Pagination controls
+    const start = (currentPage - 1) * PAGE_SIZE + 1;
+    const end = Math.min(currentPage * PAGE_SIZE, totalFiltered);
+    const paginationEl = pc.querySelector('#clients-pagination');
+    if (paginationEl) {
+      paginationEl.innerHTML = totalFiltered === 0 ? '' : `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;flex-wrap:wrap;gap:8px">
+          <span style="font-size:0.82rem;color:var(--text-muted)">
+            Mostrando <strong>${start}–${end}</strong> de <strong>${totalFiltered}</strong> cliente${totalFiltered !== 1 ? 's' : ''}
+          </span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="btn btn-secondary btn-sm" id="pg-prev" ${currentPage <= 1 ? 'disabled' : ''}>‹ Anterior</button>
+            <span style="font-size:0.82rem;font-weight:600;color:var(--text-dark)">Página ${currentPage} / ${totalPages}</span>
+            <button class="btn btn-secondary btn-sm" id="pg-next" ${currentPage >= totalPages ? 'disabled' : ''}>Próxima ›</button>
+          </div>
+        </div>`;
+      paginationEl.querySelector('#pg-prev')?.addEventListener('click', () => { currentPage--; renderTable(); });
+      paginationEl.querySelector('#pg-next')?.addEventListener('click', () => { currentPage++; renderTable(); });
+    }
 
     bindTableActions();
     const emptyBtn = pc.querySelector('#btn-add-client-empty');
@@ -220,7 +258,9 @@ export async function renderClients(router) {
               <tbody id="clients-tbody"></tbody>
             </table>
           </div>
+          <div id="clients-pagination"></div>
         </div>`;
+
 
     renderTable();
     pc.querySelector('#btn-add-client').addEventListener('click', () => showClientModal());

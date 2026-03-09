@@ -12,28 +12,61 @@ router.use(auth, checkSub);
 // GET /api/clientes
 router.get('/', async (req, res) => {
     try {
-        // Filtra ativo=TRUE por padrão. Use ?ativo=false para ver inativos, ?ativo=all para todos.
-        let queryStr = `
-            SELECT id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, ativo, status,
-                   pipeline_stage, pipeline_notas, motivo_perda,
-                   recrutamento_stage, recrutamento_notas, motivo_perda_recrutamento, tipo_cadastro, protocolo_mensagem, criado_em
-            FROM clientes
-            WHERE consultora_id = $1
-        `;
+        // Filtra ativo=TRUE por padrão.
+        let baseWhere = `WHERE consultora_id = $1`;
         const queryParams = [req.consultora.id];
 
         if (req.query.ativo === 'all') {
-            // não filtra — retorna todos
+            // não filtra
         } else if (req.query.ativo === 'false') {
-            queryStr += ` AND ativo = FALSE`;
+            baseWhere += ` AND ativo = FALSE`;
         } else {
-            // padrão: só ativos
-            queryStr += ` AND ativo = TRUE`;
+            baseWhere += ` AND ativo = TRUE`;
         }
 
-        queryStr += ` ORDER BY nome ASC`;
+        // Optional search filter (server-side)
+        if (req.query.q && req.query.q.trim()) {
+            const idx = queryParams.length + 1;
+            baseWhere += ` AND (nome ILIKE $${idx} OR email ILIKE $${idx} OR telefone ILIKE $${idx})`;
+            queryParams.push(`%${req.query.q.trim()}%`);
+        }
 
-        const { rows } = await pool.query(queryStr, queryParams);
+        const cols = `id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, ativo, status,
+                   pipeline_stage, pipeline_notas, motivo_perda,
+                   recrutamento_stage, recrutamento_notas, motivo_perda_recrutamento, tipo_cadastro, protocolo_mensagem, criado_em`;
+
+        // Paginação opcional: ?page=1&limit=50
+        // Sem os parâmetros, retorna tudo (retrocompatível)
+        if (req.query.page !== undefined) {
+            const page = Math.max(1, parseInt(req.query.page) || 1);
+            const limit = Math.min(200, Math.max(1, parseInt(req.query.limit) || 50));
+            const offset = (page - 1) * limit;
+
+            const countRes = await pool.query(
+                `SELECT COUNT(*) FROM clientes ${baseWhere}`,
+                queryParams
+            );
+            const total = parseInt(countRes.rows[0].count);
+
+            const dataRes = await pool.query(
+                `SELECT ${cols} FROM clientes ${baseWhere} ORDER BY nome ASC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`,
+                [...queryParams, limit, offset]
+            );
+
+            return res.json({
+                data: dataRes.rows,
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            });
+        }
+
+        // Retrocompatível: retorna array simples
+        const { rows } = await pool.query(
+            `SELECT ${cols} FROM clientes ${baseWhere} ORDER BY nome ASC`,
+            queryParams
+        );
         res.json(rows);
     } catch (err) {
         console.error(err);
