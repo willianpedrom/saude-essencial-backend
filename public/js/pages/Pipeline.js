@@ -312,45 +312,37 @@ export async function renderPipeline(router) {
     initSortable(pc);
   }
 
-  // ── Sortable.js: touch-friendly drag for all columns ──────────
+  // ── Sortable.js: drag-and-drop para todos os dispositivos ─────
   function initSortable(pc) {
-    function loadSortable(cb) {
-      if (window.Sortable) { cb(); return; }
-      if (document.getElementById('sortable-script')) {
-        const check = setInterval(() => {
-          if (window.Sortable) { clearInterval(check); cb(); }
-        }, 100);
-        return;
-      }
-      const s = document.createElement('script');
-      s.id = 'sortable-script';
-      s.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js';
-      s.onload = cb;
-      document.head.appendChild(s);
+    if (!window.Sortable) {
+      console.error('[Pipeline] SortableJS não carregado. Verifique o index.html.');
+      return;
     }
 
-    loadSortable(() => {
-      pc.querySelectorAll('.pipeline-drop-zone').forEach(zone => {
-        new window.Sortable(zone, {
-          group: 'pipeline',
-          draggable: '.pipeline-card', // Apenas cards são arrastáveis
-          filter: 'button, a, .pipeline-card-btn, .pipeline-move-btn', // Evita arrastar quando clica num botão
-          preventOnFilter: false,
-          animation: 150,
-          ghostClass: 'pipeline-card-ghost',
-          chosenClass: 'pipeline-card-chosen',
-          dragClass: 'pipeline-card-dragging',
-          delay: 150,           // Required for better touch support
-          delayOnTouchOnly: true,
-          touchStartThreshold: 5,
-          onEnd: async (evt) => {
-            const targetStage = evt.to.dataset.targetStage;
-            const sourceStage = evt.from.dataset.targetStage;
-            const cardId = evt.item.dataset.id;
-            if (!targetStage || targetStage === sourceStage) return;
-            await moveCard(cardId, sourceStage, targetStage, pc);
-          },
-        });
+    pc.querySelectorAll('.pipeline-drop-zone').forEach(zone => {
+      // Evita dupla inicialização no mesmo elemento
+      if (zone.dataset.sortableInit) return;
+      zone.dataset.sortableInit = '1';
+
+      new window.Sortable(zone, {
+        group: 'pipeline',
+        draggable: '.pipeline-card',
+        filter: 'button, a',
+        preventOnFilter: false,
+        animation: 150,
+        ghostClass: 'pipeline-card-ghost',
+        chosenClass: 'pipeline-card-chosen',
+        dragClass: 'pipeline-card-dragging',
+        delay: 100,
+        delayOnTouchOnly: true,
+        touchStartThreshold: 3,
+        onEnd: async (evt) => {
+          const targetStage = evt.to.dataset.targetStage;
+          const sourceStage = evt.from.dataset.targetStage;
+          const cardId = evt.item.dataset.id;
+          if (!targetStage || targetStage === sourceStage) return;
+          await moveCard(cardId, sourceStage, targetStage, pc);
+        },
       });
     });
   }
