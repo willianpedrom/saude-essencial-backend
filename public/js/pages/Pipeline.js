@@ -154,6 +154,7 @@ export async function renderPipeline(router) {
 
     return `
     <div class="pipeline-card"
+         draggable="true"
          data-id="${client.id}"
          data-stage="${stageConfig.id}"
          data-name="${fullName.replace(/"/g, '&quot;')}"
@@ -312,40 +313,61 @@ export async function renderPipeline(router) {
     initSortable(pc);
   }
 
-  // ── Sortable.js: drag-and-drop para todos os dispositivos ─────
+  // ── Drag & Drop nativo HTML5 — sem dependências externas ──────
   function initSortable(pc) {
-    if (!window.Sortable) {
-      console.error('[Pipeline] SortableJS não carregado. Verifique o index.html.');
-      return;
-    }
+    let draggingId = null;
+    let draggingFrom = null;
 
-    pc.querySelectorAll('.pipeline-drop-zone').forEach(zone => {
-      // Evita dupla inicialização no mesmo elemento
-      if (zone.dataset.sortableInit) return;
-      zone.dataset.sortableInit = '1';
+    // ── Cards: dragstart e dragend
+    pc.querySelectorAll('.pipeline-card[draggable]').forEach(card => {
+      card.addEventListener('dragstart', e => {
+        // Impede arrastar se o clique foi em botão/link
+        if (e.target.closest('button, a')) { e.preventDefault(); return; }
+        draggingId = card.dataset.id;
+        draggingFrom = card.dataset.stage;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', draggingId);
+        // Aparecer 'fantasma' vísivel
+        setTimeout(() => card.classList.add('dragging'), 0);
+      });
 
-      new window.Sortable(zone, {
-        group: 'pipeline',
-        draggable: '.pipeline-card',
-        filter: 'button, a',
-        preventOnFilter: false,
-        animation: 150,
-        ghostClass: 'pipeline-card-ghost',
-        chosenClass: 'pipeline-card-chosen',
-        dragClass: 'pipeline-card-dragging',
-        delay: 100,
-        delayOnTouchOnly: true,
-        touchStartThreshold: 3,
-        onEnd: async (evt) => {
-          const targetStage = evt.to.dataset.targetStage;
-          const sourceStage = evt.from.dataset.targetStage;
-          const cardId = evt.item.dataset.id;
-          if (!targetStage || targetStage === sourceStage) return;
-          await moveCard(cardId, sourceStage, targetStage, pc);
-        },
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        // Limpar highlight de todas as zonas
+        pc.querySelectorAll('.pipeline-drop-zone').forEach(z => z.classList.remove('drag-over'));
+        draggingId = null;
+        draggingFrom = null;
+      });
+    });
+
+    // ── Zonas de drop: dragover e drop
+    pc.querySelectorAll('.pipeline-drop-zone, .pipeline-lost-body').forEach(zone => {
+      zone.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        pc.querySelectorAll('.pipeline-drop-zone, .pipeline-lost-body').forEach(z => z.classList.remove('drag-over'));
+        zone.classList.add('drag-over');
+      });
+
+      zone.addEventListener('dragleave', e => {
+        // só remove se realmente saiu da zona (não entrou num filho)
+        if (!zone.contains(e.relatedTarget)) {
+          zone.classList.remove('drag-over');
+        }
+      });
+
+      zone.addEventListener('drop', async e => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        const targetStage = zone.dataset.targetStage;
+        const cardId = e.dataTransfer.getData('text/plain') || draggingId;
+        const fromStage = draggingFrom;
+        if (!cardId || !targetStage || targetStage === fromStage) return;
+        await moveCard(cardId, fromStage, targetStage, pc);
       });
     });
   }
+
 
   // ── Shared move logic (used by DnD + mobile buttons) ──────────
   async function moveCard(clientId, fromStage, targetStage, pc) {
