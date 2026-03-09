@@ -417,46 +417,80 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
   return document.getElementById('page-content');
 }
 
-// ── Helper: Visual funnel with centered bars and conversion rates ──
+// ── Helper: Premium visual funnel with trapezoid shapes ──────
 function buildFunnel(steps) {
-  // steps = [{ label, count, icon, color }]
   const top = steps[0]?.count || 0;
-  if (top === 0) return '<div class="empty-state"><div class="empty-state-icon">📊</div><p>Sem dados no funil ainda</p></div>';
+  if (top === 0) return `
+    <div style="display:flex;flex-direction:column;align-items:center;padding:32px 0;gap:10px;color:var(--text-light)">
+      <div style="font-size:2.5rem;opacity:0.3">📊</div>
+      <div style="font-size:0.85rem">Sem leads no funil ainda</div>
+    </div>`;
 
-  // Min width: 18%, max 100% — centered bar like a triangle
-  const bars = steps.map((s, i) => {
-    const pctOfTop = Math.round((s.count / top) * 100);
-    const barW = Math.max(18, pctOfTop); // minimum visual width
+  // Gradient palette topo→fundo
+  const palette = [
+    ['#818cf8', '#6366f1'], ['#60a5fa', '#3b82f6'], ['#22d3ee', '#06b6d4'],
+    ['#34d399', '#10b981'], ['#fbbf24', '#f59e0b'], ['#fb923c', '#f97316'], ['#4ade80', '#16a34a']
+  ];
+
+  const total = steps.length;
+  const rows = steps.map((s, i) => {
+    const pctOfTop = top > 0 ? Math.round((s.count / top) * 100) : 0;
+    // Trapezoid width: top step = 100%, narrows proportionally, min 20%
+    const trapW = Math.max(20, pctOfTop);
+    // Clip-path trapezoid: bottom is 6% narrower per side than top
+    const shrink = i === 0 ? 0 : 3;
+    const [c1, c2] = palette[Math.min(i, palette.length - 1)];
     const next = steps[i + 1];
-    const dropPct = next && s.count > 0 ? Math.round((next.count / s.count) * 100) : null;
-    const isLast = i === steps.length - 1;
+    // Conversion to next step (cap to 100% to handle data anomalies)
+    const conv = next && s.count > 0 ? Math.min(100, Math.round((next.count / s.count) * 100)) : null;
+    const convColor = conv === null ? '' : conv >= 60 ? '#16a34a' : conv >= 30 ? '#f59e0b' : '#ef4444';
+    const isLast = i === total - 1;
     return `
-      <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:2px">
-        <!-- Label row -->
-        <div style="display:flex;justify-content:space-between;width:100%;margin-bottom:3px">
-          <span style="font-size:0.76rem;color:var(--text-muted);white-space:nowrap">${s.icon} ${s.label}</span>
-          <span style="font-size:0.76rem;font-weight:700;color:${s.color}">${s.count}</span>
+      <div style="display:flex;align-items:center;gap:8px;width:100%;margin-bottom:${isLast ? 0 : 2}px">
+        <!-- Left label -->
+        <div style="width:112px;text-align:right;flex-shrink:0">
+          <div style="font-size:0.72rem;font-weight:600;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.icon} ${s.label}</div>
         </div>
-        <!-- Centered trapezoid bar -->
-        <div style="width:100%;display:flex;justify-content:center">
-          <div style="width:${barW}%;height:24px;background:${s.color}${isLast ? '' : '22'};border:2px solid ${s.color};border-radius:5px;display:flex;align-items:center;justify-content:center;transition:width 0.6s ease;position:relative">
-            <span style="font-size:0.72rem;font-weight:700;color:${s.color};white-space:nowrap">${pctOfTop}% do topo</span>
+        <!-- Trapezoid column -->
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+          <div style="
+            width:${trapW}%;
+            height:30px;
+            background:linear-gradient(135deg,${c1},${c2});
+            clip-path:polygon(${shrink}% 0%, ${100 - shrink}% 0%, ${100 - shrink - 3}% 100%, ${shrink + 3}% 100%);
+            display:flex;align-items:center;justify-content:center;
+            border-radius:2px;
+            box-shadow:0 2px 8px ${c2}55;
+            transition:width 0.7s cubic-bezier(.4,0,.2,1)">
+            <span style="font-size:0.72rem;font-weight:800;color:white;letter-spacing:0.3px;text-shadow:0 1px 3px rgba(0,0,0,0.3)">${s.count} · ${pctOfTop}%</span>
           </div>
+          ${conv !== null ? `
+          <div style="display:flex;align-items:center;gap:4px;margin:3px 0">
+            <div style="height:12px;width:1px;background:${convColor}55"></div>
+            <span style="font-size:0.64rem;font-weight:700;color:${convColor}">${conv}% →</span>
+            <div style="height:12px;width:1px;background:${convColor}55"></div>
+          </div>` : ''}
         </div>
-        <!-- Drop-off arrow between steps -->
-        ${dropPct !== null ? `<div style="font-size:0.68rem;color:${dropPct < 40 ? '#ef4444' : dropPct < 70 ? '#f59e0b' : '#22c55e'};margin:4px 0;font-weight:600">↓ ${dropPct}% avançaram</div>` : ''}
+        <!-- Right count badge -->
+        <div style="width:32px;flex-shrink:0;text-align:center">
+          <span style="font-size:0.8rem;font-weight:800;color:${c2}">${s.count}</span>
+        </div>
       </div>`;
   });
 
-  // Overall conversion rate
   const last = steps[steps.length - 1];
   const convRate = top > 0 ? Math.round((last.count / top) * 100) : 0;
-  const convColor = convRate >= 10 ? '#16a34a' : convRate >= 5 ? '#f59e0b' : '#ef4444';
+  const rateColor = convRate >= 10 ? '#16a34a' : convRate >= 5 ? '#f59e0b' : '#ef4444';
+  const rateBg = convRate >= 10 ? '#dcfce7' : convRate >= 5 ? '#fef9c3' : '#fee2e2';
 
-  return bars.join('') + `
-    <div style="margin-top:12px;padding:10px;background:#f8fafc;border-radius:8px;border-top:2px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:0.78rem;color:var(--text-muted)">Taxa de Conversão Total</span>
-      <span style="font-size:1.1rem;font-weight:800;color:${convColor}">${convRate}%</span>
+  return `
+    <div style="padding:4px 0">${rows.join('')}</div>
+    <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:${rateBg};border-radius:10px">
+      <div>
+        <div style="font-size:0.7rem;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:0.5px">Conversão Total</div>
+        <div style="font-size:0.75rem;color:var(--text-muted)">${steps[0].label} → ${last.label}</div>
+      </div>
+      <div style="font-size:2rem;font-weight:900;color:${rateColor};line-height:1">${convRate}%</div>
     </div>`;
 }
 
@@ -473,6 +507,7 @@ function funnelBar(label, count, total, color, emoji) {
     '</div>' +
     '</div>';
 }
+
 
 
 // ── Helper: build a single follow-up row ─────────────────────
