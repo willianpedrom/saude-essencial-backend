@@ -216,6 +216,11 @@ CREATE TABLE IF NOT EXISTS pagamentos (
 
 CREATE INDEX IF NOT EXISTS idx_pagamentos_consultora ON pagamentos(consultora_id);
 
+-- ── Índices para dashboard: COUNT por stage (evita full scan) ────────────────
+CREATE INDEX IF NOT EXISTS idx_clientes_pipeline     ON clientes(consultora_id, pipeline_stage);
+CREATE INDEX IF NOT EXISTS idx_clientes_recrutamento ON clientes(consultora_id, recrutamento_stage);
+
+
 -- ── Recuperação de senha ────────────────────────────────────────────────────
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS reset_token       TEXT;
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMPTZ;
