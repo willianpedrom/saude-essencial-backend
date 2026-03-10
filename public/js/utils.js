@@ -63,6 +63,32 @@ export function toast(msg, type = 'success', duration = 3000) {
   setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(40px)'; t.style.transition = 'all 0.3s'; setTimeout(() => t.remove(), 300); }, duration);
 }
 
+/**
+ * Copy text to clipboard with mobile-friendly feedback:
+ * vibration + toast + optional button animation.
+ * @param {string} text — the text to copy
+ * @param {HTMLElement} [btn] — optional button element to animate with "✅ Copiado!"
+ */
+export async function copyToClipboard(text, btn) {
+  try {
+    await navigator.clipboard.writeText(text);
+    // Haptic feedback on mobile
+    if (navigator.vibrate) navigator.vibrate(50);
+    toast('Link copiado! 🔗');
+    // Animate the button
+    if (btn) {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✅ Copiado!';
+      btn.style.background = '#16a34a';
+      btn.style.color = '#fff';
+      setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; btn.style.color = ''; }, 1500);
+    }
+  } catch {
+    // Fallback for devices where clipboard API is blocked
+    prompt('Copie o link:', text);
+  }
+}
+
 export function modal(title, bodyHtml, { onConfirm, onOpen, confirmLabel = 'Confirmar', confirmClass = 'btn-primary', cancelLabel = 'Cancelar' } = {}) {
   const existing = document.querySelector('.modal-overlay');
   if (existing) existing.remove();

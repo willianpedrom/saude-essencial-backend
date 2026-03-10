@@ -193,28 +193,7 @@ export function renderBusinessReport(router, dataParam) {
   // Ação de Copiar Link
   document.getElementById('btn-share-link')?.addEventListener('click', async () => {
     const linkUrl = consultant.link || window.location.href;
-    try {
-      await navigator.clipboard.writeText(linkUrl);
-      const btn = document.getElementById('btn-share-link');
-      const originalHtml = btn.innerHTML;
-      btn.innerHTML = '✅ Link Copiado com Sucesso!';
-      btn.style.color = '#15803d';
-      btn.style.borderColor = '#bbf7d0';
-      btn.style.background = '#f0fdf4';
-
-      // Import the toast utility from utils if available, or just use the button visual fallback
-      if (window.toast) {
-        window.toast('Link copiado para a área de transferência!', 'success');
-      }
-
-      setTimeout(() => {
-        btn.innerHTML = originalHtml;
-        btn.style.color = '';
-        btn.style.borderColor = '';
-        btn.style.background = '';
-      }, 3000);
-    } catch (err) {
-      alert('Seu navegador bloqueou a cópia automática. O link é: ' + linkUrl);
-    }
+    const { copyToClipboard } = await import('../utils.js');
+    copyToClipboard(linkUrl, document.getElementById('btn-share-link'));
   });
 }

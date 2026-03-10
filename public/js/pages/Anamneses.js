@@ -1,7 +1,7 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { ANAMNESIS_STEPS, ANAMNESIS_QUESTIONS } from '../data.js';
-import { formatDate, toast, modal, getConsultantTitle } from '../utils.js';
+import { formatDate, toast, modal, getConsultantTitle, copyToClipboard } from '../utils.js';
 
 export async function renderAnamnesisList(router) {
   renderLayout(router, 'Links de Anamnese',
@@ -168,11 +168,7 @@ export async function renderAnamnesisList(router) {
   function bindEvents(pc) {
     // Copy link
     pc.querySelectorAll('[data-copy]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        navigator.clipboard.writeText(btn.dataset.copy)
-          .then(() => toast('Link copiado! 📋'))
-          .catch(() => prompt('Copie o link:', btn.dataset.copy));
-      });
+      btn.addEventListener('click', () => copyToClipboard(btn.dataset.copy, btn));
     });
 
     pc.querySelectorAll('[data-wa]').forEach(btn => {

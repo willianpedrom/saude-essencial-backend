@@ -1,6 +1,6 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
-import { toast, modal, getConsultantTitle } from '../utils.js';
+import { toast, modal, getConsultantTitle, copyToClipboard } from '../utils.js';
 
 export async function renderLinks(router) {
   const consultant = auth.current;
@@ -136,11 +136,7 @@ export async function renderLinks(router) {
     pc.querySelector('#btn-new-link')?.addEventListener('click', showNewLinkModal);
 
     pc.querySelectorAll('[data-copy]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        navigator.clipboard.writeText(btn.dataset.copy)
-          .then(() => toast('Link copiado! 📋'))
-          .catch(() => prompt('Copie o link:', btn.dataset.copy));
-      });
+      btn.addEventListener('click', () => copyToClipboard(btn.dataset.copy, btn));
     });
 
     pc.querySelectorAll('[data-whatsapp]').forEach(btn => {

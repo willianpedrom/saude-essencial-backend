@@ -1,6 +1,6 @@
 import { auth, store, api } from '../store.js';
 import { renderLayout } from './Dashboard.js';
-import { toast, btnLoading } from '../utils.js';
+import { toast, btnLoading, copyToClipboard } from '../utils.js';
 
 
 export async function renderProfile(router) {
@@ -347,7 +347,7 @@ export async function renderProfile(router) {
     pc.querySelector('#btn-copy-profile-link')?.addEventListener('click', () => {
       const currentSlug = slugInput?.value?.trim() || profile.slug;
       const url = `${window.location.origin}/convite/${currentSlug}`;
-      navigator.clipboard.writeText(url).then(() => toast('Link copiado! ✅')).catch(() => toast('Erro ao copiar', 'error'));
+      copyToClipboard(url, pc.querySelector('#btn-copy-profile-link'));
     });
 
     // === Gestão de Links (Linktree) ===
