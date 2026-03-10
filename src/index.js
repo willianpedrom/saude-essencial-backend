@@ -45,12 +45,19 @@ app.use(helmet({
                 "'self'",
                 "data:",
                 "blob:",
-                "https://www.facebook.com",         // pixel noscript img
+                // Tracking pixels
+                "https://www.facebook.com",
                 "https://*.fbcdn.net",
                 "https://www.google-analytics.com",
+                // Avatar / profile photo CDNs
                 "https://*.googleusercontent.com",
                 "https://*.gravatar.com",
-                "*",                                // fotos de perfil de URLs externas
+                "https://res.cloudinary.com",       // Cloudinary
+                "https://*.supabase.co",            // Supabase Storage
+                "https://i.ibb.co",                 // imgBB
+                "https://*.railway.app",            // Railway static
+                "https://*.githubusercontent.com",  // GitHub avatars
+                // NOTE: wildcard (*) removed — add new CDN domains explicitly as needed
             ],
             connectSrc: [
                 "'self'",
