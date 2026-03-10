@@ -98,11 +98,22 @@ export const auth = {
         } catch { return null; }
     },
 
-    logout() {
+    async logout() {
+        // Notify server to bump token_version — revokes all other active sessions
+        try {
+            const token = sessionStorage.getItem('se_token');
+            if (token) {
+                await fetch(`${API_URL}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+            }
+        } catch { /* silent — always clear local session */ }
         this._current = null;
         sessionStorage.removeItem('se_token');
         sessionStorage.removeItem('se_user');
     },
+
 
     get current() { return this._current; },
     get isLoggedIn() { return !!this._current; },

@@ -98,8 +98,13 @@ router.post('/login', async (req, res, next) => {
         );
         const sub = subResult.rows[0] || { plano: 'none', status: 'none' };
 
+        const { rows: tvRows } = await pool.query(
+            'SELECT token_version FROM consultoras WHERE id = $1', [consultora.id]
+        );
+        const tv = tvRows[0]?.token_version ?? 1;
+
         const token = jwt.sign(
-            { id: consultora.id, email: consultora.email, nome: consultora.nome, role: consultora.role || 'user', genero: consultora.genero || 'feminino' },
+            { id: consultora.id, email: consultora.email, nome: consultora.nome, role: consultora.role || 'user', genero: consultora.genero || 'feminino', tv },
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
@@ -349,7 +354,7 @@ router.post('/reset-password', async (req, res, next) => {
         const bcrypt = require('bcryptjs');
         const hash = await bcrypt.hash(novaSenha, 10);
         await pool.query(
-            'UPDATE consultoras SET senha_hash=$1, reset_token=NULL, reset_token_expiry=NULL, atualizado_em=NOW() WHERE id=$2',
+            'UPDATE consultoras SET senha_hash=$1, reset_token=NULL, reset_token_expiry=NULL, token_version = COALESCE(token_version, 1) + 1, atualizado_em=NOW() WHERE id=$2',
             [hash, rows[0].id]
         );
         console.log(`[Auth] ✅ Senha redefinida via reset token para consultora ${rows[0].id}`);
@@ -385,11 +390,25 @@ router.put('/change-password', authMiddleware, async (req, res, next) => {
 
         const newHash = await bcrypt.hash(novaSenha, 10);
         await pool.query(
-            'UPDATE consultoras SET senha_hash=$1, atualizado_em=NOW() WHERE id=$2',
+            'UPDATE consultoras SET senha_hash=$1, token_version = COALESCE(token_version, 1) + 1, atualizado_em=NOW() WHERE id=$2',
             [newHash, req.consultora.id]
         );
         console.log(`[Auth] 🔐 Senha alterada para consultora ${req.consultora.id}`);
-        return res.json({ success: true, message: 'Senha alterada com sucesso!' });
+        return res.json({ success: true, message: 'Senha alterada com sucesso! Faça login novamente.' });
+    } catch (err) {
+        return next(err);
+    }
+});
+
+// POST /api/auth/logout — revokes all existing tokens by bumping token_version
+router.post('/logout', authMiddleware, async (req, res, next) => {
+    try {
+        await pool.query(
+            'UPDATE consultoras SET token_version = COALESCE(token_version, 1) + 1, atualizado_em=NOW() WHERE id=$1',
+            [req.consultora.id]
+        );
+        console.log(`[Auth] 🚪 Logout seguro para consultora ${req.consultora.id}`);
+        return res.json({ success: true, message: 'Sessão encerrada com segurança.' });
     } catch (err) {
         return next(err);
     }

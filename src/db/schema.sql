@@ -220,6 +220,10 @@ CREATE INDEX IF NOT EXISTS idx_pagamentos_consultora ON pagamentos(consultora_id
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS reset_token       TEXT;
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMPTZ;
 
+-- ── JWT Token Versioning (revoke tokens on password change / logout) ─────────
+ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS token_version INT NOT NULL DEFAULT 1;
+
+
 -- ── Trial de 7 dias (era 14) ────────────────────────────────────────────────
 ALTER TABLE assinaturas ALTER COLUMN trial_fim SET DEFAULT (NOW() + INTERVAL '7 days');
 -- ==========================================
