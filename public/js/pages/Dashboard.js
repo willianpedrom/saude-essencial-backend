@@ -618,7 +618,7 @@ export async function renderDashboard(router) {
     // Promise.allSettled: se uma API falhar, o dashboard carrega parcialmente
     // ao invés de mostrar erro total (anteriamente com Promise.all)
     const results = await Promise.allSettled([
-      store.getClients(),
+      store.getDashboardSummary(),  // ← summary SQL (replaces getClients)
       store.getAnamneses(),
       store.getAgendamentos(),
       store.getAniversariantes(),
@@ -626,14 +626,26 @@ export async function renderDashboard(router) {
       store.getAvisosNaoLidos()
     ]);
 
-    const [clients, anamneses, agendamentos, aniversariantes, avisosBanners, avisosModais] = results.map(
-      r => r.status === 'fulfilled' ? r.value : []
+    const [summary, anamneses, agendamentos, aniversariantes, avisosBanners, avisosModais] = results.map(
+      r => r.status === 'fulfilled' ? r.value : (r.status === 'rejected' ? {} : [])
     );
+
+    // Destructure pre-computed summary fields (no full client list needed)
+    const {
+      totalClients = 0,
+      activeClients = 0,
+      leadClients = 0,
+      monthClients = 0,
+      hasClient = false,
+      stageCounts = {},
+      recStageCounts = {},
+      metas: summaryMetas = {}
+    } = summary || {};
 
     // Log parcial de falhas para debug (não bloqueia o dashboard)
     results.forEach((r, i) => {
       if (r.status === 'rejected') {
-        const names = ['clientes', 'anamneses', 'agendamentos', 'aniversariantes', 'avisosBanners', 'avisosModais'];
+        const names = ['summary', 'anamneses', 'agendamentos', 'aniversariantes', 'avisosBanners', 'avisosModais', 'followupsWithClientData'];
         console.warn(`[Dashboard] API '${names[i]}' falhou:`, r.reason?.message);
       }
     });
@@ -666,13 +678,13 @@ export async function renderDashboard(router) {
     // ── Onboarding Checklist ──
     const onboardingDismissed = localStorage.getItem('onboarding_dismissed_' + consultant.id) === '1';
     const hasProfile = !!(consultant?.nome && consultant?.telefone);
-    const hasClient = clients.length > 0;
+    const hasClientBool = hasClient || anamneses.length > 0; // from summary
     const hasAnamnese = anamneses.length > 0;
     const hasFollowup = followupsArr.length > 0;
 
     const onboardingSteps = [
       { done: hasProfile, label: 'Complete seu perfil', sub: 'Adicione sua foto e telefone', action: "location.hash='#/profile'", btn: 'Completar →' },
-      { done: hasClient, label: 'Adicione seu primeiro cliente', sub: 'Cadastre alguém que você já atende', action: "window.dashboardAddClient()", btn: 'Adicionar →' },
+      { done: hasClientBool, label: 'Adicione seu primeiro cliente', sub: 'Cadastre alguém que você já atende', action: "window.dashboardAddClient()", btn: 'Adicionar →' },
       { done: hasAnamnese, label: 'Configure seu link de anamnese', sub: 'Crie um formulário de saúde personalizado', action: "location.hash='#/anamnesis'", btn: 'Criar →' },
       { done: hasFollowup, label: 'Crie seu primeiro follow-up', sub: 'Registre o acompanhamento de uma cliente', action: "location.hash='#/followup'", btn: 'Criar →' },
       { done: anamneses.some(a => a.subtipo === 'generico'), label: 'Link de captação genérico', sub: 'Para novos leads sem cliente específico', action: "location.hash='#/links'", btn: 'Criar →' },
@@ -722,39 +734,9 @@ export async function renderDashboard(router) {
     const urgentFollowups = [...atrasadosFollowups, ...hojeFollowups]
       .sort((a, b) => new Date(a.dueDateTime) - new Date(b.dueDateTime)).slice(0, 5);
 
-    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const totalClients = clients.length;
-    const monthClients = clients.filter(c => new Date(c.created_at || c.createdAt || 0) >= thisMonth).length;
     const totalAnamneses = anamneses.length;
-
-    // ── Dados do funil de vendas ──
-    const activeClients = clients.filter(c => c.status === 'active').length;
-    const leadClients = clients.filter(c => c.status === 'lead').length;
-    const inactiveClients = clients.filter(c => c.status === 'inactive').length;
-
-    // Etapas do Kanban/Pipeline de Vendas
-    const stageLabels = { lead_captado: 'Lead', primeiro_contato: 'Contato', interesse_confirmado: 'Interesse', protocolo_apresentado: 'Apresentação', proposta_enviada: 'Proposta', negociando: 'Negociação', primeira_compra: 'Fechado' };
-    const stageCounts = {};
-    Object.keys(stageLabels).forEach(s => { stageCounts[s] = 0; });
-
-    // Etapas do Kanban/Pipeline de Recrutamento
-    const recStageLabels = { prospecto_negocio: 'Prospecto de Negócio', convite_apresentacao: 'Convite Feito', apresentacao_assistida: 'Assistiu Apresentação', acompanhamento_cadastro: 'Em Acompanhamento', cadastrada: 'Cadastrada!' };
-    const recStageCounts = {};
-    Object.keys(recStageLabels).forEach(s => { recStageCounts[s] = 0; });
-
-    clients.forEach(c => {
-      // Funil de Vendas
-      if (c.pipeline_stage !== 'none' && !(!c.pipeline_stage && c.recrutamento_stage)) {
-        const stage = c.pipeline_stage || 'lead_captado';
-        if (stageCounts[stage] !== undefined) stageCounts[stage]++;
-      }
-
-      // Funil de Recrutamento
-      if (c.recrutamento_stage && c.recrutamento_stage !== 'none') {
-        const recStage = c.recrutamento_stage;
-        if (recStageCounts[recStage] !== undefined) recStageCounts[recStage]++;
-      }
-    });
+    // stageCounts, recStageCounts, totalClients, activeClients, monthClients
+    // all come from summary — no client-side iteration needed
 
     // ── Anamneses pendentes (enviadas mas não respondidas) ──
     const anamnesesPendentes = anamneses.filter(a =>
@@ -784,17 +766,11 @@ export async function renderDashboard(router) {
     try { metas = { ...metasDefault, ...JSON.parse(localStorage.getItem(metasKey) || '{}') }; }
     catch { metas = { ...metasDefault }; }
 
-    // Calcular progresso real do mês
-    // Leads captados no mês = todos os clientes cadastrados neste mês
-    // (independente do estágio atual — quem avançou no funil também foi lead)
-    const leadsMes = clients.filter(c =>
-      new Date(c.criado_em || c.created_at || 0) >= thisMonth).length;
-    const vendasMes = clients.filter(c => c.pipeline_stage === 'primeira_compra'
-      && new Date(c.updated_at || c.criado_em || 0) >= thisMonth).length;
+    // Metas calculadas no backend via summary endpoint
+    const leadsMes = summaryMetas.leadsMes || 0;
+    const vendasMes = summaryMetas.vendasMes || 0;
     const clientesMes = monthClients;
-    const cadastrosMes = clients.filter(c =>
-      c.recrutamento_stage === 'cadastrada'
-      && new Date(c.updated_at || c.criado_em || 0) >= thisMonth).length;
+    const cadastrosMes = summaryMetas.cadastrosMes || 0;
     const followupsMes = followupsArr.filter(f =>
       f.status === 'completed'
       && new Date(f.completed_at || f.updated_at || 0) >= thisMonth

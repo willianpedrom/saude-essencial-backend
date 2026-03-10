@@ -120,6 +120,10 @@ export const store = {
         const list = await api('GET', '/api/dashboard/aniversariantes');
         return Array.isArray(list) ? list : [];
     },
+    async getDashboardSummary() {
+        return await api('GET', '/api/dashboard/summary');
+    },
+
     async addClient(_cid, data) {
         const body = data ? clientToApi(data) : clientToApi(_cid); // allow 1 or 2 args
         const res = await api('POST', '/api/clientes', body);

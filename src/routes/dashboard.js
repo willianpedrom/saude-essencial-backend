@@ -74,4 +74,91 @@ router.get('/aniversariantes', async (req, res) => {
   }
 });
 
+// GET /api/dashboard/summary — aggregated metrics without loading all clients
+router.get('/summary', async (req, res) => {
+  try {
+    const consultora_id = req.consultora.id;
+    const now = new Date();
+    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+    const { rows } = await pool.query(`
+      SELECT
+        -- Totais gerais
+        COUNT(*) FILTER (WHERE ativo = TRUE)                                      AS total_clientes,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND status = 'active')                AS ativos,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND status = 'inactive')              AS inativos,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND (status = 'lead' OR (tipo_cadastro = 'lead' OR tipo_cadastro IS NULL)))  AS leads,
+
+        -- Mês atual
+        COUNT(*) FILTER (WHERE ativo = TRUE AND criado_em >= $2)                  AS mes_novos,
+
+        -- Pipeline de Vendas
+        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'lead_captado')            AS stage_lead_captado,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'primeiro_contato')        AS stage_primeiro_contato,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'interesse_confirmado')    AS stage_interesse_confirmado,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'protocolo_apresentado')   AS stage_protocolo_apresentado,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'proposta_enviada')        AS stage_proposta_enviada,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'negociando')              AS stage_negociando,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'primeira_compra')         AS stage_primeira_compra,
+
+        -- Pipeline de Recrutamento
+        COUNT(*) FILTER (WHERE ativo = TRUE AND recrutamento_stage = 'prospecto_negocio')         AS rec_prospecto,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND recrutamento_stage = 'convite_apresentacao')      AS rec_convite,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND recrutamento_stage = 'apresentacao_assistida')    AS rec_assistiu,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND recrutamento_stage = 'acompanhamento_cadastro')   AS rec_acompanhamento,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND recrutamento_stage = 'cadastrada')                AS rec_cadastrada,
+
+        -- Metas do mês
+        COUNT(*) FILTER (WHERE ativo = TRUE AND criado_em >= $2)                                              AS leads_mes,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'primeira_compra' AND updated_at >= $2)      AS vendas_mes,
+        COUNT(*) FILTER (WHERE ativo = TRUE AND recrutamento_stage = 'cadastrada' AND updated_at >= $2)       AS cadastros_mes,
+
+        -- Onboarding check
+        COUNT(*) FILTER (WHERE ativo = TRUE) > 0                                  AS has_client
+
+      FROM clientes
+      WHERE consultora_id = $1
+    `, [consultora_id, firstOfMonth]);
+
+    const r = rows[0];
+
+    res.json({
+      totalClients: parseInt(r.total_clientes) || 0,
+      activeClients: parseInt(r.ativos) || 0,
+      inactiveClients: parseInt(r.inativos) || 0,
+      leadClients: parseInt(r.leads) || 0,
+      monthClients: parseInt(r.mes_novos) || 0,
+      hasClient: r.has_client,
+
+      stageCounts: {
+        lead_captado: parseInt(r.stage_lead_captado) || 0,
+        primeiro_contato: parseInt(r.stage_primeiro_contato) || 0,
+        interesse_confirmado: parseInt(r.stage_interesse_confirmado) || 0,
+        protocolo_apresentado: parseInt(r.stage_protocolo_apresentado) || 0,
+        proposta_enviada: parseInt(r.stage_proposta_enviada) || 0,
+        negociando: parseInt(r.stage_negociando) || 0,
+        primeira_compra: parseInt(r.stage_primeira_compra) || 0,
+      },
+
+      recStageCounts: {
+        prospecto_negocio: parseInt(r.rec_prospecto) || 0,
+        convite_apresentacao: parseInt(r.rec_convite) || 0,
+        apresentacao_assistida: parseInt(r.rec_assistiu) || 0,
+        acompanhamento_cadastro: parseInt(r.rec_acompanhamento) || 0,
+        cadastrada: parseInt(r.rec_cadastrada) || 0,
+      },
+
+      metas: {
+        leadsMes: parseInt(r.leads_mes) || 0,
+        vendasMes: parseInt(r.vendas_mes) || 0,
+        cadastrosMes: parseInt(r.cadastros_mes) || 0,
+      }
+    });
+  } catch (err) {
+    console.error('[dashboard/summary]', err);
+    res.status(500).json({ error: 'Erro ao calcular resumo do dashboard.' });
+  }
+});
+
 module.exports = router;
+
