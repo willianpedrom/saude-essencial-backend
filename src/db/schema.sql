@@ -277,3 +277,29 @@ CREATE TABLE IF NOT EXISTS followups (
 CREATE INDEX IF NOT EXISTS idx_followups_consultora ON followups(consultora_id);
 CREATE INDEX IF NOT EXISTS idx_followups_cliente    ON followups(cliente_id);
 CREATE INDEX IF NOT EXISTS idx_followups_status     ON followups(status);
+
+-- ── Trigger: auto-set atualizado_em on every UPDATE ─────────────────────────
+CREATE OR REPLACE FUNCTION set_atualizado_em()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.atualizado_em = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$
+DECLARE
+  t TEXT;
+BEGIN
+  FOREACH t IN ARRAY ARRAY[
+    'consultoras', 'clientes', 'anamneses', 'agendamentos',
+    'depoimentos', 'assinaturas', 'avisos_sistema', 'followups'
+  ] LOOP
+    EXECUTE format(
+      'DROP TRIGGER IF EXISTS trg_atualizado_em ON %I; '
+      'CREATE TRIGGER trg_atualizado_em BEFORE UPDATE ON %I '
+      'FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();',
+      t, t
+    );
+  END LOOP;
+END $$;
