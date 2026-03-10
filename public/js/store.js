@@ -127,6 +127,22 @@ export const store = {
         const list = await api('GET', '/api/clientes');
         return (Array.isArray(list) ? list : []).map(normalizeClient);
     },
+    /**
+     * Paginated client fetching — sends ?page=&limit=&q=&ativo= to backend.
+     * Returns { data: Client[], total, page, limit, totalPages }.
+     */
+    async getClientsPaginated({ page = 1, limit = 50, q = '', ativo = 'all' } = {}) {
+        const params = new URLSearchParams({ page, limit, ativo });
+        if (q) params.set('q', q);
+        const res = await api('GET', `/api/clientes?${params}`);
+        // Backend responds { data, total, page, limit, totalPages }
+        if (res && Array.isArray(res.data)) {
+            return { ...res, data: res.data.map(normalizeClient) };
+        }
+        // Fallback if backend returned flat array (shouldn't happen with page param)
+        const list = Array.isArray(res) ? res : [];
+        return { data: list.map(normalizeClient), total: list.length, page: 1, limit, totalPages: 1 };
+    },
     async getAniversariantes() {
         const list = await api('GET', '/api/dashboard/aniversariantes');
         return Array.isArray(list) ? list : [];

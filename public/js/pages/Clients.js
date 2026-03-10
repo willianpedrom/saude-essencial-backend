@@ -11,31 +11,39 @@ export async function renderClients(router) {
     `, 'clients');
 
   let clients = [];
-  let filter = 'all';
-  let tipoFilter = 'all';
-  let sortOrder = 'name';
-  let search = '';
+  let filter = 'all';      // ativo filter → sent to server
+  let tipoFilter = 'all';  // tipo_cadastro → local filter on current page
+  let sortOrder = 'name';  // sort → local on current page
+  let search = '';          // search → sent to server (debounced)
   let currentPage = 1;
+  let totalClients = 0;
+  let totalPages = 1;
   const PAGE_SIZE = 50;
+  let _searchTimer = null;
 
-  async function refresh() {
-    clients = await store.getClients().catch(() => []);
-    currentPage = 1;
+  async function refresh(resetPage = true) {
+    if (resetPage) currentPage = 1;
+    try {
+      const res = await store.getClientsPaginated({ page: currentPage, limit: PAGE_SIZE, q: search, ativo: 'all' });
+      clients = res.data;
+      totalClients = res.total;
+      totalPages = res.totalPages;
+    } catch {
+      clients = [];
+      totalClients = 0;
+      totalPages = 1;
+    }
     renderTable();
   }
 
   function filtered() {
+    // status and tipo are applied locally on the current page of results
     let list = clients.filter(c => {
       const matchStatus = filter === 'all' || c.status === filter;
       const matchTipo = tipoFilter === 'all' ||
         (tipoFilter === 'lead' && (!c.tipo_cadastro || c.tipo_cadastro === 'lead')) ||
         c.tipo_cadastro === tipoFilter;
-      const q = search.toLowerCase();
-      const matchSearch = !q
-        || (c.nome || c.name || '').toLowerCase().includes(q)
-        || (c.email || '').toLowerCase().includes(q)
-        || (c.telefone || c.phone || '').toLowerCase().includes(q);
-      return matchStatus && matchTipo && matchSearch;
+      return matchStatus && matchTipo;
     });
 
     if (sortOrder === 'recent') {
@@ -48,24 +56,15 @@ export async function renderClients(router) {
     return list;
   }
 
-  function paginated(list) {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return list.slice(start, start + PAGE_SIZE);
-  }
-
   function renderTable() {
     const pc = document.getElementById('page-content');
     if (!pc) return;
-    const allFiltered = filtered();
-    const totalFiltered = allFiltered.length;
-    const totalPages = Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE));
-    if (currentPage > totalPages) currentPage = totalPages;
-    const list = paginated(allFiltered);
+    const list = filtered(); // local tipo/sort on current page
 
     const tbody = pc.querySelector('#clients-tbody');
     if (!tbody) { buildPage(); return; }
 
-    tbody.innerHTML = allFiltered.length === 0
+    tbody.innerHTML = list.length === 0
       ? `<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">👥</div><h4>Nenhum cliente encontrado</h4>
                <p>Cadastre clientes ou compartilhe seu link de anamnese</p>
                <button class="btn btn-primary" id="btn-add-client-empty">+ Adicionar Cliente</button></div></td></tr>`
@@ -95,15 +94,15 @@ export async function renderClients(router) {
         </tr>`;
       }).join('');
 
-    // Pagination controls
-    const start = (currentPage - 1) * PAGE_SIZE + 1;
-    const end = Math.min(currentPage * PAGE_SIZE, totalFiltered);
+    // Pagination controls — use server-side totals
+    const start = totalClients === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+    const end = Math.min(currentPage * PAGE_SIZE, totalClients);
     const paginationEl = pc.querySelector('#clients-pagination');
     if (paginationEl) {
-      paginationEl.innerHTML = totalFiltered === 0 ? '' : `
+      paginationEl.innerHTML = totalClients === 0 ? '' : `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;flex-wrap:wrap;gap:8px">
           <span style="font-size:0.82rem;color:var(--text-muted)">
-            Mostrando <strong>${start}–${end}</strong> de <strong>${totalFiltered}</strong> cliente${totalFiltered !== 1 ? 's' : ''}
+            Mostrando <strong>${start}–${end}</strong> de <strong>${totalClients}</strong> cliente${totalClients !== 1 ? 's' : ''}
           </span>
           <div style="display:flex;align-items:center;gap:8px">
             <button class="btn btn-secondary btn-sm" id="pg-prev" ${currentPage <= 1 ? 'disabled' : ''}>‹ Anterior</button>
@@ -111,8 +110,8 @@ export async function renderClients(router) {
             <button class="btn btn-secondary btn-sm" id="pg-next" ${currentPage >= totalPages ? 'disabled' : ''}>Próxima ›</button>
           </div>
         </div>`;
-      paginationEl.querySelector('#pg-prev')?.addEventListener('click', () => { currentPage--; renderTable(); });
-      paginationEl.querySelector('#pg-next')?.addEventListener('click', () => { currentPage++; renderTable(); });
+      paginationEl.querySelector('#pg-prev')?.addEventListener('click', () => { currentPage--; refresh(false); });
+      paginationEl.querySelector('#pg-next')?.addEventListener('click', () => { currentPage++; refresh(false); });
     }
 
     bindTableActions();
@@ -320,7 +319,7 @@ export async function renderClients(router) {
       });
     });
 
-    // Novo listener pro Tipo de Cadastro
+    // Novo listener pro Tipo de Cadastro (local filter on current page)
     const selectTipo = pc.querySelector('#filter-tipo');
     selectTipo.value = tipoFilter;
     selectTipo.addEventListener('change', e => {
@@ -328,7 +327,7 @@ export async function renderClients(router) {
       renderTable();
     });
 
-    // Novo listener pra Ordenação
+    // Novo listener pra Ordenação (local sort on current page)
     const selectSort = pc.querySelector('#filter-sort');
     selectSort.value = sortOrder;
     selectSort.addEventListener('change', e => {
@@ -336,7 +335,12 @@ export async function renderClients(router) {
       renderTable();
     });
 
-    pc.querySelector('#search-input').addEventListener('input', e => { search = e.target.value; renderTable(); });
+    // Debounced server-side search (300ms)
+    pc.querySelector('#search-input').addEventListener('input', e => {
+      search = e.target.value;
+      clearTimeout(_searchTimer);
+      _searchTimer = setTimeout(() => refresh(), 300);
+    });
   }
 
   function showClientModal(client = null) {
