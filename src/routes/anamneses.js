@@ -122,34 +122,46 @@ router.put('/public/:token', async (req, res) => {
         const data_nasc = (dados.birthdate && dados.birthdate.length > 5) ? dados.birthdate : null;
         const cidade = dados.city || dados.cidade || null;
 
-        // 4. Upsert client (prevents duplicates across ALL links, including business and health)
+        // 4. Upsert client — match by name similarity + (email OR phone)
+        // Using name matching prevents treating different people sharing the same
+        // contact (e.g. a mother filling a form for her son) as duplicates.
         let clienteId = null;
 
-        // Try to find an existing client by email or phone
         if (email || telefone) {
-            let queryStr = 'SELECT id FROM clientes WHERE consultora_id = $1 AND (';
             let params = [consultora_id];
-            let conditions = [];
+            let contactConds = [];
             if (email) {
-                conditions.push(`email = $${params.length + 1}`);
+                contactConds.push(`email = $${params.length + 1}`);
                 params.push(email);
             }
             if (telefone) {
-                conditions.push(`telefone = $${params.length + 1}`);
+                contactConds.push(`telefone = $${params.length + 1}`);
                 params.push(telefone);
             }
-            queryStr += conditions.join(' OR ') + ') LIMIT 1';
+            // Also add the name for similarity check — normalize by lowercasing and trimming
+            params.push(nome.toLowerCase().trim());
+            const nameIdx = params.length;
+
+            // Duplicate = same consultora + same contact + name starts with same first word
+            // (handles "João Silva" vs "João" but distinguishes "Maria" from "Pedro")
+            const queryStr = `
+                SELECT id FROM clientes
+                WHERE consultora_id = $1
+                  AND (${contactConds.join(' OR ')})
+                  AND LOWER(TRIM(nome)) LIKE ($${nameIdx} || '%')
+                LIMIT 1`;
 
             const { rows: existing } = await client.query(queryStr, params);
             if (existing.length > 0) {
                 clienteId = existing[0].id;
-                // Update missing client info with the new form data
+                // Update missing fields only (COALESCE keeps existing values)
                 await client.query(
                     'UPDATE clientes SET nome=COALESCE($1, nome), telefone=COALESCE($2, telefone), email=COALESCE($3, email), data_nascimento=COALESCE($4, data_nascimento), cidade=COALESCE($5, cidade) WHERE id=$6',
                     [nome || null, telefone || null, email || null, data_nasc || null, cidade || null, clienteId]
                 );
             }
         }
+
 
         // If no client was found, create a new record
         if (!clienteId) {
