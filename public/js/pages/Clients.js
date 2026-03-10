@@ -128,15 +128,62 @@ export async function renderClients(router) {
         const client = clients.find(c => c.id === btn.dataset.id);
         if (btn.dataset.action === 'edit') showClientModal(client);
         if (btn.dataset.action === 'delete') {
-          modal('Remover Cliente', `<p>Deseja remover <strong>${client?.name}</strong>?</p>`, {
-            confirmLabel: 'Remover', confirmClass: 'btn-danger',
+          const clientName = client?.nome || client?.name || 'este cliente';
+          modal('Arquivar Cliente', `
+            <div style="text-align:center;padding:8px 0 16px">
+              <div style="font-size:2.5rem;margin-bottom:8px">🗂️</div>
+              <p style="font-size:0.95rem;color:#374151;margin-bottom:12px">
+                Você está prestes a arquivar o cliente:
+              </p>
+              <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;
+                          padding:10px 16px;margin-bottom:16px">
+                <strong style="font-size:1.05rem;color:#b91c1c">${clientName}</strong>
+              </div>
+              <p style="font-size:0.82rem;color:#6b7280;line-height:1.5;margin-bottom:8px">
+                O cliente será marcado como <strong>arquivado</strong> e ocultado das listas ativas.<br>
+                Você poderá recuperá-lo a qualquer momento editando seu cadastro e alterando o status.
+              </p>
+              <details style="cursor:pointer;margin-top:8px">
+                <summary style="font-size:0.78rem;color:#ef4444;font-weight:600">
+                  ⚠️ Quero excluir permanentemente (sem recuperação)
+                </summary>
+                <div style="margin-top:10px;padding:10px;background:#fef2f2;border-radius:8px;border:1px solid #fca5a5">
+                  <p style="font-size:0.78rem;color:#7f1d1d;margin-bottom:10px">
+                    Esta ação é <strong>irreversível</strong>. Todos os dados, anamneses e histórico serão perdidos.
+                  </p>
+                  <button class="btn btn-danger btn-sm" id="btn-hard-delete" style="width:100%;font-weight:700">
+                    🗑️ Excluir Permanentemente
+                  </button>
+                </div>
+              </details>
+            </div>
+          `, {
+            confirmLabel: '🗂️ Arquivar',
+            onOpen: () => {
+              document.getElementById('btn-hard-delete')?.addEventListener('click', async () => {
+                try {
+                  await store.deleteClient(client.id);
+                  toast(`${clientName} excluído permanentemente.`, 'warning');
+                  await refresh();
+                  // close modal
+                  document.querySelector('[data-close]')?.click();
+                } catch (e) {
+                  toast('Erro ao excluir: ' + e.message, 'error');
+                }
+              });
+            },
             onConfirm: async () => {
-              await store.deleteClient(client.id).catch(() => { });
-              toast('Cliente removido.', 'warning');
-              await refresh();
+              try {
+                await store.updateClient(client.id, { status: 'inactive' });
+                toast(`${clientName} arquivado. Você pode reativá-lo a qualquer momento.`, 'warning');
+                await refresh();
+              } catch (e) {
+                toast('Erro ao arquivar: ' + e.message, 'error');
+              }
             }
           });
         }
+
         if (btn.dataset.action === 'anamnese') {
           showAnamneseModal(client, router);
         }
