@@ -83,41 +83,34 @@ router.get('/summary', async (req, res) => {
 
     const { rows } = await pool.query(`
       SELECT
-        -- Totais gerais
-        COUNT(*) FILTER (WHERE ativo = TRUE)                                      AS total_clientes,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND status = 'active')                AS ativos,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND status = 'inactive')              AS inativos,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND (status = 'lead' OR (tipo_cadastro = 'lead' OR tipo_cadastro IS NULL)))  AS leads,
+        COUNT(*)                                                                   AS total_clientes,
+        COUNT(*) FILTER (WHERE status = 'active')                                 AS ativos,
+        COUNT(*) FILTER (WHERE status = 'inactive')                               AS inativos,
+        COUNT(*) FILTER (WHERE status = 'lead' OR tipo_cadastro = 'lead')          AS leads,
 
-        -- Mês atual
-        COUNT(*) FILTER (WHERE ativo = TRUE AND criado_em >= $2)                  AS mes_novos,
+        COUNT(*) FILTER (WHERE criado_em >= $2)                                   AS mes_novos,
 
-        -- Pipeline de Vendas
-        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'lead_captado')            AS stage_lead_captado,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'primeiro_contato')        AS stage_primeiro_contato,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'interesse_confirmado')    AS stage_interesse_confirmado,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'protocolo_apresentado')   AS stage_protocolo_apresentado,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'proposta_enviada')        AS stage_proposta_enviada,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'negociando')              AS stage_negociando,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'primeira_compra')         AS stage_primeira_compra,
+        COUNT(*) FILTER (WHERE pipeline_stage = 'lead_captado')                   AS stage_lead_captado,
+        COUNT(*) FILTER (WHERE pipeline_stage = 'primeiro_contato')               AS stage_primeiro_contato,
+        COUNT(*) FILTER (WHERE pipeline_stage = 'interesse_confirmado')           AS stage_interesse_confirmado,
+        COUNT(*) FILTER (WHERE pipeline_stage = 'protocolo_apresentado')          AS stage_protocolo_apresentado,
+        COUNT(*) FILTER (WHERE pipeline_stage = 'proposta_enviada')               AS stage_proposta_enviada,
+        COUNT(*) FILTER (WHERE pipeline_stage = 'negociando')                     AS stage_negociando,
+        COUNT(*) FILTER (WHERE pipeline_stage = 'primeira_compra')                AS stage_primeira_compra,
 
-        -- Pipeline de Recrutamento
-        COUNT(*) FILTER (WHERE ativo = TRUE AND recrutamento_stage = 'prospecto_negocio')         AS rec_prospecto,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND recrutamento_stage = 'convite_apresentacao')      AS rec_convite,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND recrutamento_stage = 'apresentacao_assistida')    AS rec_assistiu,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND recrutamento_stage = 'acompanhamento_cadastro')   AS rec_acompanhamento,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND recrutamento_stage = 'cadastrada')                AS rec_cadastrada,
+        COUNT(*) FILTER (WHERE recrutamento_stage = 'prospecto_negocio')          AS rec_prospecto,
+        COUNT(*) FILTER (WHERE recrutamento_stage = 'convite_apresentacao')       AS rec_convite,
+        COUNT(*) FILTER (WHERE recrutamento_stage = 'apresentacao_assistida')     AS rec_assistiu,
+        COUNT(*) FILTER (WHERE recrutamento_stage = 'acompanhamento_cadastro')    AS rec_acompanhamento,
+        COUNT(*) FILTER (WHERE recrutamento_stage = 'cadastrada')                 AS rec_cadastrada,
 
-        -- Metas do mês
-        COUNT(*) FILTER (WHERE ativo = TRUE AND criado_em >= $2)                                              AS leads_mes,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND pipeline_stage = 'primeira_compra' AND updated_at >= $2)      AS vendas_mes,
-        COUNT(*) FILTER (WHERE ativo = TRUE AND recrutamento_stage = 'cadastrada' AND updated_at >= $2)       AS cadastros_mes,
-
-        -- Onboarding check
-        COUNT(*) FILTER (WHERE ativo = TRUE) > 0                                  AS has_client
+        COUNT(*) FILTER (WHERE criado_em >= $2)                                   AS leads_mes,
+        COUNT(*) FILTER (WHERE pipeline_stage = 'primeira_compra' AND atualizado_em >= $2)  AS vendas_mes,
+        COUNT(*) FILTER (WHERE recrutamento_stage = 'cadastrada' AND atualizado_em >= $2)   AS cadastros_mes
 
       FROM clientes
       WHERE consultora_id = $1
+        AND ativo = TRUE
     `, [consultora_id, firstOfMonth]);
 
     const r = rows[0];
@@ -128,7 +121,7 @@ router.get('/summary', async (req, res) => {
       inactiveClients: parseInt(r.inativos) || 0,
       leadClients: parseInt(r.leads) || 0,
       monthClients: parseInt(r.mes_novos) || 0,
-      hasClient: r.has_client,
+      hasClient: (parseInt(r.total_clientes) || 0) > 0,
 
       stageCounts: {
         lead_captado: parseInt(r.stage_lead_captado) || 0,
@@ -161,4 +154,3 @@ router.get('/summary', async (req, res) => {
 });
 
 module.exports = router;
-
