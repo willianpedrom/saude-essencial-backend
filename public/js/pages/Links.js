@@ -26,19 +26,18 @@ export async function renderLinks(router) {
       : '<span style="background:#f3e8ff;color:#6b21a8;font-size:0.72rem;padding:2px 8px;border-radius:12px">👤 Pessoal</span>';
 
     const html = `
-    <div style="margin-bottom:20px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
-        <div>
-          <p style="color:var(--text-muted);font-size:0.9rem;margin:0 0 8px 0">
-            Crie links de captação para compartilhar com clientes.
-          </p>
-          <div style="display:flex;gap:16px;font-size:0.82rem">
-            <span>👤 <strong>Pessoal</strong> — use 1 vez, envie para uma pessoa específica</span>
-            <span>🌐 <strong>Genérico</strong> — ilimitado, para redes sociais ou campanhas</span>
-          </div>
+    <!-- Toolbar: description + button -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+      <div>
+        <p style="color:var(--text-muted);font-size:0.88rem;margin:0 0 8px 0">
+          Crie links de captação para compartilhar com clientes.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;font-size:0.8rem;color:#64748b">
+          <span>👤 <strong>Pessoal</strong> — 1 uso, pessoa específica</span>
+          <span>🌐 <strong>Genérico</strong> — ilimitado, redes sociais</span>
         </div>
-        <button class="btn btn-primary" id="btn-new-link">+ Gerar Novo Link</button>
       </div>
+      <button class="btn btn-primary" id="btn-new-link" style="white-space:nowrap">+ Gerar Novo Link</button>
     </div>
 
     <div id="link-list">
@@ -49,8 +48,6 @@ export async function renderLinks(router) {
              <p>Clique em <strong>+ Gerar Novo Link</strong> para começar</p>
            </div>`
         : links.map(l => {
-          // Substituindo o hash client-side pela nova rota amigável SSR configurada no back-end
-          // O token agora passará pelo interceptador do WhatsApp/Metatags antes de iniciar a SPA
           const url = `${baseUrl}/convite/${l.token_publico}`;
           const nome = l.nome_link || 'Link sem nome';
           const subtipo = l.subtipo || 'pessoal';
@@ -58,39 +55,76 @@ export async function renderLinks(router) {
           const isGenerico = subtipo === 'generico';
           const isBusiness = l.tipo === 'recrutamento';
 
-          // For generic: show "N fills" counter via the fact that the template stays unfilled
-          // For personal: show filled/awaiting status
-          const statusBadge = isGenerico
-            ? `<span style="background:#e0f2fe;color:#0369a1;font-size:0.75rem;padding:2px 8px;border-radius:12px">🔁 Ilimitado</span>`
-            : preenchido
-              ? `<span style="background:#dcfce7;color:#166534;font-size:0.75rem;padding:2px 8px;border-radius:12px">✅ Preenchido</span>`
-              : `<span style="background:#fef9c3;color:#854d0e;font-size:0.75rem;padding:2px 8px;border-radius:12px">⏳ Aguardando</span>`;
+          const typePill = isGenerico
+            ? `<span style="background:#dbeafe;color:#1d4ed8;font-size:0.7rem;padding:2px 8px;border-radius:10px;white-space:nowrap;font-weight:600">🌐 Genérico</span>`
+            : `<span style="background:#f3e8ff;color:#6b21a8;font-size:0.7rem;padding:2px 8px;border-radius:10px;white-space:nowrap;font-weight:600">👤 Pessoal</span>`;
 
-          const categoryBadge = isBusiness
-            ? `<span style="background:#1e293b;color:#f8fafc;font-size:0.72rem;padding:2px 8px;border-radius:12px">💼 Negócios</span>`
-            : `<span style="background:#fef5e7;color:#c05621;font-size:0.72rem;padding:2px 8px;border-radius:12px">💧 Saúde</span>`;
+          const catPill = isBusiness
+            ? `<span style="background:#1e293b;color:#f8fafc;font-size:0.7rem;padding:2px 8px;border-radius:10px;white-space:nowrap;font-weight:600">💼 Negócios</span>`
+            : `<span style="background:#fef5e7;color:#c05621;font-size:0.7rem;padding:2px 8px;border-radius:10px;white-space:nowrap;font-weight:600">💧 Saúde</span>`;
+
+          const statusPill = isGenerico
+            ? `<span style="background:#e0f2fe;color:#0369a1;font-size:0.7rem;padding:2px 8px;border-radius:10px;white-space:nowrap;font-weight:600">🔁 Ilimitado</span>`
+            : preenchido
+              ? `<span style="background:#dcfce7;color:#166534;font-size:0.7rem;padding:2px 8px;border-radius:10px;white-space:nowrap;font-weight:600">✅ Preenchido</span>`
+              : `<span style="background:#fef9c3;color:#854d0e;font-size:0.7rem;padding:2px 8px;border-radius:10px;white-space:nowrap;font-weight:600">⏳ Aguardando</span>`;
 
           return `
-          <div class="link-card" style="margin-bottom:10px;align-items:center">
-            <div class="link-card-icon">${isGenerico ? '🌐' : '👤'}</div>
-            <div class="link-card-info" style="flex:1;min-width:0">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;flex-wrap:wrap">
-                <span style="font-weight:600">${nome}</span>
-                ${typeLabel(subtipo)}
-                ${categoryBadge}
-                ${statusBadge}
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;
+                      margin-bottom:12px;overflow:hidden;
+                      box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+
+            <!-- Card Header -->
+            <div style="padding:14px 16px;display:flex;align-items:flex-start;gap:12px">
+              <div style="width:38px;height:38px;border-radius:10px;
+                          background:${isGenerico ? '#dbeafe' : '#f3e8ff'};
+                          display:flex;align-items:center;justify-content:center;
+                          font-size:1.2rem;flex-shrink:0">
+                ${isGenerico ? '🌐' : '👤'}
               </div>
-              <div style="font-size:0.78rem;color:var(--text-muted);word-break:break-all">${url}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:700;color:#1e293b;font-size:0.95rem;
+                            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+                            margin-bottom:6px">
+                  ${nome}
+                </div>
+                <div style="display:flex;gap:5px;flex-wrap:wrap">
+                  ${typePill}${catPill}${statusPill}
+                </div>
+              </div>
             </div>
-            <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap">
-              <button class="btn btn-secondary btn-sm" data-copy="${url}">📋</button>
-              <button class="btn btn-secondary btn-sm" data-whatsapp="${url}" data-name="${nome}" data-tipo="${l.tipo}">📱</button>
-              <button class="btn btn-secondary btn-sm" data-edit-token="${l.token_publico}" data-edit-name="${nome}">✏️</button>
-              <button class="btn btn-danger btn-sm" data-delete-id="${l.id}" data-delete-name="${nome}">🗑️</button>
+
+            <!-- URL row -->
+            <div style="padding:0 16px 12px;display:flex;align-items:center;gap:8px">
+              <div style="flex:1;min-width:0;background:#f8fafc;border:1px solid #e2e8f0;
+                          border-radius:8px;padding:8px 10px;
+                          font-size:0.75rem;color:#64748b;font-family:monospace;
+                          white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                ${url}
+              </div>
+              <button class="btn btn-secondary btn-sm" data-copy="${url}"
+                style="padding:8px 12px;flex-shrink:0;font-size:0.8rem" title="Copiar link">📋</button>
+            </div>
+
+            <!-- Action bar -->
+            <div style="border-top:1px solid #f1f5f9;padding:10px 16px;
+                        display:flex;gap:8px;">
+              <button class="btn btn-secondary btn-sm" data-whatsapp="${url}" data-name="${nome}" data-tipo="${l.tipo}"
+                style="flex:1;font-size:0.78rem;display:flex;align-items:center;justify-content:center;gap:5px">
+                📱 WhatsApp
+              </button>
+              <button class="btn btn-secondary btn-sm" data-edit-token="${l.token_publico}" data-edit-name="${nome}"
+                style="flex:1;font-size:0.78rem;display:flex;align-items:center;justify-content:center;gap:5px">
+                ✏️ Renomear
+              </button>
+              <button class="btn btn-danger btn-sm" data-delete-id="${l.id}" data-delete-name="${nome}"
+                style="padding:6px 12px;flex-shrink:0" title="Excluir">🗑️</button>
             </div>
           </div>`;
         }).join('')}
     </div>`;
+
+
 
     const pc = document.getElementById('page-content');
     if (!pc) return;
