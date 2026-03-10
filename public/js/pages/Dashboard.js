@@ -738,10 +738,12 @@ export async function renderDashboard(router) {
     // stageCounts, recStageCounts, totalClients, activeClients, monthClients
     // all come from summary — no client-side iteration needed
 
-    // ── Anamneses pendentes (enviadas mas não respondidas) ──
+    // ── Anamneses pendentes: links pessoais não preenchidos pelo cliente ──
     const anamnesesPendentes = anamneses.filter(a =>
-      a.status === 'pendente' || a.status === 'pending' || a.status === 'enviada'
+      a.preenchido === false && (a.subtipo === 'pessoal' || a.subtipo == null)
     ).slice(0, 5);
+
+
 
     // ── Próximas reuniões ──
     const upcoming = agendamentos
