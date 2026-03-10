@@ -69,9 +69,10 @@ export function renderLogin(router) {
           <div class="form-group">
             <label class="form-label">Senha</label>
             <div style="position:relative">
-              <input class="form-input" type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required minlength="6" style="padding-right:44px" />
+              <input class="form-input" type="password" id="reg-password" placeholder="Mínimo 8 caracteres" required minlength="8" style="padding-right:44px" />
               <button type="button" class="toggle-pw" data-target="reg-password" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:0.5;padding:4px 6px" title="Mostrar senha">👁️</button>
             </div>
+            <div id="reg-strength" style="margin-top:6px;font-size:0.78rem"></div>
           </div>
           <div class="auth-error" id="reg-error"></div>
           <button class="btn-auth" type="submit" id="reg-btn">Criar minha conta ✦</button>
@@ -205,6 +206,19 @@ export function renderLogin(router) {
       ? { label: 'Forte 💪', color: '#16a34a' }
       : val.length >= 8 ? { label: 'Razoável 😐', color: '#d97706' }
         : { label: 'Fraca ⚠️', color: '#dc2626' };
+    el.innerHTML = `<span style="color:${s.color};font-weight:600">${s.label}</span>`;
+  });
+
+  // ── Register password strength indicator ────────────────────────────────
+  document.getElementById('reg-password')?.addEventListener('input', e => {
+    const val = e.target.value;
+    const el = document.getElementById('reg-strength');
+    if (!el) return;
+    if (!val) { el.textContent = ''; return; }
+    const s = val.length >= 12 && /[A-Z]/.test(val) && /[0-9]/.test(val)
+      ? { label: 'Forte 💪', color: '#16a34a' }
+      : val.length >= 8 ? { label: 'Razoável 😐', color: '#d97706' }
+        : { label: 'Fraca ⚠️ (mín 8 chars)', color: '#dc2626' };
     el.innerHTML = `<span style="color:${s.color};font-weight:600">${s.label}</span>`;
   });
 

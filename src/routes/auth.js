@@ -27,9 +27,10 @@ router.post('/register', validate(schemas.register), async (req, res, next) => {
         if (!nome || !email || !senha) {
             return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios.' });
         }
-        if (senha.length < 6) {
-            return res.status(400).json({ error: 'A senha deve ter no mínimo 6 caracteres.' });
+        if (senha.length < 8) {
+            return res.status(400).json({ error: 'A senha deve ter no mínimo 8 caracteres.' });
         }
+
 
         // Check existing email
         const exists = await pool.query('SELECT id FROM consultoras WHERE email = $1', [email]);
