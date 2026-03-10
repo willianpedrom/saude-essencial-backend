@@ -301,42 +301,30 @@ router.get('/', async (req, res) => {
 
 
 
-// GET /api/anamneses/cliente/:clienteId  — all anamneses for a specific client (and any other client with the same email)
+// GET /api/anamneses/cliente/:clienteId  — all anamneses for a specific client
 // IMPORTANT: must be registered BEFORE /:id to avoid route collision
 router.get('/cliente/:clienteId', async (req, res) => {
     try {
-        // Find the email of the target client to group distinct client records by email
-        const { rows: clientRows } = await pool.query(
-            'SELECT email FROM clientes WHERE id = $1 AND consultora_id = $2',
-            [req.params.clienteId, req.consultora.id]
-        );
-        const targetEmail = clientRows.length > 0 ? clientRows[0].email : null;
+        // Fetch only anamneses directly linked to this exact client record.
+        // We intentionally do NOT group by email because different family members
+        // may share the same email (e.g. mother filling form for her son) and
+        // must have their anamneses kept separate.
+        const { rows } = await pool.query(`
+            SELECT a.id, a.tipo, a.subtipo, a.dados, a.preenchido, a.criado_em, a.nome_link
+            FROM anamneses a
+            WHERE a.consultora_id = $1
+              AND a.cliente_id    = $2
+              AND a.preenchido    = TRUE
+            ORDER BY a.criado_em DESC
+        `, [req.consultora.id, req.params.clienteId]);
 
-        let queryStr = `
-             SELECT a.id, a.tipo, a.subtipo, a.dados, a.preenchido, a.criado_em, a.nome_link
-             FROM anamneses a
-             JOIN clientes c ON a.cliente_id = c.id
-             WHERE a.consultora_id = $1
-               AND a.preenchido = TRUE
-               AND (a.cliente_id = $2 `;
-        const queryParams = [req.consultora.id, req.params.clienteId];
-
-        if (targetEmail && targetEmail.trim() !== '') {
-            queryStr += ` OR c.email = $3 )`;
-            queryParams.push(targetEmail);
-        } else {
-            queryStr += ` )`;
-        }
-
-        queryStr += ` ORDER BY a.criado_em DESC`;
-
-        const { rows } = await pool.query(queryStr, queryParams);
         res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erro ao buscar anamneses do cliente.' });
     }
 });
+
 
 // GET /api/anamneses/:id  (full record including dados)
 router.get('/:id', async (req, res) => {
