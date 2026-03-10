@@ -121,6 +121,7 @@ router.put('/public/:token', async (req, res) => {
         const telefone = dados.phone || dados.telefone || null;
         const data_nasc = (dados.birthdate && dados.birthdate.length > 5) ? dados.birthdate : null;
         const cidade = dados.city || dados.cidade || null;
+        const genero = dados.gender || dados.genero || null; // 'masculino' or 'feminino' from the form
 
         // 4. Upsert client — match by name similarity + (email OR phone)
         // Using name matching prevents treating different people sharing the same
@@ -156,8 +157,8 @@ router.put('/public/:token', async (req, res) => {
                 clienteId = existing[0].id;
                 // Update missing fields only (COALESCE keeps existing values)
                 await client.query(
-                    'UPDATE clientes SET nome=COALESCE($1, nome), telefone=COALESCE($2, telefone), email=COALESCE($3, email), data_nascimento=COALESCE($4, data_nascimento), cidade=COALESCE($5, cidade) WHERE id=$6',
-                    [nome || null, telefone || null, email || null, data_nasc || null, cidade || null, clienteId]
+                    'UPDATE clientes SET nome=COALESCE($1, nome), telefone=COALESCE($2, telefone), email=COALESCE($3, email), data_nascimento=COALESCE($4, data_nascimento), cidade=COALESCE($5, cidade), genero=COALESCE($6, genero) WHERE id=$7',
+                    [nome || null, telefone || null, email || null, data_nasc || null, cidade || null, genero || null, clienteId]
                 );
             }
         }
@@ -187,9 +188,9 @@ router.put('/public/:token', async (req, res) => {
             }
 
             const { rows: cRows } = await client.query(
-                `INSERT INTO clientes (consultora_id, nome, email, telefone, data_nascimento, cidade, status)
-                 VALUES ($1, $2, $3, $4, $5, $6, 'lead') RETURNING id`,
-                [consultora_id, nome, email, telefone, data_nasc, cidade]
+                `INSERT INTO clientes (consultora_id, nome, email, telefone, data_nascimento, cidade, genero, status)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, 'lead') RETURNING id`,
+                [consultora_id, nome, email, telefone, data_nasc, cidade, genero || 'feminino']
             );
             clienteId = cRows[0].id;
         }
