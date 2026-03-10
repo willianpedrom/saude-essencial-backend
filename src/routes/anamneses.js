@@ -2,6 +2,7 @@ const express = require('express');
 const pool = require('../db/pool');
 const auth = require('../middleware/auth');
 const checkSub = require('../middleware/checkSubscription');
+const { validate, schemas } = require('../lib/validate');
 
 const router = express.Router();
 
@@ -55,7 +56,7 @@ router.get('/public/:token', async (req, res) => {
 });
 
 // PUT /api/anamneses/public/:token  (client submits the form)
-router.put('/public/:token', async (req, res) => {
+router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) => {
     const { dados } = req.body;
     const client = await pool.connect();
     try {

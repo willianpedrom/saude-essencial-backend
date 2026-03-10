@@ -3,6 +3,7 @@ const pool = require('../db/pool');
 const auth = require('../middleware/auth');
 const checkSub = require('../middleware/checkSubscription');
 const checkFeature = require('../middleware/checkFeature');
+const { validate, schemas } = require('../lib/validate');
 
 const router = express.Router();
 
@@ -90,7 +91,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/clientes
-router.post('/', async (req, res) => {
+router.post('/', validate(schemas.createCliente), async (req, res) => {
     const { nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status, tipo_cadastro, protocolo_mensagem } = req.body;
     if (!nome) return res.status(400).json({ error: 'Nome é obrigatório.' });
 
@@ -134,7 +135,7 @@ router.post('/', async (req, res) => {
 
 
 // PUT /api/clientes/:id
-router.put('/:id', async (req, res) => {
+router.put('/:id', validate(schemas.updateCliente), async (req, res) => {
     const { nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status, tipo_cadastro, protocolo_mensagem } = req.body;
     try {
         const { rows } = await pool.query(

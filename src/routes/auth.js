@@ -5,6 +5,7 @@ const pool = require('../db/pool');
 const authMiddleware = require('../middleware/auth');
 const checkSubscription = require('../middleware/checkSubscription');
 const checkFeature = require('../middleware/checkFeature');
+const { validate, schemas } = require('../lib/validate');
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ function makeSlug(nome) {
 }
 
 // POST /api/auth/register
-router.post('/register', async (req, res, next) => {
+router.post('/register', validate(schemas.register), async (req, res, next) => {
     try {
         const { nome, email, senha, telefone, genero } = req.body;
 
@@ -68,7 +69,7 @@ router.post('/register', async (req, res, next) => {
 });
 
 // POST /api/auth/login
-router.post('/login', async (req, res, next) => {
+router.post('/login', validate(schemas.login), async (req, res, next) => {
     try {
         const { email, senha } = req.body;
         if (!email || !senha) {
@@ -260,7 +261,7 @@ router.patch('/slug', authMiddleware, async (req, res) => {
 });
 
 // POST /api/auth/forgot-password — gera token e envia email de recuperação
-router.post('/forgot-password', async (req, res, next) => {
+router.post('/forgot-password', validate(schemas.forgotPassword), async (req, res, next) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Informe o e-mail.' });
 
@@ -332,7 +333,7 @@ router.post('/forgot-password', async (req, res, next) => {
 });
 
 // POST /api/auth/reset-password — valida token e define nova senha
-router.post('/reset-password', async (req, res, next) => {
+router.post('/reset-password', validate(schemas.resetPassword), async (req, res, next) => {
     const { token, novaSenha, confirmarSenha } = req.body;
     if (!token || !novaSenha || !confirmarSenha) {
         return res.status(400).json({ error: 'Preencha todos os campos.' });
@@ -365,7 +366,7 @@ router.post('/reset-password', async (req, res, next) => {
 });
 
 // PUT /api/auth/change-password — user changes own password (requires current password)
-router.put('/change-password', authMiddleware, async (req, res, next) => {
+router.put('/change-password', authMiddleware, validate(schemas.changePassword), async (req, res, next) => {
     const { senhaAtual, novaSenha, confirmarSenha } = req.body;
 
     if (!senhaAtual || !novaSenha || !confirmarSenha) {
