@@ -56,6 +56,34 @@ export async function renderPublicAnamnesis(router, token) {
   let currentStep = 0;
   const answers = {};
 
+  // ── Draft persistence (keyed by token) ──────────────────────────────────
+  const DRAFT_KEY = `anamnese_draft_${token}`;
+
+  function saveDraft() {
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ answers, currentStep }));
+    } catch { /* quota exceeded — ignore */ }
+  }
+
+  function restoreDraft() {
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (!raw) return false;
+      const draft = JSON.parse(raw);
+      if (draft.answers && typeof draft.answers === 'object') {
+        Object.assign(answers, draft.answers);
+      }
+      if (typeof draft.currentStep === 'number' && draft.currentStep >= 0) {
+        currentStep = Math.min(draft.currentStep, STEPS.length - 1);
+      }
+      return Object.keys(answers).length > 0;
+    } catch { return false; }
+  }
+
+  function clearDraft() {
+    sessionStorage.removeItem(DRAFT_KEY);
+  }
+
   const isBusiness = anamneseData.tipo === 'recrutamento';
   const STEPS = isBusiness ? BUSINESS_STEPS : ANAMNESIS_STEPS;
   const QUESTIONS = isBusiness ? BUSINESS_QUESTIONS : ANAMNESIS_QUESTIONS;
@@ -326,6 +354,7 @@ export async function renderPublicAnamnesis(router, token) {
     });
 
     answers[stepId] = data;
+    saveDraft();
   }
 
   async function submitAnamnesis() {
@@ -359,6 +388,7 @@ export async function renderPublicAnamnesis(router, token) {
 
       console.log("[Anamnesis] Saving to sessionStorage...");
       sessionStorage.setItem('tempAnamnesisPayload', rawPayload);
+      clearDraft(); // Draft no longer needed after successful submit
 
       console.log("[Anamnesis] Routing to next page...");
       const nextRoute = isBusiness ? '/business-report' : '/protocolo';
@@ -380,5 +410,10 @@ export async function renderPublicAnamnesis(router, token) {
     }
   }
 
+  // Restore draft if available
+  const hadDraft = restoreDraft();
   renderStep();
+  if (hadDraft) {
+    toast('Rascunho recuperado ✏️ Continue de onde parou!', 'info', 4000);
+  }
 }
