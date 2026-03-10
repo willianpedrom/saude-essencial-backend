@@ -93,7 +93,7 @@ app.use(cors({
     origin: (origin, callback) => {
         // Permite requisições sem origin (ex: apps mobile, curl, Postman em dev)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+        if (allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
             callback(new Error(`CORS: origem não permitida — ${origin}`));
