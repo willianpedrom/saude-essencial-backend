@@ -60,39 +60,12 @@
 }
 
 /* ============================================
-   DARK MODE (Automático via Sistema)
+   DARK MODE DISABLED
+   Para evitar problemas de contraste em iPhones (texto branco em fundo branco),
+   forçamos o sistema a renderizar no modo light padrão.
    ============================================ */
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Troca fundos claros pelos escuros da paleta Gota */
-    --ivory: #0a120d; /* Fundo principal da página */
-    --white: #111e16; /* Fundo de cards, painéis e modais */
-    
-    /* Inversão dos textos */
-    --text-dark: #ebf7f0; /* Texto principal (era escuro, agora é claro) */
-    --text-body: #cdecd8; /* Texto de corpo */
-    --text-muted: #93d0ab; /* Texto secundário */
-    --text-light: #5db97f;
-    
-    /* Bordas e shadows adaptados para fundo escuro */
-    --border: rgba(93, 185, 127, 0.15);
-    --border-gold: rgba(201, 154, 34, 0.15);
-    
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5);
-    --shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.6);
-    --shadow-gold: 0 4px 20px rgba(201, 154, 34, 0.08);
-    
-    /* Ajustes específicos de superfície */
-    --glass: rgba(0, 0, 0, 0.25);
-    --glass-border: rgba(255, 255, 255, 0.05);
-
-    /* Opcional: Escurecer um pouco os verdes brilhantes para não ofuscar */
-    --green-500: #265738;
-    --green-400: #337a4d;
-    --green-100: #1b4028; /* Fundo de badges em dark mode */
-    --green-50: #12291d;  /* Fundo sutil de inputs/dropzones */
-  }
+:root {
+  color-scheme: light;
 }
 
 html {
