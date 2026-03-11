@@ -300,6 +300,77 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET /api/anamneses/insights  — Raio-X Genético (Inteligência de Vendas)
+// IMPORTANT: must be registered BEFORE /:id to avoid route collision
+router.get('/insights', async (req, res) => {
+    try {
+        const { rows } = await pool.query(`
+            SELECT a.dados, c.nome, c.telefone, c.id AS cliente_id
+            FROM anamneses a
+            JOIN clientes c ON c.id = a.cliente_id
+            WHERE a.consultora_id = $1 AND a.preenchido = TRUE AND a.dados IS NOT NULL
+        `, [req.consultora.id]);
+
+        // Dicionário Sintoma -> Óleo
+        const mapping = [
+            { id: 'lavanda', nome: 'Lavanda / Serenity', ticket: 130, rgb: '139, 92, 246', sintomas: ['Ansiedade', 'Insônia', 'Estresse', 'Agitação', 'Dificuldade para dormir', 'Nervosismo'] },
+            { id: 'peppermint', nome: 'Peppermint / PastTense', ticket: 145, rgb: '34, 197, 94', sintomas: ['Dor de cabeça', 'Enxaqueca', 'Falta de energia', 'Fadiga', 'Dores musculares', 'Falta de foco'] },
+            { id: 'balance', nome: 'Balance / Adaptiv', ticket: 160, rgb: '14, 165, 233', sintomas: ['Mudanças de humor', 'Sobrecarga Emocional', 'Traumas', 'Luto', 'Tensão'] },
+            { id: 'onguard', nome: 'On Guard / Copaíba', ticket: 180, rgb: '245, 158, 11', sintomas: ['Baixa imunidade', 'Infecções frequentes', 'Problemas respiratórios', 'Alergias', 'Rinite', 'Dor nas articulações'] },
+            { id: 'zengest', nome: 'ZenGest / Lemon', ticket: 110, rgb: '234, 179, 8', sintomas: ['Azia', 'Refluxo', 'Má digestão', 'Intestino preso', 'Gases', 'Retenção de líquido'] }
+        ];
+
+        // buckets
+        const buckets = mapping.map(m => ({ ...m, clientes: [], valor_estimado: 0 }));
+
+        for (const row of rows) {
+            if (!row.dados) continue;
+            const d = row.dados;
+            let clienteSintomas = [];
+            
+            if (Array.isArray(d.sintomas_emocionais)) clienteSintomas.push(...d.sintomas_emocionais);
+            if (Array.isArray(d.sintomas_fisicos)) clienteSintomas.push(...d.sintomas_fisicos);
+            
+            if (d.sintomas_emocionais && typeof d.sintomas_emocionais === 'object' && !Array.isArray(d.sintomas_emocionais)) {
+                clienteSintomas.push(...Object.keys(d.sintomas_emocionais).filter(k => d.sintomas_emocionais[k]));
+            }
+            if (d.sintomas_fisicos && typeof d.sintomas_fisicos === 'object' && !Array.isArray(d.sintomas_fisicos)) {
+                clienteSintomas.push(...Object.keys(d.sintomas_fisicos).filter(k => d.sintomas_fisicos[k]));
+            }
+
+            clienteSintomas = clienteSintomas.map(s => String(s).trim().toLowerCase());
+            if (clienteSintomas.length === 0) continue;
+
+            const adicionadoEm = new Set();
+
+            for (const s of clienteSintomas) {
+                for (const b of buckets) {
+                    if (adicionadoEm.has(b.id)) continue;
+                    
+                    const match = b.sintomas.some(ms => ms.toLowerCase() === s || s.includes(ms.toLowerCase()));
+                    if (match) {
+                        b.clientes.push({
+                            id: row.cliente_id,
+                            nome: row.nome,
+                            telefone: row.telefone,
+                            // Capitalize first letter of matched symptom for UI elegance
+                            match_sintoma: s.charAt(0).toUpperCase() + s.slice(1)
+                        });
+                        b.valor_estimado += b.ticket;
+                        adicionadoEm.add(b.id);
+                    }
+                }
+            }
+        }
+
+        const finalBuckets = buckets.filter(b => b.clientes.length > 0).sort((a, b) => b.valor_estimado - a.valor_estimado);
+        res.json(finalBuckets);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao processar insights.' });
+    }
+});
+
 
 
 // GET /api/anamneses/cliente/:clienteId  — all anamneses for a specific client

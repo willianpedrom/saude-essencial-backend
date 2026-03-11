@@ -83,6 +83,10 @@ const router = new Router({
         const { renderPipeline } = await import('./pages/Pipeline.js');
         renderPipeline(router);
     }),
+    '/insights': guard(async () => {
+        const { renderInsights } = await import('./pages/Insights.js');
+        renderInsights(router);
+    }),
     '/integrations': guard(async () => {
         const { renderIntegrations } = await import('./pages/Integracoes.js');
         renderIntegrations(router);
