@@ -4,12 +4,22 @@ import { injectTrackingScripts, ARCHETYPE_THEMES } from '../utils.js';
 export async function renderPublicTestimonial(router, slug) {
   const app = document.getElementById('app');
 
-  // Loading
+  // Loading Skeleton
   app.innerHTML = `
-    <div style="min-height:100vh;background:linear-gradient(135deg,#0a1f0f 0%,#1a4527 60%,#0f2d17 100%);display:flex;align-items:center;justify-content:center;padding:20px">
-      <div style="text-align:center;color:white;font-size:1.1rem">
-        <div style="font-size:3rem;margin-bottom:12px">💧</div>
-        Carregando...
+    <style>
+      @keyframes shimmer { 0% { background-position: -800px 0; } 100% { background-position: 800px 0; } }
+      .skel { background: rgba(255,255,255,0.05); background-image: linear-gradient(to right, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.1) 20%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0.05) 100%); background-repeat: no-repeat; background-size: 800px 100%; animation: shimmer 1.5s infinite linear; border-radius: 8px; }
+    </style>
+    <div style="min-height:100vh;background:#111827;display:flex;align-items:center;justify-content:center;padding:24px">
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:24px;padding:40px 36px;width:100%;max-width:480px">
+        <div class="skel" style="width:72px;height:72px;border-radius:50%;margin:0 auto 12px"></div>
+        <div class="skel" style="width:180px;height:24px;margin:0 auto 8px"></div>
+        <div class="skel" style="width:260px;height:12px;margin:0 auto 32px"></div>
+        <div class="skel" style="width:100px;height:14px;margin-bottom:8px"></div>
+        <div class="skel" style="width:100%;height:44px;border-radius:10px;margin-bottom:20px"></div>
+        <div class="skel" style="width:140px;height:14px;margin-bottom:8px"></div>
+        <div class="skel" style="width:100%;height:120px;border-radius:10px;margin-bottom:20px"></div>
+        <div class="skel" style="width:100%;height:50px;border-radius:12px;margin-top:20px"></div>
       </div>
     </div>`;
 

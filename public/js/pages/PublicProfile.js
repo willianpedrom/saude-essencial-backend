@@ -56,13 +56,37 @@ function socialIcon(name, url) {
 export async function renderPublicProfile(router, slug) {
   const app = document.getElementById('app');
 
-  // Loading
+  // Loading Skeleton
   app.innerHTML = `
-    <div style="min-height:100vh;background:linear-gradient(135deg,#0a2818 0%,#1a4527 50%,#0f3520 100%);display:flex;align-items:center;justify-content:center">
-      <div style="text-align:center;color:white">
-        <div style="font-size:3rem;margin-bottom:12px;animation:pulse 1.5s infinite">💧</div>
-        <div style="font-size:1rem;opacity:.7">Carregando perfil...</div>
-      </div>
+    <style>
+      @keyframes shimmer { 0% { background-position: -800px 0; } 100% { background-position: 800px 0; } }
+      .skel { background: #1a2235; background-image: linear-gradient(to right, #1a2235 0%, #29354d 20%, #1a2235 40%, #1a2235 100%); background-repeat: no-repeat; background-size: 800px 100%; animation: shimmer 1.5s infinite linear; border-radius: 8px; }
+      .sk-circle { width: 130px; height: 130px; border-radius: 50%; margin: 0 auto 20px; }
+      .sk-text-lg { width: 220px; height: 32px; margin: 0 auto 12px; }
+      .sk-text-md { width: 280px; height: 20px; margin: 0 auto 8px; }
+      .sk-text-sm { width: 160px; height: 16px; margin: 0 auto 32px; }
+      .sk-social { width: 40px; height: 40px; border-radius: 50%; }
+      .sk-btn { width: 100%; max-width: 320px; height: 56px; border-radius: 50px; margin: 0 auto 14px; }
+      .sk-link { width: 100%; height: 76px; border-radius: 14px; margin-bottom: 14px; }
+    </style>
+    <div style="min-height:100vh;background:#111827;padding-bottom:60px">
+      <section style="padding:80px 24px 60px;text-align:center;max-width:900px;margin:0 auto">
+        <div class="skel sk-circle"></div>
+        <div class="skel sk-text-lg"></div>
+        <div class="skel sk-text-md"></div>
+        <div class="skel sk-text-sm"></div>
+        <div style="display:flex;justify-content:center;gap:10px;margin-bottom:32px">
+          <div class="skel sk-social"></div><div class="skel sk-social"></div><div class="skel sk-social"></div><div class="skel sk-social"></div>
+        </div>
+        <div class="skel sk-btn"></div>
+        <div class="skel sk-btn" style="opacity:0.6"></div>
+      </section>
+      <section style="max-width:700px;margin:0 auto;padding:0 24px">
+         <div class="skel" style="width:140px;height:24px;margin:40px auto 20px;border-radius:4px"></div>
+         <div class="skel sk-link"></div>
+         <div class="skel sk-link"></div>
+         <div class="skel sk-link"></div>
+      </section>
     </div>`;
 
   let data;
