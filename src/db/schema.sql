@@ -98,6 +98,7 @@ ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS youtube        TEXT;
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS facebook       TEXT;
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS linkedin       TEXT;
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS role           VARCHAR(20) DEFAULT 'user';
+ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS link_afiliada  TEXT;
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS genero         VARCHAR(10) DEFAULT 'feminino';
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS tema_cor       VARCHAR(20) DEFAULT '#16a34a';
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS genero         VARCHAR(10) DEFAULT 'feminino';

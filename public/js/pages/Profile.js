@@ -123,6 +123,11 @@ export async function renderProfile(router) {
             </div>
             <div style="padding:20px">
               <div class="form-grid">
+                <div class="form-group form-field-full">
+                  <label class="field-label" style="color:#2d4a28;font-weight:700">🛒 Link de Afiliada dōTERRA</label>
+                  <input type="url" class="field-input" id="p-link-afiliada" value="${profile.link_afiliada || ''}" placeholder="https://doterra.com/BR/pt_BR/site/seunome" />
+                  <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;line-height:1.4;">Este link será usado como o "Checkout" principal da sua página da "Recomendação UAU". Deixe em branco caso prefira receber os interessados apenas via WhatsApp.</div>
+                </div>
                 <div class="form-group">
                   <label class="field-label" style="color:#E1306C">📸 Instagram</label>
                   <div style="display:flex;align-items:center;gap:8px">
@@ -557,6 +562,7 @@ export async function renderProfile(router) {
         facebook: pc.querySelector('#p-facebook')?.value?.trim(),
         linkedin: pc.querySelector('#p-linkedin')?.value?.trim(),
         tema_cor: pc.querySelector('#p-tema-cor')?.value || '#16a34a',
+        link_afiliada: pc.querySelector('#p-link-afiliada')?.value?.trim(),
       };
 
       if (!data.nome) {

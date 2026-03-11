@@ -383,7 +383,13 @@ export async function renderPublicAnamnesis(router, token) {
       // Prepare UI transition
       const rawPayload = JSON.stringify({
         answers: allAnswers,
-        consultant: { name: consultoraNome, genero: anamneseData.consultora_genero, phone: anamneseData.consultora_telefone, link: window.location.origin + '/#anamnese/' + token },
+        consultant: { 
+            name: consultoraNome, 
+            genero: anamneseData.consultora_genero, 
+            phone: anamneseData.consultora_telefone, 
+            link: window.location.origin + '/#anamnese/' + token,
+            link_afiliada: anamneseData.consultora_link_afiliada 
+        },
         clientName: allAnswers.full_name || 'Empreendedor'
       });
 

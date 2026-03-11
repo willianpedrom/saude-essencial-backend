@@ -1,10 +1,9 @@
-import { OILS_DATABASE } from '../data.js';
 import { getConsultantTitle } from '../utils.js';
 
 export function renderRecomendacaoUau(router) {
     const app = document.getElementById('app');
 
-    // 1. Carregar payload salvo pós-anamnese
+    // 1. Carregar payload salvo
     const rawPayload = sessionStorage.getItem('tempAnamnesisPayload');
     if (!rawPayload) {
         app.innerHTML = `
@@ -19,10 +18,10 @@ export function renderRecomendacaoUau(router) {
     const payload = JSON.parse(rawPayload);
     const answers = payload.answers || {};
     const consultant = payload.consultant || {};
-    const clientName = payload.clientName || 'Cliente';
-    const cTitle = getConsultantTitle(consultant.genero);
+    const clientName = payload.clientName || 'Especial';
+    const linkAfiliada = consultant.link_afiliada || '';
 
-    // 2. Extrair todas as respostas (sintomas e queixas)
+    // 2. Simplificação do Matching
     const getAnswers = (keys) => {
         let list = [];
         keys.forEach(k => {
@@ -34,37 +33,33 @@ export function renderRecomendacaoUau(router) {
 
     const allSymptomsText = getAnswers([
         'general_symptoms', 'digestive_symptoms', 'hormonal_female', 'chronic_conditions',
-        'emotional_symptoms', 'sleep_symptoms', 'low_energy_symptoms',
-        'skin_symptoms', 'hair_symptoms', 'goals'
+        'emotional_symptoms', 'sleep_symptoms', 'low_energy_symptoms', 'skin_symptoms', 'goals'
     ]).join(' ');
 
-    // 3. Algoritmo de Matching (simples, mas extremamente efetivo para vendas)
     const recommendationScores = {
-        'Lavanda': { score: 0, reason: 'Para acalmar a mente, melhorar o sono e reduzir a ansiedade.', image: 'https://media.doterra.com/us/en/images/product/lavender-15ml.png' },
-        'Peppermint': { score: 0, reason: 'Para energia instantânea, foco e alívio de tensões/dores de cabeça.', image: 'https://media.doterra.com/us/en/images/product/peppermint-15ml.png' },
-        'Lemon': { score: 0, reason: 'Para purificação, detox natural matinal e melhora do humor.', image: 'https://media.doterra.com/us/en/images/product/lemon-15ml-min.png' },
-        'ZenGest': { score: 0, reason: 'Para suporte completo à digestão, inchaço e desconforto abdominal.', image: 'https://media.doterra.com/us/en/images/product/digestzen-15ml.jpg' },
-        'On Guard': { score: 0, reason: 'Para blindar a sua imunidade e proteger o corpo contra ameaças sazonais.', image: 'https://media.doterra.com/us/en/images/product/on-guard-15ml.jpg' },
-        'Deep Blue': { score: 0, reason: 'Para soltar a musculatura, aliviar tensões crônicas e dores articulares.', image: 'https://media.doterra.com/us/en/images/product/deep-blue-5ml-min.png' },
-        'Balance': { score: 0, reason: 'Para aterramento emocional imediato e controle do sistema nervoso.', image: 'https://media.doterra.com/us/en/images/product/balance-15ml.jpg' },
-        'Breathe': { score: 0, reason: 'Para abrir as vias aéreas, respirar profundo e oxigenar o cérebro.', image: 'https://media.doterra.com/us/en/images/product/breathe-15ml.png' },
-        'Copaiba': { score: 0, reason: 'Modulador natural poderoso para tratar inflamação em todo o corpo.', image: 'https://media.doterra.com/us/en/images/product/copaiba-15ml.jpg' },
+        'Lavanda': { score: 0, reason: 'O calmante biológico perfeito. Age no sistema límbico em segundos para desligar a ansiedade crônica e induzir sono reparador profundo.', image: 'https://images.unsplash.com/photo-1595855767554-469bfd2b0e6e?w=400&q=80', color: '#8b5cf6' },
+        'Peppermint': { score: 0, reason: 'Seu botão de "Ligar" imediato. Oxigena o cérebro, derrete dores de cabeça tensionais e destrói a fadiga mental.', image: 'https://images.unsplash.com/photo-1628173426856-78b174411130?w=400&q=80', color: '#10b981' },
+        'Lemon Siciliano': { score: 0, reason: 'Detergente orgânico para o seu corpo. Faz varredura de toxinas matinais, desincha e eleva instantaneamente o humor.', image: 'https://images.unsplash.com/photo-1582293041079-7814c27a2bb5?w=400&q=80', color: '#eab308' },
+        'ZenGest': { score: 0, reason: 'A salvação do estômago pesado. Erradica azia, inchaço e normaliza o trânsito intestinal doloroso.', image: 'https://images.unsplash.com/photo-1625944229641-fcb7a4242682?w=400&q=80', color: '#059669' },
+        'On Guard': { score: 0, reason: 'Um escudo impenetrável. Força máxima contra ameaças imunológicas e suporte implacável para gripes repetitivas.', image: 'https://images.unsplash.com/photo-1615486511484-92e172a514d3?w=400&q=80', color: '#d97706' },
+        'Deep Blue': { score: 0, reason: 'Apaga a inflamação nas articulações e solta cadeias musculares travadas pelo estresse e tensões físicas.', image: 'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=400&q=80', color: '#3b82f6' },
+        'Balance': { score: 0, reason: 'Aterramento psicológico em gotas. Traz a mente do futuro angustiante direto para o momento presente com total estabilidade.', image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&q=80', color: '#0d9488' },
+        'Breathe': { score: 0, reason: 'Expansor pulmonar revolucionário. Quebra a congestão nasal e permite respirações completas, profundas e silenciosas.', image: 'https://images.unsplash.com/photo-1515377651080-692556b68ba2?w=400&q=80', color: '#0ea5e9' },
+        'Copaíba': { score: 0, reason: 'O anti-inflamatório mestre da floresta. Comunica-se com seu sistema endocanabinóide para zerar dores internas crônicas.', image: 'https://images.unsplash.com/photo-1596484552467-3e1b12b5087e?w=400&q=80', color: '#8dc63f' },
     };
 
-    // Palavras-chave associadas a cada óleo
     const keywords = {
-        'Lavanda': ['ansiedade', 'estresse', 'insônia', 'sono', 'dormir', 'burnout', 'pânico', 'irritabilidade', 'pele', 'tensão', 'angústia'],
-        'Peppermint': ['dor de cabeça', 'enxaqueca', 'energia', 'cansaço', 'fadiga', 'foco', 'concentração', 'desânimo', 'confusão mental', 'calor'],
-        'Lemon': ['detox', 'fígado', 'peso', 'emagrecer', 'digestão', 'azia', 'alergia', 'imunidade'],
+        'Lavanda': ['ansiedade', 'estresse', 'insônia', 'sono', 'dormir', 'burnout', 'pânico', 'irritabilidade', 'tensão', 'angústia'],
+        'Peppermint': ['dor de cabeça', 'enxaqueca', 'energia', 'cansaço', 'fadiga', 'foco', 'concentração', 'desânimo', 'confusão mental'],
+        'Lemon Siciliano': ['detox', 'fígado', 'peso', 'emagrecer', 'digestão', 'azia'],
         'ZenGest': ['digestão', 'refluxo', 'azia', 'inchaço', 'gases', 'constipação', 'intestino', 'náusea'],
-        'On Guard': ['imunidade', 'gripe', 'infecção', 'rinicoriza', 'saúde para a família', 'prevenir'],
+        'On Guard': ['imunidade', 'gripe', 'infecção', 'rinicoriza', 'prevenir', 'saúde para a família'],
         'Deep Blue': ['dor', 'dores musculares', 'articulação', 'costas', 'tensões', 'fibromialgia', 'artrite'],
         'Balance': ['pânico', 'ansiedade', 'TPM', 'irritabilidade', 'equilíbrio', 'emocional', 'tristeza', 'depressão'],
         'Breathe': ['falta de ar', 'sinusite', 'rinite', 'asma', 'respirar', 'ronco', 'alergia', 'pulmão'],
-        'Copaiba': ['dor crônica', 'inflamação', 'ansiedade', 'endometriose', 'autoimune', 'fibromialgia'],
+        'Copaíba': ['dor crônica', 'inflamação', 'ansiedade', 'endometriose', 'autoimune', 'fibromialgia'],
     };
 
-    // Pontuar com base nas respostas
     Object.keys(keywords).forEach(oil => {
         keywords[oil].forEach(kw => {
             if (allSymptomsText.includes(kw)) {
@@ -73,86 +68,106 @@ export function renderRecomendacaoUau(router) {
         });
     });
 
-    // Se a pessoa não selecionou nada específico, recomendamos os TOP 3 Globais para iniciar:
     if (Object.values(recommendationScores).every(o => o.score === 0)) {
         recommendationScores['Lavanda'].score = 3;
-        recommendationScores['Lemon'].score = 2;
+        recommendationScores['Lemon Siciliano'].score = 2;
         recommendationScores['Peppermint'].score = 1;
     }
 
-    // Ordenar e pegar os Top 3
     const topOils = Object.entries(recommendationScores)
         .sort((a, b) => b[1].score - a[1].score)
         .slice(0, 3)
         .map(([name, data]) => ({ name, ...data }));
 
 
-    // 4. Montar a UI Focada em Conversão (Estilo Luxuoso / "UAU")
-    let renderedOils = topOils.map(oil => `
-      <div style="background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; display:flex; gap: 16px; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid #f1f5f9;">
-        <div style="width: 70px; height: 70px; border-radius: 12px; background: #f8fafc; display:flex; align-items:center; justify-content:center; flex-shrink: 0; padding:4px;">
-           <img src="${oil.image}" alt="${oil.name}" style="max-height: 100%; max-width: 100%; object-fit: contain;" onerror="this.src=''; this.parentElement.innerHTML='<span style=\\'font-size:2rem\\'>🌿</span>';" />
+    // 3. UI Generator (Venda Agressiva + Premium)
+    let renderedOils = topOils.map((oil, i) => `
+      <div style="background: white; border-radius: 16px; margin-bottom: 16px; display:flex; gap: 16px; align-items: stretch; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; position:relative;">
+        <div style="position:absolute; top:8px; left:8px; background: rgba(0,0,0,0.6); color:white; font-size:0.7rem; font-weight:700; padding:2px 6px; border-radius:4px; z-index:10; text-transform:uppercase;">Etapa 0${i+1}</div>
+        <div style="width: 100px; background: url('${oil.image}') center/cover; position:relative;">
+           <div style="position:absolute; inset:0; background: linear-gradient(to right, transparent, rgba(255,255,255,1));"></div>
         </div>
-        <div>
-          <h4 style="margin: 0 0 4px 0; color: #1e293b; font-size: 1.1rem;">${oil.name}</h4>
-          <p style="margin: 0; font-size: 0.85rem; color: #64748b; line-height: 1.4;">${oil.reason}</p>
+        <div style="padding: 16px 16px 16px 0; flex:1;">
+          <h4 style="margin: 0 0 6px 0; color: #1e293b; font-size: 1.2rem; display:flex; align-items:center; gap:6px;">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${oil.color};"></span>
+            ${oil.name}
+          </h4>
+          <p style="margin: 0; font-size: 0.9rem; color: #475569; line-height: 1.5;">${oil.reason}</p>
         </div>
       </div>
     `).join('');
 
-    // Pre-formatar mensagem de WhatsApp para venda pronta
     const topOilsNames = topOils.map(o => o.name).join(', ');
-    const waText = encodeURIComponent(`Olá ${consultant.name}! 💧\nAcabei de ver o meu protocolo inteligente no Gota App e o sistema me recomendou a rotina com: *${topOilsNames}*.\n\nGostaria de saber como faço para adquirir e começar a cuidar da minha saúde!`);
-    
-    // Fallback de telefone caso a consultora não tenha (apenas segurança, raramente acontecerá)
     const phone = (consultant.phone || '').replace(/\\D/g, '') || '5511999999999';
+    const waText = encodeURIComponent(`Olá ${consultant.name}! 💧\nFoi me recomendado pelo seu sistema o Kit UAU contendo: *${topOilsNames}*.\n\nGostaria de garantir esses óleos com desconto antes que a oferta expire. Como efetuamos o pedido?`);
+    
+    // Configura botões dinâmicos dependendo se existe Link de afiliada
+    const primaryButtonHtml = linkAfiliada 
+        ? `<a href="${linkAfiliada}" target="_blank" onclick="alert('Lembre-se: Adicione os seguintes óleos no carrinho: ${topOilsNames} e finalize sua compra com desconto!');" class="btn-buy-primary" style="margin-bottom: 12px;">🛒 Fazer Meu Pedido (25% OFF)</a>
+           <a href="https://wa.me/${phone}?text=${waText}" target="_blank" class="btn-buy-secondary">💬 Tenho dúvidas, chamar no WhatsApp</a>`
+        : `<a href="https://wa.me/${phone}?text=${waText}" target="_blank" class="btn-buy-primary">📲 Quero Minha Rotina Pelo WhatsApp</a>`;
+
+    const next24Hours = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const expireTimeStr = next24Hours.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
 
     app.innerHTML = `
       <style>
-         body { background: #fdfdfd; font-family: 'Inter', sans-serif; }
+         body { background: #fafafa; font-family: 'Inter', sans-serif; }
          .fade-in { animation: fadeIn 0.8s ease forwards; opacity: 0; }
          @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-         .btn-buy { background: linear-gradient(135deg, #16a34a, #15803d); color: white; border: none; padding: 16px 24px; border-radius: 50px; font-weight: 700; font-size: 1.1rem; width: 100%; box-shadow: 0 8px 20px rgba(22,163,74,0.3); cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; justify-content: center; align-items: center; gap: 8px;}
-         .btn-buy:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(22,163,74,0.4); }
+         
+         .scarcity-bar { background: #ef4444; color: white; text-align: center; padding: 10px; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.5px; position: sticky; top:0; z-index: 999; box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4);}
+         .highlight-text { background: linear-gradient(90deg, #15803d, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; }
+         
+         .btn-buy-primary { background: linear-gradient(135deg, #0f172a, #334155); color: white; border: none; padding: 18px 24px; border-radius: 50px; font-weight: 800; font-size: 1.15rem; width: 100%; box-shadow: 0 8px 25px rgba(15, 23, 42, 0.25); cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: flex; justify-content: center; align-items: center; gap: 8px;}
+         .btn-buy-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35); color: #fff; }
+         
+         .btn-buy-secondary { background: white; color: #166534; border: 2px solid #bbf7d0; padding: 14px 24px; border-radius: 50px; font-weight: 700; font-size: 1rem; width: 100%; cursor: pointer; transition: all 0.2s ease; text-decoration: none; display: flex; justify-content: center; align-items: center; gap: 8px;}
+         .btn-buy-secondary:hover { background: #f0fdf4; border-color: #86efac; color: #166534; }
       </style>
     
-      <div style="max-width: 600px; margin: 0 auto; min-height: 100vh; padding: 40px 20px 80px 20px;" class="fade-in">
+      <div class="scarcity-bar">
+         ⚠️ ALERTA: Seu Laudo Gratuito e o Desconto de 25% Expiram amanhã às ${expireTimeStr}
+      </div>
+
+      <div style="max-width: 600px; margin: 0 auto; min-height: 100vh; padding: 32px 20px 80px 20px;" class="fade-in">
         
-        <!-- HEADER -->
-        <div style="text-align: center; margin-bottom: 32px;">
-            <div style="font-size: 3rem; margin-bottom: 12px;">✨</div>
-            <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; color: #2d4a28; margin: 0 0 12px 0;">O Protocolo Perfeito Para Você, ${clientName.split(' ')[0]}.</h2>
-            <p style="font-size: 1rem; color: #666; line-height: 1.6; padding: 0 10px;">A inteligência do sistema analisou cada uma das suas queixas. O cruzamento dos seus sintomas resultou na sua rotina ideal e 100% natural.</p>
+        <!-- HEADER AGRESSIVO -->
+        <div style="text-align: center; margin-bottom: 32px; background: white; padding: 30px 20px; border-radius: 20px; box-shadow: 0 5px 25px rgba(0,0,0,0.05); border-top: 5px solid #16a34a;">
+            <div style="font-size: 0.8rem; text-transform:uppercase; letter-spacing: 2px; color:#16a34a; font-weight:800; margin-bottom:12px;">Diagnóstico Concluído</div>
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 2.1rem; color: #1e293b; margin: 0 0 16px 0; line-height:1.2;">Essa é a solução definitiva, <span class="highlight-text">${clientName.split(' ')[0]}</span>.</h2>
+            <p style="font-size: 1.05rem; color: #475569; line-height: 1.6; padding: 0 5px; margin:0;">A nossa inteligência cruzou todas as suas queixas e mapeou o sistema exato que está precisando de intervenção Imediata. O uso combinado destes 3 extratos puros abaixo irá revolucionar sua rotina diária.</p>
         </div>
 
         <!-- OILS SHOWCASE -->
-        <div style="margin-bottom: 32px;">
-            <h3 style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 700; margin-bottom: 16px;">Sua Rotina Recomendada</h3>
+        <div style="margin-bottom: 40px;">
+            <h3 style="font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 800; margin-bottom: 16px; text-align:center;">O SEU KIT UAU</h3>
             ${renderedOils}
         </div>
 
-        <!-- CONSULTANT BOX -->
-        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 32px;">
-           <div style="font-size: 0.9rem; color: #166534; font-weight: 600; margin-bottom: 8px;">Pronto para transformar sua saúde?</div>
-           <p style="font-size: 0.85rem; color: #15803d; line-height: 1.5; margin: 0 0 16px 0;">Ao adquirir hoje através de ${consultant.name}, você ganha **25% de desconto** vitalício em todas as suas compras na doTERRA, além de consultoria acompanhada.</p>
+        <!-- CONSULTANT BOX (PROVA SOCIAL) -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 32px;">
+           <div style="font-size: 1.2rem; color: #0f172a; font-weight: 800; margin-bottom: 12px;">Como acessar estes resultados?</div>
+           <p style="font-size: 0.95rem; color: #475569; line-height: 1.5; margin: 0 0 16px 0;">Não compre a preço de varejo. Ativando o seu pacote agora com a consultora <strong>${consultant.name}</strong>, você desbloqueia imediatamente **25% de Desconto** direto de fábrica, e será acompanhada individualmente para garantir sua evolução.</p>
+           
+           <div style="font-size:0.8rem; font-weight:700; color:#ef4444; background:#fef2f2; display:inline-block; padding: 6px 12px; border-radius:20px;">
+             ⚡ Apenas ${Math.floor(Math.random() * 4) + 2} pessoas na sua região receberão consultoria com essa oferta hoje.
+           </div>
         </div>
 
         <!-- CTA FINAL -->
         <div style="position: sticky; bottom: 20px; z-index: 100;">
-           <a href="https://wa.me/${phone}?text=${waText}" target="_blank" class="btn-buy">
-             📲 Quero Minha Rotina Natural
-           </a>
+           ${primaryButtonHtml}
         </div>
 
         <!-- FOOTER -->
-        <div style="text-align: center; margin-top: 40px; color: #cbd5e1; font-size: 0.75rem;">
-           Segurança e Inteligência Artificial por Gota App CRM
+        <div style="text-align: center; margin-top: 40px; color: #cbd5e1; font-size: 0.8rem; display:flex; flex-direction:column; gap:8px;">
+           <div style="font-weight:700; color:#94a3b8;">Tecnologia com Criptografia de Ponta-a-Ponta</div>
+           <div>Desenvolvido pelo Instituto Gota App CRM.</div>
         </div>
       </div>
     `;
 
-    // Limpar o storage depois de 10 segundos, para não ocupar muito espaço e garantir privacidade,
-    // Mas com tempo suficiente para caso a pessoa desse um F5 rápido.
     setTimeout(() => {
         sessionStorage.removeItem('tempAnamnesisPayload');
     }, 15000);
