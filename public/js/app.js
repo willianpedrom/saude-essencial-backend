@@ -3,7 +3,7 @@
    ============================================================ */
 
 import { auth } from './store.js';
-import { Router } from './utils.js';
+import { Router, setupGlobalShortcuts } from './utils.js';
 import { renderLogin, renderResetPassword } from './pages/Login.js';
 import { renderDashboard } from './pages/Dashboard.js';
 import { renderClients } from './pages/Clients.js';
@@ -25,6 +25,7 @@ import { renderLandingPage } from './pages/LandingPage.js';
 
 // Boot
 auth.init();
+setupGlobalShortcuts();
 
 
 // Remove loader

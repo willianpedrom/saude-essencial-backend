@@ -135,6 +135,17 @@ export function modal(title, bodyHtml, { onConfirm, onOpen, confirmLabel = 'Conf
   m.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', close));
   m.addEventListener('click', e => { if (e.target === m) close(); });
 
+  // Escape key to close this specific instance
+  const onEsc = (e) => {
+    if (e.key === 'Escape') {
+      close();
+      document.removeEventListener('keydown', onEsc);
+    }
+  };
+  document.addEventListener('keydown', onEsc);
+  // Remove listener if modal is closed by buttons
+  m.addEventListener('DOMNodeRemoved', () => document.removeEventListener('keydown', onEsc));
+
   if (onConfirm) {
     const confirmBtn = m.querySelector('[data-confirm]');
     confirmBtn.addEventListener('click', async () => {
@@ -679,4 +690,52 @@ export function openClientOffcanvas(client) {
       }
     });
   }
+}
+
+// ── Global Keyboard Shortcuts ────────────────────────────────
+export function setupGlobalShortcuts() {
+  document.addEventListener('keydown', (e) => {
+    // Only capture if not typing in an input/textarea
+    const isEditing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable;
+
+    // Search: Cmd+K or Ctrl+K
+    if ((e.metaKey || e.ctrlKey) && String(e.key).toLowerCase() === 'k') {
+      e.preventDefault();
+      const searchInputs = document.querySelectorAll('input[type="search"], input[placeholder*="Buscar"]');
+      if (searchInputs.length > 0) {
+        // Focus the first search input visible
+        const inp = Array.from(searchInputs).find(el => el.offsetParent !== null);
+        if (inp) {
+          inp.focus();
+          // Select current text if any
+          if (inp.value) inp.select();
+        } else {
+          // No visible search input on screen, navigate to clients then focus
+          window.location.hash = '#/clients';
+          setTimeout(() => {
+            const newInputs = document.querySelectorAll('input[type="search"], input[placeholder*="Buscar"]');
+            const newInp = Array.from(newInputs).find(el => el.offsetParent !== null);
+            if (newInp) newInp.focus();
+          }, 150);
+        }
+      } else {
+        window.location.hash = '#/clients';
+      }
+      return;
+    }
+
+    // New Client: 'N' key (only if not typing anything else)
+    if (!isEditing && !e.metaKey && !e.ctrlKey && !e.altKey && String(e.key).toLowerCase() === 'n') {
+      e.preventDefault();
+      if (typeof window.dashboardAddClient === 'function') {
+        window.dashboardAddClient();
+      } else {
+        window.location.hash = '#/clients';
+        setTimeout(() => {
+          const btn = document.getElementById('btn-add-client');
+          if (btn) btn.click();
+        }, 150);
+      }
+    }
+  });
 }
