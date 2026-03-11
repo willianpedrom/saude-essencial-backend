@@ -11,7 +11,7 @@ router.get('/perfil/:slug', async (req, res) => {
         const { rows: consultorRows } = await pool.query(
             `SELECT id, nome, foto_url, bio, slug, telefone, genero,
               instagram, youtube, facebook, linkedin, doterra_nivel,
-              rastreamento
+              rastreamento, tema_cor
              FROM consultoras WHERE slug = $1`,
             [req.params.slug]
         );

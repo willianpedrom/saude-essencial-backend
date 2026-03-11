@@ -134,7 +134,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
     try {
         const { rows } = await pool.query(
             `SELECT id, nome, email, telefone, slug, foto_url,
-              endereco, bio, instagram, youtube, facebook, linkedin, genero, criado_em
+              endereco, bio, instagram, youtube, facebook, linkedin, genero, tema_cor, criado_em
              FROM consultoras WHERE id = $1`,
             [req.consultora.id]
         );
@@ -159,7 +159,7 @@ router.get('/profile', authMiddleware, async (req, res, next) => {
     try {
         const { rows } = await pool.query(
             `SELECT id, nome, email, telefone, slug, foto_url,
-              endereco, bio, instagram, youtube, facebook, linkedin, genero, rastreamento
+              endereco, bio, instagram, youtube, facebook, linkedin, genero, tema_cor, rastreamento
              FROM consultoras WHERE id = $1`,
             [req.consultora.id]
         );
@@ -194,19 +194,19 @@ router.put('/tracking', authMiddleware, checkSubscription, checkFeature('tem_int
 
 // PUT /api/auth/profile — update profile fields
 router.put('/profile', authMiddleware, async (req, res, next) => {
-    const { nome, telefone, endereco, bio, foto_url, instagram, youtube, facebook, linkedin, genero, doterra_nivel } = req.body;
+    const { nome, telefone, endereco, bio, foto_url, instagram, youtube, facebook, linkedin, genero, doterra_nivel, tema_cor } = req.body;
     try {
         const { rows } = await pool.query(
             `UPDATE consultoras
              SET nome=$1, telefone=$2, endereco=$3, bio=$4, foto_url=$5,
                  instagram=$6, youtube=$7, facebook=$8, linkedin=$9,
-                 genero=$10, doterra_nivel=$11, atualizado_em=NOW()
-             WHERE id=$12
+                 genero=$10, doterra_nivel=$11, tema_cor=$12, atualizado_em=NOW()
+             WHERE id=$13
              RETURNING id, nome, email, telefone, slug, foto_url,
-                       endereco, bio, instagram, youtube, facebook, linkedin, genero, doterra_nivel`,
+                       endereco, bio, instagram, youtube, facebook, linkedin, genero, doterra_nivel, tema_cor`,
             [nome, telefone || null, endereco || null, bio || null, foto_url || null,
                 instagram || null, youtube || null, facebook || null, linkedin || null,
-                genero || 'feminino', doterra_nivel || null, req.consultora.id]
+                genero || 'feminino', doterra_nivel || null, tema_cor || '#16a34a', req.consultora.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });
         return res.json({ success: true, consultora: rows[0] });

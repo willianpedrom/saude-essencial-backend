@@ -81,7 +81,8 @@ export async function renderPublicProfile(router, slug) {
   }
 
   const { consultor, depoimentos, anamnese_token } = data;
-  const { nome, foto_url, bio, telefone, instagram, youtube, facebook, linkedin, doterra_nivel, genero } = consultor;
+  const { nome, foto_url, bio, telefone, instagram, youtube, facebook, linkedin, doterra_nivel, genero, tema_cor } = consultor;
+  const theme = tema_cor || '#16a34a';
   const title = genero === 'masculino' ? 'Consultor' : 'Consultora';
   const pageUrl = window.location.href;
   const whatsLink = telefone ? `https://wa.me/55${telefone.replace(/\D/g, '')}?text=Olá%20${encodeURIComponent(nome)}!%20Conheci%20seu%20perfil%20e%20gostaria%20de%20saber%20mais.` : null;
@@ -97,6 +98,9 @@ export async function renderPublicProfile(router, slug) {
 
   app.innerHTML = `
     <style>
+      :root {
+        --theme-color: ${theme};
+      }
       @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Inter', sans-serif; position: relative; padding-bottom: 60px; }
@@ -104,14 +108,14 @@ export async function renderPublicProfile(router, slug) {
       .pp-container { max-width: 900px; margin: 0 auto; }
       .pp-depo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; margin-top: 32px; }
       .pp-depo-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
-      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 32px; border-radius: 50px; font-weight: 700; font-size: 1rem; cursor: pointer; border: none; text-decoration: none; transition: transform .15s, box-shadow .15s; text-align: center; }
-      .pp-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
-      .pp-btn-primary { background: linear-gradient(135deg,#16a34a,#15803d); color: white; border: 2px solid transparent; box-shadow: 0 4px 15px rgba(22, 163, 74, 0.4); font-size: 1.05rem; }
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 32px; border-radius: 50px; font-weight: 700; font-size: 1rem; cursor: pointer; border: none; text-decoration: none; transition: transform .15s, box-shadow .15s, filter .2s; text-align: center; }
+      .pp-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); filter: brightness(1.1); }
+      .pp-btn-primary { background: var(--theme-color); color: white; border: 2px solid transparent; font-size: 1.05rem; }
       .pp-btn-secondary-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.4); transition: background .2s, border-color .2s; }
       .pp-btn-secondary-outline:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.7); box-shadow: none; }
       .pp-link-card { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; background: white; border-radius: 14px; text-decoration: none; color: #1a4527; font-weight: 600; font-size: 1.05rem; box-shadow: 0 4px 15px rgba(0,0,0,0.04); margin-bottom: 14px; border: 1px solid #e5e7eb; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
-      .pp-link-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); border-color: #86efac; }
-      .pp-link-icon-wrap { width: 40px; height: 40px; border-radius: 10px; background: #f0fdf4; color: #16a34a; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+      .pp-link-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); border-color: var(--theme-color); }
+      .pp-link-icon-wrap { width: 40px; height: 40px; border-radius: 10px; background: rgba(0,0,0,0.05); color: var(--theme-color); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
       
       .pp-fab-whatsapp { position: fixed; bottom: 24px; right: 24px; background: #25d366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); text-decoration: none; z-index: 1000; transition: transform 0.2s; }
       .pp-fab-whatsapp:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5); }

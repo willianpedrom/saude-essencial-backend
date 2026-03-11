@@ -202,6 +202,20 @@ export async function renderProfile(router) {
                 <div id="slug-error" style="font-size:0.78rem;color:#dc2626;margin-top:4px;display:none"></div>
               </div>
 
+              <div style="margin-bottom:20px;margin-top:16px;border-top:1px dashed #bbf7d0;padding-top:16px">
+                <label style="font-size:0.85rem;font-weight:600;color:#166534;display:block;margin-bottom:6px">🎨 Cor do Tema da Página Pública</label>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                  <input type="color" id="p-tema-cor" value="${profile.tema_cor || '#16a34a'}" style="width:40px;height:40px;padding:0;border:none;border-radius:8px;cursor:pointer;background:transparent" title="Escolher cor exata" />
+                  <div style="display:flex;gap:6px">
+                     <button type="button" class="btn btn-sm" onclick="document.getElementById('p-tema-cor').value='#16a34a'" style="background:#16a34a;width:28px;height:28px;border-radius:50%;padding:0;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.1)" title="Verde Gota"></button>
+                     <button type="button" class="btn btn-sm" onclick="document.getElementById('p-tema-cor').value='#7c3aed'" style="background:#7c3aed;width:28px;height:28px;border-radius:50%;padding:0;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.1)" title="Lavanda"></button>
+                     <button type="button" class="btn btn-sm" onclick="document.getElementById('p-tema-cor').value='#db2777'" style="background:#db2777;width:28px;height:28px;border-radius:50%;padding:0;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.1)" title="Rosa"></button>
+                     <button type="button" class="btn btn-sm" onclick="document.getElementById('p-tema-cor').value='#0ea5e9'" style="background:#0ea5e9;width:28px;height:28px;border-radius:50%;padding:0;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.1)" title="Azul"></button>
+                  </div>
+                  <span style="font-size:0.75rem;color:#166534;opacity:0.85">Escolha uma cor para botões e destaques do seu convite.</span>
+                </div>
+              </div>
+
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 <button type="button" class="btn btn-primary btn-sm" id="btn-save-slug" style="background:#166534">✅ Salvar Link</button>
                 <a href="${window.location.origin}/convite/${profile.slug}" target="_blank" class="btn btn-secondary btn-sm">👁️ Ver página</a>
@@ -516,6 +530,7 @@ export async function renderProfile(router) {
         youtube: pc.querySelector('#p-youtube')?.value?.trim(),
         facebook: pc.querySelector('#p-facebook')?.value?.trim(),
         linkedin: pc.querySelector('#p-linkedin')?.value?.trim(),
+        tema_cor: pc.querySelector('#p-tema-cor')?.value || '#16a34a',
       };
 
       if (!data.nome) {
