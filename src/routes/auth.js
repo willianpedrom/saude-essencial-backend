@@ -60,7 +60,7 @@ router.post('/register', validate(schemas.register), async (req, res, next) => {
         const token = jwt.sign(
             { id: consultora.id, email: consultora.email, nome: consultora.nome, role: consultora.role || 'user' },
             process.env.JWT_SECRET,
-            { expiresIn: '7d' }
+            { expiresIn: '7d', issuer: 'gota-app', audience: 'gota-app-api' }
         );
 
         const csrfToken = generateCsrfToken();
@@ -110,7 +110,7 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
         const token = jwt.sign(
             { id: consultora.id, email: consultora.email, nome: consultora.nome, role: consultora.role || 'user', genero: consultora.genero || 'feminino', tv },
             process.env.JWT_SECRET,
-            { expiresIn: '7d' }
+            { expiresIn: '7d', issuer: 'gota-app', audience: 'gota-app-api' }
         );
 
         const { senha_hash, ...consultoraData } = consultora;

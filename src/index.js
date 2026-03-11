@@ -142,23 +142,6 @@ app.get('/health', (req, res) => res.json({
     db: !!process.env.DATABASE_URL, env: process.env.NODE_ENV,
 }));
 
-// DB diagnostic endpoint — ONLY available in development
-app.get('/debug-db', async (req, res) => {
-    if (process.env.NODE_ENV === 'production') {
-        return res.status(404).json({ error: 'Not found.' });
-    }
-    const url = process.env.DATABASE_URL || '';
-    const masked = url.replace(/:([^@]+)@/, ':***@');
-    let testResult = 'not tested';
-    try {
-        const pool = require('./db/pool');
-        await pool.query('SELECT 1 as ok');
-        testResult = 'connection OK ✅';
-    } catch (err) {
-        testResult = err.message;
-    }
-    res.json({ url: masked, testResult });
-});
 
 
 // Stripe webhook — raw body BEFORE json parser
@@ -196,10 +179,12 @@ app.use('/api/followups', require('./routes/followups'));
 app.use('/convite', require('./routes/share'));
 
 // Serve frontend static files
+// Cache: 7d for immutable assets (CSS, images, fonts)
+//        no-cache for HTML/JS (SPA code that changes frequently)
 app.use(express.static(path.join(__dirname, '../public'), {
-    maxAge: 0,
-    setHeaders: (res, path) => {
-        if (path.endsWith('.html') || path.endsWith('.js')) {
+    maxAge: '7d',
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.html') || filePath.endsWith('.js') || filePath.endsWith('.json')) {
             res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
             res.setHeader('Pragma', 'no-cache');
             res.setHeader('Expires', '0');

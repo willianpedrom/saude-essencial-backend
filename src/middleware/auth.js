@@ -10,7 +10,7 @@ module.exports = async function authMiddleware(req, res, next) {
     const token = authHeader.split(' ')[1];
     let decoded;
     try {
-        decoded = jwt.verify(token, process.env.JWT_SECRET);
+        decoded = jwt.verify(token, process.env.JWT_SECRET, { issuer: 'gota-app', audience: 'gota-app-api' });
     } catch (err) {
         return res.status(401).json({ error: 'Token inválido ou expirado.' });
     }
