@@ -570,6 +570,7 @@ export async function renderProfile(router) {
         if (auth.current) {
           auth.current.nome = data.nome;
           auth.current.genero = data.genero;
+          auth.current.foto_url = data.foto_url;
           sessionStorage.setItem('se_user', JSON.stringify(auth.current));
         }
         restore(true);
