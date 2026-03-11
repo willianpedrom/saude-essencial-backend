@@ -19,6 +19,22 @@ export class Router {
     const [pathPart, queryPart] = hash.split('?');
     const params = Object.fromEntries(new URLSearchParams(queryPart || ''));
 
+    // Smooth page transition — fade out then render then fade in
+    const app = document.getElementById('app');
+    const runHandler = (handler, routeParams) => {
+      if (app && this._started) {
+        app.style.transition = 'opacity 0.12s ease';
+        app.style.opacity = '0';
+        setTimeout(() => {
+          handler({ ...routeParams, ...params });
+          app.style.transition = 'opacity 0.18s ease';
+          app.style.opacity = '1';
+        }, 120);
+      } else {
+        handler({ ...routeParams, ...params });
+      }
+    };
+
     // Find matching route
     for (const [pattern, handler] of Object.entries(this._routes)) {
       const regex = new RegExp('^' + pattern.replace(/:[^/]+/g, '([^/?]+)') + '$');
@@ -28,18 +44,19 @@ export class Router {
         const paramNames = [...pattern.matchAll(/:([^/]+)/g)].map(m => m[1]);
         const routeParams = {};
         paramNames.forEach((name, i) => { routeParams[name] = match[i + 1]; });
-        handler({ ...routeParams, ...params });
+        runHandler(handler, routeParams);
         return;
       }
     }
 
     // Default route
     const defaultHandler = this._routes['/'] || this._routes['*'];
-    if (defaultHandler) defaultHandler({ ...params });
+    if (defaultHandler) runHandler(defaultHandler, {});
   }
 
   start() {
     this.resolve();
+    this._started = true;  // skip transition on first load
   }
 }
 
