@@ -82,6 +82,8 @@ CREATE INDEX IF NOT EXISTS idx_anamneses_consultora   ON anamneses(consultora_id
 CREATE INDEX IF NOT EXISTS idx_anamneses_token        ON anamneses(token_publico);
 CREATE INDEX IF NOT EXISTS idx_agendamentos_consultora ON agendamentos(consultora_id);
 CREATE INDEX IF NOT EXISTS idx_assinaturas_consultora ON assinaturas(consultora_id);
+CREATE INDEX IF NOT EXISTS idx_clientes_email ON clientes(email);
+CREATE INDEX IF NOT EXISTS idx_clientes_telefone ON clientes(telefone);
 
 -- Migrations (idempotent — safe to run multiple times)
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS status         VARCHAR(30) DEFAULT 'active';
@@ -129,6 +131,8 @@ CREATE TABLE IF NOT EXISTS consultora_links (
   criado_em       TIMESTAMPTZ DEFAULT NOW(),
   atualizado_em   TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE INDEX IF NOT EXISTS idx_consultora_links_consultora ON consultora_links(consultora_id);
 
 -- Etiquetas personalizadas por consultora
 CREATE TABLE IF NOT EXISTS etiquetas (
