@@ -132,60 +132,182 @@ export async function renderPublicAnamnesis(router, token) {
     setTimeout(callback, 4500);
   }
 
+  let stepTimerInterval = null;
+
   function renderStep() {
     const stepDef = STEPS[currentStep];
     const section = QUESTIONS[stepDef.id];
     const isLast = currentStep === STEPS.length - 1;
 
+    // Timer Logic for Scarcity
+    if (!window.anamnesisScarcityTimer) {
+       window.anamnesisScarcityTimer = Date.now() + 14 * 60 * 1000 + 59 * 1000; // 14:59
+    }
+    
     app.innerHTML = `
+    <style>
+      .anamnesis-public-page {
+        min-height: 100vh;
+        background: radial-gradient(circle at 50% -20%, #10b981 0%, #064e3b 40%, #022c22 100%);
+        color: white;
+        padding-bottom: 80px;
+        font-family: 'Inter', sans-serif;
+      }
+      .scarcity-banner {
+        background: rgba(239, 68, 68, 0.95);
+        backdrop-filter: blur(10px);
+        color: white;
+        text-align: center;
+        padding: 12px 20px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
+        animation: pulseBanner 2s infinite;
+      }
+      @keyframes pulseBanner {
+        0%, 100% { box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+        50% { box-shadow: 0 4px 25px rgba(239, 68, 68, 0.8); }
+      }
+      .consultant-glass {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 20px 8px 8px;
+        background: rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 100px;
+        margin: -10px auto 30px auto;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      }
+      .form-glass {
+        background: white;
+        border-radius: 24px;
+        padding: 32px 24px;
+        color: #1e293b;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+      }
+      .fade-up {
+        animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+      }
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .neon-progress {
+        background: rgba(255,255,255,0.1);
+        border-radius: 99px;
+        height: 6px;
+        overflow: hidden;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        margin-bottom: 30px;
+      }
+      .neon-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981, #eab308);
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
+        border-radius: 99px;
+        width: ${((currentStep + 1) / STEPS.length * 100).toFixed(0)}%;
+        transition: width 0.5s ease;
+      }
+      .field-input {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 14px 16px !important;
+        font-size: 1rem !important;
+        transition: all 0.2s !important;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;
+      }
+      .field-input:focus {
+        background: white !important;
+        border-color: #10b981 !important;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1) !important;
+        outline: none !important;
+      }
+      .btn-gold {
+         background: linear-gradient(135deg, #10b981, #059669) !important;
+         color: white !important;
+         font-weight: 700 !important;
+         border: none !important;
+         box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
+         border-radius: 12px !important;
+      }
+      .btn-gold:hover {
+         transform: translateY(-2px) !important;
+         box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4) !important;
+      }
+    </style>
+
     <div class="anamnesis-public-page">
-      <div class="anamnesis-hero">
-        <div class="anamnesis-hero-badge">${pageBadge}</div>
-        <h1>${pageTitle}</h1>
-        <p>${pageSubtitle}</p>
-        ${currentStep === 0 && !isBusiness ? `
-          <div style="margin-top:20px;background:rgba(217,119,6,0.1);border:1px solid rgba(217,119,6,0.3);padding:14px;border-radius:12px;text-align:left;font-size:0.85rem;color:#b45309;line-height:1.5;box-shadow:0 4px 12px rgba(217,119,6,0.05)">
-            <strong style="display:block;margin-bottom:4px">⚠️ Vagas Limitadas</strong>
-            A(o) <strong>${consultoraNome.split(' ')[0]}</strong> libera apenas <strong>5 protocolos gratuitos</strong> por semana devido à alta demanda de acompanhamento. Preencha até o fim agora para garantir a análise individual do seu caso.
-          </div>
-        ` : ''}
+      ${!isBusiness ? `
+      <div class="scarcity-banner">
+         ⚡ ÚLTIMAS VAGAS: O seu atendimento gratuito está reservado por <span id="timer-display">14:59</span>
       </div>
+      ` : ''}
 
-      <div class="anamnesis-consultant-card">
-        <div class="consultant-avatar" style="${anamneseData.consultora_foto ? 'padding:0;overflow:hidden;background:transparent' : ''}">${avatarHtml}</div>
-        <div class="consultant-info">
-          <h3>${consultoraNome}</h3>
-          <p>${cTitle}</p>
+      <div class="anamnesis-hero" style="padding-top:40px; text-align:center;">
+        <div style="font-size:0.75rem; letter-spacing:2px; text-transform:uppercase; color:#eab308; font-weight:800; margin-bottom:12px;">${pageBadge}</div>
+        <h1 style="font-family:'Playfair Display', serif; font-size:2.4rem; color:white; margin:0 0 16px 0; line-height:1.2; text-shadow:0 2px 10px rgba(0,0,0,0.5)">${pageTitle.replace('<em>', '<span style="color:#eab308">').replace('</em>', '</span>')}</h1>
+        <p style="color:rgba(255,255,255,0.8); font-size:1rem; max-width:500px; margin:0 auto 30px auto; line-height:1.5;">${pageSubtitle}</p>
+        
+        <div class="consultant-glass">
+          <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid #10b981;${!anamneseData.consultora_foto ? 'background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;' : ''}">
+            ${avatarHtml}
+          </div>
+          <div style="text-align:left;">
+            <div style="font-size:0.95rem; font-weight:700; color:white;">${consultoraNome}</div>
+            <div style="font-size:0.75rem; color:rgba(255,255,255,0.6);">${cTitle}</div>
+          </div>
         </div>
       </div>
 
-      <div class="anamnesis-container">
+      <div class="anamnesis-container fade-up" style="max-width: 650px; margin: 0 auto; padding: 0 20px;">
         <!-- Progress -->
-        <div style="margin-bottom:24px">
-          <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,0.5);font-size:0.8rem;margin-bottom:6px">
-            <span>${stepDef.icon} ${section.title}</span>
-            <span>${currentStep + 1} de ${STEPS.length}</span>
-          </div>
-          <div style="background:rgba(255,255,255,0.12);border-radius:99px;height:6px">
-            <div style="background:linear-gradient(to right,var(--green-400),var(--gold-300));height:6px;border-radius:99px;width:${((currentStep + 1) / STEPS.length * 100).toFixed(0)}%;transition:width 0.4s ease"></div>
-          </div>
+        <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,0.7);font-size:0.85rem;margin-bottom:8px;font-weight:600;">
+          <span>${stepDef.icon} ${section.title}</span>
+          <span>${currentStep + 1} de ${STEPS.length}</span>
+        </div>
+        <div class="neon-progress">
+          <div class="neon-progress-bar"></div>
         </div>
 
-        <div class="anamnesis-block">
-          <h3>${stepDef.icon} ${section.title}</h3>
+        <div class="form-glass">
+          <h3 style="margin-top:0; margin-bottom: 24px; color:#0f172a; font-size:1.3rem;">${stepDef.icon} ${section.title}</h3>
           <div id="step-fields">${renderFields(section, answers[stepDef.id] || {})}</div>
-        </div>
-
-        <div style="display:flex;justify-content:space-between;margin-top:4px">
-          ${currentStep > 0
-        ? `<button class="btn btn-secondary" id="btn-prev" style="background:rgba(255,255,255,0.1);color:white;border-color:rgba(255,255,255,0.2)">← Anterior</button>`
-        : '<div></div>'}
-          <button class="btn btn-gold btn-lg" id="btn-next">
-            ${isLast ? btnFinalLabel : 'Próximo →'}
-          </button>
+          
+          <div style="display:flex;justify-content:space-between;margin-top:24px; border-top: 1px solid #f1f5f9; padding-top:24px;">
+            ${currentStep > 0
+          ? `<button class="btn btn-secondary" id="btn-prev" style="background:#f1f5f9;color:#64748b;border:none;border-radius:12px;font-weight:600;">← Voltar</button>`
+          : '<div></div>'}
+            <button class="btn btn-gold btn-lg" id="btn-next" style="padding: 14px 28px;">
+              ${isLast ? btnFinalLabel : 'Avançar →'}
+            </button>
+          </div>
         </div>
       </div>
     </div>`;
+
+    if (!isBusiness) {
+        if(stepTimerInterval) clearInterval(stepTimerInterval);
+        stepTimerInterval = setInterval(() => {
+            const now = Date.now();
+            const diff = window.anamnesisScarcityTimer - now;
+            const display = document.getElementById('timer-display');
+            if (diff <= 0) {
+               if(display) display.innerText = "00:00";
+               clearInterval(stepTimerInterval);
+            } else {
+               const m = Math.floor(diff / 60000);
+               const s = Math.floor((diff % 60000) / 1000);
+               if(display) display.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+        }, 1000);
+    }
 
     const prevBtn = document.getElementById('btn-prev');
     if (prevBtn) prevBtn.addEventListener('click', () => { collectAnswers(stepDef.id); currentStep--; renderStep(); });
