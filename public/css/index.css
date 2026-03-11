@@ -2409,6 +2409,146 @@ body {
   }
 }
 
+/* ── Extra-small devices (< 380px, e.g. iPhone SE, Android básico) ── */
+@media (max-width: 380px) {
+
+  /* Stats: single column */
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 6px;
+  }
+
+  .stat-card {
+    padding: 10px 12px;
+  }
+
+  .stat-value {
+    font-size: 1.15rem;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+  }
+
+  /* Page content: minimal padding */
+  .page-content {
+    padding: 8px;
+  }
+
+  .main-header {
+    padding: 8px 10px;
+  }
+
+  .main-header-title {
+    font-size: 0.9rem;
+  }
+
+  /* Cards: tighter spacing */
+  .card-header {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+  .card-body {
+    padding: 10px 12px;
+  }
+
+  /* Buttons: compact */
+  .btn {
+    padding: 8px 12px;
+    font-size: 0.82rem;
+  }
+
+  /* Modal: edge-to-edge */
+  .modal-body {
+    padding: 16px 14px;
+  }
+
+  .modal-header {
+    padding: 14px;
+  }
+
+  .modal-footer {
+    padding: 12px 14px;
+    flex-wrap: wrap;
+  }
+
+  /* Report */
+  .report-body {
+    padding: 16px 12px;
+  }
+
+  .report-header {
+    padding: 20px 12px;
+  }
+
+  /* Tables: ensure smooth scroll */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .clients-table {
+    min-width: 480px;
+  }
+
+  /* Bottom nav: smaller icons */
+  .bottom-nav-item {
+    font-size: 0.6rem;
+    min-height: 50px;
+    padding: 6px 2px;
+  }
+
+  .bottom-nav-item .nav-icon {
+    font-size: 1.1rem;
+  }
+
+  /* Toast: full width */
+  .toast-container {
+    left: 8px;
+    right: 8px;
+    bottom: 62px;
+  }
+
+  /* Auth card */
+  .auth-card {
+    padding: 20px 14px;
+    margin: 0;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 100vw !important;
+  }
+
+  /* Link cards */
+  .link-card {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .link-card-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  /* Schedule grid */
+  .schedule-grid {
+    grid-template-columns: 55px 1fr;
+  }
+
+  /* Anamnesis steps */
+  .anamnesis-hero h1 {
+    font-size: 1.3rem;
+  }
+
+  .anamnesis-hero p {
+    font-size: 0.85rem;
+  }
+}
+
 @media (max-width: 900px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
