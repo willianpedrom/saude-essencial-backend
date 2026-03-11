@@ -51,17 +51,26 @@ export function normalizeClient(c) {
 }
 
 export function clientToApi(data) {
-    return {
-        nome: data.name || data.nome || '',
-        email: data.email || '',
-        telefone: data.phone || data.telefone || '',
-        data_nascimento: (data.birthdate || data.data_nascimento) || null,
-        cidade: data.city || data.cidade || '',
-        notas: data.notes || data.notas || data.observacoes || '',
-        status: data.status || 'active',
-        genero: data.genero || 'feminino',
-        protocolo_mensagem: data.protocolo_mensagem || '',
-    };
+    const apiObj = {};
+    
+    // Only includes fields that are present in the payload. 
+    // Converts empty strings to null for optional nullable fields in Zod.
+    if ('name' in data || 'nome' in data) apiObj.nome = data.name || data.nome || '';
+    if ('email' in data) apiObj.email = data.email || null;
+    if ('phone' in data || 'telefone' in data) apiObj.telefone = data.phone || data.telefone || null;
+    if ('birthdate' in data || 'data_nascimento' in data) apiObj.data_nascimento = data.birthdate || data.data_nascimento || null;
+    if ('city' in data || 'cidade' in data) apiObj.cidade = data.city || data.cidade || null;
+    
+    const notas = data.notes !== undefined ? data.notes : (data.notas !== undefined ? data.notas : data.observacoes);
+    if (notas !== undefined) apiObj.notas = notas || null;
+    
+    if ('status' in data) apiObj.status = data.status;
+    if ('genero' in data) apiObj.genero = data.genero;
+    if ('protocolo_mensagem' in data) apiObj.protocolo_mensagem = data.protocolo_mensagem || null;
+    if ('pipeline_stage' in data) apiObj.pipeline_stage = data.pipeline_stage;
+    if ('tipo_cadastro' in data) apiObj.tipo_cadastro = data.tipo_cadastro;
+
+    return apiObj;
 }
 
 // ── Auth ─────────────────────────────────────────────────────
