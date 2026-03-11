@@ -1,6 +1,6 @@
 import { auth, store, api } from '../store.js';
 import { renderLayout } from './Dashboard.js';
-import { toast, btnLoading, copyToClipboard } from '../utils.js';
+import { toast, btnLoading, copyToClipboard, ARCHETYPE_THEMES } from '../utils.js';
 
 
 export async function renderProfile(router) {
@@ -202,18 +202,26 @@ export async function renderProfile(router) {
                 <div id="slug-error" style="font-size:0.78rem;color:#dc2626;margin-top:4px;display:none"></div>
               </div>
 
-              <div style="margin-bottom:20px;margin-top:16px;border-top:1px dashed #bbf7d0;padding-top:16px">
-                <label style="font-size:0.85rem;font-weight:600;color:#166534;display:block;margin-bottom:6px">🎨 Cor do Tema da Página Pública</label>
-                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-                  <input type="color" id="p-tema-cor" value="${profile.tema_cor || '#16a34a'}" style="width:40px;height:40px;padding:0;border:none;border-radius:8px;cursor:pointer;background:transparent" title="Escolher cor exata" />
-                  <div style="display:flex;gap:6px">
-                     <button type="button" class="btn btn-sm" onclick="document.getElementById('p-tema-cor').value='#16a34a'" style="background:#16a34a;width:28px;height:28px;border-radius:50%;padding:0;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.1)" title="Verde Gota"></button>
-                     <button type="button" class="btn btn-sm" onclick="document.getElementById('p-tema-cor').value='#7c3aed'" style="background:#7c3aed;width:28px;height:28px;border-radius:50%;padding:0;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.1)" title="Lavanda"></button>
-                     <button type="button" class="btn btn-sm" onclick="document.getElementById('p-tema-cor').value='#db2777'" style="background:#db2777;width:28px;height:28px;border-radius:50%;padding:0;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.1)" title="Rosa"></button>
-                     <button type="button" class="btn btn-sm" onclick="document.getElementById('p-tema-cor').value='#0ea5e9'" style="background:#0ea5e9;width:28px;height:28px;border-radius:50%;padding:0;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.1)" title="Azul"></button>
-                  </div>
-                  <span style="font-size:0.75rem;color:#166534;opacity:0.85">Escolha uma cor para botões e destaques do seu convite.</span>
+              <div style="margin-bottom:20px;margin-top:24px;border-top:1px dashed #bbf7d0;padding-top:20px">
+                <label style="font-size:1rem;font-weight:700;color:#166534;display:block;margin-bottom:4px">🎨 Arquétipos & Temáticas</label>
+                <p style="font-size:0.8rem;color:#166534;opacity:0.8;margin-bottom:16px">A página será inteiramente customizada (fundo e botões) de acordo com o arquétipo escolhido.</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px">
+                  ${Object.values(ARCHETYPE_THEMES).map(t => {
+                    const isSelected = (profile.tema_cor || 'curadora') === t.id;
+                    return `
+                    <div class="theme-card ${isSelected ? 'selected' : ''}" data-theme="${t.id}"
+                      style="border:2px solid ${isSelected ? t.primary : '#e5e7eb'};border-radius:12px;cursor:pointer;background:white;transition:all 0.2s;text-align:center;box-shadow:${isSelected ? '0 4px 12px ' + t.cardBorder : 'none'};overflow:hidden">
+                      <div style="height:70px;background:${t.bg};margin-bottom:10px;display:flex;align-items:center;justify-content:center;font-size:1.5rem">
+                         <div style="background:${t.primary};width:36px;height:12px;border-radius:10px;border:2px solid rgba(255,255,255,0.8);box-shadow:0 1px 3px rgba(0,0,0,0.2)"></div>
+                      </div>
+                      <div style="padding:0 10px 12px">
+                        <div style="font-weight:700;font-size:0.85rem;color:var(--text-dark);margin-bottom:4px">${t.icon} ${t.name}</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);line-height:1.3">${t.desc}</div>
+                      </div>
+                    </div>`;
+                  }).join('')}
                 </div>
+                <input type="hidden" id="p-tema-cor" value="${profile.tema_cor || 'curadora'}" />
               </div>
 
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -355,6 +363,24 @@ export async function renderProfile(router) {
       } finally {
         btn.disabled = false; btn.textContent = '✅ Salvar Link';
       }
+    });
+
+    // Handle Theme Cards selection
+    pc.querySelectorAll('.theme-card').forEach(card => {
+      card.addEventListener('click', () => {
+        pc.querySelectorAll('.theme-card').forEach(c => {
+          c.classList.remove('selected');
+          c.style.borderColor = '#e5e7eb';
+          c.style.boxShadow = 'none';
+        });
+        card.classList.add('selected');
+        const tId = card.dataset.theme;
+        const theme = ARCHETYPE_THEMES[tId];
+        card.style.borderColor = theme.primary;
+        card.style.boxShadow = '0 4px 12px ' + theme.cardBorder;
+        const hiddenInput = pc.querySelector('#p-tema-cor');
+        if (hiddenInput) hiddenInput.value = tId;
+      });
     });
 
     // Copy public profile link (use current slug from input)

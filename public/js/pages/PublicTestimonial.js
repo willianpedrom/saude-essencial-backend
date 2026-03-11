@@ -1,5 +1,5 @@
 import { api } from '../store.js';
-import { injectTrackingScripts } from '../utils.js';
+import { injectTrackingScripts, ARCHETYPE_THEMES } from '../utils.js';
 
 export async function renderPublicTestimonial(router, slug) {
   const app = document.getElementById('app');
@@ -34,14 +34,19 @@ export async function renderPublicTestimonial(router, slug) {
 
   // Inject consultant's tracking scripts
   injectTrackingScripts(consultora.rastreamento);
+  const themeData = ARCHETYPE_THEMES[consultora.tema_cor] || ARCHETYPE_THEMES['curadora'];
 
   function renderForm() {
     app.innerHTML = `
     <style>
-      .dep-page { min-height:100vh; background:linear-gradient(135deg,#0a1f0f 0%,#1a4527 60%,#0f2d17 100%); display:flex; align-items:center; justify-content:center; padding:24px; }
+      :root {
+        --theme-bg: ${themeData.bg};
+        --theme-color: ${themeData.primary};
+      }
+      .dep-page { min-height:100vh; background:var(--theme-bg); display:flex; align-items:center; justify-content:center; padding:24px; }
       .dep-card { background:rgba(255,255,255,0.07); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.12); border-radius:24px; padding:40px 36px; width:100%; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.4); }
       .dep-header { text-align:center; margin-bottom:32px; }
-      .dep-avatar { width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,#d4aa3a,#c99a22); display:flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:700; color:#0a1f0f; margin:0 auto 12px; overflow:hidden; }
+      .dep-avatar { width:72px; height:72px; border-radius:50%; background:var(--theme-color); display:flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:700; color:white; margin:0 auto 12px; overflow:hidden; }
       .dep-avatar img { width:100%; height:100%; object-fit:cover; }
       .dep-name { color:white; font-size:1.3rem; font-weight:700; font-family:'Playfair Display',serif; }
       .dep-sub { color:rgba(255,255,255,0.5); font-size:0.82rem; letter-spacing:1px; text-transform:uppercase; margin-top:4px; }
@@ -49,7 +54,7 @@ export async function renderPublicTestimonial(router, slug) {
       .dep-label { color:rgba(255,255,255,0.7); font-size:0.82rem; font-weight:500; margin-bottom:6px; display:block; letter-spacing:0.5px; }
       .dep-input, .dep-textarea { width:100%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:12px 16px; color:white; font-size:0.95rem; font-family:'Inter',sans-serif; outline:none; transition:border-color 0.2s; box-sizing:border-box; }
       .dep-input::placeholder, .dep-textarea::placeholder { color:rgba(255,255,255,0.3); }
-      .dep-input:focus, .dep-textarea:focus { border-color:#d4aa3a; box-shadow:0 0 0 3px rgba(212,170,58,0.15); }
+      .dep-input:focus, .dep-textarea:focus { border-color:var(--theme-color); box-shadow:0 0 0 3px rgba(255,255,255,0.15); }
       .dep-textarea { min-height:120px; resize:vertical; }
       .dep-stars { display:flex; gap:10px; }
       .dep-star { font-size:2rem; cursor:pointer; transition:transform 0.15s; }
@@ -57,13 +62,13 @@ export async function renderPublicTestimonial(router, slug) {
       .nps-grid { display:flex; gap:6px; flex-wrap:wrap; justify-content:space-between; margin-top:8px; }
       .nps-btn { flex:1; min-width:32px; height:42px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:white; font-size:1.05rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
       .nps-btn:hover { background:rgba(255,255,255,0.15); transform:translateY(-2px); }
-      .nps-btn.active { background:linear-gradient(135deg,#d4aa3a,#c99a22); color:#0a1f0f; border-color:#d4aa3a; transform:scale(1.05); box-shadow:0 4px 12px rgba(212,170,58,0.3); }
+      .nps-btn.active { background:var(--theme-color); color:white; border-color:var(--theme-color); transform:scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.3); }
       .nps-labels { display:flex; justify-content:space-between; margin-top:8px; font-size:0.75rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.5px; }
       .checkbox-container { display:flex; align-items:flex-start; gap:12px; margin-top:20px; margin-bottom:12px; cursor:pointer; }
-      .checkbox-container input { margin-top:3px; cursor:pointer; width:18px; height:18px; accent-color:#d4aa3a; }
+      .checkbox-container input { margin-top:3px; cursor:pointer; width:18px; height:18px; accent-color:var(--theme-color); }
       .checkbox-text { color:rgba(255,255,255,0.7); font-size:0.85rem; line-height:1.4; }
-      .dep-btn { width:100%; padding:15px; border:none; border-radius:12px; background:linear-gradient(135deg,#d4aa3a,#c99a22); color:#0a1f0f; font-weight:700; font-size:1rem; font-family:'Inter',sans-serif; cursor:pointer; transition:all 0.25s; margin-top:8px; letter-spacing:0.5px; }
-      .dep-btn:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(212,170,58,0.4); }
+      .dep-btn { width:100%; padding:15px; border:none; border-radius:12px; background:var(--theme-color); color:white; font-weight:700; font-size:1rem; font-family:'Inter',sans-serif; cursor:pointer; transition:all 0.25s; margin-top:8px; letter-spacing:0.5px; }
+      .dep-btn:hover { transform:translateY(-2px); filter:brightness(1.1); box-shadow:0 8px 25px rgba(0,0,0,0.4); }
       .dep-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
       .dep-error { color:#ff6b6b; font-size:0.82rem; text-align:center; margin-top:8px; display:none; }
     </style>
@@ -173,7 +178,8 @@ export async function renderPublicTestimonial(router, slug) {
 
   function renderSuccess() {
     app.innerHTML = `
-    <div style="min-height:100vh;background:linear-gradient(135deg,#0a1f0f 0%,#1a4527 60%,#0f2d17 100%);display:flex;align-items:center;justify-content:center;padding:20px">
+    <style>:root { --theme-bg: ${themeData.bg}; }</style>
+    <div style="min-height:100vh;background:var(--theme-bg, linear-gradient(135deg,#0a1f0f 0%,#1a4527 60%,#0f2d17 100%));display:flex;align-items:center;justify-content:center;padding:20px">
       <div style="text-align:center;color:white;max-width:400px">
         <div style="font-size:5rem;margin-bottom:20px;animation:pop 0.5s ease">🎉</div>
         <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:12px">Obrigado pelo seu depoimento!</h2>

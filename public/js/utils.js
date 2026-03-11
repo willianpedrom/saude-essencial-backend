@@ -739,3 +739,51 @@ export function setupGlobalShortcuts() {
     }
   });
 }
+
+export const ARCHETYPE_THEMES = {
+  'curadora': {
+    id: 'curadora',
+    name: 'Curadora Natural',
+    desc: 'Confiança, Saúde e Bem-Estar',
+    primary: '#16a34a',
+    bg: 'linear-gradient(135deg, #06120b 0%, #0a1711 50%, #12291d 100%)',
+    cardBorder: 'rgba(22, 163, 74, 0.4)',
+    icon: '🌿'
+  },
+  'visionaria': {
+    id: 'visionaria',
+    name: 'Visionária Elevada',
+    desc: 'Intuição, Calma e Foco',
+    primary: '#a855f7',
+    bg: 'linear-gradient(135deg, #1e1b4b 0%, #2e1065 50%, #3b0764 100%)',
+    cardBorder: 'rgba(168, 85, 247, 0.4)',
+    icon: '🔮'
+  },
+  'maternal': {
+    id: 'maternal',
+    name: 'Maternal Acolhedora',
+    desc: 'Cuidado, Afeto e Conexão',
+    primary: '#ec4899',
+    bg: 'linear-gradient(135deg, #4c0519 0%, #831843 50%, #9d174d 100%)',
+    cardBorder: 'rgba(236, 72, 153, 0.4)',
+    icon: '💗'
+  },
+  'sabia': {
+    id: 'sabia',
+    name: 'Sábia & Serena',
+    desc: 'Clareza, Paz e Frescor',
+    primary: '#0ea5e9',
+    bg: 'linear-gradient(135deg, #082f49 0%, #0c4a6e 50%, #075985 100%)',
+    cardBorder: 'rgba(14, 165, 233, 0.4)',
+    icon: '🌊'
+  },
+  'magnetica': {
+    id: 'magnetica',
+    name: 'Essência Magnética',
+    desc: 'Energia, Ação e Alegria',
+    primary: '#ea580c',
+    bg: 'linear-gradient(135deg, #451a03 0%, #78350f 50%, #92400e 100%)',
+    cardBorder: 'rgba(234, 88, 12, 0.4)',
+    icon: '✨'
+  }
+};

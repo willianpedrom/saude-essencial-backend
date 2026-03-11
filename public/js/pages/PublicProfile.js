@@ -1,5 +1,5 @@
 import { api } from '../store.js';
-import { injectTrackingScripts } from '../utils.js';
+import { injectTrackingScripts, ARCHETYPE_THEMES } from '../utils.js';
 
 const DOTERRA_BADGE_COLORS = {
   'Wellness Advocate': { bg: '#e0f2fe', color: '#0369a1' },
@@ -82,7 +82,7 @@ export async function renderPublicProfile(router, slug) {
 
   const { consultor, depoimentos, anamnese_token } = data;
   const { nome, foto_url, bio, telefone, instagram, youtube, facebook, linkedin, doterra_nivel, genero, tema_cor } = consultor;
-  const theme = tema_cor || '#16a34a';
+  const themeData = ARCHETYPE_THEMES[tema_cor] || ARCHETYPE_THEMES['curadora'];
   const title = genero === 'masculino' ? 'Consultor' : 'Consultora';
   const pageUrl = window.location.href;
   const whatsLink = telefone ? `https://wa.me/55${telefone.replace(/\D/g, '')}?text=Olá%20${encodeURIComponent(nome)}!%20Conheci%20seu%20perfil%20e%20gostaria%20de%20saber%20mais.` : null;
@@ -99,7 +99,8 @@ export async function renderPublicProfile(router, slug) {
   app.innerHTML = `
     <style>
       :root {
-        --theme-color: ${theme};
+        --theme-color: ${themeData.primary};
+        --theme-bg: ${themeData.bg};
       }
       @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
       * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -126,7 +127,7 @@ export async function renderPublicProfile(router, slug) {
     </style>
 
     <!-- ═══════════════ HERO ═══════════════ -->
-    <section style="background:linear-gradient(160deg,#06120b 0%,#0a1711 50%,#12291d 100%);padding:80px 24px 60px;text-align:center;position:relative;overflow:hidden">
+    <section style="background:var(--theme-bg);padding:80px 24px 60px;text-align:center;position:relative;overflow:hidden">
       <div style="position:absolute;top:-60px;left:-60px;width:300px;height:300px;background:rgba(255,255,255,0.03);border-radius:50%"></div>
       <div style="position:absolute;bottom:-80px;right:-40px;width:400px;height:400px;background:rgba(255,255,255,0.02);border-radius:50%"></div>
 
