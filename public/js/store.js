@@ -8,11 +8,14 @@ export const API_URL = window.SE_API_URL || '';
 // ── HTTP helper ──────────────────────────────────────────────
 export async function api(method, path, body = null) {
     const token = sessionStorage.getItem('se_token');
+    const csrfToken = sessionStorage.getItem('se_csrf');
+    const isMutating = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
     const opts = {
         method,
         headers: {
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(isMutating && csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
         },
     };
     if (body) opts.body = JSON.stringify(body);
@@ -76,6 +79,7 @@ export const auth = {
     async login(email, senha) {
         const data = await api('POST', '/api/auth/login', { email, senha });
         sessionStorage.setItem('se_token', data.token);
+        if (data.csrfToken) sessionStorage.setItem('se_csrf', data.csrfToken);
         sessionStorage.setItem('se_user', JSON.stringify(data.consultora));
         this._current = data.consultora;
         return data;
@@ -84,6 +88,7 @@ export const auth = {
     async register(nome, email, senha, telefone, genero) {
         const data = await api('POST', '/api/auth/register', { nome, email, senha, telefone, genero });
         sessionStorage.setItem('se_token', data.token);
+        if (data.csrfToken) sessionStorage.setItem('se_csrf', data.csrfToken);
         sessionStorage.setItem('se_user', JSON.stringify(data.consultora));
         this._current = data.consultora;
         return data;
@@ -102,15 +107,20 @@ export const auth = {
         // Notify server to bump token_version — revokes all other active sessions
         try {
             const token = sessionStorage.getItem('se_token');
+            const csrf = sessionStorage.getItem('se_csrf');
             if (token) {
                 await fetch(`${API_URL}/api/auth/logout`, {
                     method: 'POST',
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        ...(csrf ? { 'X-CSRF-Token': csrf } : {}),
+                    },
                 });
             }
         } catch { /* silent — always clear local session */ }
         this._current = null;
         sessionStorage.removeItem('se_token');
+        sessionStorage.removeItem('se_csrf');
         sessionStorage.removeItem('se_user');
     },
 

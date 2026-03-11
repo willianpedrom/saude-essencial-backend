@@ -170,6 +170,12 @@ app.use('/api/assinatura/webhook',
 // Body parser
 app.use(express.json({ limit: '2mb' }));
 
+// ─── CSRF Protection ────────────────────────────────────────────────────────
+// Validates X-CSRF-Token header on all mutating requests (POST/PUT/PATCH/DELETE).
+// Skips GET/HEAD/OPTIONS and unauthenticated (public) routes automatically.
+const { csrfCheck } = require('./middleware/csrf');
+app.use('/api', csrfCheck);
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/clientes', require('./routes/clientes'));

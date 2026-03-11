@@ -6,6 +6,7 @@ const authMiddleware = require('../middleware/auth');
 const checkSubscription = require('../middleware/checkSubscription');
 const checkFeature = require('../middleware/checkFeature');
 const { validate, schemas } = require('../lib/validate');
+const { generateCsrfToken } = require('../middleware/csrf');
 
 const router = express.Router();
 
@@ -62,7 +63,8 @@ router.post('/register', validate(schemas.register), async (req, res, next) => {
             { expiresIn: '7d' }
         );
 
-        return res.status(201).json({ token, consultora });
+        const csrfToken = generateCsrfToken();
+        return res.status(201).json({ token, csrfToken, consultora });
     } catch (err) {
         console.error('Erro no register:', err.message);
         return next(err);
@@ -112,7 +114,8 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
         );
 
         const { senha_hash, ...consultoraData } = consultora;
-        return res.json({ token, consultora: { ...consultoraData, assinatura: sub } });
+        const csrfToken = generateCsrfToken();
+        return res.json({ token, csrfToken, consultora: { ...consultoraData, assinatura: sub } });
     } catch (err) {
         console.error('Erro no login:', err.message);
         return next(err);
