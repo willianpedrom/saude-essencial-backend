@@ -615,20 +615,10 @@ export async function renderDashboard(router) {
   );
 
   try {
-    // Promise.allSettled: se uma API falhar, o dashboard carrega parcialmente
-    // ao invés de mostrar erro total (anteriamente com Promise.all)
-    const results = await Promise.allSettled([
-      store.getDashboardSummary(),  // ← summary SQL (replaces getClients)
-      store.getAnamneses(),
-      store.getAgendamentos(),
-      store.getAniversariantes(),
-      store.getAvisosBanner(),
-      store.getAvisosNaoLidos()
-    ]);
+    // Single API call replaces 7 parallel fetches — much faster on mobile/3G
+    const boot = await store.getDashboardBoot();
 
-    const [summary, anamneses, agendamentos, aniversariantes, avisosBanners, avisosModais] = results.map(
-      r => r.status === 'fulfilled' ? r.value : (r.status === 'rejected' ? {} : [])
-    );
+    const { summary = {}, anamneses = [], agendamentos = [], aniversariantes = [], avisosBanner: avisosBanners = [], avisosModais = [], followups: followupsArr = [] } = boot;
 
     // Destructure pre-computed summary fields (no full client list needed)
     const {
@@ -641,14 +631,6 @@ export async function renderDashboard(router) {
       recStageCounts = {},
       metas: summaryMetas = {}
     } = summary || {};
-
-    // Log parcial de falhas para debug (não bloqueia o dashboard)
-    results.forEach((r, i) => {
-      if (r.status === 'rejected') {
-        const names = ['summary', 'anamneses', 'agendamentos', 'aniversariantes', 'avisosBanners', 'avisosModais', 'followupsWithClientData'];
-        console.warn(`[Dashboard] API '${names[i]}' falhou:`, r.reason?.message);
-      }
-    });
 
 
     // ── Prepara Banners de Avisos ──
@@ -669,11 +651,6 @@ export async function renderDashboard(router) {
     `).join('') : '';
 
 
-    // ── Follow-ups via API ──
-    let followupsArr = [];
-    try {
-      followupsArr = await store.getFollowups().catch(() => []);
-    } catch (e) { }
 
     // ── Onboarding Checklist ──
     const onboardingDismissed = localStorage.getItem('onboarding_dismissed_' + consultant.id) === '1';

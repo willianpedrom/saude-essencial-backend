@@ -160,6 +160,9 @@ export const store = {
     async getDashboardSummary() {
         return await api('GET', '/api/dashboard/summary');
     },
+    async getDashboardBoot() {
+        return await api('GET', '/api/dashboard/boot');
+    },
 
     async addClient(_cid, data) {
         const body = data ? clientToApi(data) : clientToApi(_cid); // allow 1 or 2 args
