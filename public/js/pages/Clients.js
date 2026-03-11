@@ -212,39 +212,107 @@ export async function renderClients(router) {
       return;
     }
     const a = anamneses[0]; // most recent filled
-    const dados = a.dados || {};
-    const symptoms = [
+    const rawDados = a.dados || {};
+    // Garantir que temos acesso a todos os dados flat
+    const dados = {
+      ...(rawDados.personal || {}),
+      ...(rawDados.health || {}),
+      ...(rawDados.emotional || {}),
+      ...(rawDados.body || {}),
+      ...(rawDados.goals || {}),
+      ...rawDados // fallback
+    };
+    
+    // Arrays agregados para tags
+    const allSymptoms = [
       ...(dados.general_symptoms || []),
       ...(dados.emotional_symptoms || []),
       ...(dados.digestive_symptoms || []),
       ...(dados.sleep_symptoms || []),
+      ...(dados.low_energy_symptoms || []),
+      ...(dados.skin_symptoms || []),
+      ...(dados.hair_symptoms || [])
     ];
-    const { el } = modal('📋 Anamnese — ' + client.name, `
-      <div style="max-height:400px;overflow-y:auto">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
-          <div style="font-size:0.85rem"><strong>E-mail:</strong> ${client.email || '—'}</div>
-          <div style="font-size:0.85rem"><strong>WhatsApp:</strong> ${client.phone || '—'}</div>
-          <div style="font-size:0.85rem"><strong>Nascimento:</strong> ${formatDate(client.birthdate)}</div>
-          <div style="font-size:0.85rem"><strong>Cidade:</strong> ${client.city || '—'}</div>
+    
+    // Função helper para parse seguro
+    const printVal = (val) => val ? val : '—';
+    const printTagArray = (arr, color='#166534', bg='#dcfce7') => {
+      if (!arr || !Array.isArray(arr) || arr.length === 0) return '—';
+      return arr.map(t => `<span class="report-tag" style="font-size:0.75rem;background:${bg};color:${color}">${t}</span>`).join('');
+    };
+
+    const { el } = modal('📋 Anamnese Compléta — ' + client.name, `
+      <div style="max-height:65vh;overflow-y:auto;padding-right:10px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;background:#f8fafc;padding:12px;border-radius:12px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.02)">
+          <div style="font-size:0.85rem"><strong>E-mail:</strong><br>${client.email || '—'}</div>
+          <div style="font-size:0.85rem"><strong>WhatsApp:</strong><br>${client.phone || '—'}</div>
+          <div style="font-size:0.85rem"><strong>Nascimento:</strong><br>${formatDate(client.birthdate)}</div>
+          <div style="font-size:0.85rem"><strong>Cidade:</strong><br>${client.city || '—'}</div>
+          <div style="font-size:0.85rem;grid-column: span 2"><strong>Gênero:</strong> ${client.genero || 'Não informado'}</div>
         </div>
+
+        <h4 style="font-size:1rem;color:#0f172a;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;">Relatos Abertos & Queixas</h4>
+        
         <div style="margin-bottom:12px">
-          <strong style="font-size:0.85rem">Queixa principal:</strong>
-          <p style="font-size:0.85rem;color:var(--text-body);margin-top:4px">${dados.main_complaint || '—'}</p>
+          <strong style="font-size:0.85rem;color:#1e293b;">Queixa Principal:</strong>
+          <p style="font-size:0.85rem;color:#475569;margin-top:4px;background:#f1f5f9;padding:10px;border-radius:8px;white-space:pre-wrap;">${printVal(dados.main_complaint)}</p>
         </div>
+
         <div style="margin-bottom:12px">
-          <strong style="font-size:0.85rem">Sintomas relatados:</strong>
+          <strong style="font-size:0.85rem;color:#1e293b;">Estado Emocional Descrito:</strong>
+          <p style="font-size:0.85rem;color:#475569;margin-top:4px;background:#f1f5f9;padding:10px;border-radius:8px;white-space:pre-wrap;">${printVal(dados.emotional_open)}</p>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <strong style="font-size:0.85rem;color:#1e293b;">Medicamentos em Uso (Contínuo):</strong>
+          <p style="font-size:0.85rem;color:#475569;margin-top:4px;background:#f1f5f9;padding:10px;border-radius:8px;white-space:pre-wrap;">${printVal(dados.medications)}</p>
+        </div>
+
+        <h4 style="font-size:1rem;color:#0f172a;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;margin-top:20px;">Indicadores de Estilo de Vida</h4>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Nível de Estresse:</strong><br>${dados.stress_level ? dados.stress_level + '/10' : '—'}</div>
+           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Nível de Energia:</strong><br>${dados.energy_level ? dados.energy_level + '/10' : '—'}</div>
+           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Diet / Alimentação:</strong><br>${printVal(dados.diet_type)}</div>
+           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Ingestão de Água:</strong><br>${printVal(dados.water_intake)}</div>
+           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Horas de Sono:</strong><br>${printVal(dados.sleep_hours)}</div>
+           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Exercícios:</strong><br>${printVal(dados.exercise_freq)}</div>
+           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Experiência com Óleos:</strong><br>${printVal(dados.previous_experience)}</div>
+           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Disposição à Mudança:</strong><br>${dados.commitment_level ? dados.commitment_level + '/5' : '—'}</div>
+        </div>
+
+        <h4 style="font-size:1rem;color:#0f172a;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;margin-top:20px;">Dores e Condições Marcadas</h4>
+
+        <div style="margin-bottom:12px">
+          <strong style="font-size:0.85rem;color:#1e293b;">Sintomas Físicos / Emocionais:</strong>
           <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
-            ${symptoms.slice(0, 12).map(s => `<span class="report-tag" style="font-size:0.72rem">${s}</span>`).join('') || '—'}
+            ${printTagArray(allSymptoms, '#b91c1c', '#fef2f2')}
           </div>
         </div>
+        
         <div style="margin-bottom:12px">
-          <strong style="font-size:0.85rem">Objetivos:</strong>
+          <strong style="font-size:0.85rem;color:#1e293b;">Condições Crônicas:</strong>
           <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
-            ${(dados.goals || []).map(g => `<span class="report-tag" style="font-size:0.72rem;background:#dcfce7;color:#166534">${g}</span>`).join('') || '—'}
+            ${printTagArray(dados.chronic_conditions, '#9f1239', '#fff1f2')}
           </div>
         </div>
-        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px">
-          Preenchida em: ${formatDate(a.criado_em)}
+
+        <div style="margin-bottom:12px">
+          <strong style="font-size:0.85rem;color:#1e293b;">Hábitos Prejudiciais Marcados:</strong>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+            ${printTagArray(dados.bad_habits_food, '#b45309', '#fef3c7')}
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <strong style="font-size:0.85rem;color:#1e293b;">Objetivos do Cliente:</strong>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+            ${printTagArray(dados.goals, '#15803d', '#dcfce7')}
+          </div>
+        </div>
+
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:16px;text-align:right;">
+          Ficha Registrada em: <span style="font-weight:700">${formatDate(a.criado_em)}</span>
         </div>
       </div>`, {
       confirmLabel: '🌿 Ver Protocolo',
