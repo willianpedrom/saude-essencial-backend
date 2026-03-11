@@ -444,28 +444,26 @@ export async function renderClients(router) {
   // ── CSV Import Modal ───────────────────────────────────────
   function parseCSV(text) {
     const lines = text.trim().split(/\r?\n/);
-    if (lines.length < 2) return [];
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/["']/g, ''));
-    return lines.slice(1).map(line => {
-      // Handle quoted fields
+    if (lines.length < 2) return { headers: [], rows: [] };
+    const headers = lines[0].split(',').map(h => h.trim().replace(/["']/g, ''));
+    const rows = lines.slice(1).map(line => {
       const cols = [];
       let cur = ''; let inQ = false;
       for (const ch of line) {
         if (ch === '"') { inQ = !inQ; }
-        else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+        else if (ch === ',' && !inQ) { cols.push(cur.trim().replace(/^"|"$/g, '')); cur = ''; }
         else cur += ch;
       }
-      cols.push(cur.trim());
-      const obj = {};
-      headers.forEach((h, i) => { obj[h] = (cols[i] || '').replace(/^"|"$/g, ''); });
-      return obj;
-    }).filter(row => Object.values(row).some(v => v));
+      cols.push(cur.trim().replace(/^"|"$/g, ''));
+      return cols;
+    }).filter(row => row.some(v => v));
+    return { headers, rows };
   }
 
   function downloadTemplate() {
     const header = 'nome,email,telefone,data_nascimento,cidade,genero,status,notas';
     const ex = 'Maria Silva,maria@email.com,5511999999999,1990-05-15,São Paulo,feminino,ativo,Cliente VIP';
-    const blob = new Blob([header + '\n' + ex], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([header + '\\n' + ex], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'modelo_importacao_clientes.csv';
@@ -473,58 +471,81 @@ export async function renderClients(router) {
   }
 
   function showImportModal() {
-    let parsed = [];
+    let parsedCsv = { headers: [], rows: [] };
+    let mapping = { name: -1, email: -1, phone: -1, birthdate: -1, city: -1, gender: -1, status: -1, notes: -1 };
+    
+    function autoMapHeaders() {
+      const h = parsedCsv.headers.map(x => x.toLowerCase());
+      mapping.name = h.findIndex(x => x.includes('nome') || x.includes('name') || x === 'cliente');
+      mapping.email = h.findIndex(x => x.includes('email') || x.includes('e-mail'));
+      mapping.phone = h.findIndex(x => x.includes('telefone') || x.includes('celular') || x.includes('phone') || x.includes('whatsapp'));
+      mapping.birthdate = h.findIndex(x => x.includes('nasc') || x.includes('birth'));
+      mapping.city = h.findIndex(x => x.includes('cidade') || x.includes('city'));
+      mapping.gender = h.findIndex(x => x.includes('genero') || x.includes('sexo'));
+      mapping.status = h.findIndex(x => x.includes('status') || x.includes('ativo'));
+      mapping.notes = h.findIndex(x => x.includes('nota') || x.includes('obs'));
+    }
+
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay open';
     overlay.innerHTML = `
-      <div class="modal-box" style="max-width:680px">
+      <div class="modal-box" style="max-width:750px">
         <div class="modal-header">
           <h3>📥 Importar Clientes via CSV</h3>
           <button class="modal-close" id="import-close">✕</button>
         </div>
         <div class="modal-body">
 
-          <!-- Step 1: Instructions + download -->
+          <!-- Step 1: Upload -->
           <div id="import-step1">
             <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:16px;margin-bottom:20px">
               <p style="font-weight:700;color:#166534;margin-bottom:8px">📋 Como importar:</p>
               <ol style="color:#166534;font-size:0.85rem;padding-left:18px;line-height:1.9">
-                <li>Baixe o modelo CSV abaixo</li>
-                <li>Preencha com seus clientes (máximo 500 por vez)</li>
-                <li>Suba o arquivo aqui e confira o preview</li>
-                <li>Clique em <strong>Importar</strong></li>
+                <li>Baixe o modelo CSV ou use sua própria planilha salva como .csv</li>
+                <li>Na próxima tela, você vinculará suas colunas com os campos do sistema</li>
+                <li>Máximo 500 clientes por vez</li>
               </ol>
               <button class="btn btn-secondary btn-sm" id="btn-download-template" style="margin-top:10px">⬇️ Baixar Modelo CSV</button>
             </div>
 
-            <!-- Colunas aceitas -->
-            <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:16px">
-              <strong>Colunas aceitas:</strong> nome* · email · telefone · data_nascimento (AAAA-MM-DD) · cidade · genero (feminino/masculino) · status (ativo/inativo) · notas
-            </div>
-
-            <!-- Drop zone -->
             <div id="drop-zone" style="display:block;border:2px dashed var(--green-300);border-radius:12px;
-              padding:40px;text-align:center;cursor:pointer;transition:all .2s;
+              padding:50px 20px;text-align:center;cursor:pointer;transition:all .2s;
               background:var(--green-50);color:var(--text-muted)">
               <div style="font-size:2.5rem;margin-bottom:8px">📁</div>
               <div style="font-size:0.95rem;font-weight:600">Clique ou arraste seu arquivo CSV aqui</div>
-              <div style="font-size:0.78rem;margin-top:4px">Formatos: .csv (UTF-8)</div>
+              <div style="font-size:0.78rem;margin-top:4px">Separado por vírgulas (.csv UTF-8)</div>
               <input type="file" id="csv-file-input" accept=".csv,text/csv" style="display:none" />
             </div>
           </div>
 
-          <!-- Step 2: Preview -->
+          <!-- Step 2: Mapping & Preview -->
           <div id="import-step2" style="display:none">
-            <div id="import-stats" style="margin-bottom:12px"></div>
-            <div style="max-height:280px;overflow:auto;border:1px solid var(--border);border-radius:8px">
-              <table class="clients-table" id="preview-table" style="min-width:500px">
-                <thead><tr>
-                  <th>#</th><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Cidade</th><th>Status</th>
+            
+            <div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px">
+              <h4 style="font-size:0.9rem;margin:0 0 12px 0">1. Vincule as colunas do seu arquivo</h4>
+              <div class="form-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px;">
+                <div class="form-group mb-0"><label class="field-label" style="font-size:0.75rem">Nome *</label><select id="map-name" class="field-select map-select"></select></div>
+                <div class="form-group mb-0"><label class="field-label" style="font-size:0.75rem">E-mail</label><select id="map-email" class="field-select map-select"></select></div>
+                <div class="form-group mb-0"><label class="field-label" style="font-size:0.75rem">Telefone</label><select id="map-phone" class="field-select map-select"></select></div>
+                <div class="form-group mb-0"><label class="field-label" style="font-size:0.75rem">Nascimento</label><select id="map-birthdate" class="field-select map-select"></select></div>
+                <div class="form-group mb-0"><label class="field-label" style="font-size:0.75rem">Cidade</label><select id="map-city" class="field-select map-select"></select></div>
+                <div class="form-group mb-0"><label class="field-label" style="font-size:0.75rem">Gênero</label><select id="map-gender" class="field-select map-select"></select></div>
+              </div>
+            </div>
+
+            <h4 style="font-size:0.9rem;margin:0 0 8px 0;display:flex;justify-content:space-between">
+               2. Preview dos Dados <span id="import-stats" style="font-weight:normal;font-size:0.8rem;color:var(--text-muted)"></span>
+            </h4>
+            <div class="table-wrapper" style="max-height:260px;border:1px solid var(--border);border-radius:8px">
+              <table class="clients-table" id="preview-table" style="min-width:650px;margin:0;border:none">
+                <thead style="position:sticky;top:0;z-index:1;background:#f8fafc"><tr>
+                  <th style="width:40px">#</th><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Nascimento</th><th>Cidade</th>
                 </tr></thead>
                 <tbody id="preview-tbody"></tbody>
               </table>
             </div>
-            <button class="btn btn-secondary btn-sm" id="btn-change-file" style="margin-top:10px">🔄 Trocar arquivo</button>
+            
+            <button class="btn btn-secondary btn-sm" id="btn-change-file" style="margin-top:16px">🔄 Trocar arquivo</button>
           </div>
 
           <!-- Step 3: Result -->
@@ -551,8 +572,10 @@ export async function renderClients(router) {
       if (!file || !file.name.toLowerCase().endsWith('.csv')) { toast('Use um arquivo .csv', 'error'); return; }
       const reader = new FileReader();
       reader.onload = e => {
-        parsed = parseCSV(e.target.result);
-        if (parsed.length === 0) { toast('Arquivo vazio ou inválido', 'error'); return; }
+        parsedCsv = parseCSV(e.target.result);
+        if (parsedCsv.rows.length === 0) { toast('Arquivo vazio ou inválido', 'error'); return; }
+        autoMapHeaders();
+        initMappingUI();
         showPreview();
       };
       reader.readAsText(file, 'UTF-8');
@@ -564,42 +587,65 @@ export async function renderClients(router) {
     dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = ''; dropZone.style.background = ''; });
     dropZone.addEventListener('drop', e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); });
 
+    function initMappingUI() {
+      const optionsStr = '<option value="-1">-- Ignorar --</option>' + parsedCsv.headers.map((h, i) => `<option value="${i}">${h}</option>`).join('');
+      ['name', 'email', 'phone', 'birthdate', 'city', 'gender'].forEach(key => {
+        const sel = overlay.querySelector('#map-' + key);
+        sel.innerHTML = optionsStr;
+        sel.value = mapping[key];
+        sel.addEventListener('change', e => {
+          mapping[key] = parseInt(e.target.value, 10);
+          updatePreviewTable();
+        });
+      });
+    }
+
+    function updatePreviewTable() {
+      // Build final objects to check validity
+      const finalData = parsedCsv.rows.map(row => ({
+        nome: mapping.name >= 0 ? row[mapping.name] : '',
+        email: mapping.email >= 0 ? row[mapping.email] : '',
+        telefone: mapping.phone >= 0 ? row[mapping.phone] : '',
+        data_nascimento: mapping.birthdate >= 0 ? row[mapping.birthdate] : '',
+        cidade: mapping.city >= 0 ? row[mapping.city] : '',
+        genero: mapping.gender >= 0 ? row[mapping.gender] : '',
+      }));
+
+      const semNome = finalData.filter(r => !r.nome?.trim()).length;
+      overlay.querySelector('#import-stats').innerHTML = 
+        `Listando ${parsedCsv.rows.length} linhas ${semNome > 0 ? `<span style="color:#dc2626;font-weight:600">(${semNome} com erro)</span>` : ''}`;
+
+      // Enable import button only if valid
+      overlay.querySelector('#btn-do-import').disabled = (mapping.name === -1);
+
+      overlay.querySelector('#preview-tbody').innerHTML = finalData.slice(0, 8).map((r, i) => {
+        const hasNome = !!r.nome?.trim();
+        return `<tr style="${!hasNome ? 'background:#fff1f2' : ''}">
+          <td style="font-size:0.75rem;color:var(--text-muted)">${i + 2}</td>
+          <td style="font-weight:${hasNome ? '600' : 'normal'};color:${hasNome ? 'inherit' : '#dc2626'}">${r.nome || 'Nome vazio!'}</td>
+          <td style="font-size:0.8rem">${r.email || '—'}</td>
+          <td style="font-size:0.8rem">${r.telefone || '—'}</td>
+          <td style="font-size:0.8rem">${r.data_nascimento || '—'}</td>
+          <td style="font-size:0.8rem">${r.cidade || '—'}</td>
+        </tr>`;
+      }).join('');
+      
+      if (parsedCsv.rows.length > 8) {
+        overlay.querySelector('#preview-tbody').innerHTML += `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:10px">... e mais ${parsedCsv.rows.length - 8} clientes</td></tr>`;
+      }
+    }
+
     function showPreview() {
       overlay.querySelector('#import-step1').style.display = 'none';
       overlay.querySelector('#import-step2').style.display = 'block';
-      overlay.querySelector('#btn-do-import').disabled = false;
-
-      const semNome = parsed.filter(r => !(r.nome || r.name || '').trim()).length;
-      const stats = overlay.querySelector('#import-stats');
-      stats.innerHTML = `
-        <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <span style="background:#d1fae5;color:#065f46;padding:4px 12px;border-radius:20px;font-size:0.82rem;font-weight:600">✅ ${parsed.length} clientes encontrados</span>
-          ${semNome ? `<span style="background:#fee2e2;color:#991b1b;padding:4px 12px;border-radius:20px;font-size:0.82rem;font-weight:600">⚠️ ${semNome} sem nome (serão ignorados)</span>` : ''}
-        </div>`;
-
-      const tbody = overlay.querySelector('#preview-tbody');
-      tbody.innerHTML = parsed.slice(0, 8).map((r, i) => {
-        const nome = r.nome || r.name || '—';
-        const valido = !!nome.trim() && nome !== '—';
-        return `<tr style="${!valido ? 'background:#fff1f2' : ''}">
-          <td style="font-size:0.75rem;color:var(--text-muted)">${i + 2}</td>
-          <td style="font-weight:${valido ? '600' : 'normal'};color:${valido ? 'inherit' : '#dc2626'}">${nome}</td>
-          <td style="font-size:0.8rem">${r.email || '—'}</td>
-          <td style="font-size:0.8rem">${r.telefone || r.phone || '—'}</td>
-          <td style="font-size:0.8rem">${r.cidade || r.city || '—'}</td>
-          <td><span class="status-badge status-${(r.status || 'ativo').toLowerCase() === 'inativo' ? 'inactive' : 'active'}" style="font-size:0.7rem">${(r.status || 'ativo').toLowerCase() === 'inativo' ? 'Inativo' : 'Ativo'}</span></td>
-        </tr>`;
-      }).join('');
-      if (parsed.length > 8) {
-        tbody.innerHTML += `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:10px">... e mais ${parsed.length - 8} clientes</td></tr>`;
-      }
+      updatePreviewTable();
     }
 
     overlay.querySelector('#btn-change-file').addEventListener('click', () => {
       overlay.querySelector('#import-step1').style.display = 'block';
       overlay.querySelector('#import-step2').style.display = 'none';
       overlay.querySelector('#btn-do-import').disabled = true;
-      parsed = []; fileInput.value = '';
+      parsedCsv = { headers: [], rows: [] }; fileInput.value = '';
     });
 
     // Import
@@ -607,8 +653,19 @@ export async function renderClients(router) {
       const btn = overlay.querySelector('#btn-do-import');
       btn.disabled = true; btn.textContent = '⏳ Importando...';
       try {
+        const finalData = parsedCsv.rows.map(row => ({
+          nome: mapping.name >= 0 ? row[mapping.name] : '',
+          email: mapping.email >= 0 ? row[mapping.email] : undefined,
+          telefone: mapping.phone >= 0 ? row[mapping.phone] : undefined,
+          data_nascimento: mapping.birthdate >= 0 ? row[mapping.birthdate] : undefined,
+          cidade: mapping.city >= 0 ? row[mapping.city] : undefined,
+          genero: mapping.gender >= 0 ? row[mapping.gender] : undefined,
+          status: 'ativo'
+        })).filter(r => !!r.nome?.trim()); // Drop empty names
+
         const { api } = await import('../store.js').then(m => ({ api: m.api }));
-        const res = await api('POST', '/api/clientes/import', { clientes: parsed });
+        const res = await api('POST', '/api/clientes/import', { clientes: finalData });
+        
         overlay.querySelector('#import-step2').style.display = 'none';
         overlay.querySelector('#import-step3').style.display = 'block';
         overlay.querySelector('#import-step3').innerHTML = `
@@ -629,12 +686,13 @@ export async function renderClients(router) {
             </div>
           </div>
           ${res.erros?.length ? `<details style="text-align:left;font-size:0.8rem"><summary style="cursor:pointer;color:var(--text-muted)">Ver erros</summary><pre style="background:#f8f9fa;padding:10px;border-radius:6px;overflow:auto;margin-top:8px">${res.erros.map(e => `Linha ${e.linha}: ${e.erro}`).join('\n')}</pre></details>` : ''}`;
+        
         overlay.querySelector('#import-cancel').textContent = 'Fechar';
         overlay.querySelector('#btn-do-import').style.display = 'none';
         await refresh();
       } catch (err) {
         toast('Erro na importação: ' + err.message, 'error');
-        btn.disabled = false; btn.textContent = '📥 Importar';
+        btn.disabled = false; btn.textContent = '📥 Fazendo Importação Novamente';
       }
     });
   }
