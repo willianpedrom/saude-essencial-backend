@@ -2059,6 +2059,54 @@ body {
   background: linear-gradient(to top, var(--green-500), var(--green-400));
 }
 
+/* ===== TABLE SCROLL ===== */
+.table-wrapper {
+  position: relative;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-200) transparent;
+}
+
+.table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--green-200);
+  border-radius: 3px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--green-400);
+}
+
+/* Fade gradient hint on right edge when scrollable */
+.table-scroll-hint {
+  position: relative;
+}
+
+.table-scroll-hint::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 6px;
+  width: 32px;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.9));
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+.table-scroll-hint.scrolled-end::after {
+  opacity: 0;
+}
+
 /* ===== RESPONSIVE ===== */
 
 /* ── Hambúrguer button (shown only on mobile) ── */
