@@ -7,6 +7,7 @@ const checkSubscription = require('../middleware/checkSubscription');
 const checkFeature = require('../middleware/checkFeature');
 const { validate, schemas } = require('../lib/validate');
 const { generateCsrfToken } = require('../middleware/csrf');
+const logger = require('../lib/logger');
 
 const router = express.Router();
 
@@ -36,6 +37,7 @@ router.post('/register', validate(schemas.register), async (req, res, next) => {
         // Check existing email
         const exists = await pool.query('SELECT id FROM consultoras WHERE email = $1', [email]);
         if (exists.rows.length > 0) {
+            logger.warn({ event: 'register_failed', email, ip: req.ip, reason: 'email_já_cadastrado' });
             return res.status(409).json({ error: 'Este e-mail já está cadastrado.' });
         }
 
@@ -64,9 +66,10 @@ router.post('/register', validate(schemas.register), async (req, res, next) => {
         );
 
         const csrfToken = generateCsrfToken();
+        logger.info({ event: 'register_success', consultora_id: consultora.id, email: consultora.email, ip: req.ip });
         return res.status(201).json({ token, csrfToken, consultora });
     } catch (err) {
-        console.error('Erro no register:', err.message);
+        logger.error({ event: 'register_error', email: req.body?.email, ip: req.ip, error: err }, 'Erro no register');
         return next(err);
     }
 });
@@ -85,12 +88,14 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
         );
 
         if (rows.length === 0) {
+            logger.warn({ event: 'login_failed', email, ip: req.ip, reason: 'email_não_encontrado' });
             return res.status(401).json({ error: 'E-mail ou senha incorretos.' });
         }
 
         const consultora = rows[0];
         const ok = await bcrypt.compare(senha, consultora.senha_hash);
         if (!ok) {
+            logger.warn({ event: 'login_failed', consultora_id: consultora.id, email, ip: req.ip, reason: 'senha_incorreta' });
             return res.status(401).json({ error: 'E-mail ou senha incorretos.' });
         }
 
@@ -115,9 +120,11 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
 
         const { senha_hash, ...consultoraData } = consultora;
         const csrfToken = generateCsrfToken();
+        
+        logger.info({ event: 'login_success', consultora_id: consultora.id, email: consultora.email, ip: req.ip });
         return res.json({ token, csrfToken, consultora: { ...consultoraData, assinatura: sub } });
     } catch (err) {
-        console.error('Erro no login:', err.message);
+        logger.error({ event: 'login_error', email: req.body?.email, ip: req.ip, error: err }, 'Erro no login');
         return next(err);
     }
 });
@@ -398,9 +405,10 @@ router.put('/change-password', authMiddleware, validate(schemas.changePassword),
             'UPDATE consultoras SET senha_hash=$1, token_version = COALESCE(token_version, 1) + 1, atualizado_em=NOW() WHERE id=$2',
             [newHash, req.consultora.id]
         );
-        console.log(`[Auth] 🔐 Senha alterada para consultora ${req.consultora.id}`);
+        logger.info({ event: 'password_changed', consultora_id: req.consultora.id, ip: req.ip }, 'Senha alterada');
         return res.json({ success: true, message: 'Senha alterada com sucesso! Faça login novamente.' });
     } catch (err) {
+        logger.error({ event: 'password_change_error', consultora_id: req.consultora?.id, ip: req.ip, error: err });
         return next(err);
     }
 });
@@ -412,9 +420,10 @@ router.post('/logout', authMiddleware, async (req, res, next) => {
             'UPDATE consultoras SET token_version = COALESCE(token_version, 1) + 1, atualizado_em=NOW() WHERE id=$1',
             [req.consultora.id]
         );
-        console.log(`[Auth] 🚪 Logout seguro para consultora ${req.consultora.id}`);
+        logger.info({ event: 'logout_success', consultora_id: req.consultora.id, ip: req.ip }, 'Logout seguro via web');
         return res.json({ success: true, message: 'Sessão encerrada com segurança.' });
     } catch (err) {
+        logger.error({ event: 'logout_error', consultora_id: req.consultora?.id, ip: req.ip, error: err });
         return next(err);
     }
 });
