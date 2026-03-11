@@ -85,6 +85,7 @@ export async function renderPublicAnamnesis(router, token) {
   }
 
   const isBusiness = anamneseData.tipo === 'recrutamento';
+  const isVendaDireta = anamneseData.tipo === 'venda_direta';
   const STEPS = isBusiness ? BUSINESS_STEPS : ANAMNESIS_STEPS;
   const QUESTIONS = isBusiness ? BUSINESS_QUESTIONS : ANAMNESIS_QUESTIONS;
 
@@ -391,7 +392,9 @@ export async function renderPublicAnamnesis(router, token) {
       clearDraft(); // Draft no longer needed after successful submit
 
       console.log("[Anamnesis] Routing to next page...");
-      const nextRoute = isBusiness ? '/business-report' : '/protocolo';
+      let nextRoute = '/protocolo';
+      if (isBusiness) nextRoute = '/business-report';
+      else if (isVendaDireta) nextRoute = '/recomendacao-uau';
 
       // Delay minúsculo pra garantir gravação no DOM e sessionStorage antes da quebra da Hash
       setTimeout(() => {

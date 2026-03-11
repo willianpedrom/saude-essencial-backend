@@ -204,6 +204,7 @@ export async function renderLinks(router) {
         <select class="field-select" id="link-tipo" style="margin-bottom:16px;">
           <option value="adulto">💧 Avaliação de Bem-Estar (Saúde)</option>
           <option value="recrutamento">💼 Análise de Perfil Empreendedor (Negócios)</option>
+          <option value="venda_direta">🚀 Avaliação Rápida (Protocolo de Venda)</option>
         </select>
         
         <div class="field-label" style="margin-bottom:10px">Tipo de Link *</div>

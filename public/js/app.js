@@ -105,6 +105,10 @@ const router = new Router({
         const { renderBusinessReport } = await import('./pages/BusinessReport.js');
         renderBusinessReport(router, params?.data);
     },
+    '/recomendacao-uau': async (params) => {
+        const { renderRecomendacaoUau } = await import('./pages/RecomendacaoUau.js');
+        renderRecomendacaoUau(router, params?.data);
+    },
     '/depoimento/:slug': async ({ slug }) => {
         const { renderPublicTestimonial } = await import('./pages/PublicTestimonial.js');
         renderPublicTestimonial(router, slug);
