@@ -210,7 +210,21 @@ router.patch('/:id/recrutamento-stage', checkFeature('tem_pipeline'), async (req
     }
 });
 
-// DELETE /api/clientes/:id (soft delete)
+// DELETE /api/clientes/:id/hard (hard delete irreversível)
+router.delete('/:id/hard', async (req, res) => {
+    try {
+        await pool.query(
+            'DELETE FROM clientes WHERE id=$1 AND consultora_id=$2',
+            [req.params.id, req.consultora.id]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao excluir cliente.' });
+    }
+});
+
+// DELETE /api/clientes/:id (soft delete/arquivar)
 router.delete('/:id', async (req, res) => {
     try {
         await pool.query(

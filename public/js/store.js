@@ -194,6 +194,10 @@ export const store = {
         const actualId = id !== undefined ? id : _cidOrId;
         return api('DELETE', `/api/clientes/${actualId}`);
     },
+    async deleteClientHard(_cidOrId, id) {
+        const actualId = id !== undefined ? id : _cidOrId;
+        return api('DELETE', `/api/clientes/${actualId}/hard`);
+    },
 
     /* ---- ANAMNESES ---- */
     async getAnamneses(_cid) {

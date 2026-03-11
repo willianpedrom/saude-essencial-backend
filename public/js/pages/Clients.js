@@ -161,7 +161,7 @@ export async function renderClients(router) {
             onOpen: () => {
               document.getElementById('btn-hard-delete')?.addEventListener('click', async () => {
                 try {
-                  await store.deleteClient(client.id);
+                  await store.deleteClientHard(client.id);
                   toast(`${clientName} excluído permanentemente.`, 'warning');
                   await refresh();
                   // close modal
@@ -173,7 +173,7 @@ export async function renderClients(router) {
             },
             onConfirm: async () => {
               try {
-                await store.updateClient(client.id, { status: 'inactive' });
+                await store.deleteClient(client.id);
                 toast(`${clientName} arquivado. Você pode reativá-lo a qualquer momento.`, 'warning');
                 await refresh();
               } catch (e) {
