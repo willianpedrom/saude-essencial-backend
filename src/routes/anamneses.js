@@ -118,12 +118,13 @@ router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) 
         }
 
         // 3. Extract personal data
-        const nome = dados.full_name || dados.nome || 'Cliente';
-        const email = dados.email || null;
-        const telefone = dados.phone || dados.telefone || null;
-        const data_nasc = (dados.birthdate && dados.birthdate.length > 5) ? dados.birthdate : null;
-        const cidade = dados.city || dados.cidade || null;
-        const genero = dados.gender || dados.genero || null; // 'masculino' or 'feminino' from the form
+        const pData = dados.personal || dados || {}; // Fallback for old/flat structures
+        const nome = pData.full_name || pData.nome || 'Cliente';
+        const email = pData.email || null;
+        const telefone = pData.phone || pData.telefone || null;
+        const data_nasc = (pData.birthdate && pData.birthdate.length > 5) ? pData.birthdate : null;
+        const cidade = pData.city || pData.cidade || null;
+        const genero = pData.gender || pData.genero || 'feminino'; // 'masculino' or 'feminino' from the form
 
         // 4. Upsert client — match by name similarity + (email OR phone)
         // Using name matching prevents treating different people sharing the same
