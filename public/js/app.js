@@ -4,26 +4,7 @@
 
 import { auth } from './store.js';
 import { Router, setupGlobalShortcuts } from './utils.js';
-import { renderLogin, renderResetPassword } from './pages/Login.js';
-import { renderDashboard } from './pages/Dashboard.js';
-import { renderClients } from './pages/Clients.js';
-import { renderLinks } from './pages/Links.js';
-import { renderSchedule, renderFollowup } from './pages/Schedule.js';
-import { renderTestimonials, renderPurchases } from './pages/Extras.js';
-import { renderPublicAnamnesis } from './pages/PublicAnamnesis.js';
-import { renderPublicTestimonial } from './pages/PublicTestimonial.js';
-import { renderPublicProfile } from './pages/PublicProfile.js';
-import { renderReport } from './pages/Report.js';
-import { renderBusinessReport } from './pages/BusinessReport.js';
-import { renderAnamnesisList } from './pages/Anamneses.js';
-import { renderAssinatura } from './pages/Assinatura.js';
-import { renderProfile } from './pages/Profile.js';
-import { renderAdmin } from './pages/Admin.js';
-import { renderPipeline } from './pages/Pipeline.js';
-import { renderIntegrations } from './pages/Integracoes.js';
-import { renderLandingPage } from './pages/LandingPage.js';
-
-// Boot
+// Pages are now dynamically imported in the router// Boot
 auth.init();
 setupGlobalShortcuts();
 
@@ -49,32 +30,103 @@ window.addEventListener('subscription:required', () => {
 
 // Routes
 const router = new Router({
-    '/': (p) => auth.isLoggedIn ? router.navigate('/dashboard') : renderLogin(router),
-    '/dashboard': guard(() => renderDashboard(router)),
-    '/clients': guard(() => renderClients(router)),
-    '/links': guard(() => renderLinks(router)),
-    '/anamnesis': guard(() => renderAnamnesisList(router)),
-    '/schedule': guard(() => renderSchedule(router)),
-    '/followup': guard(() => renderFollowup(router)),
-    '/testimonials': guard(() => renderTestimonials(router)),
-    '/purchases': guard(() => renderPurchases(router)),
-    '/assinatura': guard(() => renderAssinatura(router)),
-    '/profile': guard(() => renderProfile(router)),
-    '/admin': guard(() => renderAdmin(router)),
-    '/pipeline': guard(() => renderPipeline(router)),
-    '/integrations': guard(() => renderIntegrations(router)),
+    '/': async (p) => {
+        if (auth.isLoggedIn) return router.navigate('/dashboard');
+        const { renderLogin } = await import('./pages/Login.js');
+        renderLogin(router);
+    },
+    '/dashboard': guard(async () => {
+        const { renderDashboard } = await import('./pages/Dashboard.js');
+        renderDashboard(router);
+    }),
+    '/clients': guard(async () => {
+        const { renderClients } = await import('./pages/Clients.js');
+        renderClients(router);
+    }),
+    '/links': guard(async () => {
+        const { renderLinks } = await import('./pages/Links.js');
+        renderLinks(router);
+    }),
+    '/anamnesis': guard(async () => {
+        const { renderAnamnesisList } = await import('./pages/Anamneses.js');
+        renderAnamnesisList(router);
+    }),
+    '/schedule': guard(async () => {
+        const { renderSchedule } = await import('./pages/Schedule.js');
+        renderSchedule(router);
+    }),
+    '/followup': guard(async () => {
+        const { renderFollowup } = await import('./pages/Schedule.js');
+        renderFollowup(router);
+    }),
+    '/testimonials': guard(async () => {
+        const { renderTestimonials } = await import('./pages/Extras.js');
+        renderTestimonials(router);
+    }),
+    '/purchases': guard(async () => {
+        const { renderPurchases } = await import('./pages/Extras.js');
+        renderPurchases(router);
+    }),
+    '/assinatura': guard(async () => {
+        const { renderAssinatura } = await import('./pages/Assinatura.js');
+        renderAssinatura(router);
+    }),
+    '/profile': guard(async () => {
+        const { renderProfile } = await import('./pages/Profile.js');
+        renderProfile(router);
+    }),
+    '/admin': guard(async () => {
+        const { renderAdmin } = await import('./pages/Admin.js');
+        renderAdmin(router);
+    }),
+    '/pipeline': guard(async () => {
+        const { renderPipeline } = await import('./pages/Pipeline.js');
+        renderPipeline(router);
+    }),
+    '/integrations': guard(async () => {
+        const { renderIntegrations } = await import('./pages/Integracoes.js');
+        renderIntegrations(router);
+    }),
 
     // Public routes (no auth required)
-    '/anamnese/:token': ({ token }) => renderPublicAnamnesis(router, token),
-    '/protocolo': (params) => renderReport(router, params?.data),
-    '/business-report': (params) => renderBusinessReport(router, params?.data),
-    '/depoimento/:slug': ({ slug }) => renderPublicTestimonial(router, slug),
-    '/p/:slug': ({ slug }) => renderPublicProfile(router, slug),
-    '/vendas': () => renderLandingPage(router),
-    'vendas': () => renderLandingPage(router),
-    '/reset-password': () => renderResetPassword(router),
+    '/anamnese/:token': async ({ token }) => {
+        const { renderPublicAnamnesis } = await import('./pages/PublicAnamnesis.js');
+        renderPublicAnamnesis(router, token);
+    },
+    '/protocolo': async (params) => {
+        const { renderReport } = await import('./pages/Report.js');
+        renderReport(router, params?.data);
+    },
+    '/business-report': async (params) => {
+        const { renderBusinessReport } = await import('./pages/BusinessReport.js');
+        renderBusinessReport(router, params?.data);
+    },
+    '/depoimento/:slug': async ({ slug }) => {
+        const { renderPublicTestimonial } = await import('./pages/PublicTestimonial.js');
+        renderPublicTestimonial(router, slug);
+    },
+    '/p/:slug': async ({ slug }) => {
+        const { renderPublicProfile } = await import('./pages/PublicProfile.js');
+        renderPublicProfile(router, slug);
+    },
+    '/vendas': async () => {
+        const { renderLandingPage } = await import('./pages/LandingPage.js');
+        renderLandingPage(router);
+    },
+    'vendas': async () => {
+        const { renderLandingPage } = await import('./pages/LandingPage.js');
+        renderLandingPage(router);
+    },
+    '/reset-password': async () => {
+        const { renderResetPassword } = await import('./pages/Login.js');
+        renderResetPassword(router);
+    },
 
-    '*': () => auth.isLoggedIn ? router.navigate('/dashboard') : renderLogin(router),
+    '*': async () => {
+        if (auth.isLoggedIn) return router.navigate('/dashboard');
+        const { renderLogin } = await import('./pages/Login.js');
+        renderLogin(router);
+    },
 });
 
 (async () => {
