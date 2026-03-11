@@ -1,13 +1,21 @@
 const express = require('express');
 const pool = require('../db/pool');
+const NodeCache = require('node-cache');
 
 const router = express.Router();
+const cache = new NodeCache({ stdTTL: 180 }); // 3 minutos (Absorve dezenas de acessos em massa, sem engessar a edição)
 
 // GET /api/publico/perfil/:slug
 // Public consultant profile — no auth required
 router.get('/perfil/:slug', async (req, res) => {
     try {
-        // 1. Fetch consultant's public data
+        const slug = req.params.slug;
+        const cacheKey = `perfil_${slug}`;
+        
+        let responseData = cache.get(cacheKey);
+
+        if (!responseData) {
+            // 1. Fetch consultant's public data
         const { rows: consultorRows } = await pool.query(
             `SELECT id, nome, foto_url, bio, slug, telefone, genero,
               instagram, youtube, facebook, linkedin, doterra_nivel,
@@ -38,24 +46,6 @@ router.get('/perfil/:slug', async (req, res) => {
         );
         const anamnese_token = anamneseRows[0]?.token_publico || null;
 
-        // 4. Fire Meta CAPI ViewContent (page view on public profile - non-blocking)
-        try {
-            const tracking = consultor.rastreamento || {};
-            if (tracking.meta_pixel_id && tracking.meta_pixel_token) {
-                const { sendMetaEvent } = require('../lib/metaCapi');
-                sendMetaEvent(
-                    tracking.meta_pixel_id,
-                    tracking.meta_pixel_token,
-                    'ViewContent',
-                    {
-                        clientIp: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
-                        userAgent: req.headers['user-agent'],
-                        pageUrl: req.headers.referer,
-                    }
-                ).catch(() => { });
-            }
-        } catch { /* never block */ }
-
         // Return public data (exclude private fields like CAPI token, internal id)
         const { rastreamento, id: _id, ...publicConsultor } = consultor;
 
@@ -77,12 +67,39 @@ router.get('/perfil/:slug', async (req, res) => {
             [consultor.id]
         );
 
-        res.json({
+        responseData = {
             consultor: { ...publicConsultor, rastreamento: safeTracking },
             depoimentos,
             anamnese_token,
-            links: linksPublicos
-        });
+            links: linksPublicos,
+            _trackingOrig: rastreamento // Salva internamente para o metaCapi
+        };
+
+        // Salva no cache
+        cache.set(cacheKey, responseData);
+        } // End if (!responseData)
+
+        // 6. Fire Meta CAPI ViewContent (always fire, even if data comes from cache)
+        try {
+            const tracking = responseData._trackingOrig || {};
+            if (tracking.meta_pixel_id && tracking.meta_pixel_token) {
+                const { sendMetaEvent } = require('../lib/metaCapi');
+                sendMetaEvent(
+                    tracking.meta_pixel_id,
+                    tracking.meta_pixel_token,
+                    'ViewContent',
+                    {
+                        clientIp: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                        userAgent: req.headers['user-agent'],
+                        pageUrl: req.headers.referer,
+                    }
+                ).catch(() => { });
+            }
+        } catch { /* never block */ }
+
+        // Sanitize return (remove _trackingOrig)
+        const { _trackingOrig, ...finalResponse } = responseData;
+        res.json(finalResponse);
     } catch (err) {
         console.error('[publico]', err);
         res.status(500).json({ error: 'Erro ao carregar perfil.' });
