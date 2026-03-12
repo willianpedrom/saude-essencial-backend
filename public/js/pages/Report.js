@@ -15,6 +15,7 @@ export async function renderReport(router, dataParam, hash = null) {
           answers: data.dados,
           protocolo_customizado: data.protocolo_customizado,
           clientId: data.cliente_id,
+          consultora_token_anamnese: data.consultora_token_anamnese,
           consultant: {
              name: data.consultora_nome,
              genero: data.consultora_genero,
