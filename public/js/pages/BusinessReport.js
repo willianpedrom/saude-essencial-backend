@@ -115,22 +115,6 @@ export function renderBusinessReport(router, dataParam) {
             <div style="text-align:center;margin-top:12px;font-size:0.85rem;color:#3b82f6;">Reunião gratuita e sem compromisso via WhatsApp.</div>
           </div>
 
-          <!-- Compartilhar e Imprimir -->
-          <div class="report-share-actions" style="border-top: 1px solid #e2e8f0; padding-top: 32px;">
-            <h4 style="color:#1e293b;margin-top:0;margin-bottom:20px;font-size:1.05rem;text-align:center">Que tal indicar esse teste para amigos?</h4>
-            <div style="display:flex;flex-direction:column;gap:12px;max-width: 400px;margin: 0 auto;">
-              
-              <button id="btn-share-whatsapp" style="width:100%;font-size:1rem;padding:14px;background:#25d366;border:none;border-radius:8px;color:white;cursor:pointer;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;transition: opacity 0.2s">
-                <span style="font-size:1.2rem">💬</span> Compartilhar via WhatsApp
-              </button>
-              
-              <button id="btn-share-link" style="width:100%;font-size:1rem;padding:14px;background:white;border:1px solid #cbd5e1;border-radius:8px;color:#475569;cursor:pointer;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;transition: background 0.2s">
-                🔗 Copiar o Link do Teste
-              </button>
-
-            </div>
-          </div>
-
           <!-- Imprimir -->
           <div style="text-align:center;color:#999;font-size:0.85rem;margin-top:40px">
             <a href="#" class="btn-print" onclick="window.print();return false" style="color:#64748b;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition: color 0.2s">
@@ -156,7 +140,7 @@ export function renderBusinessReport(router, dataParam) {
 
     <style>
       @media print {
-        .report-cta-box, .report-share-actions, .btn-print, .report-consultant-footer { display: none !important; }
+        .report-cta-box, .btn-print, .report-consultant-footer { display: none !important; }
         .report-page { background: white !important; padding: 0 !important; margin:0 !important; }
         .report-card { box-shadow: none !important; margin:0 !important; border:none !important; border-radius:0 !important; }
         .report-header { background: #1e293b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border-radius: 0 !important;}
@@ -164,8 +148,6 @@ export function renderBusinessReport(router, dataParam) {
       }
       .btn-print:hover { color: #1e293b !important; }
       #btn-schedule:hover { transform: translateY(-2px); }
-      #btn-share-whatsapp:hover { opacity: 0.9; }
-      #btn-share-link:hover { background: #f1f5f9 !important; }
     </style>`;
 
   // Ação de Agendar com o Consultor
@@ -177,23 +159,5 @@ export function renderBusinessReport(router, dataParam) {
       "Gostaria de agendar a reunião estratégica gratuita."
     );
     window.open("https://wa.me/55" + consultant.phone?.replace(/\\D/g, '') + "?text=" + text, '_blank');
-  });
-
-  // Ação de Compartilhar para Amigos (WhatsApp)
-  document.getElementById('btn-share-whatsapp')?.addEventListener('click', () => {
-    const linkUrl = consultant.link || window.location.href;
-    const shareText = encodeURIComponent(
-      "Você sabia que existe um tipo de perfil ideal para começar um negócio próprio sem abandonar sua profissão? 🤔\n\n" +
-      "Eu acabei de descobrir o meu Arquétipo Empreendedor e achei sensacional! Faça a sua análise gratuita e rápida aqui embaixo:\n\n" +
-      linkUrl
-    );
-    window.open("https://wa.me/?text=" + shareText, '_blank');
-  });
-
-  // Ação de Copiar Link
-  document.getElementById('btn-share-link')?.addEventListener('click', async () => {
-    const linkUrl = consultant.link || window.location.href;
-    const { copyToClipboard } = await import('../utils.js');
-    copyToClipboard(linkUrl, document.getElementById('btn-share-link'));
   });
 }
