@@ -637,11 +637,17 @@ export function openClientOffcanvas(client) {
              // Lógica legada para abrir o PDF na tela da Consultora
              const freshAnamneses = await import('./store.js').then(m => m.store.getClientAnamneses(client.id)).catch(() => []);
              const freshA = freshAnamneses.find(x => x.id === a.id) || a;
-
+             const { auth } = await import('./store.js');
+             const consultantObj = auth.current;
              const rawPayload = JSON.stringify({
                  answers: freshA.dados || {},
                  protocolo_customizado: freshA.protocolo_customizado,
-                 consultant: { name: 'Consultor CRM', genero: 'Consultora', phone: '' },
+                 consultant: { 
+                     name: consultantObj?.nome || consultantObj?.name, 
+                     slug: consultantObj?.slug, 
+                     phone: consultantObj?.telefone || consultantObj?.phone, 
+                     genero: consultantObj?.genero 
+                 },
                  clientName: client.nome || 'Cliente',
                  clientId: client.id
              });
