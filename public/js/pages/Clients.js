@@ -384,6 +384,7 @@ export async function renderClients(router) {
       ? JSON.parse(JSON.stringify(existingCustom.protocols))
       : protocols.map(p => ({ symptom: p.symptom, icon: p.icon || '🌿', oils: [...(p.oils || [])] }));
     let customNotes = existingCustom?.customNotes || analysisResultados;
+    let customMessage = existingCustom?.customMessage || '';
 
     function oilChip(oil, pIdx, oIdx) {
       return `<span style="display:inline-flex;align-items:center;gap:4px;background:#dcfce7;color:#166534;border-radius:20px;padding:4px 10px;font-size:0.78rem;font-weight:600;margin:3px">
@@ -437,9 +438,17 @@ export async function renderClients(router) {
             <button id="pe-add" style="background:#166534;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap">➕ Adicionar</button>
           </div>
         </div>
-        <div style="margin-top:14px">
-          <label style="font-weight:600;font-size:0.85rem;color:#1e293b;display:block;margin-bottom:6px">📝 Texto do Resultado Esperado (visível apenas para você):</label>
-          <textarea id="pe-notes" rows="3" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical;box-sizing:border-box">${customNotes || ''}</textarea>
+        <div style="margin-top:20px;display:flex;flex-direction:column;gap:16px;">
+          <div>
+            <label style="font-weight:600;font-size:0.85rem;color:#1e293b;display:flex;align-items:center;margin-bottom:6px;gap:6px">
+               <span>Mensagem no Protocolo (Visível ao Cliente)</span> <span style="font-size:0.85rem">🌿</span>
+            </label>
+            <textarea id="pe-message" placeholder="Digite uma recomendação personalizada que aparecerá em destaque no PDF do protocolo..." rows="3" style="width:100%;padding:10px;border-radius:8px;border:1px solid #16a34a;font-size:0.84rem;resize:vertical;box-sizing:border-box;background:#f0fdf4">${customMessage || ''}</textarea>
+          </div>
+          <div>
+            <label style="font-weight:600;font-size:0.85rem;color:#1e293b;display:block;margin-bottom:6px">📝 Texto do Resultado Esperado (visível apenas para você):</label>
+            <textarea id="pe-notes" rows="3" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical;box-sizing:border-box">${customNotes || ''}</textarea>
+          </div>
         </div>`;
 
       // Remove oil
@@ -479,8 +488,9 @@ export async function renderClients(router) {
         render();
       });
 
-      // Sync notes
+      // Sync notes & messaging
       body.querySelector('#pe-notes')?.addEventListener('input', e => { customNotes = e.target.value; });
+      body.querySelector('#pe-message')?.addEventListener('input', e => { customMessage = e.target.value; });
     }
 
     render();
@@ -490,12 +500,13 @@ export async function renderClients(router) {
     overlay.querySelector('#pe-cancel').addEventListener('click', close);
     overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
 
-    overlay.querySelector('#pe-save').addEventListener('click', async () => {
-      const btn = overlay.querySelector('#pe-save');
+    overlay.querySelector('#pe-save').addEventListener('click', async (e) => {
+      const btn = e.target;
       btn.disabled = true; btn.textContent = '⏳ Salvando…';
       customNotes = overlay.querySelector('#pe-notes')?.value || customNotes;
+      customMessage = overlay.querySelector('#pe-message')?.value || customMessage;
       try {
-        await store.saveCustomProtocol(anamnese.id, { protocols: editProtocols, customNotes });
+        await store.saveCustomProtocol(anamnese.id, { protocols: editProtocols, customNotes, customMessage });
         toast('✅ Protocolo personalizado salvo!', 'success');
         // Store in anamnese object so re-opening the editor shows the saved state
         anamnese.protocolo_customizado = { protocols: editProtocols, customNotes };
@@ -644,12 +655,6 @@ export async function renderClients(router) {
           </select>
         </div>
         <div class="form-group form-field-full">
-          <label class="field-label" style="display:flex;align-items:center;gap:6px">
-             <span>Mensagem no Protocolo (Visível ao Cliente)</span> <span style="font-size:0.8rem">🌿</span>
-          </label>
-          <textarea class="field-textarea" id="m-protocolo-mensagem" placeholder="Digite uma mensagem ou recomendação personalizada que aparecerá em destaque no protocolo online gerado..." style="min-height:80px;border-color:#16a34a">${client?.protocolo_mensagem || ''}</textarea>
-        </div>
-        <div class="form-group form-field-full">
           <label class="field-label">Observações Internas</label>
           <textarea class="field-textarea" id="m-notes">${client?.notes || ''}</textarea>
         </div>
@@ -664,7 +669,6 @@ export async function renderClients(router) {
           city: document.getElementById('m-city').value.trim(),
           genero: document.getElementById('m-genero').value,
           status: document.getElementById('m-status').value,
-          protocolo_mensagem: document.getElementById('m-protocolo-mensagem').value.trim(),
           notes: document.getElementById('m-notes').value.trim(),
         };
         if (!data.name) { toast('Nome é obrigatório', 'error'); return; }

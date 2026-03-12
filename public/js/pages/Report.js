@@ -98,14 +98,14 @@ export function renderReport(router, dataParam) {
           </p>
         </div>
 
-        ${payload.clientMessage ? `
+        ${(payload.protocolo_customizado?.customMessage || payload.clientMessage) ? `
         <!-- RECADO DA CONSULTORA -->
         <div style="background:#fdfcf8;border: 1px solid #e5e7eb;border-top: 4px solid #2d5016;padding:20px;margin-bottom:24px;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05)">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
             <div style="width:32px;height:32px;border-radius:50%;background:#e8f5e9;color:#2d5016;display:flex;align-items:center;justify-content:center;font-size:1.1rem">💬</div>
-            <strong style="color:#2d5016;font-size:1rem">Recado da sua Consultora</strong>
+            <strong style="color:#2d5016;font-size:1rem">Recomendação Exclusiva da sua Consultora</strong>
           </div>
-          <div style="font-size:0.9rem;color:#4b5563;line-height:1.6;white-space:pre-wrap;font-style:italic">"${payload.clientMessage}"</div>
+          <div style="font-size:0.9rem;color:#4b5563;line-height:1.6;white-space:pre-wrap;font-style:italic">"${payload.protocolo_customizado?.customMessage || payload.clientMessage}"</div>
           <div style="text-align:right;margin-top:10px;font-size:0.8rem;color:#6b7280;font-weight:600">— ${consultant.name?.split(' ')[0] || cTitle}</div>
         </div>
         ` : ''}
