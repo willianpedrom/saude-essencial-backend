@@ -430,10 +430,10 @@ export async function renderClients(router) {
               <option value="">Protocolo…</option>
               ${editProtocols.map((p, i) => `<option value="${i}">${p.icon} ${p.symptom}</option>`).join('')}
             </select>` : ''}
-            <select id="pe-sel-o" style="flex:2;min-width:160px;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.82rem">
-              <option value="">Selecione o óleo…</option>
-              ${allOils.map(o => `<option value="${encodeURIComponent(JSON.stringify({name:o.name,fn:o.fn||''}))}">${o.name}${o.fn ? ` — ${o.fn}` : ''}</option>`).join('')}
-            </select>
+            <input list="pe-datalist-o" id="pe-sel-o" placeholder="Buscar produto..." autocomplete="off" style="flex:2;min-width:160px;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.82rem">
+            <datalist id="pe-datalist-o">
+              ${allOils.map(o => `<option value="${o.name}${o.fn ? ` — ${o.fn}` : ''}"></option>`).join('')}
+            </datalist>
             <button id="pe-add" style="background:#166534;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap">➕ Adicionar</button>
           </div>
         </div>
@@ -455,15 +455,27 @@ export async function renderClients(router) {
         const pSel = body.querySelector('#pe-sel-p');
         const oSel = body.querySelector('#pe-sel-o');
         const pIdx = pSel ? parseInt(pSel.value) : 0;
-        const oRaw = oSel?.value;
-        if (!oRaw) { toast('Selecione um óleo.', 'warning'); return; }
+        const oVal = oSel?.value?.trim();
+        
+        if (!oVal) { toast('Digite ou selecione um produto.', 'warning'); return; }
         if (!editProtocols[pIdx]) { toast('Selecione o protocolo.', 'warning'); return; }
-        const oil = JSON.parse(decodeURIComponent(oRaw));
+        
+        // Find oil matching the input value exactly
+        const matchedOil = allOils.find(o => `${o.name}${o.fn ? ` — ${o.fn}` : ''}` === oVal || o.name === oVal);
+        if (!matchedOil) {
+          toast('Produto não encontrado no catálogo.', 'warning'); return;
+        }
+
+        const oil = { name: matchedOil.name, fn: matchedOil.fn };
+
         if (editProtocols[pIdx].oils.find(o => o.name === oil.name)) {
           toast(`${oil.name} já está nesse protocolo.`, 'info'); return;
         }
         editProtocols[pIdx].oils.push(oil);
         toast(`${oil.name} adicionado! 🌿`, 'success');
+        
+        // Clear input after adding
+        if (oSel) oSel.value = '';
         render();
       });
 
