@@ -34,10 +34,9 @@ router.get('/', async (req, res) => {
 
         const cols = `c.id, c.nome, c.email, c.telefone, c.cpf, c.data_nascimento, c.genero, c.cidade, c.notas, c.ativo, c.status,
                    c.pipeline_stage, c.pipeline_notas, c.motivo_perda,
-                   c.recrutamento_stage, c.recrutamento_notas, c.motivo_perda_recrutamento, c.tipo_cadastro, c.protocolo_mensagem, c.criado_em,
-                   c.indicado_por_id, i.nome AS indicador_nome`;
+                   c.recrutamento_stage, c.recrutamento_notas, c.motivo_perda_recrutamento, c.tipo_cadastro, c.protocolo_mensagem, c.criado_em`;
         
-        const fromJoins = `FROM clientes c LEFT JOIN clientes i ON c.indicado_por_id = i.id`;
+        const fromJoins = `FROM clientes c`;
 
         // Paginação opcional: ?page=1&limit=50
         // Sem os parâmetros, retorna tudo (retrocompatível)
@@ -73,7 +72,7 @@ router.get('/', async (req, res) => {
         );
         res.json(rows);
     } catch (err) {
-        console.error(err);
+        console.error('[ERRO FATAL CRÍTICO LISTAGEM]', err.message, err.stack);
         res.status(500).json({ error: 'Erro ao buscar clientes.' });
     }
 });
