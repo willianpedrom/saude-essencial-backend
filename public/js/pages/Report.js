@@ -1,21 +1,47 @@
 import { analyzeAnamnesis, PROTOCOLS, OILS_DATABASE, LIVING_KIT } from '../data.js';
 import { getConsultantTitle } from '../utils.js';
 
-export function renderReport(router, dataParam) {
+export async function renderReport(router, dataParam, hash = null) {
   const app = document.getElementById('app');
   let payload;
-  try {
-    const storedData = sessionStorage.getItem('tempAnamnesisPayload');
-    if (storedData) {
-      payload = JSON.parse(storedData);
-      sessionStorage.removeItem('tempAnamnesisPayload');
-    } else {
-      payload = JSON.parse(decodeURIComponent(dataParam || '{}'));
-    }
-  } catch {
-    app.innerHTML = `<div class="report-page"><div class="report-card" style="text-align:center;padding:60px">
-      <div style="font-size:3rem">😕</div><h2>Erro de Dados ou Sessão Expirada</h2><p>Tente preencher o formulário novamente.</p><br><button onclick="window.location.reload()" style="padding:10px 20px;background:#3b82f6;color:white;border:none;border-radius:8px">Recarregar Formulário</button></div></div>`;
-    return;
+
+  if (hash) {
+     app.innerHTML = '<div style="padding:60px;text-align:center">Buscando Laudo...</div>';
+     try {
+       const res = await fetch('/api/anamneses/laudo/public/' + hash);
+       if (!res.ok) throw new Error();
+       const data = await res.json();
+       payload = {
+          answers: data.dados,
+          protocolo_customizado: data.protocolo_customizado,
+          clientId: data.cliente_id,
+          consultant: {
+             name: data.consultora_nome,
+             genero: data.consultora_genero,
+             phone: data.consultora_telefone,
+             link: data.consultora_link_afiliada
+          },
+          clientName: data.dados?.personal?.full_name || data.dados?.personal?.nome || data.dados?.nome || 'Você',
+       };
+     } catch(e) {
+       app.innerHTML = `<div class="report-page"><div class="report-card" style="text-align:center;padding:60px">
+         <div style="font-size:3rem">😕</div><h2>Laudo Indisponível</h2><p>O link foi desativado ou não existe.</p></div></div>`;
+       return;
+     }
+  } else {
+     try {
+       const storedData = sessionStorage.getItem('tempAnamnesisPayload');
+       if (storedData) {
+         payload = JSON.parse(storedData);
+         sessionStorage.removeItem('tempAnamnesisPayload');
+       } else {
+         payload = JSON.parse(decodeURIComponent(dataParam || '{}'));
+       }
+     } catch {
+       app.innerHTML = `<div class="report-page"><div class="report-card" style="text-align:center;padding:60px">
+         <div style="font-size:3rem">😕</div><h2>Erro de Dados ou Sessão Expirada</h2><p>Tente preencher o formulário novamente.</p><br><button onclick="window.location.reload()" style="padding:10px 20px;background:#3b82f6;color:white;border:none;border-radius:8px">Recarregar Formulário</button></div></div>`;
+       return;
+     }
   }
 
   const { answers = {}, consultant = {}, clientName = 'você' } = payload;

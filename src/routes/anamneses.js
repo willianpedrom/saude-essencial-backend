@@ -260,9 +260,28 @@ router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) 
 });
 
 
+// GET /api/anamneses/laudo/public/:hash  (Public Laudo view)
+router.get('/laudo/public/:hash', async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            `SELECT a.id, a.dados, a.protocolo_customizado, a.cliente_id,
+              c.nome AS consultora_nome, c.genero AS consultora_genero,
+              c.telefone AS consultora_telefone, c.link_afiliada AS consultora_link_afiliada
+             FROM anamneses a
+             JOIN consultoras c ON c.id = a.consultora_id
+             WHERE a.hash_laudo = $1`,
+            [req.params.hash]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Laudo não encontrado ou indisponível.' });
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao buscar laudo.' });
+    }
+});
+
 // ─── PRIVATE ROUTES ────────────────────────────────────────────────────────
 router.use(auth, checkSub);
-
 // GET /api/anamneses
 // Returns: personal UNFILLED links + generic templates with stats
 router.get('/', async (req, res) => {
@@ -495,6 +514,36 @@ router.put('/:id/protocolo', auth, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erro ao salvar protocolo.' });
+    }
+});
+
+// POST /api/anamneses/:id/hash  (Generate or return magic link hash)
+router.post('/:id/hash', auth, async (req, res) => {
+    try {
+        const crypto = require('crypto');
+        
+        // 1. Check if anamnese exists and belongs to consultora
+        const { rows: check } = await pool.query(
+            'SELECT id, hash_laudo FROM anamneses WHERE id = $1 AND consultora_id = $2',
+            [req.params.id, req.consultora.id]
+        );
+        if (check.length === 0) return res.status(404).json({ error: 'Anamnese não encontrada.' });
+        
+        // 2. Return existing hash if already created
+        if (check[0].hash_laudo) {
+            return res.json({ hash: check[0].hash_laudo });
+        }
+        
+        // 3. Generate new hash and save
+        const newHash = crypto.randomBytes(4).toString('hex');
+        const { rows } = await pool.query(
+            'UPDATE anamneses SET hash_laudo = $1 WHERE id = $2 RETURNING hash_laudo',
+            [newHash, req.params.id]
+        );
+        res.json({ hash: rows[0].hash_laudo });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao gerar link de laudo.' });
     }
 });
 

@@ -101,6 +101,10 @@ const router = new Router({
         const { renderReport } = await import('./pages/Report.js');
         renderReport(router, params?.data);
     },
+    '/laudo/:hash': async ({ hash }) => {
+        const { renderReport } = await import('./pages/Report.js');
+        renderReport(router, null, hash);
+    },
     '/business-report': async (params) => {
         const { renderBusinessReport } = await import('./pages/BusinessReport.js');
         renderBusinessReport(router, params?.data);

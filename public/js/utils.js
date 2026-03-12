@@ -619,31 +619,77 @@ export function openClientOffcanvas(client) {
           const bg = isBusiness ? '#eff6ff' : '#f0fdf4';
           const border = isBusiness ? '#bfdbfe' : '#bbf7d0';
 
-          const btn = document.createElement('button');
-          btn.className = 'btn';
-          btn.style.cssText = `width:100%;text-align:left;justify-content:space-between;background:${bg};border:1px solid ${border};color:${color};padding:12px;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;margin-bottom:6px;transition: transform 0.1s`;
-          btn.innerHTML = `<span>${title}</span> <span style="font-size:0.7rem;color:#64748b;font-weight:500;background:rgba(255,255,255,0.8);padding:2px 6px;border-radius:4px">${formatDate(a.criado_em)}</span>`;
+          const divContainer = document.createElement('div');
+          divContainer.style.cssText = `display:flex;flex-direction:column;background:${bg};border:1px solid ${border};border-radius:8px;margin-bottom:8px;overflow:hidden`;
 
-          btn.onclick = async () => {
-            // Busca a anamnese mais recente do banco para se certificar de pegar edições customizadas de última hora
-            const freshAnamneses = await import('./store.js').then(m => m.store.getClientAnamneses(client.id)).catch(() => []);
-            const freshA = freshAnamneses.find(x => x.id === a.id) || a;
+          const headerDiv = document.createElement('div');
+          headerDiv.style.cssText = `display:flex;justify-content:space-between;align-items:center;padding:10px 12px;cursor:pointer;color:${color}`;
+          headerDiv.innerHTML = `<span style="font-weight:600;font-size:0.85rem">${title}</span> <span style="font-size:0.7rem;color:#64748b;font-weight:500;background:rgba(255,255,255,0.8);padding:2px 6px;border-radius:4px">${formatDate(a.criado_em)}</span>`;
 
-            // Prepara o payload cru que as páginas de Dossiê esperam
-            const rawPayload = JSON.stringify({
-              answers: freshA.dados || {},
-              protocolo_customizado: freshA.protocolo_customizado,
-              consultant: { name: 'Consultor CRM', genero: 'Consultora', phone: '' },
-              clientName: client.nome || 'Cliente',
-              clientId: client.id
-            });
-            // Salva na Storage temporário como fizemos p/ submit
-            sessionStorage.setItem('tempAnamnesisPayload', rawPayload);
-            // Abre o laudo em uma nova Aba limpa!
-            const route = isBusiness ? '#/business-report' : '#/protocolo';
-            window.open(window.location.origin + window.location.pathname + route, '_blank');
+          const actionsDiv = document.createElement('div');
+          actionsDiv.style.cssText = `display:flex;border-top:1px solid ${border};`;
+
+          const btnOpen = document.createElement('button');
+          btnOpen.className = 'btn';
+          btnOpen.style.cssText = `flex:1;background:transparent;color:${color};border:none;border-right:1px solid ${border};border-radius:0;font-size:0.75rem;padding:8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px`;
+          btnOpen.innerHTML = `<span>📑 Abrir PDF </span>`;
+          btnOpen.onclick = async () => {
+             // Lógica legada para abrir o PDF na tela da Consultora
+             const freshAnamneses = await import('./store.js').then(m => m.store.getClientAnamneses(client.id)).catch(() => []);
+             const freshA = freshAnamneses.find(x => x.id === a.id) || a;
+
+             const rawPayload = JSON.stringify({
+                 answers: freshA.dados || {},
+                 protocolo_customizado: freshA.protocolo_customizado,
+                 consultant: { name: 'Consultor CRM', genero: 'Consultora', phone: '' },
+                 clientName: client.nome || 'Cliente',
+                 clientId: client.id
+             });
+             sessionStorage.setItem('tempAnamnesisPayload', rawPayload);
+             const route = isBusiness ? '#/business-report' : '#/protocolo';
+             window.open(window.location.origin + window.location.pathname + route, '_blank');
           };
-          dossiesContainer.appendChild(btn);
+
+          const btnLink = document.createElement('button');
+          btnLink.className = 'btn';
+          btnLink.style.cssText = `flex:1;background:transparent;color:#0ea5e9;border:none;border-radius:0;font-size:0.75rem;padding:8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px`;
+          btnLink.innerHTML = `<span>🔗 Mágico Cliente </span>`;
+          btnLink.onclick = async () => {
+             const origText = btnLink.innerHTML;
+             btnLink.innerHTML = '<span>⏳ Gerando...</span>';
+             try {
+                const { auth } = await import('./store.js');
+                const req = await fetch('/api/anamneses/' + a.id + '/hash', {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json',
+                       'Authorization': 'Bearer ' + auth.token
+                   }
+                });
+                const res = await req.json();
+                if(!req.ok) throw new Error(res.error || 'Erro ao gerar Link Mágico');
+
+                const magicUrl = window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
+                await navigator.clipboard.writeText(magicUrl);
+                
+                toast('Link Mágico copiado! Envie para o paciente.', 'success');
+                btnLink.innerHTML = '<span style="color:#10b981">✅ Copiado!</span>';
+             } catch(err) {
+                toast(err.message, 'error');
+                btnLink.innerHTML = '<span style="color:#ef4444">❌ Erro</span>';
+             }
+             setTimeout(() => btnLink.innerHTML = origText, 3000);
+          };
+
+          actionsDiv.appendChild(btnOpen);
+          actionsDiv.appendChild(btnLink);
+          
+          headerDiv.onclick = btnOpen.onclick;
+
+          divContainer.appendChild(headerDiv);
+          divContainer.appendChild(actionsDiv);
+          
+          dossiesContainer.appendChild(divContainer);
         });
       } catch (err) {
         console.error("Erro ao buscar docs", err);
