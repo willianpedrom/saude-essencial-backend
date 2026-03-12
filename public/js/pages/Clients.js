@@ -370,7 +370,8 @@ export async function renderClients(router) {
           consultant: { name: consultant?.nome || consultant?.name, phone: consultant?.telefone || consultant?.phone, genero: consultant?.genero },
           clientName: client.name,
           clientMessage: client.protocolo_mensagem,
-          clientId: client.id
+          clientId: client.id,
+          consultora_token_anamnese: consultant?.link || 'vip'
         });
         
         // Usa sessionStorage para não estourar o limite de URL e garantir leitura única e limpa pelo Report.js

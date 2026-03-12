@@ -15,7 +15,7 @@ export async function renderReport(router, dataParam, hash = null) {
           answers: data.dados,
           protocolo_customizado: data.protocolo_customizado,
           clientId: data.cliente_id,
-          consultora_token_anamnese: data.consultora_token_anamnese || 'vip',
+          consultora_token_anamnese: (data.consultora_token_anamnese && data.consultora_token_anamnese !== 'null' && data.consultora_token_anamnese !== 'undefined') ? data.consultora_token_anamnese : 'vip',
           consultant: {
              name: data.consultora_nome,
              genero: data.consultora_genero,
@@ -308,11 +308,11 @@ export async function renderReport(router, dataParam, hash = null) {
         <div style="background:rgba(255,255,255,0.05);padding:16px;border-radius:8px;border:1px dashed rgba(252, 211, 77, 0.3);margin-bottom:20px;max-width:500px;margin-left:auto;margin-right:auto">
             <div style="font-size:0.85rem;color:#f8fafc;margin-bottom:12px">Seu Link de Convite Exclusivo:</div>
             <div style="display:flex;gap:8px;background:rgba(0,0,0,0.3);padding:8px;border-radius:6px;align-items:center;">
-              <input type="text" readonly value="${(window.location.origin + window.location.pathname + '#/anamnese/' + payload.consultora_token_anamnese)}?ref=${payload.clientId || 'vip'}" style="flex:1;background:transparent;border:none;color:#94a3b8;font-size:0.8rem;outline:none;text-align:center" id="ref-link-input"/>
+              <input type="text" readonly value="${(window.location.origin + window.location.pathname + '#/anamnese/' + (payload.consultora_token_anamnese || 'vip'))}?ref=${payload.clientId || 'vip'}" style="flex:1;background:transparent;border:none;color:#94a3b8;font-size:0.8rem;outline:none;text-align:center" id="ref-link-input"/>
               <button onclick="navigator.clipboard.writeText(document.getElementById('ref-link-input').value); alert('Link copiado!');" style="background:#fcd34d;color:#0f172a;border:none;padding:6px 16px;border-radius:4px;font-size:0.75rem;font-weight:bold;cursor:pointer">Copiar</button>
             </div>
         </div>
-        <a class="report-cta" href="https://wa.me/?text=${encodeURIComponent(`Olha que incrível! Conselheira de Saúde Natural fez uma avaliação completa pra mim e queria te dar de presente pra você fazer também:\n${(window.location.origin + window.location.pathname + '#/anamnese/' + payload.consultora_token_anamnese)}?ref=${payload.clientId || 'vip'}`)}" target="_blank" style="display:inline-block;padding:12px 24px;background:#25d366;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s">
+        <a class="report-cta" href="https://wa.me/?text=${encodeURIComponent(`Olha que incrível! Conselheira de Saúde Natural fez uma avaliação completa pra mim e queria te dar de presente pra você fazer também:\n${(window.location.origin + window.location.pathname + '#/anamnese/' + (payload.consultora_token_anamnese || 'vip'))}?ref=${payload.clientId || 'vip'}`)}" target="_blank" style="display:inline-block;padding:12px 24px;background:#25d366;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s">
           📲 Enviar Convite pelo WhatsApp
         </a>
       </div>
