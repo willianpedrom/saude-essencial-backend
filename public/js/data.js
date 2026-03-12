@@ -257,6 +257,54 @@ export const OILS_DATABASE = {
 
     // ── Suplementos ────────────────────────────────────────────────
     'Beauty Power': { nameEn: 'Beauty Power Collagen Elixir', cat: 'supplement', fn: 'Colágeno VERISOL®, Coenzima Q10, Ácido Hialurônico', uses: 'Cabelo, pele, unhas, celulite, anti-aging interno', topical: 'Não aplicável — uso oral', aromatic: 'Não aplicável' },
+    'VM Complex': { nameEn: 'Microplex VMz', cat: 'supplement', fn: 'Multivitamínico e minerais essenciais', uses: 'Nutrição celular, energia, sistema imunológico', topical: 'Uso oral (cápsulas)', aromatic: 'Não aplicável' },
+    'xEO Mega': { nameEn: 'xEO Mega', cat: 'supplement', fn: 'Complexo de Ômegas e Óleos Essenciais', uses: 'Saúde cardiovascular, cerebral, articular', topical: 'Uso oral (cápsulas)', aromatic: 'Não aplicável' },
+    'MetaPWR Advantage': { nameEn: 'MetaPWR Advantage', cat: 'supplement', fn: 'Colágeno + NMN', uses: 'Longevidade celular, metabolismo, anti-aging', topical: 'Uso oral (sachê)', aromatic: 'Não aplicável' },
+    'MetaPWR FiberUP': { nameEn: 'MetaPWR FiberUP', cat: 'supplement', fn: 'Mix de Fibras Solúveis', uses: 'Saúde intestinal, saciedade, metabolismo', topical: 'Uso oral (sachê)', aromatic: 'Não aplicável' },
+    'TrimShake Vanilla': { nameEn: 'TrimShake Vanilla', cat: 'supplement', fn: 'Shake Nutricional Baunilha', uses: 'Gestão de peso, substituidor de refeição', topical: 'Uso oral', aromatic: 'Não aplicável' },
+    'TrimShake Chocolate': { nameEn: 'TrimShake Chocolate', cat: 'supplement', fn: 'Shake Nutricional Chocolate', uses: 'Gestão de peso, substituidor de refeição', topical: 'Uso oral', aromatic: 'Não aplicável' },
+
+    // ── Cápsulas, Pastilhas e Balas ──────────────────────────────
+    'Adaptiv Pastilhas': { nameEn: 'Adaptiv Capsules', cat: 'supplement', fn: 'Suporte ao estresse e ansiedade', uses: 'Ansiedade crônica, tensão mental, foco', topical: 'Uso oral (cápsula)', aromatic: 'Não aplicável' },
+    'TriEase': { nameEn: 'TriEase Softgels', cat: 'supplement', fn: 'Suporte sazonal e respiratório', uses: 'Alergias sazonais, sensibilidades respiratórias', topical: 'Uso oral (cápsula)', aromatic: 'Não aplicável' },
+    'DDR Prime Cápsulas': { nameEn: 'DDR Prime Softgels', cat: 'supplement', fn: 'Antioxidante e suporte do DNA', uses: 'Proteção celular, radicais livres, suporte sistêmico', topical: 'Uso oral (cápsula)', aromatic: 'Não aplicável' },
+    'On Guard Pastilhas': { nameEn: 'On Guard Chewable', cat: 'supplement', fn: 'Suporte imunológico oral', uses: 'Imunidade, garganta irritada', topical: 'Chover / Mastigar', aromatic: 'Não aplicável' },
+    'On Guard Beadlets': { nameEn: 'On Guard Beadlets', cat: 'supplement', fn: 'Hálito fresco e imunidade diária', uses: 'Proteção imunológica prática, hálito', topical: 'Ingerir ou estourar na boca', aromatic: 'Não aplicável' },
+    'Peppermint Beadlets': { nameEn: 'Peppermint Beadlets', cat: 'supplement', fn: 'Frescor e energia', uses: 'Hálito fresco, energia rápida, digestão leve', topical: 'Ingerir ou estourar na boca', aromatic: 'Não aplicável' },
+    'SuperMint Beadlets': { nameEn: 'SuperMint Beadlets', cat: 'supplement', fn: 'Mix de mentas para frescor e foco', uses: 'Respiração limpa, hálito, energia focal', topical: 'Ingerir ou estourar na boca', aromatic: 'Não aplicável' },
+    'ZenGest Cápsulas': { nameEn: 'ZenGest Softgels', cat: 'supplement', fn: 'Suporte digestivo sistêmico', uses: 'Má digestão, azia, desconforto intestinal', topical: 'Uso oral (cápsula)', aromatic: 'Não aplicável' },
+    'Cúrcuma Cápsulas': { nameEn: 'Turmeric Softgels', cat: 'supplement', fn: 'Anti-inflamatório sistêmico', uses: 'Dores articulares, inflamação celular, cognição', topical: 'Uso oral (cápsula)', aromatic: 'Não aplicável' },
+    'Balas Breathe': { nameEn: 'Breathe Respiratory Drops', cat: 'other', fn: 'Alívio respiratório rápido', uses: 'Garganta irritada, tosse, vias congestionadas', topical: 'Uso oral (chupar)', aromatic: 'Não aplicável' },
+    'Balas Ginger': { nameEn: 'Ginger Drops', cat: 'other', fn: 'Alívio digestivo e enjoo', uses: 'Náusea, digestão, viagens', topical: 'Uso oral (chupar)', aromatic: 'Não aplicável' },
+    'Balas On Guard': { nameEn: 'On Guard Protecting Throat Drops', cat: 'other', fn: 'Defesa e alívio da garganta', uses: 'Garganta inflamada, proteção imunológica', topical: 'Uso oral (chupar)', aromatic: 'Não aplicável' },
+
+    // ── Mais Óleos e Blends ────────────────────────────────────────
+    'Blue Tansy': { nameEn: 'Blue Tansy', cat: 'single', fn: 'Calmante para pele, músculos, emoções', uses: 'Pele irritada, manchas, dores musculares', topical: 'Rosto, áreas afetadas (muita diluição)', aromatic: 'Difusor' },
+    'Cinnamon Bark': { nameEn: 'Cinnamon Bark', cat: 'single', fn: 'Metabolismo, imunidade, aquecedor', uses: 'Metabolismo lento, imunidade baixa, circulação', topical: 'Solas dos pés (diluído)', aromatic: 'Difusor' },
+    'Clary Sage': { nameEn: 'Clary Sage', cat: 'single', fn: 'Equilíbrio hormonal feminino', uses: 'TPM, menopausa, ondas de calor, estresse', topical: 'Baixo ventre, pulsos, nuca', aromatic: 'Difusor' },
+    'ClaryCalm': { nameEn: 'ClaryCalm', cat: 'blend', fn: 'Mix Mensal da Mulher', uses: 'Cólicas, TPM, climatério, humor', topical: 'Baixo ventre, nuca, pulsos (Touch)', aromatic: 'Não é a via principal' },
+    'Elevation': { nameEn: 'Elevation', cat: 'blend', fn: 'Mix de Alegria', uses: 'Tristeza profunda, falta de energia, humor baixo', topical: 'Pulsos, peito', aromatic: 'Difusor' },
+    'InTune': { nameEn: 'InTune', cat: 'blend', fn: 'Mix de Foco', uses: 'Déficit de atenção, estudo, clareza mental', topical: 'Nuca, têmporas (Touch)', aromatic: 'Têmporas' },
+    'Motivate': { nameEn: 'Motivate', cat: 'blend', fn: 'Mix de Motivação', uses: 'Procrastinação, cansaço mental, encorajamento', topical: 'Pulsos, nuca', aromatic: 'Difusor' },
+    'PastTense': { nameEn: 'PastTense', cat: 'blend', fn: 'Mix de Relaxamento para Tensão', uses: 'Enxaqueca, tensão muscular profunda', topical: 'Nuca, ombros, têmporas (Touch)', aromatic: 'Não aplicável' },
+    'Whisper': { nameEn: 'Whisper Touch', cat: 'blend', fn: 'Mix Feminino (Perfume)', uses: 'Perfume pessoal, relaxamento íntimo', topical: 'Pulsos, pescoço', aromatic: 'Pessoal' },
+    'Yarrow|Pom': { nameEn: 'Yarrow|Pom', cat: 'blend', fn: 'Duo Nutritivo Ativo Botânico', uses: 'Anti-aging, manchas, inflamação, vitalidade', topical: 'Rosto e pescoço', aromatic: 'Não aplicável' },
+    'Zendocrine': { nameEn: 'Zendocrine', cat: 'blend', fn: 'Mix de Limpeza (Detox)', uses: 'Detoxificação fígado/rins, limpeza sistêmica', topical: 'Solas dos pés, abdômen', aromatic: 'Difusor, Interno' },
+
+    // ── Cuidados Pessoais e Skincare ──────────────────────────────
+    'Deep Blue Rub': { nameEn: 'Deep Blue Rub', cat: 'personal_care', fn: 'Creme para alívio muscular e articular', uses: 'Dores crônicas, recuperação esportiva, tensão', topical: 'Massagem local profunda', aromatic: 'Não aplicável' },
+    'Creme Dental On Guard': { nameEn: 'On Guard Toothpaste', cat: 'personal_care', fn: 'Creme dental clareador sem flúor', uses: 'Higiene bucal diária, gengivite', topical: 'Uso diário (escovação)', aromatic: 'Não aplicável' },
+    'Enxaguante Bucal On Guard': { nameEn: 'On Guard Mouthwash', cat: 'personal_care', fn: 'Higiene e proteção oral', uses: 'Hálito fresco, saúde gengival', topical: 'Bochecho', aromatic: 'Não aplicável' },
+    'Loção Spa Mãos e Corpo': { nameEn: 'Spa Hand & Body Lotion', cat: 'personal_care', fn: 'Hidratante carreador neutro', uses: 'Pele seca, ótimo para misturar com óleos', topical: 'Todo o corpo', aromatic: 'Não aplicável' },
+    'Sabonete Líquido Spa': { nameEn: 'Spa Refreshing Body Wash', cat: 'personal_care', fn: 'Limpeza corporal revigorante', uses: 'Uso diário no banho', topical: 'Banho', aromatic: 'Aroma relaxante no banho' },
+    'Veráge Kit Skincare': { nameEn: 'Veráge Skin Care Collection', cat: 'personal_care', fn: 'Sistema completo facial anti-aging', uses: 'Limpeza, tonificação e hidratação diária do rosto', topical: 'Rosto', aromatic: 'Não aplicável' },
+
+    // ── Acessórios e Outros ──────────────────────────────────────
+    'Difusor Petal 2.0': { nameEn: 'Petal Diffuser', cat: 'accessory', fn: 'Difusor ultrassônico com luz', uses: 'Aromatização de ambientes de até 30m²', topical: 'Não aplicável', aromatic: 'Ultrassônico' },
+    'Difusor Pebble': { nameEn: 'Pebble Diffuser', cat: 'accessory', fn: 'Difusor portátil e ultrassônico', uses: 'Aromatização de espaços pequenos e viagens', topical: 'Não aplicável', aromatic: 'Ultrassônico' },
+    'Umidificador Dawn': { nameEn: 'Dawn Aroma Humidifier', cat: 'accessory', fn: 'Umidificador de alta capacidade', uses: 'Umidificar e aromatizar ambientes amplos, uso noturno', topical: 'Não aplicável', aromatic: 'Umidificador' },
+    'Caixa de Madeira': { nameEn: 'Wooden Box', cat: 'accessory', fn: 'Organizadora com 25 compartimentos', uses: 'Armazenamento seguro e estético para os óleos', topical: 'Não aplicável', aromatic: 'Não aplicável' },
+    'Óleo de Coco Fracionado': { nameEn: 'Fractionated Coconut Oil', cat: 'accessory', fn: 'Óleo carreador premium', uses: 'Diluição de óleos essenciais para aplicação tópica segura e massagens', topical: 'Carreador Tópico', aromatic: 'Inodoro' },
 };
 
 /* ---- KIT BRASIL LIVING (12 produtos inclusívos) ---- */
