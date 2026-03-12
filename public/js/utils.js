@@ -623,10 +623,15 @@ export function openClientOffcanvas(client) {
           btn.style.cssText = `width:100%;text-align:left;justify-content:space-between;background:${bg};border:1px solid ${border};color:${color};padding:12px;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;margin-bottom:6px;transition: transform 0.1s`;
           btn.innerHTML = `<span>${title}</span> <span style="font-size:0.7rem;color:#64748b;font-weight:500;background:rgba(255,255,255,0.8);padding:2px 6px;border-radius:4px">${formatDate(a.criado_em)}</span>`;
 
-          btn.onclick = () => {
+          btn.onclick = async () => {
+            // Busca a anamnese mais recente do banco para se certificar de pegar edições customizadas de última hora
+            const freshAnamneses = await import('./store.js').then(m => m.store.getClientAnamneses(client.id)).catch(() => []);
+            const freshA = freshAnamneses.find(x => x.id === a.id) || a;
+
             // Prepara o payload cru que as páginas de Dossiê esperam
             const rawPayload = JSON.stringify({
-              answers: a.dados || {},
+              answers: freshA.dados || {},
+              protocolo_customizado: freshA.protocolo_customizado,
               consultant: { name: 'Consultor CRM', genero: 'Consultora', phone: '' },
               clientName: client.nome || 'Cliente'
             });

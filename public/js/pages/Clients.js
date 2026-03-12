@@ -355,16 +355,23 @@ export async function renderClients(router) {
           openProtocolEditor(client, a, protocols, analysisResultados);
         });
       },
-      onConfirm: () => {
+      onConfirm: async () => {
+        // Busca a anamnese mais recente do banco para garantir que o protocolo_customizado salvo há 1 segundo esteja lá
+        const freshAnamneses = await store.getClientAnamneses(client.id).catch(() => []);
+        const freshA = freshAnamneses[0] || a;
+        
         const consultant = auth.current;
-        const encoded = encodeURIComponent(JSON.stringify({
+        const rawPayload = JSON.stringify({
           answers: dados,
-          protocolo_customizado: a.protocolo_customizado,
+          protocolo_customizado: freshA.protocolo_customizado,
           consultant: { name: consultant?.nome || consultant?.name, phone: consultant?.telefone || consultant?.phone, genero: consultant?.genero },
           clientName: client.name,
           clientMessage: client.protocolo_mensagem
-        }));
-        router.navigate('/protocolo', { data: encoded });
+        });
+        
+        // Usa sessionStorage para não estourar o limite de URL e garantir leitura única e limpa pelo Report.js
+        sessionStorage.setItem('tempAnamnesisPayload', rawPayload);
+        router.navigate('/protocolo');
       }
     });
   }

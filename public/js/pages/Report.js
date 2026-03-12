@@ -197,7 +197,7 @@ export function renderReport(router, dataParam) {
           <div style="margin-bottom:12px">
             <strong style="color:#2d5016;font-size:0.9rem">Manhã:</strong>
             <ul style="margin:4px 0 0 16px;font-size:0.85rem;color:#333;line-height:1.8">
-              ${combinedRoutine.morning.slice(0, 5).map(i => `<li>${i}</li>`).join('')}
+              ${combinedRoutine.morning.map(i => `<li>${i}</li>`).join('')}
             </ul>
           </div>` : ''}
 
@@ -205,7 +205,7 @@ export function renderReport(router, dataParam) {
           <div style="margin-bottom:12px">
             <strong style="color:#2d5016;font-size:0.9rem">Tarde:</strong>
             <ul style="margin:4px 0 0 16px;font-size:0.85rem;color:#333;line-height:1.8">
-              ${combinedRoutine.afternoon.slice(0, 5).map(i => `<li>${i}</li>`).join('')}
+              ${combinedRoutine.afternoon.map(i => `<li>${i}</li>`).join('')}
             </ul>
           </div>` : ''}
 
@@ -213,7 +213,7 @@ export function renderReport(router, dataParam) {
           <div style="margin-bottom:12px">
             <strong style="color:#2d5016;font-size:0.9rem">Noite:</strong>
             <ul style="margin:4px 0 0 16px;font-size:0.85rem;color:#333;line-height:1.8">
-              ${combinedRoutine.night.slice(0, 5).map(i => `<li>${i}</li>`).join('')}
+              ${combinedRoutine.night.map(i => `<li>${i}</li>`).join('')}
             </ul>
           </div>` : ''}
         </div>
