@@ -254,7 +254,29 @@ export const OILS_DATABASE = {
     'Salubelle': { nameEn: 'Salubelle', cat: 'blend', fn: 'Anti-aging, regeneração profunda da pele', uses: 'Rugas, manchas, flacidez, pele madura', topical: 'Rosto e pescoço (diluído)', aromatic: 'Não é a via principal' },
     'Veráge': { nameEn: 'Veráge', cat: 'blend', fn: 'Cuidado tópico da pele, rejuvenescimento', uses: 'Pele envelhecida, manchas, hidratação, anti-aging', topical: 'Rosto e pescoço (Touch)', aromatic: 'Não aplicável' },
     'Citrus Bloom': { nameEn: 'Citrus Bloom', cat: 'blend', fn: 'Frescor, feminilidade, energia', uses: 'Bem-estar feminino, frescor, mood positivo', topical: 'Pulsos, pescoço (Touch)', aromatic: 'Difusor' },
+
+    // ── Suplementos ────────────────────────────────────────────────
+    'Beauty Power': { nameEn: 'Beauty Power Collagen Elixir', cat: 'supplement', fn: 'Colágeno VERISOL®, Coenzima Q10, Ácido Hialurônico', uses: 'Cabelo, pele, unhas, celulite, anti-aging interno', topical: 'Não aplicável — uso oral', aromatic: 'Não aplicável' },
 };
+
+/* ---- KIT BRASIL LIVING (12 produtos inclusívos) ---- */
+// Estes são os óleos que compõem o dTERRA® Brasil Living Kit.
+// Em protocolos, eles são exibidos como "Essencial" (a cliente já pode tê-los).
+// Demais óleos aparecem como "Complementar" (próximos passos).
+export const LIVING_KIT = new Set([
+    'Deep Blue',      // dTERRA Deep Blue®
+    'On Guard',       // dTERRA On Guard®
+    'Lavanda',        // Lavender
+    'Lemon',          // Lemon
+    'Peppermint',     // Peppermint
+    'Breathe',        // dTERRA Breathe®
+    'Tea Tree',       // Melaleuca
+    'Frankincense',   // Frankincense (Olíbano)
+    'Tangerina',      // Tangerine
+    'Copaiba',        // Copaiba
+    'Balance',        // dTERRA Balance®
+    'DigestZen',      // ZenGest® (DigestZen no Brasil)
+]);
 
 
 
@@ -906,7 +928,11 @@ export function analyzeAnamnesis(answers) {
     allSymptoms.forEach(symptom => {
         if (PROTOCOLS[symptom]) {
             if (!protocols.find(p => p.symptom === symptom)) {
-                protocols.push({ symptom, ...PROTOCOLS[symptom] });
+                // Sort oils: kit oils first (inKit: true), complementary after (inKit: false)
+                const sortedOils = [...(PROTOCOLS[symptom].oils || [])]
+                    .map(o => ({ ...o, inKit: LIVING_KIT.has(o.name) }))
+                    .sort((a, b) => (b.inKit ? 1 : 0) - (a.inKit ? 1 : 0));
+                protocols.push({ symptom, ...PROTOCOLS[symptom], oils: sortedOils });
             }
         }
     });

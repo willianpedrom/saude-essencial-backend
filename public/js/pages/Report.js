@@ -1,4 +1,4 @@
-import { analyzeAnamnesis, PROTOCOLS, OILS_DATABASE } from '../data.js';
+import { analyzeAnamnesis, PROTOCOLS, OILS_DATABASE, LIVING_KIT } from '../data.js';
 import { getConsultantTitle } from '../utils.js';
 
 export function renderReport(router, dataParam) {
@@ -40,17 +40,20 @@ export function renderReport(router, dataParam) {
   const phone = (consultant.phone || '').replace(/\D/g, '');
   const waPhone = phone.startsWith('55') ? phone : `55${phone}`;
 
-  // Build oils table from all protocols
-  const allOils = [];
+  // Build oils table — split into Kit Living (priority) and Complementary
+  const kitOils = [];
+  const complementOils = [];
   const seenOils = new Set();
   protocols.forEach(p => {
     (p.oils || []).forEach(o => {
       if (!seenOils.has(o.name)) {
         seenOils.add(o.name);
-        allOils.push(o);
+        if (LIVING_KIT.has(o.name)) kitOils.push(o);
+        else complementOils.push(o);
       }
     });
   });
+  const allOils = [...kitOils, ...complementOils]; // keep for backward compat
 
   // Build combined routine
   const combinedRoutine = { morning: [], afternoon: [], night: [] };
@@ -116,26 +119,62 @@ export function renderReport(router, dataParam) {
         </div>
 
         <!-- 2. ÓLEOS E COMPLEMENTOS UTILIZADOS -->
-        ${allOils.length > 0 ? `
+        ${(kitOils.length + complementOils.length) > 0 ? `
         <div style="margin-bottom:24px">
-          <h2 style="font-size:1rem;color:#2d5016;font-weight:700;margin-bottom:8px;border-bottom:2px solid #2d5016;padding-bottom:4px">2. ÓLEOS E COMPLEMENTOS UTILIZADOS</h2>
-          <table style="width:100%;border-collapse:collapse;font-size:0.85rem">
-            <thead>
-              <tr style="background:#f0f7ed">
-                <th style="text-align:left;padding:8px 12px;border:1px solid #ddd;font-weight:600;color:#2d5016">Produto</th>
-                <th style="text-align:left;padding:8px 12px;border:1px solid #ddd;font-weight:600;color:#2d5016">Função Terapêutica</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${allOils.map(o => `
-                <tr>
-                  <td style="padding:8px 12px;border:1px solid #ddd;font-weight:500">${o.name}</td>
-                  <td style="padding:8px 12px;border:1px solid #ddd;color:#555">${o.fn}</td>
+          <h2 style="font-size:1rem;color:#2d5016;font-weight:700;margin-bottom:14px;border-bottom:2px solid #2d5016;padding-bottom:4px">2. PRODUTOS RECOMENDADOS</h2>
+
+          ${kitOils.length > 0 ? `
+          <!-- Kit Living Brasil -->
+          <div style="margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span style="background:#166534;color:white;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.5px">🌿 KIT LIVING BRASIL</span>
+              <span style="font-size:0.78rem;color:#6b7280">Produtos do seu kit inicial</span>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:0.85rem">
+              <thead>
+                <tr style="background:#f0f7ed">
+                  <th style="text-align:left;padding:8px 12px;border:1px solid #c6e5c6;font-weight:600;color:#2d5016">Produto</th>
+                  <th style="text-align:left;padding:8px 12px;border:1px solid #c6e5c6;font-weight:600;color:#2d5016">Função Terapêutica</th>
                 </tr>
-              `).join('')}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                ${kitOils.map(o => `
+                  <tr style="background:#fafff8">
+                    <td style="padding:8px 12px;border:1px solid #d4edda;font-weight:600;color:#166534">✅ ${o.name}</td>
+                    <td style="padding:8px 12px;border:1px solid #d4edda;color:#555">${o.fn}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>` : ''}
+
+          ${complementOils.length > 0 ? `
+          <!-- Complementares -->
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span style="background:#0369a1;color:white;font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.5px">✨ COMPLEMENTARES</span>
+              <span style="font-size:0.78rem;color:#6b7280">Potencializam os resultados</span>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:0.85rem">
+              <thead>
+                <tr style="background:#eff6ff">
+                  <th style="text-align:left;padding:8px 12px;border:1px solid #bfdbfe;font-weight:600;color:#1d4ed8">Produto</th>
+                  <th style="text-align:left;padding:8px 12px;border:1px solid #bfdbfe;font-weight:600;color:#1d4ed8">Função Terapêutica</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${complementOils.map(o => `
+                  <tr>
+                    <td style="padding:8px 12px;border:1px solid #dbeafe;font-weight:500;color:#1e40af">➕ ${o.name}</td>
+                    <td style="padding:8px 12px;border:1px solid #dbeafe;color:#555">${o.fn}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>` : ''}
+
         </div>` : ''}
+
 
         <!-- 3. ROTINA DIÁRIA -->
         <div style="margin-bottom:24px">
