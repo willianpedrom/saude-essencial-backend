@@ -1,6 +1,7 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { formatDate, getInitials, toast, modal, openClientOffcanvas } from '../utils.js';
+import { analyzeAnamnesis } from '../data.js';
 
 let cachedAnamneses = null; // lazy-load once per session
 
@@ -223,6 +224,23 @@ export async function renderClients(router) {
       ...rawDados // fallback
     };
     
+    // Reconstruir objeto aninhado se necessário para garantir a leitura do analyzeAnamnesis
+    const nestedForAnalysis = {
+      personal: { ...dados },
+      health: { general_symptoms: dados.general_symptoms, digestive_symptoms: dados.digestive_symptoms, emotional_symptoms: dados.emotional_symptoms, sleep_symptoms: dados.sleep_symptoms, low_energy_symptoms: dados.low_energy_symptoms, skin_symptoms: dados.skin_symptoms, hair_symptoms: dados.hair_symptoms, chronic_conditions: dados.chronic_conditions },
+      goals: { goals: dados.goals, main_complaint: dados.main_complaint }
+    };
+    
+    let analysisResultados = 'Não foi possível gerar prognóstico automático para este perfil.';
+    try {
+      // Se já vier com rawDados.goals, usa ele (novo formato), caso contrário usa o falso aninhado
+      const anamnesisAnalysis = analyzeAnamnesis(rawDados.goals ? rawDados : nestedForAnalysis);
+      const uniqueResults = [...new Set(anamnesisAnalysis.protocols.map(p => p.expectedResults).filter(Boolean))];
+      if (uniqueResults.length > 0) analysisResultados = uniqueResults.join(' ');
+    } catch (e) {
+      console.error("Erro processando anamnese no modal:", e);
+    }
+
     // Arrays agregados para tags
     const allSymptoms = [
       ...(dados.general_symptoms || []),
@@ -268,6 +286,14 @@ export async function renderClients(router) {
           <p style="font-size:0.85rem;color:#475569;margin-top:4px;background:#f1f5f9;padding:10px;border-radius:8px;white-space:pre-wrap;">${printVal(dados.medications)}</p>
         </div>
 
+        <h4 style="font-size:1rem;color:#0f172a;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;margin-top:20px;">Tratamento & Resultados Clínicos</h4>
+
+        <div style="margin-bottom:12px;background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:8px">
+          <strong style="font-size:0.85rem;color:#166534;display:flex;align-items:center;gap:6px"><span style="font-size:1.1rem">🔓</span> Prognóstico do Sistema (Visão Consultora):</strong>
+          <p style="font-size:0.85rem;color:#15803d;margin-top:6px;line-height:1.5">${analysisResultados}</p>
+          <div style="font-size:0.75rem;color:#16a34a;margin-top:8px;font-style:italic">Este é o texto exato que o sistema gerou, mas que aparece borrado com um 🔒 cadeado para o cliente gerar curiosidade.</div>
+        </div>
+
         <h4 style="font-size:1rem;color:#0f172a;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;margin-top:20px;">Indicadores de Estilo de Vida</h4>
         
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
@@ -307,7 +333,7 @@ export async function renderClients(router) {
         <div style="margin-bottom:16px">
           <strong style="font-size:0.85rem;color:#1e293b;">Objetivos do Cliente:</strong>
           <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
-            ${printTagArray(dados.goals, '#15803d', '#dcfce7')}
+            ${printTagArray(dados.goals?.goals || dados.goals, '#15803d', '#dcfce7')}
           </div>
         </div>
 

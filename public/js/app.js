@@ -40,7 +40,7 @@ const router = new Router({
         renderDashboard(router);
     }),
     '/clients': guard(async () => {
-        const { renderClients } = await import('./pages/Clients.js');
+        const { renderClients } = await import('./pages/Clients.js?v=3');
         renderClients(router);
     }),
     '/links': guard(async () => {
