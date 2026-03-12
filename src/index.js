@@ -234,6 +234,7 @@ async function runMigration() {
         await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS motivo_perda_recrutamento TEXT`);
         await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS tipo_cadastro VARCHAR(30)`);
         await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS protocolo_mensagem TEXT`);
+        await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS indicado_por_id INTEGER REFERENCES clientes(id) ON DELETE SET NULL`);
 
         await pool.query(`ALTER TABLE anamneses ADD COLUMN IF NOT EXISTS protocolo_customizado JSONB`);
         await pool.query(`ALTER TABLE anamneses ADD COLUMN IF NOT EXISTS hash_laudo VARCHAR(20) UNIQUE`);
