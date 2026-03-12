@@ -230,16 +230,18 @@ export function renderReport(router, dataParam) {
 
         <!-- RESULTADOS ESPERADOS (CURIOSITY GAP) -->
         <div style="margin-bottom:24px;position:relative">
-          <h2 style="font-size:1rem;color:#2d5016;font-weight:700;margin-bottom:8px;border-bottom:2px solid #2d5016;padding-bottom:4px">${4 + specificProts.length}. RESULTADOS CLÍNICOS 🔒</h2>
-          <div style="filter:blur(5px);opacity:0.5;pointer-events:none;user-select:none">
+          <h2 style="font-size:1rem;color:#2d5016;font-weight:700;margin-bottom:8px;border-bottom:2px solid #2d5016;padding-bottom:4px">${4 + specificProts.length}. RESULTADOS CLÍNICOS ${payload.protocolo_customizado?.customUnlock ? '' : '🔒'}</h2>
+          <div style="${payload.protocolo_customizado?.customUnlock ? 'padding:12px;background:#f0fdf4;border-radius:12px;border:1px solid #bbf7d0;' : 'filter:blur(5px);opacity:0.5;pointer-events:none;user-select:none'}">
             <p style="font-size:0.85rem;color:#333;line-height:1.6">${payload.protocolo_customizado?.customNotes || expectedResults || 'A restauração completa do seu eixo saúde garantirá uma imunidade alta e estável ao longo de todas as estações do ano.'}</p>
           </div>
+          ${!payload.protocolo_customizado?.customUnlock ? `
           <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:100%">
             <div style="background:rgba(255,255,255,0.95);padding:10px 20px;border-radius:20px;display:inline-block;box-shadow:0 10px 25px rgba(0,0,0,0.1);border:1px solid #ddd">
               <span style="font-size:1.2rem">🔒</span> <strong style="font-size:0.85rem;color:#d97706">Área Restrita</strong>
               <div style="font-size:0.75rem;color:#666;margin-top:2px">Chame sua consultora para liberar a chave do prognóstico.</div>
             </div>
           </div>
+          ` : ''}
         </div>
 
         <!-- Emotional CTA -->

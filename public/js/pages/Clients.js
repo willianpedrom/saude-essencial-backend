@@ -393,6 +393,7 @@ export async function renderClients(router) {
       : protocols.map(p => ({ symptom: p.symptom, icon: p.icon || '🌿', oils: [...(p.oils || [])] }));
     let customNotes = existingCustom?.customNotes || analysisResultados;
     let customMessage = existingCustom?.customMessage || '';
+    let customUnlock = existingCustom?.customUnlock || false;
 
     let customRoutine = existingCustom?.customRoutine;
     if (!customRoutine) {
@@ -491,6 +492,14 @@ export async function renderClients(router) {
           <div>
             <label style="font-weight:600;font-size:0.85rem;color:#1e293b;display:block;margin-bottom:6px">📝 Texto do Resultado Esperado (visível apenas para você):</label>
             <textarea id="pe-notes" rows="3" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical;box-sizing:border-box">${customNotes || ''}</textarea>
+            
+            <!-- CHECKBOX LIBERAR -->
+            <label style="display:flex;align-items:center;margin-top:10px;font-size:0.85rem;color:#333;cursor:pointer">
+              <input type="checkbox" id="pe-unlock" style="margin-right:8px;accent-color:#166534;width:16px;height:16px" ${customUnlock ? 'checked' : ''}>
+              🔓 <b>Liberar Resultado Esperado para o cliente</b> (remover o cadeado no PDF final)
+            </label>
+            <!-- FIM CHECKBOX LIBERAR -->
+            
           </div>
         </div>`;
 
@@ -548,6 +557,7 @@ export async function renderClients(router) {
       btn.disabled = true; btn.textContent = '⏳ Salvando…';
       customNotes = overlay.querySelector('#pe-notes')?.value || customNotes;
       customMessage = overlay.querySelector('#pe-message')?.value || customMessage;
+      customUnlock = overlay.querySelector('#pe-unlock')?.checked || false;
       
       const updatedRoutine = {
         morning: (overlay.querySelector('#pe-rt-morning')?.value || morningText).split('\n').map(l => l.trim()).filter(Boolean),
@@ -556,10 +566,10 @@ export async function renderClients(router) {
       };
 
       try {
-        await store.saveCustomProtocol(anamnese.id, { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine });
+        await store.saveCustomProtocol(anamnese.id, { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock });
         toast('✅ Protocolo personalizado salvo!', 'success');
         // Store in anamnese object so re-opening the editor shows the saved state
-        anamnese.protocolo_customizado = { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine };
+        anamnese.protocolo_customizado = { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock };
         close();
       } catch (err) {
         toast('Erro ao salvar: ' + err.message, 'error');
