@@ -359,6 +359,7 @@ export async function renderClients(router) {
         const consultant = auth.current;
         const encoded = encodeURIComponent(JSON.stringify({
           answers: dados,
+          protocolo_customizado: a.protocolo_customizado,
           consultant: { name: consultant?.nome || consultant?.name, phone: consultant?.telefone || consultant?.phone, genero: consultant?.genero },
           clientName: client.name,
           clientMessage: client.protocolo_mensagem
@@ -385,6 +386,22 @@ export async function renderClients(router) {
       : protocols.map(p => ({ symptom: p.symptom, icon: p.icon || '🌿', oils: [...(p.oils || [])] }));
     let customNotes = existingCustom?.customNotes || analysisResultados;
     let customMessage = existingCustom?.customMessage || '';
+
+    let customRoutine = existingCustom?.customRoutine;
+    if (!customRoutine) {
+      customRoutine = { morning: [], afternoon: [], night: [] };
+      protocols.forEach(p => {
+        if (p.routine) {
+          (p.routine.morning || []).forEach(i => { if (!customRoutine.morning.includes(i)) customRoutine.morning.push(i); });
+          (p.routine.afternoon || []).forEach(i => { if (!customRoutine.afternoon.includes(i)) customRoutine.afternoon.push(i); });
+          (p.routine.night || []).forEach(i => { if (!customRoutine.night.includes(i)) customRoutine.night.push(i); });
+        }
+      });
+    }
+
+    let morningText = customRoutine.morning.join('\n');
+    let afternoonText = customRoutine.afternoon.join('\n');
+    let nightText = customRoutine.night.join('\n');
 
     function oilChip(oil, pIdx, oIdx) {
       return `<span style="display:inline-flex;align-items:center;gap:4px;background:#dcfce7;color:#166534;border-radius:20px;padding:4px 10px;font-size:0.78rem;font-weight:600;margin:3px">
@@ -438,7 +455,26 @@ export async function renderClients(router) {
             <button id="pe-add" style="background:#166534;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap">➕ Adicionar</button>
           </div>
         </div>
-        <div style="margin-top:20px;display:flex;flex-direction:column;gap:16px;">
+
+        <div style="margin-top:24px">
+          <label style="font-weight:700;font-size:0.9rem;color:#1e293b;display:block;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px">⏰ Editar Rotina Diária (um item por linha)</label>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div>
+              <span style="font-size:0.85rem;font-weight:600;color:#f59e0b">Manhã:</span>
+              <textarea id="pe-rt-morning" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical">${morningText}</textarea>
+            </div>
+            <div>
+              <span style="font-size:0.85rem;font-weight:600;color:#ea580c">Tarde:</span>
+              <textarea id="pe-rt-afternoon" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical">${afternoonText}</textarea>
+            </div>
+            <div>
+              <span style="font-size:0.85rem;font-weight:600;color:#3b82f6">Noite:</span>
+              <textarea id="pe-rt-night" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical">${nightText}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;display:flex;flex-direction:column;gap:16px;">
           <div>
             <label style="font-weight:600;font-size:0.85rem;color:#1e293b;display:flex;align-items:center;margin-bottom:6px;gap:6px">
                <span>Mensagem no Protocolo (Visível ao Cliente)</span> <span style="font-size:0.85rem">🌿</span>
@@ -505,11 +541,18 @@ export async function renderClients(router) {
       btn.disabled = true; btn.textContent = '⏳ Salvando…';
       customNotes = overlay.querySelector('#pe-notes')?.value || customNotes;
       customMessage = overlay.querySelector('#pe-message')?.value || customMessage;
+      
+      const updatedRoutine = {
+        morning: (overlay.querySelector('#pe-rt-morning')?.value || morningText).split('\n').map(l => l.trim()).filter(Boolean),
+        afternoon: (overlay.querySelector('#pe-rt-afternoon')?.value || afternoonText).split('\n').map(l => l.trim()).filter(Boolean),
+        night: (overlay.querySelector('#pe-rt-night')?.value || nightText).split('\n').map(l => l.trim()).filter(Boolean),
+      };
+
       try {
-        await store.saveCustomProtocol(anamnese.id, { protocols: editProtocols, customNotes, customMessage });
+        await store.saveCustomProtocol(anamnese.id, { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine });
         toast('✅ Protocolo personalizado salvo!', 'success');
         // Store in anamnese object so re-opening the editor shows the saved state
-        anamnese.protocolo_customizado = { protocols: editProtocols, customNotes };
+        anamnese.protocolo_customizado = { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine };
         close();
       } catch (err) {
         toast('Erro ao salvar: ' + err.message, 'error');

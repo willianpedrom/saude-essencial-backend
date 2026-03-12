@@ -30,7 +30,16 @@ export function renderReport(router, dataParam) {
   const cTitle = getConsultantTitle(consultant.genero);
   const isMasc = cTitle === 'Consultor';
 
-  const protocols = analysis.protocols.slice(0, 5);
+  let baseProtocols = analysis.protocols.slice(0, 5);
+  let protocols = baseProtocols;
+  if (payload.protocolo_customizado?.protocols) {
+    protocols = payload.protocolo_customizado.protocols.map((customP, i) => {
+      // Mescla os dados customizados (como óleos alterados) mantendo a estrutura base (foco e resultado esperado)
+      const orig = baseProtocols[i] || {};
+      return { ...orig, ...customP };
+    });
+  }
+
   const mainSymptoms = analysis.mainSymptoms.slice(0, 6);
 
   // Build WhatsApp link
@@ -56,14 +65,18 @@ export function renderReport(router, dataParam) {
   const allOils = [...kitOils, ...complementOils]; // keep for backward compat
 
   // Build combined routine
-  const combinedRoutine = { morning: [], afternoon: [], night: [] };
-  protocols.forEach(p => {
-    if (p.routine) {
-      (p.routine.morning || []).forEach(i => { if (!combinedRoutine.morning.includes(i)) combinedRoutine.morning.push(i); });
-      (p.routine.afternoon || []).forEach(i => { if (!combinedRoutine.afternoon.includes(i)) combinedRoutine.afternoon.push(i); });
-      (p.routine.night || []).forEach(i => { if (!combinedRoutine.night.includes(i)) combinedRoutine.night.push(i); });
-    }
-  });
+  let combinedRoutine = { morning: [], afternoon: [], night: [] };
+  if (payload.protocolo_customizado?.customRoutine) {
+    combinedRoutine = payload.protocolo_customizado.customRoutine;
+  } else {
+    protocols.forEach(p => {
+      if (p.routine) {
+        (p.routine.morning || []).forEach(i => { if (!combinedRoutine.morning.includes(i)) combinedRoutine.morning.push(i); });
+        (p.routine.afternoon || []).forEach(i => { if (!combinedRoutine.afternoon.includes(i)) combinedRoutine.afternoon.push(i); });
+        (p.routine.night || []).forEach(i => { if (!combinedRoutine.night.includes(i)) combinedRoutine.night.push(i); });
+      }
+    });
+  }
 
   // Specific protocols (e.g. capilar)
   const specificProts = protocols.filter(p => p.specificProtocol).map(p => p.specificProtocol);
@@ -219,7 +232,7 @@ export function renderReport(router, dataParam) {
         <div style="margin-bottom:24px;position:relative">
           <h2 style="font-size:1rem;color:#2d5016;font-weight:700;margin-bottom:8px;border-bottom:2px solid #2d5016;padding-bottom:4px">${4 + specificProts.length}. RESULTADOS CLÍNICOS 🔒</h2>
           <div style="filter:blur(5px);opacity:0.5;pointer-events:none;user-select:none">
-            <p style="font-size:0.85rem;color:#333;line-height:1.6">A restauração completa do seu eixo saúde garantirá uma imunidade alta e estável ao longo de todas as estações do ano, com picos de energia constantes e descanso reparador ininterrupto à noite.</p>
+            <p style="font-size:0.85rem;color:#333;line-height:1.6">${payload.protocolo_customizado?.customNotes || expectedResults || 'A restauração completa do seu eixo saúde garantirá uma imunidade alta e estável ao longo de todas as estações do ano.'}</p>
           </div>
           <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:100%">
             <div style="background:rgba(255,255,255,0.95);padding:10px 20px;border-radius:20px;display:inline-block;box-shadow:0 10px 25px rgba(0,0,0,0.1);border:1px solid #ddd">
