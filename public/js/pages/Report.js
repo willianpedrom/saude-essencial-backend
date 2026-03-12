@@ -300,9 +300,9 @@ export async function renderReport(router, dataParam, hash = null) {
       ${true ? `
       <div style="background:linear-gradient(135deg, #1e293b, #0f172a);padding:28px 24px;border-top:2px solid #334155;text-align:center;">
         <div style="font-size:2rem;margin-bottom:12px">🌟</div>
-        <h3 style="color:#fcd34d;font-size:1.1rem;margin-bottom:12px">Conheça o Trabalho de ${consultant.name ? consultant.name.split(' ')[0] : cTitle}</h3>
+        <h3 style="color:#fcd34d;font-size:1.1rem;margin-bottom:12px">AJUDE UM AMIGO A MELHORAR A SAÚDE DE FORMA NATURAL</h3>
         <p style="color:#cbd5e1;font-size:0.9rem;max-width:480px;margin:0 auto 20px;line-height:1.5">
-          Gostou deste protocolo exclusivo? Acesse minha página oficial para saber mais sobre saúde natural, ver depoimentos e muito mais.
+          Gostou deste protocolo exclusivo? Compartilhe o link abaixo com seus amigos e familiares que precisam fazer uma avaliação exclusiva e gratuita.
         </p>
         <div style="background:rgba(255,255,255,0.05);padding:16px;border-radius:8px;border:1px dashed rgba(252, 211, 77, 0.3);margin-bottom:20px;max-width:500px;margin-left:auto;margin-right:auto">
             <div style="font-size:0.85rem;color:#f8fafc;margin-bottom:12px">Link do Perfil Público:</div>
@@ -311,9 +311,6 @@ export async function renderReport(router, dataParam, hash = null) {
               <button onclick="navigator.clipboard.writeText(document.getElementById('ref-link-input').value); alert('Link copiado!');" style="background:#fcd34d;color:#0f172a;border:none;padding:6px 16px;border-radius:4px;font-size:0.75rem;font-weight:bold;cursor:pointer">Copiar</button>
             </div>
         </div>
-        <a class="report-cta" href="${window.location.origin + window.location.pathname}#/p/${consultant.slug || 'oficial'}" target="_blank" style="display:inline-block;padding:12px 24px;background:#25d366;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.9rem;transition:all 0.2s">
-          🌿 Acessar Perfil Completo
-        </a>
       </div>
       ` : ''}
       <!-- END VIRAL REFERRAL -->
