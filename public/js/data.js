@@ -225,7 +225,37 @@ export const OILS_DATABASE = {
     'Calmer': { nameEn: 'Calmer', cat: 'blend', fn: 'Calma e sono para crianças', uses: 'Crianças agitadas, ansiedade infantil, sono,' , topical: 'Solas dos pés (diluído para crianças)', aromatic: 'Difusor noturno (crianças)' },
     'Steady': { nameEn: 'Steady', cat: 'blend', fn: 'Equilíbrio e aterramento para crianças', uses: 'TDAH infantil, hiperatividade, foco', topical: 'Solas dos pés (diluído)', aromatic: 'Difusor' },
     'Thinker': { nameEn: 'Thinker', cat: 'blend', fn: 'Foco e concentração para crianças', uses: 'Déficit de atenção, aprendizagem, foco escolar', topical: 'Nuca, solas dos pés', aromatic: 'Difusor' },
+
+    // ── Óleos Nativos do Brasil e Exclusivos ────────────────────────────
+    'Breu Branco': { nameEn: 'Breu Branco', cat: 'single', fn: 'Purificante, meditativo, anti-inflamatório', uses: 'Meditação, purificação, inflamação, ansiedade', topical: 'Solas dos pés, peito (diluído)', aromatic: 'Difusor — aroma amadeirado-cítrico' },
+    'Erva Baleeira': { nameEn: 'Erva Baleeira', cat: 'single', fn: 'Anti-inflamatório, analgésico tópico', uses: 'Dores musculares, articulações, inflamação local', topical: 'Área afetada (diluído)', aromatic: 'Não é a via principal' },
+    'Green Mandarin': { nameEn: 'Green Mandarin', cat: 'single', fn: 'Limpeza, vitalidade, suporte digestivo', uses: 'Digestão, energia, humor positivo, limpeza', topical: 'Abdômen, pulsos (fotossensível)', aromatic: '3 gotas no difusor' },
+    'Guaiacwood': { nameEn: 'Guaiacwood', cat: 'single', fn: 'Aterramento, anti-inflamatório, meditativo', uses: 'Meditação profunda, inflamação, aterramento emocional', topical: 'Nuca, peito, solas dos pés (diluído)', aromatic: 'Difusor' },
+    'Lemon Eucalyptus': { nameEn: 'Lemon Eucalyptus', cat: 'single', fn: 'Repelente natural, respiratório', uses: 'Repelente de insetos, congestão nasal', topical: 'Pele exposta (diluído)', aromatic: 'Difusor' },
+    'Madagascar Vanilla': { nameEn: 'Madagascar Vanilla', cat: 'single', fn: 'Reconfortante, antioxidante', uses: 'Ansiedade, aconchego, suporte emocional', topical: 'Pulsos, peito', aromatic: 'Difusor — aroma cálido e doce' },
+    'Magnolia': { nameEn: 'Magnolia', cat: 'single', fn: 'Equilíbrio emocional, redução do estresse', uses: 'Ansiedade, estresse situacional, bem-estar emocional', topical: 'Pulsos, pescoço, peito', aromatic: 'Difusor' },
+    'Siberian Fir': { nameEn: 'Siberian Fir', cat: 'single', fn: 'Respiratório, energia, revitalizante', uses: 'Congestão, dores musculares, energia, frescor', topical: 'Peito, músculos (diluído)', aromatic: 'Difusor' },
+    'Cilantro': { nameEn: 'Cilantro', cat: 'single', fn: 'Antioxidante, suporte digestivo e detox', uses: 'Detoxificação, digestão, ansiedade', topical: 'Abdômen (diluído)', aromatic: 'Difusor — levemente herbal' },
+    'Citronela': { nameEn: 'Citronella', cat: 'single', fn: 'Repelente natural, purificante', uses: 'Repelente de insetos, purificação do ambiente', topical: 'Pele exposta (diluído)', aromatic: 'Difusor ao ar livre' },
+    'Hawaiian Sandalwood': { nameEn: 'Hawaiian Sandalwood', cat: 'single', fn: 'Meditativo, hidratante, calmante', uses: 'Meditação, pele seca, foco, serenidade', topical: 'Rosto, peito, solas dos pés', aromatic: 'Difusor' },
+
+    // ── Blends Adicionais do Catálogo Brasil ────────────────────────────
+    'Air-X': { nameEn: 'Air-X', cat: 'blend', fn: 'Suporte respiratório e abertura das vias aéreas', uses: 'Congestão intensa, asma, bronquite, alergias respiratórias', topical: 'Peito, costas, sob o nariz', aromatic: 'Difusor ou inalação direta' },
+    'AromaTouch': { nameEn: 'AromaTouch', cat: 'blend', fn: 'Relaxamento muscular, massagem terapêutica', uses: 'Tensão muscular, estresse, técnica AromaTouch', topical: 'Coluna vertebral, costas (diluído — via massagem)', aromatic: 'Difusor' },
+    'Brave': { nameEn: 'Brave', cat: 'blend', fn: 'Coragem e força emocional para crianças', uses: 'Medos infantis, insegurança, ansiedade em crianças', topical: 'Solas dos pés, pulsos (diluído)', aromatic: 'Difusor' },
+    'Forest Bathing': { nameEn: 'Forest Bathing', cat: 'blend', fn: 'Conexão com a natureza, relaxamento', uses: 'Estresse urbano, desconexão com a natureza, revitalização', topical: 'Peito, pulsos', aromatic: 'Difusor — aroma de floresta' },
+    'Hope': { nameEn: 'Hope', cat: 'blend', fn: 'Esperança, suporte emocional em momentos difíceis', uses: 'Situações de perda, baixa esperança, tristeza', topical: 'Peito, pulsos (Touch)', aromatic: 'Difusor' },
+    'Hygge': { nameEn: 'Hygge', cat: 'blend', fn: 'Aconchego, conforto e bem-estar emocional', uses: 'Ambiente acolhedor, conforto em casa, momentos de cuidado', topical: 'Pulsos, peito', aromatic: 'Difusor — aroma quente e aconchegante' },
+    'Passion': { nameEn: 'Passion', cat: 'blend', fn: 'Paixão, criatividade, entusiasmo', uses: 'Falta de motivação, criatividade bloqueada, paixão pela vida', topical: 'Pulsos, pescoço', aromatic: 'Difusor' },
+    'Rescuer': { nameEn: 'Rescuer', cat: 'blend', fn: 'Alívio de dores musculares e tensão', uses: 'Dores musculares, tensão, recuperação pós-exercício', topical: 'Área afetada (massagem, diluído)', aromatic: 'Não é a via principal' },
+    'Smart & Sassy': { nameEn: 'Smart & Sassy', cat: 'blend', fn: 'Metabolismo, controle do apetite', uses: 'Perda de peso, controle de fome, metabolismo, energia', topical: 'Abdômen (diluído)', aromatic: 'Difusor, 1-2 gotas em água' },
+    'Stronger': { nameEn: 'Stronger', cat: 'blend', fn: 'Proteção e força para crianças', uses: 'Imunidade infantil, proteção, saúde das crianças', topical: 'Solas dos pés (diluído)', aromatic: 'Difusor' },
+    'Tamer': { nameEn: 'Tamer', cat: 'blend', fn: 'Suporte digestivo para crianças', uses: 'Dores de barriga infantil, náusea, cólica em crianças', topical: 'Abdômen (diluído)', aromatic: 'Difusor' },
+    'Salubelle': { nameEn: 'Salubelle', cat: 'blend', fn: 'Anti-aging, regeneração profunda da pele', uses: 'Rugas, manchas, flacidez, pele madura', topical: 'Rosto e pescoço (diluído)', aromatic: 'Não é a via principal' },
+    'Veráge': { nameEn: 'Veráge', cat: 'blend', fn: 'Cuidado tópico da pele, rejuvenescimento', uses: 'Pele envelhecida, manchas, hidratação, anti-aging', topical: 'Rosto e pescoço (Touch)', aromatic: 'Não aplicável' },
+    'Citrus Bloom': { nameEn: 'Citrus Bloom', cat: 'blend', fn: 'Frescor, feminilidade, energia', uses: 'Bem-estar feminino, frescor, mood positivo', topical: 'Pulsos, pescoço (Touch)', aromatic: 'Difusor' },
 };
+
 
 
 /* ---- PROFESSIONAL PROTOCOLS ---- */
