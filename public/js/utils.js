@@ -403,6 +403,20 @@ export function openClientOffcanvas(client) {
 
           <!-- PANE: GERAL -->
           <div class="oc-pane active" id="pane-geral">
+
+             <div id="anamnese-banner-oc" style="display:flex;align-items:center;justify-content:space-between;
+               background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border:1px solid #a5d6a7;
+               border-radius:10px;padding:12px 16px;margin-bottom:18px;cursor:pointer">
+               <div style="display:flex;align-items:center;gap:10px">
+                 <span style="font-size:1.3rem">📋</span>
+                 <div>
+                   <div style="font-weight:600;color:#2d4a28;font-size:0.9rem">Ficha de Anamnese</div>
+                   <div style="font-size:0.78rem;color:#4a7c40">Clique para ver todas as respostas do questionário</div>
+                 </div>
+               </div>
+               <span style="color:#4a7c40;font-size:1.1rem">›</span>
+             </div>
+
              <div class="form-group" style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid var(--border);margin-bottom:16px">
                 <label class="field-label" style="font-size:0.75rem;margin-bottom:8px;display:block">Classificação de Atuação</label>
                 <div style="display:flex;gap:12px;font-size:0.8rem">
@@ -688,6 +702,15 @@ export function openClientOffcanvas(client) {
         console.error("Erro ao buscar compras", err);
         comprasContainer.innerHTML = '<div style="font-size:0.8rem;color:#ef4444">Falha ao buscar compras.</div>';
       }
+    });
+  }
+
+  // Action: Open Anamnese
+  const bannerOc = overlay.querySelector('#anamnese-banner-oc');
+  if (bannerOc) {
+    bannerOc.addEventListener('click', () => {
+      closeOC();
+      document.dispatchEvent(new CustomEvent('open-anamnese', { detail: { client } }));
     });
   }
 }
