@@ -318,8 +318,6 @@ export async function renderReport(router, dataParam, hash = null) {
       ` : ''}
       <!-- END VIRAL REFERRAL -->
 
-      </div>
-
       <!-- Footer -->
       <div class="report-consultant-footer" style="padding:16px 28px;border-top:1px solid #eee;display:flex;align-items:center;justify-content:space-between;background:#fafafa;border-radius:0 0 16px 16px">
         <div style="display:flex;align-items:center;gap:10px">
