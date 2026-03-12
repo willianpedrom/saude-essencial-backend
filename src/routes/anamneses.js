@@ -266,7 +266,8 @@ router.get('/laudo/public/:hash', async (req, res) => {
         const { rows } = await pool.query(
             `SELECT a.id, a.dados, a.protocolo_customizado, a.cliente_id,
               c.nome AS consultora_nome, c.genero AS consultora_genero,
-              c.telefone AS consultora_telefone, c.link_afiliada AS consultora_link_afiliada
+              c.telefone AS consultora_telefone, c.link_afiliada AS consultora_link_afiliada,
+              (SELECT token_publico FROM anamneses an WHERE an.consultora_id = c.id AND an.subtipo = 'pessoal' LIMIT 1) as consultora_token_anamnese
              FROM anamneses a
              JOIN consultoras c ON c.id = a.consultora_id
              WHERE a.hash_laudo = $1`,
