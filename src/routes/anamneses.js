@@ -267,7 +267,10 @@ router.get('/laudo/public/:hash', async (req, res) => {
             `SELECT a.id, a.dados, a.protocolo_customizado, a.cliente_id,
               c.nome AS consultora_nome, c.genero AS consultora_genero,
               c.telefone AS consultora_telefone, c.link_afiliada AS consultora_link_afiliada,
-              (SELECT token_publico FROM anamneses an WHERE an.consultora_id = c.id AND an.subtipo = 'pessoal' LIMIT 1) as consultora_token_anamnese
+              COALESCE(
+                 (SELECT token_publico FROM anamneses p WHERE p.consultora_id = c.id AND p.subtipo = 'pessoal' LIMIT 1),
+                 (SELECT token_publico FROM anamneses p WHERE p.consultora_id = c.id AND p.subtipo = 'generico' ORDER BY criado_em DESC LIMIT 1)
+              ) as consultora_token_anamnese
              FROM anamneses a
              JOIN consultoras c ON c.id = a.consultora_id
              WHERE a.hash_laudo = $1`,
