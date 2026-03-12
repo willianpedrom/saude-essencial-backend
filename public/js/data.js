@@ -184,7 +184,49 @@ export const OILS_DATABASE = {
     'Zendocrine': { nameEn: 'Zendocrine', cat: 'blend', fn: 'Desintoxicação e suporte hepático', uses: 'Detox, fígado sobrecarregado, pele com toxinas', topical: 'Abdômen, solas dos pés', aromatic: 'Difusor' },
     'Whisper': { nameEn: 'Whisper', cat: 'blend', fn: 'Blend feminino sensorial', uses: 'Autoestima, libido, reconexão corporal', topical: 'Pescoço, atrás das orelhas, pulsos', aromatic: 'Difusor' },
     'Motive': { nameEn: 'Motivate', cat: 'blend', fn: 'Motivação e coragem', uses: 'Procrastinação, falta de motivação, baixa energia', topical: 'Peito, pulsos', aromatic: 'Difusor matinal' },
+
+    // ── Óleos Únicos Adicionais ──────────────────────────────────────────
+    'Melissa': { nameEn: 'Melissa', cat: 'single', fn: 'Antiviral, calmante profundo', uses: 'Herpes, ansiedade, depressão, antiviral', topical: 'Lábios, pescoço, solas dos pés', aromatic: 'Difusor' },
+    'Rosa': { nameEn: 'Rose', cat: 'single', fn: 'Regenerador de pele, amor-próprio', uses: 'Pele madura, autoestima, cicatrizes, suporte emocional', topical: 'Rosto (diluído), peito, pulsos', aromatic: 'Difusor' },
+    'Lime': { nameEn: 'Lime', cat: 'single', fn: 'Purificante, energizante, limpeza', uses: 'Foco mental, digestão, imunidade, limpeza', topical: 'Evitar exposição solar, água, difusor', aromatic: 'Difusor' },
+    'Tangerina': { nameEn: 'Tangerine', cat: 'single', fn: 'Alegria, digestivo suave', uses: 'Humor, digestão, energia, frescor', topical: 'Pulsos, abdômen', aromatic: '3 gotas no difusor' },
+    'Toranja': { nameEn: 'Grapefruit', cat: 'single', fn: 'Metabolismo, drenagem, humor', uses: 'Perda de peso, celulite, drenagem, humor', topical: 'Abdômen, coxas (diluído)', aromatic: 'Difusor matinal' },
+    'Cúrcuma': { nameEn: 'Turmeric', cat: 'single', fn: 'Anti-inflamatório potente, imunidade', uses: 'Artrite, inflamação sistêmica, antioxidante', topical: 'Articulações (diluído), cápsula interna', aromatic: 'Difusor' },
+    'Canela': { nameEn: 'Cinnamon', cat: 'single', fn: 'Circulação, antibacteriano', uses: 'Circulação, diabetes, infecções, digestão', topical: 'Sempre muito diluído (1:10), solas dos pés', aromatic: 'Difusor — aroma quente' },
+    'Cravo': { nameEn: 'Clove', cat: 'single', fn: 'Analgésico, antioxidante', uses: 'Dor de dente, imunidade, antioxidante', topical: 'Diluído em solas dos pés, gengivas', aromatic: 'Difusor para purificação' },
+    'Manjericão': { nameEn: 'Basil', cat: 'single', fn: 'Antiespasmódico, foco mental', uses: 'Dores musculares, foco, fadiga mental', topical: 'Têmporas, nuca, solas dos pés', aromatic: 'Inalação direta' },
+    'Jasmine': { nameEn: 'Jasmine', cat: 'single', fn: 'Afrodisíaco, confiança', uses: 'Libido, autoconfiança, ansiedade leve', topical: 'Pulsos, pescoço', aromatic: 'Difusor' },
+    'Neroli': { nameEn: 'Neroli', cat: 'single', fn: 'Ansiedade, pele, confiança', uses: 'Ansiedade, pele madura, autoestima, maternidade', topical: 'Rosto, pulsos, peito', aromatic: 'Difusor' },
+    'Spearmint': { nameEn: 'Spearmint', cat: 'single', fn: 'Digestivo suave, respiratório', uses: 'Digestão, foco, frescor bucal, náusea', topical: 'Abdômen, têmporas', aromatic: 'Difusor' },
+    'Hortelã-Pimenta': { nameEn: 'Peppermint Touch', cat: 'single', fn: 'Versão diluída do Peppermint para pele sensível', uses: 'Dor de cabeça, tensão muscular, foco', topical: 'Têmporas, nuca — pronto para usar sem diluição', aromatic: 'Inalação' },
+    'Eucalipto Radiata': { nameEn: 'Eucalyptus Radiata', cat: 'single', fn: 'Suave, descongestivo respiratório', uses: 'Crianças, gripes, sinusite, pele sensível', topical: 'Peito, costas (pode usar mais diluído)', aromatic: 'Difusor para família' },
+    'Arborvitae': { nameEn: 'Arborvitae', cat: 'single', fn: 'Purificante, repelente, grounding', uses: 'Aterramento, limpeza do ambiente, repelente', topical: 'Solas dos pés (diluído)', aromatic: 'Difusor' },
+    'Cassia': { nameEn: 'Cassia', cat: 'single', fn: 'Aquecimento, circulação, imunidade', uses: 'Circulação, imunidade, glicemia', topical: 'Sempre muito diluído (1:10)', aromatic: 'Difusor — aroma quente' },
+    'Coentro': { nameEn: 'Coriander', cat: 'single', fn: 'Digestivo, regulação glicêmica', uses: 'Digestão, diabetes, equilíbrio hormonal', topical: 'Abdômen (diluído)', aromatic: 'Difusor' },
+    'Tomilho': { nameEn: 'Thyme Touch', cat: 'single', fn: 'Versão diluída do Tomilho', uses: 'Imunidade, infecções, queda de cabelo', topical: 'Solas dos pés, couro cabeludo', aromatic: 'Curto prazo' },
+    'Pimenta Rosa': { nameEn: 'Pink Pepper', cat: 'single', fn: 'Circulação, antioxidante', uses: 'Dores musculares, circulação, energia', topical: 'Articulações, músculos (diluído)', aromatic: 'Difusor' },
+    'Petitgrain': { nameEn: 'Petitgrain', cat: 'single', fn: 'Calmante, nervo vago, sono', uses: 'Ansiedade, insônia, sistema nervoso autônomo', topical: 'Nuca, peito (diluído)', aromatic: 'Difusor noturno' },
+    'Douglas Fir': { nameEn: 'Douglas Fir', cat: 'single', fn: 'Respiratório, energia, pureza', uses: 'Congestão, purificação, energia, vitalidade', topical: 'Peito, pulsos', aromatic: 'Difusor' },
+    'Spikenard': { nameEn: 'Spikenard', cat: 'single', fn: 'Calmante profundo, spiritual', uses: 'Meditação, insônia severa, estresse emocional', topical: 'Solas dos pés, nuca', aromatic: 'Difusor' },
+
+    // ── Blends Adicionais ────────────────────────────────────────────────
+    'Citrus Bliss': { nameEn: 'Citrus Bliss', cat: 'blend', fn: 'Alegria, energia, bom humor', uses: 'Depressão leve, energia matinal, ambiente positivo', topical: 'Pulsos, peito', aromatic: 'Difusor matinal' },
+    'Cheer': { nameEn: 'Cheer', cat: 'blend', fn: 'Otimismo e positividade', uses: 'Baixo astral, falta de motivação, pensamentos negativos', topical: 'Pulsos, peito', aromatic: 'Difusor' },
+    'Console': { nameEn: 'Console', cat: 'blend', fn: 'Suporte emocional em luto/perda', uses: 'Luto, tristeza profunda, perda emocional', topical: 'Peito, pulsos', aromatic: 'Difusor' },
+    'Forgive': { nameEn: 'Forgive', cat: 'blend', fn: 'Perdão, liberação emocional', uses: 'Raiva reprimida, rancor, cicatrizes emocionais', topical: 'Peito, solas dos pés', aromatic: 'Difusor' },
+    'Peace': { nameEn: 'Peace', cat: 'blend', fn: 'Paz, aceitação, calmante', uses: 'Ansiedade, aceitação, paz interior', topical: 'Nuca, pulsos, solas dos pés', aromatic: 'Difusor noturno' },
+    'Purify': { nameEn: 'Purify', cat: 'blend', fn: 'Purificante, limpeza do ar', uses: 'Ambientes com odores, proteção viral, limpeza', topical: 'Pés (diluído)', aromatic: 'Difusor para limpeza' },
+    'TerraShield': { nameEn: 'TerraShield', cat: 'blend', fn: 'Repelente natural, proteção externa', uses: 'Picadas de insetos, atividades ao ar livre', topical: 'Pele exposta (diluído)', aromatic: 'Difusor ao ar livre' },
+    'DDR Prime': { nameEn: 'DDR Prime', cat: 'blend', fn: 'Suporte celular, antioxidante DNA', uses: 'Proteção celular, prevenção, antioxidante sistêmico', topical: 'Sublingual, solas dos pés, cápsulas', aromatic: 'Difusor' },
+    'Slim & Sassy': { nameEn: 'Slim & Sassy', cat: 'blend', fn: 'Metabolismo, apetite, queima de gordura', uses: 'Perda de peso, controle do apetite, metabolismo lento', topical: 'Abdômen (diluído)', aromatic: 'Difusor, 1 gota em água' },
+    'HD Clear': { nameEn: 'HD Clear', cat: 'blend', fn: 'Pele oleosa e com acne', uses: 'Acne, pele oleosa, pontos negros', topical: 'Aplicar diretamente nas áreas afetadas', aromatic: 'Não é a via principal' },
+    'Salon Essentials': { nameEn: 'Stronger', cat: 'blend', fn: 'Unhas e cutículas fortes', uses: 'Unhas fracas, cutículas danificadas, fragilidade', topical: 'Aplicar nas unhas e cutículas', aromatic: 'Não aplicável' },
+    'Immortelle': { nameEn: 'Immortelle', cat: 'blend', fn: 'Anti-aging, regeneração da pele', uses: 'Envelhecimento precoce, manchas, rugas, firmeza', topical: 'Rosto e pescoço (diluído)', aromatic: 'Não é a via principal' },
+    'Calmer': { nameEn: 'Calmer', cat: 'blend', fn: 'Calma e sono para crianças', uses: 'Crianças agitadas, ansiedade infantil, sono,' , topical: 'Solas dos pés (diluído para crianças)', aromatic: 'Difusor noturno (crianças)' },
+    'Steady': { nameEn: 'Steady', cat: 'blend', fn: 'Equilíbrio e aterramento para crianças', uses: 'TDAH infantil, hiperatividade, foco', topical: 'Solas dos pés (diluído)', aromatic: 'Difusor' },
+    'Thinker': { nameEn: 'Thinker', cat: 'blend', fn: 'Foco e concentração para crianças', uses: 'Déficit de atenção, aprendizagem, foco escolar', topical: 'Nuca, solas dos pés', aromatic: 'Difusor' },
 };
+
 
 /* ---- PROFESSIONAL PROTOCOLS ---- */
 export const PROTOCOLS = {

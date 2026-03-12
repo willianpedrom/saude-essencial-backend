@@ -1,7 +1,7 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { formatDate, getInitials, toast, modal, openClientOffcanvas } from '../utils.js';
-import { analyzeAnamnesis, PROTOCOLS } from '../data.js';
+import { analyzeAnamnesis, PROTOCOLS, OILS_DATABASE } from '../data.js';
 
 let cachedAnamneses = null; // lazy-load once per session
 
@@ -373,12 +373,10 @@ export async function renderClients(router) {
   // EDITOR DE PROTOCOLO PERSONALIZADO
   // ────────────────────────────────────────────────────────────
   function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
-    // Build catalog of all available oils (deduplicated)
-    const allOilsMap = {};
-    Object.values(PROTOCOLS || {}).forEach(p => {
-      (p.oils || []).forEach(oil => { if (!allOilsMap[oil.name]) allOilsMap[oil.name] = oil; });
-    });
-    const allOils = Object.values(allOilsMap).sort((a, b) => a.name.localeCompare(b.name));
+    // Build catalog from OILS_DATABASE (complete product list)
+    const allOils = Object.entries(OILS_DATABASE || {})
+      .map(([name, oil]) => ({ name, fn: oil.fn || '' }))
+      .sort((a, b) => a.name.localeCompare(b.name));
 
     // Working copy – prefer saved custom, else use auto-generated
     const existingCustom = anamnese.protocolo_customizado || null;
