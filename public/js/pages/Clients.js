@@ -1,7 +1,7 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { formatDate, getInitials, toast, modal, openClientOffcanvas } from '../utils.js';
-import { analyzeAnamnesis } from '../data.js';
+import { analyzeAnamnesis, PROTOCOLS } from '../data.js';
 
 let cachedAnamneses = null; // lazy-load once per session
 
@@ -340,8 +340,21 @@ export async function renderClients(router) {
         <div style="font-size:0.8rem;color:var(--text-muted);margin-top:16px;text-align:right;">
           Ficha Registrada em: <span style="font-weight:700">${formatDate(a.criado_em)}</span>
         </div>
+        <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+          <button id="btn-edit-protocol" style="background:#f0fdf4;color:#166534;border:1.5px solid #86efac;border-radius:8px;padding:8px 16px;font-size:0.85rem;font-weight:700;cursor:pointer">✏️ Editar Protocolo</button>
+        </div>
       </div>`, {
       confirmLabel: '🌿 Ver Protocolo',
+      onOpen: () => {
+        document.getElementById('btn-edit-protocol')?.addEventListener('click', () => {
+          let protocols = [];
+          try {
+            const ana = analyzeAnamnesis(rawDados.goals ? rawDados : nestedForAnalysis);
+            protocols = ana.protocols || [];
+          } catch (e) { /* ignore */ }
+          openProtocolEditor(client, a, protocols, analysisResultados);
+        });
+      },
       onConfirm: () => {
         const consultant = auth.current;
         const encoded = encodeURIComponent(JSON.stringify({
@@ -355,6 +368,134 @@ export async function renderClients(router) {
     });
   }
 
+
+  // ────────────────────────────────────────────────────────────
+  // EDITOR DE PROTOCOLO PERSONALIZADO
+  // ────────────────────────────────────────────────────────────
+  function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
+    // Build catalog of all available oils (deduplicated)
+    const allOilsMap = {};
+    Object.values(PROTOCOLS || {}).forEach(p => {
+      (p.oils || []).forEach(oil => { if (!allOilsMap[oil.name]) allOilsMap[oil.name] = oil; });
+    });
+    const allOils = Object.values(allOilsMap).sort((a, b) => a.name.localeCompare(b.name));
+
+    // Working copy – prefer saved custom, else use auto-generated
+    const existingCustom = anamnese.protocolo_customizado || null;
+    let editProtocols = existingCustom?.protocols
+      ? JSON.parse(JSON.stringify(existingCustom.protocols))
+      : protocols.map(p => ({ symptom: p.symptom, icon: p.icon || '🌿', oils: [...(p.oils || [])] }));
+    let customNotes = existingCustom?.customNotes || analysisResultados;
+
+    function oilChip(oil, pIdx, oIdx) {
+      return `<span style="display:inline-flex;align-items:center;gap:4px;background:#dcfce7;color:#166534;border-radius:20px;padding:4px 10px;font-size:0.78rem;font-weight:600;margin:3px">
+        🌿 ${oil.name}${oil.fn ? ` <span style="opacity:0.65;font-size:0.7rem">— ${oil.fn}</span>` : ''}
+        <button data-rp="${pIdx}" data-ro="${oIdx}" style="background:none;border:none;cursor:pointer;color:#dc2626;font-weight:700;padding:0 0 0 6px;font-size:0.9rem;line-height:1">✕</button>
+      </span>`;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.id = 'protocol-editor-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.5);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;';
+    overlay.innerHTML = `
+      <div style="background:white;border-radius:16px;width:100%;max-width:640px;margin-bottom:40px;box-shadow:0 24px 60px rgba(0,0,0,0.3);display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #e2e8f0">
+          <h3 style="font-size:1rem;font-weight:700;color:#1e293b;margin:0">✏️ Editar Protocolo — ${client.name}</h3>
+          <button id="pe-close" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#94a3b8;line-height:1">✕</button>
+        </div>
+        <div id="pe-body" style="padding:20px;max-height:60vh;overflow-y:auto"></div>
+        <div style="padding:14px 20px;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-end">
+          <button id="pe-cancel" style="background:#f3f4f6;color:#374151;border:none;border-radius:8px;padding:10px 20px;font-size:0.88rem;cursor:pointer">Cancelar</button>
+          <button id="pe-save" style="background:#166534;color:white;border:none;border-radius:8px;padding:10px 24px;font-size:0.88rem;font-weight:700;cursor:pointer">💾 Salvar Protocolo</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    function render() {
+      const body = overlay.querySelector('#pe-body');
+      if (!body) return;
+      body.innerHTML = `
+        <p style="color:#475569;font-size:0.85rem;margin-bottom:16px">Adicione ou remova produtos para personalizar o protocolo de <strong>${client.name}</strong>.</p>
+        ${editProtocols.length === 0 ? '<p style="color:#94a3b8;font-size:0.85rem">Nenhum protocolo gerado automaticamente. <br>Adicione um produto manualmente usando o formulário abaixo.</p>' : ''}
+        ${editProtocols.map((p, pIdx) => `
+          <div style="margin-bottom:12px;background:#f8fafc;border-radius:10px;padding:12px;border:1px solid #e2e8f0">
+            <div style="font-weight:700;font-size:0.88rem;color:#1e293b;margin-bottom:8px">${p.icon} ${p.symptom}</div>
+            <div style="display:flex;flex-wrap:wrap">
+              ${(p.oils || []).map((oil, oIdx) => oilChip(oil, pIdx, oIdx)).join('')}
+              ${!p.oils?.length ? '<span style="font-size:0.78rem;color:#94a3b8">Sem óleos. Adicione abaixo ↓</span>' : ''}
+            </div>
+          </div>`).join('')}
+        <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-top:6px">
+          <div style="font-weight:700;font-size:0.85rem;color:#1e293b;margin-bottom:10px">➕ Adicionar Produto</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${editProtocols.length > 0 ? `<select id="pe-sel-p" style="flex:1;min-width:130px;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.82rem">
+              <option value="">Protocolo…</option>
+              ${editProtocols.map((p, i) => `<option value="${i}">${p.icon} ${p.symptom}</option>`).join('')}
+            </select>` : ''}
+            <select id="pe-sel-o" style="flex:2;min-width:160px;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.82rem">
+              <option value="">Selecione o óleo…</option>
+              ${allOils.map(o => `<option value="${encodeURIComponent(JSON.stringify({name:o.name,fn:o.fn||''}))}">${o.name}${o.fn ? ` — ${o.fn}` : ''}</option>`).join('')}
+            </select>
+            <button id="pe-add" style="background:#166534;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap">➕ Adicionar</button>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <label style="font-weight:600;font-size:0.85rem;color:#1e293b;display:block;margin-bottom:6px">📝 Texto do Resultado Esperado (visível apenas para você):</label>
+          <textarea id="pe-notes" rows="3" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical;box-sizing:border-box">${customNotes || ''}</textarea>
+        </div>`;
+
+      // Remove oil
+      body.querySelectorAll('[data-rp]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          editProtocols[+btn.dataset.rp].oils.splice(+btn.dataset.ro, 1);
+          render();
+        });
+      });
+
+      // Add oil
+      body.querySelector('#pe-add')?.addEventListener('click', () => {
+        const pSel = body.querySelector('#pe-sel-p');
+        const oSel = body.querySelector('#pe-sel-o');
+        const pIdx = pSel ? parseInt(pSel.value) : 0;
+        const oRaw = oSel?.value;
+        if (!oRaw) { toast('Selecione um óleo.', 'warning'); return; }
+        if (!editProtocols[pIdx]) { toast('Selecione o protocolo.', 'warning'); return; }
+        const oil = JSON.parse(decodeURIComponent(oRaw));
+        if (editProtocols[pIdx].oils.find(o => o.name === oil.name)) {
+          toast(`${oil.name} já está nesse protocolo.`, 'info'); return;
+        }
+        editProtocols[pIdx].oils.push(oil);
+        toast(`${oil.name} adicionado! 🌿`, 'success');
+        render();
+      });
+
+      // Sync notes
+      body.querySelector('#pe-notes')?.addEventListener('input', e => { customNotes = e.target.value; });
+    }
+
+    render();
+
+    function close() { overlay.remove(); }
+    overlay.querySelector('#pe-close').addEventListener('click', close);
+    overlay.querySelector('#pe-cancel').addEventListener('click', close);
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+    overlay.querySelector('#pe-save').addEventListener('click', async () => {
+      const btn = overlay.querySelector('#pe-save');
+      btn.disabled = true; btn.textContent = '⏳ Salvando…';
+      customNotes = overlay.querySelector('#pe-notes')?.value || customNotes;
+      try {
+        await store.saveCustomProtocol(anamnese.id, { protocols: editProtocols, customNotes });
+        toast('✅ Protocolo personalizado salvo!', 'success');
+        // Store in anamnese object so re-opening the editor shows the saved state
+        anamnese.protocolo_customizado = { protocols: editProtocols, customNotes };
+        close();
+      } catch (err) {
+        toast('Erro ao salvar: ' + err.message, 'error');
+        btn.disabled = false; btn.textContent = '💾 Salvar Protocolo';
+      }
+    });
+  }
 
   function buildPage() {
     const pc = document.getElementById('page-content');

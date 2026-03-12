@@ -384,7 +384,7 @@ router.get('/cliente/:clienteId', async (req, res) => {
         // may share the same email (e.g. mother filling form for her son) and
         // must have their anamneses kept separate.
         const { rows } = await pool.query(`
-            SELECT a.id, a.tipo, a.subtipo, a.dados, a.preenchido, a.criado_em, a.nome_link
+            SELECT a.id, a.tipo, a.subtipo, a.dados, a.preenchido, a.criado_em, a.nome_link, a.protocolo_customizado
             FROM anamneses a
             WHERE a.consultora_id = $1
               AND a.cliente_id    = $2
@@ -473,6 +473,27 @@ router.delete('/:id', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erro ao remover anamnese.' });
+    }
+});
+
+// PUT /api/anamneses/:id/protocolo  (save consultant's custom protocol)
+router.put('/:id/protocolo', auth, async (req, res) => {
+    try {
+        const { protocolo_customizado } = req.body;
+        if (!protocolo_customizado || typeof protocolo_customizado !== 'object') {
+            return res.status(400).json({ error: 'Protocolo inválido.' });
+        }
+        const { rows } = await pool.query(
+            `UPDATE anamneses SET protocolo_customizado = $1
+             WHERE id = $2 AND consultora_id = $3
+             RETURNING id`,
+            [JSON.stringify(protocolo_customizado), req.params.id, req.consultora.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Anamnese não encontrada.' });
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao salvar protocolo.' });
     }
 });
 

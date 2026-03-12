@@ -259,6 +259,11 @@ export const store = {
     /* ---- AVISOS DO SISTEMA ---- */
     getAvisosNaoLidos() { return api('GET', '/api/avisos/nao-lidos'); },
     getAvisosBanner() { return api('GET', '/api/avisos/banner'); },
-    marcarAvisoLido(id) { return api('POST', `/api/avisos/${id}/lido`); }
+    marcarAvisoLido(id) { return api('POST', `/api/avisos/${id}/lido`); },
+
+    /* ---- PROTOCOLO CUSTOMIZADO ---- */
+    saveCustomProtocol(anamneseId, data) {
+        return api('PUT', `/api/anamneses/${anamneseId}/protocolo`, { protocolo_customizado: data });
+    },
 };
 
