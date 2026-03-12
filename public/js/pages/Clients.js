@@ -367,11 +367,10 @@ export async function renderClients(router) {
         const rawPayload = JSON.stringify({
           answers: dados,
           protocolo_customizado: freshA.protocolo_customizado,
-          consultant: { name: consultant?.nome || consultant?.name, phone: consultant?.telefone || consultant?.phone, genero: consultant?.genero },
+          consultant: { name: consultant?.nome || consultant?.name, slug: consultant?.slug, phone: consultant?.telefone || consultant?.phone, genero: consultant?.genero },
           clientName: client.name,
           clientMessage: client.protocolo_mensagem,
-          clientId: client.id,
-          consultora_token_anamnese: consultant?.link || 'vip'
+          clientId: client.id
         });
         
         // Usa sessionStorage para não estourar o limite de URL e garantir leitura única e limpa pelo Report.js
