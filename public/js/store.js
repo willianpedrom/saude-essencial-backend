@@ -47,6 +47,8 @@ export function normalizeClient(c) {
         status: c.status || 'active',
         genero: c.genero || 'feminino',
         protocolo_mensagem: c.protocolo_mensagem || '',
+        indicado_por_id: c.indicado_por_id || null,
+        indicador_nome: c.indicador_nome || null,
     };
 }
 
@@ -69,6 +71,7 @@ export function clientToApi(data) {
     if ('protocolo_mensagem' in data) apiObj.protocolo_mensagem = data.protocolo_mensagem || null;
     if ('pipeline_stage' in data) apiObj.pipeline_stage = data.pipeline_stage;
     if ('tipo_cadastro' in data) apiObj.tipo_cadastro = data.tipo_cadastro;
+    if ('indicado_por_id' in data) apiObj.indicado_por_id = data.indicado_por_id;
 
     return apiObj;
 }
@@ -209,7 +212,9 @@ export const store = {
     createAnamnesis(data) { return api('POST', '/api/anamneses', data); },
     deleteAnamnesis(id) { return api('DELETE', `/api/anamneses/${id}`); },
     getPublicAnamnesis(token) { return api('GET', `/api/anamneses/public/${token}`); },
-    submitAnamnesis(token, dados) { return api('PUT', `/api/anamneses/public/${token}`, { dados }); },
+    submitAnamnesis(token, dados, refId = null) {
+        return api('PUT', `/api/anamneses/public/${token}${refId ? `?ref=${refId}` : ''}`, { dados });
+    },
 
     /* ---- AGENDAMENTOS ---- */
     async getAgendamentos(_cid) {

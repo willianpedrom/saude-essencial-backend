@@ -382,6 +382,7 @@ export function openClientOffcanvas(client) {
                  <span>${client.cidade || 'Sem cidade'}</span>
                  <span>•</span>
                  <span style="color:${isLost ? '#ef4444' : 'var(--green-600)'};font-weight:600">${stageName}</span>
+                 ${client.indicador_nome ? `<span>•</span><span style="color:#d97706;font-weight:600;background:#fef3c7;padding:2px 6px;border-radius:4px" title="Este cliente chegou no Funil porque foi indicado.">🎁 Indicado(a) por: ${client.indicador_nome}</span>` : ''}
               </div>
             </div>
           </div>
@@ -633,7 +634,8 @@ export function openClientOffcanvas(client) {
               answers: freshA.dados || {},
               protocolo_customizado: freshA.protocolo_customizado,
               consultant: { name: 'Consultor CRM', genero: 'Consultora', phone: '' },
-              clientName: client.nome || 'Cliente'
+              clientName: client.nome || 'Cliente',
+              clientId: client.id
             });
             // Salva na Storage temporário como fizemos p/ submit
             sessionStorage.setItem('tempAnamnesisPayload', rawPayload);

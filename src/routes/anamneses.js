@@ -59,6 +59,7 @@ router.get('/public/:token', async (req, res) => {
 // PUT /api/anamneses/public/:token  (client submits the form)
 router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) => {
     const { dados } = req.body;
+    const refId = req.query.ref || null; // Captura UUID do indicador se vier do link viral
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -191,9 +192,9 @@ router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) 
             }
 
             const { rows: cRows } = await client.query(
-                `INSERT INTO clientes (consultora_id, nome, email, telefone, data_nascimento, cidade, genero, status)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, 'lead') RETURNING id`,
-                [consultora_id, nome, email, telefone, data_nasc, cidade, genero || 'feminino']
+                `INSERT INTO clientes (consultora_id, nome, email, telefone, data_nascimento, cidade, genero, status, indicado_por_id)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, 'lead', $8) RETURNING id`,
+                [consultora_id, nome, email, telefone, data_nasc, cidade, genero || 'feminino', refId]
             );
             clienteId = cRows[0].id;
         }

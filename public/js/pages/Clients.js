@@ -77,8 +77,11 @@ export async function renderClients(router) {
         <tr class="client-row" data-id="${c.id}" style="cursor:pointer" title="Ver ficha completa">
           <td><div class="client-name-cell">
             <div class="client-avatar-sm">${getInitials(name)}</div>
-            <div><div style="font-weight:600">${name} ${c.tipo_cadastro === 'preferencial' ? '🛍️' : c.tipo_cadastro === 'consultora' ? '💼' : ''}</div>
-            <div style="font-size:0.75rem;color:var(--text-muted)">${c.email || ''}</div></div>
+            <div>
+              <div style="font-weight:600">${name} ${c.tipo_cadastro === 'preferencial' ? '🛍️' : c.tipo_cadastro === 'consultora' ? '💼' : ''}</div>
+              <div style="font-size:0.75rem;color:var(--text-muted)">${c.email || ''}</div>
+              ${c.indicador_nome ? `<div style="font-size:0.75rem;color:#d97706;background:#fef3c7;padding:2px 6px;border-radius:4px;display:inline-block;margin-top:4px;font-weight:600">🎁 Indicado(a) por: ${c.indicador_nome}</div>` : ''}
+            </div>
           </div></td>
           <td>${phone}</td>
           <td>${c.genero === 'masculino' ? '♂ Masc.' : '♀ Fem.'}</td>
@@ -366,7 +369,8 @@ export async function renderClients(router) {
           protocolo_customizado: freshA.protocolo_customizado,
           consultant: { name: consultant?.nome || consultant?.name, phone: consultant?.telefone || consultant?.phone, genero: consultant?.genero },
           clientName: client.name,
-          clientMessage: client.protocolo_mensagem
+          clientMessage: client.protocolo_mensagem,
+          clientId: client.id
         });
         
         // Usa sessionStorage para não estourar o limite de URL e garantir leitura única e limpa pelo Report.js

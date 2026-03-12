@@ -14,27 +14,30 @@ router.use(auth, checkSub);
 router.get('/', async (req, res) => {
     try {
         // Filtra ativo=TRUE por padrão.
-        let baseWhere = `WHERE consultora_id = $1`;
+        let baseWhere = `WHERE c.consultora_id = $1`;
         const queryParams = [req.consultora.id];
 
         if (req.query.ativo === 'all') {
             // não filtra
         } else if (req.query.ativo === 'false') {
-            baseWhere += ` AND ativo = FALSE`;
+            baseWhere += ` AND c.ativo = FALSE`;
         } else {
-            baseWhere += ` AND ativo = TRUE`;
+            baseWhere += ` AND c.ativo = TRUE`;
         }
 
         // Optional search filter (server-side)
         if (req.query.q && req.query.q.trim()) {
             const idx = queryParams.length + 1;
-            baseWhere += ` AND (nome ILIKE $${idx} OR email ILIKE $${idx} OR telefone ILIKE $${idx})`;
+            baseWhere += ` AND (c.nome ILIKE $${idx} OR c.email ILIKE $${idx} OR c.telefone ILIKE $${idx})`;
             queryParams.push(`%${req.query.q.trim()}%`);
         }
 
-        const cols = `id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, ativo, status,
-                   pipeline_stage, pipeline_notas, motivo_perda,
-                   recrutamento_stage, recrutamento_notas, motivo_perda_recrutamento, tipo_cadastro, protocolo_mensagem, criado_em`;
+        const cols = `c.id, c.nome, c.email, c.telefone, c.cpf, c.data_nascimento, c.genero, c.cidade, c.notas, c.ativo, c.status,
+                   c.pipeline_stage, c.pipeline_notas, c.motivo_perda,
+                   c.recrutamento_stage, c.recrutamento_notas, c.motivo_perda_recrutamento, c.tipo_cadastro, c.protocolo_mensagem, c.criado_em,
+                   c.indicado_por_id, i.nome AS indicador_nome`;
+        
+        const fromJoins = `FROM clientes c LEFT JOIN clientes i ON c.indicado_por_id = i.id`;
 
         // Paginação opcional: ?page=1&limit=50
         // Sem os parâmetros, retorna tudo (retrocompatível)
@@ -44,13 +47,13 @@ router.get('/', async (req, res) => {
             const offset = (page - 1) * limit;
 
             const countRes = await pool.query(
-                `SELECT COUNT(*) FROM clientes ${baseWhere}`,
+                `SELECT COUNT(*) ${fromJoins} ${baseWhere}`,
                 queryParams
             );
             const total = parseInt(countRes.rows[0].count);
 
             const dataRes = await pool.query(
-                `SELECT ${cols} FROM clientes ${baseWhere} ORDER BY nome ASC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`,
+                `SELECT ${cols} ${fromJoins} ${baseWhere} ORDER BY c.nome ASC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`,
                 [...queryParams, limit, offset]
             );
 
@@ -65,7 +68,7 @@ router.get('/', async (req, res) => {
 
         // Retrocompatível: retorna array simples
         const { rows } = await pool.query(
-            `SELECT ${cols} FROM clientes ${baseWhere} ORDER BY nome ASC`,
+            `SELECT ${cols} ${fromJoins} ${baseWhere} ORDER BY c.nome ASC`,
             queryParams
         );
         res.json(rows);
@@ -79,7 +82,10 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const { rows } = await pool.query(
-            'SELECT * FROM clientes WHERE id = $1 AND consultora_id = $2',
+            `SELECT c.*, i.nome AS indicador_nome 
+             FROM clientes c 
+             LEFT JOIN clientes i ON c.indicado_por_id = i.id 
+             WHERE c.id = $1 AND c.consultora_id = $2`,
             [req.params.id, req.consultora.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Cliente não encontrado.' });

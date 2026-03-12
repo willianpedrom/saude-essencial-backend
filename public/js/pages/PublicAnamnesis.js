@@ -485,18 +485,21 @@ export async function renderPublicAnamnesis(router, token) {
     if (btn) { btn.disabled = true; btn.textContent = '⏳ Processando...'; }
 
     const allAnswers = Object.values(answers).reduce((acc, v) => ({ ...acc, ...v }), {});
+    const urlParams = new URLSearchParams(window.location.search);
+    const refId = urlParams.get('ref') || null;
 
     try {
       console.log("[Anamnesis] Starting submit process...");
       console.log("[Anamnesis] Payload to be saved:", allAnswers);
 
       // Save to backend - Com timeout pra não travar pra sempre se o DB engasgar
-      const savePromise = store.submitAnamnesis(token, allAnswers);
+      const savePromise = store.submitAnamnesis(token, allAnswers, refId);
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout salvando no banco')), 6000));
 
+      let result = null;
       try {
-        await Promise.race([savePromise, timeoutPromise]);
-        console.log("[Anamnesis] Salvo no DB com sucesso!");
+        result = await Promise.race([savePromise, timeoutPromise]);
+        console.log("[Anamnesis] Salvo no DB com sucesso!", result);
       } catch (dbErr) {
         console.warn("[Anamnesis] Falha leve ao salvar DB (Prosseguindo para o laudo):", dbErr);
         toast('O form foi salvo localmente, mas a nuvem pode ter falhado.', 'warning');
@@ -512,7 +515,8 @@ export async function renderPublicAnamnesis(router, token) {
             link: window.location.origin + '/#anamnese/' + token,
             link_afiliada: anamneseData.consultora_link_afiliada 
         },
-        clientName: allAnswers.full_name || 'Empreendedor'
+        clientName: allAnswers.full_name || 'Empreendedor',
+        clientId: result?.cliente_id || null // Necessário p/ montar o Link de Referência
       });
 
       console.log("[Anamnesis] Saving to sessionStorage...");
