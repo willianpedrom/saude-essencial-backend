@@ -419,64 +419,59 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
 }
 
 // ── Helper: Modern step-by-step Funnel (Circles) ──────────────
-// ── Helper: Modern step-by-step Funnel (Circles) ──────────────
+// ── Helper: UHD Vertical Pipeline Funnel (Premium) ──────────────
 function buildFunnel(steps) {
-  // Volume base: o valor máximo encontrado em qualquer etapa (resolve o problema de leads entrando no meio do funil)
   const baseVolume = Math.max(...steps.map(s => s.count)) || 0;
   
   if (baseVolume === 0) return `
     <div style="display:flex;flex-direction:column;align-items:center;padding:32px 0;gap:10px;color:var(--text-light)">
       <div style="font-size:2.5rem;opacity:0.3">📊</div>
-      <div style="font-size:0.85rem">Sem dados no funil ainda</div>
+      <div style="font-size:0.85rem">Aguardando dados de prospecção...</div>
     </div>`;
 
-  let html = '<div class="funnel-modern">';
+  let html = '<div class="funnel-premium">';
 
   steps.forEach((s, i) => {
-    // Percentual em relação ao volume máximo (quem passou em algum momento pelo funil)
     const pctOfBase = baseVolume > 0 ? Math.round((s.count / baseVolume) * 100) : 0;
     const isZero = s.count === 0;
-
-    // Use a provided color, or fallback to a standard blue
     const baseColor = s.color || '#3b82f6';
     
-    // Calculo de conversão comparando com etapa anterior para exibir a taxa de avanço
+    // Configuração do Anel SVG
+    const radius = 24;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (pctOfBase / 100) * circumference;
+    
+    // Conversão Comparativa
     const prev = steps[i - 1];
-    let convHtml = '';
+    let convText = '';
     if (prev && prev.count > 0) {
       const conv = Math.round((s.count / prev.count) * 100);
-      const convScaleColor = conv >= 70 ? '#16a34a' : conv >= 40 ? '#f59e0b' : '#ef4444';
-      convHtml = `
-        <div style="font-size:0.7rem; font-weight:700; color:${convScaleColor}; display:flex; align-items:center; gap:4px;" title="Conversão comparada à etapa anterior">
-          <svg style="width:12px;height:12px;transform:rotate(90deg)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-          </svg>
-          ${conv}% conversão
-        </div>`;
+      convText = `<span style="margin-left:8px; color:${conv >= 70 ? 'var(--green-600)' : 'var(--text-muted)'}">${conv}% conv.</span>`;
     }
 
+    // Adiciona conector entre degraus
+    if (i > 0) html += '<div class="funnel-connector"></div>';
+
     html += `
-      <div class="funnel-step">
-        <div class="funnel-step-bg" style="background-color: ${baseColor}"></div>
-        <div class="funnel-bubble" style="background: ${isZero ? '#d1d5db' : baseColor}">
-          ${s.icon || '🔸'}
+      <div class="glass-card">
+        <div class="ring-container ${pctOfBase >= 80 ? 'pulse-high' : ''}">
+          <svg class="ring-svg" viewBox="0 0 56 56">
+            <circle class="ring-circle-bg" cx="28" cy="28" r="${radius}" />
+            <circle class="ring-circle-prog" cx="28" cy="28" r="${radius}" 
+              stroke="${baseColor}"
+              stroke-dasharray="${circumference}" 
+              stroke-dashoffset="${offset}" />
+          </svg>
+          <div class="ring-icon">${s.icon || '🔸'}</div>
         </div>
         
-        <div class="funnel-info">
-          <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-             <span class="funnel-label" style="opacity: ${isZero ? '0.6' : '1'}">${s.label}</span>
-             <span style="font-size:1.1rem; font-weight:800; color: ${isZero ? '#9ca3af' : baseColor}">${s.count}</span>
-          </div>
-          
-          <div class="funnel-stat-bar">
-             <div class="funnel-fill" style="width: ${pctOfBase}%; background: ${isZero ? '#e5e7eb' : baseColor}"></div>
-          </div>
-          
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">
-              ${pctOfBase}% do volume total
-            </div>
-            ${convHtml}
+        <div class="funnel-premium-info">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+             <div>
+               <span class="funnel-premium-label">${s.label}</span>
+               <span class="funnel-premium-sub">${pctOfBase}% do volume total ${convText}</span>
+             </div>
+             <span class="funnel-premium-count" style="color:${baseColor}">${s.count}</span>
           </div>
         </div>
       </div>
@@ -485,20 +480,19 @@ function buildFunnel(steps) {
 
   html += '</div>';
 
-  // Card Summary de Conversão Global
+  // Card Global Summary Premium
   const last = steps[steps.length - 1];
-  // A conversão total real é o quanto chegou no fim em relação ao volume máximo que o funil processou
   const convRate = baseVolume > 0 ? Math.round((last.count / baseVolume) * 100) : 0;
   const rateColor = convRate >= 15 ? '#16a34a' : convRate >= 5 ? '#f59e0b' : '#ef4444';
   
   return html + `
-    <div style="margin-top:16px;padding:12px 16px;background:${rateColor}10;border-radius:12px;display:flex;justify-content:space-between;align-items:center;border:1px solid ${rateColor}33;box-shadow:0 1px 3px rgba(0,0,0,0.03)">
-       <span style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Conversão Total Geral<br><span style="font-size:0.65rem;font-weight:500;color:var(--text-light); text-transform:none;">Meta Final alcançada por ${convRate}% do fluxo total</span></span>
-       <div style="text-align:right;">
-         <div style="font-size:1.5rem;font-weight:800;color:${rateColor};display:flex;align-items:center;gap:4px">
-           ${convRate}%
-           ${convRate >= 15 ? '✨' : ''}
-         </div>
+    <div style="margin-top:20px; padding:16px; background:linear-gradient(135deg, ${rateColor}15, ${rateColor}05); border-radius:20px; display:flex; justify-content:space-between; align-items:center; border:1px solid ${rateColor}30; backdrop-filter:blur(10px);">
+       <div>
+         <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Conversão Geral</div>
+         <div style="font-size:0.8rem; font-weight:500; color:var(--text-light);">${last.label} alcançado por ${convRate}% do fluxo.</div>
+       </div>
+       <div style="font-size:1.8rem; font-weight:900; color:${rateColor}; text-shadow: 0 2px 10px ${rateColor}33;">
+         ${convRate}%
        </div>
     </div>
   `;

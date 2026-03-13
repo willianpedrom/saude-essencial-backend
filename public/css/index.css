@@ -1126,76 +1126,126 @@ body {
   }
 }
 
-/* ===== FUNIL ROUNDED PREMIUM ===== */
-.funnel-modern {
+/* ===== FUNIL PREMIUM UHD (Glassmorphism & Progress Rings) ===== */
+.funnel-premium {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 5px 0;
+  gap: 16px;
+  padding: 10px 0;
 }
 
-.funnel-step {
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  padding: 16px;
   display: flex;
   align-items: center;
-  background: var(--white);
-  border: 1px solid var(--border-light);
-  border-radius: 16px;
-  padding: 12px;
   position: relative;
-  overflow: hidden;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
 }
 
-.funnel-step:hover {
-  border-color: var(--border);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+.glass-card:hover {
+  transform: translateY(-2px) scale(1.01);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  border-color: rgba(255, 255, 255, 0.6);
 }
 
-.funnel-bubble {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+/* Progress Ring Container */
+.ring-container {
+  position: relative;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
-  color: #fff;
   flex-shrink: 0;
-  z-index: 2;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.funnel-info {
-  margin-left: 14px;
-  flex: 1;
-  z-index: 2;
-}
-
-.funnel-label {
-  font-weight: 600;
-  font-size: 0.88rem;
-  color: var(--text-dark);
-  margin-bottom: 2px;
-}
-
-.funnel-stat-bar {
-  height: 6px;
-  background: #f1f5f9;
-  border-radius: 10px;
-  margin: 6px 0;
-  overflow: hidden;
-}
-
-.funnel-fill {
+.ring-svg {
+  transform: rotate(-90deg);
+  width: 100%;
   height: 100%;
-  border-radius: 10px;
-  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.funnel-step-bg {
+.ring-circle-bg {
+  fill: none;
+  stroke: #e2e8f0;
+  stroke-width: 4;
+}
+
+.ring-circle-prog {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s ease-out;
+}
+
+.ring-icon {
   position: absolute;
-  top: 0; left: 0; width: 4px; height: 100%;
-  opacity: 1;
+  font-size: 1.4rem;
+  z-index: 2;
+}
+
+.funnel-premium-info {
+  margin-left: 16px;
+  flex: 1;
+}
+
+.funnel-premium-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-dark);
+  display: block;
+}
+
+.funnel-premium-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.funnel-premium-count {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--text-dark);
+}
+
+/* Conectores de Fluxo */
+.funnel-connector {
+  height: 20px;
+  width: 2px;
+  background: linear-gradient(to bottom, #cbd5e1, transparent);
+  margin: -8px 0 -8px 43px;
+  position: relative;
+  z-index: 1;
+}
+
+.funnel-connector::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cbd5e1;
+}
+
+/* Animação de Pulsar para conversão alta */
+@keyframes ring-pulse {
+  0% { filter: drop-shadow(0 0 0px rgba(34, 197, 94, 0)); }
+  50% { filter: drop-shadow(0 0 5px rgba(34, 197, 94, 0.4)); }
+  100% { filter: drop-shadow(0 0 0px rgba(34, 197, 94, 0)); }
+}
+
+.pulse-high {
+  animation: ring-pulse 2s infinite;
 }
 
 
