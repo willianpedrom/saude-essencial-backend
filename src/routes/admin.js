@@ -733,13 +733,14 @@ router.put('/settings', async (req, res) => {
 
 // POST /api/admin/relink-anamneses
 // Busca anamneses preenchidas cujo cliente_id está NULL ou inválido e as vincula
-// ao cliente correto buscando por email/telefone dentro do JSONB dados.
+// ao cliente correto usando nome + email (ambos devem coincidir para evitar
+// misturar familiares que compartilham email).
 router.post('/relink-anamneses', async (req, res) => {
     const fixed = [];
     const skipped = [];
 
     try {
-        // 1. Anamneses sem cliente vinculado
+        // 1. Anamneses sem cliente vinculado (cliente_id NULL ou apontando para registro inexistente)
         const { rows: orphans } = await pool.query(`
             SELECT a.id, a.consultora_id, a.dados, a.subtipo, a.cliente_id
             FROM anamneses a
@@ -754,41 +755,58 @@ router.post('/relink-anamneses', async (req, res) => {
         for (const anamnese of orphans) {
             const dados = anamnese.dados || {};
             const pData = dados.personal || dados || {};
-            const email = pData.email || null;
-            const telefone = pData.phone || pData.telefone || null;
-            const nome = pData.full_name || pData.nome || null;
+            const email = (pData.email || '').trim().toLowerCase();
+            const nome = (pData.full_name || pData.nome || '').trim().toLowerCase();
 
-            if (!email && !telefone) { skipped.push({ id: anamnese.id, reason: 'sem contato' }); continue; }
+            // Require at least email + name to do a safe match
+            if (!email || !nome) {
+                skipped.push({ id: anamnese.id, reason: 'sem email ou nome no formulário' });
+                continue;
+            }
 
-            let params = [anamnese.consultora_id];
-            let conditions = [];
-            if (email) { params.push(email); conditions.push(`email = $${params.length}`); }
-            if (telefone) { params.push(telefone); conditions.push(`telefone = $${params.length}`); }
-
+            // Match: same consultora + same email + name starts with same first word
+            const primeiroNome = nome.split(' ')[0];
             const { rows: matches } = await pool.query(
-                `SELECT id, nome FROM clientes WHERE consultora_id = $1 AND (${conditions.join(' OR ')}) ORDER BY criado_em ASC LIMIT 1`,
-                params
+                `SELECT id, nome FROM clientes
+                 WHERE consultora_id = $1
+                   AND LOWER(TRIM(email)) = $2
+                   AND LOWER(TRIM(nome)) LIKE $3
+                 ORDER BY criado_em ASC LIMIT 1`,
+                [anamnese.consultora_id, email, primeiroNome + '%']
             );
 
-            if (matches.length === 0) { skipped.push({ id: anamnese.id, reason: 'cliente não encontrado', nome }); continue; }
+            if (matches.length === 0) {
+                skipped.push({ id: anamnese.id, reason: 'nenhum cliente com mesmo nome+email', nome, email });
+                continue;
+            }
 
             await pool.query('UPDATE anamneses SET cliente_id = $1 WHERE id = $2', [matches[0].id, anamnese.id]);
             fixed.push({ anamnese_id: anamnese.id, cliente: matches[0].nome, nome });
         }
 
-        // 2. Anamneses genéricas com cliente duplicado — re-vincula ao cliente mais antigo com mesmo email
+        // 2. Anamneses genéricas vinculadas a um cliente duplicado — 
+        //    re-vincula ao cliente mais antigo com mesmo email E nome similar
         const { rows: generics } = await pool.query(`
-            SELECT a.id, a.consultora_id, a.cliente_id, c.email as client_email, c.nome as client_nome
+            SELECT a.id, a.consultora_id, a.cliente_id,
+                   c.email as client_email, c.nome as client_nome
             FROM anamneses a
             JOIN clientes c ON c.id = a.cliente_id
-            WHERE a.preenchido = TRUE AND a.subtipo = 'generico' AND c.email IS NOT NULL
+            WHERE a.preenchido = TRUE
+              AND a.subtipo = 'generico'
+              AND c.email IS NOT NULL
             ORDER BY a.criado_em ASC
         `);
 
         for (const a of generics) {
+            const primeiroNome = (a.client_nome || '').trim().toLowerCase().split(' ')[0];
             const { rows: older } = await pool.query(
-                `SELECT id, nome FROM clientes WHERE consultora_id=$1 AND email=$2 AND id != $3 ORDER BY criado_em ASC LIMIT 1`,
-                [a.consultora_id, a.client_email, a.cliente_id]
+                `SELECT id, nome FROM clientes
+                 WHERE consultora_id = $1
+                   AND LOWER(TRIM(email)) = LOWER(TRIM($2))
+                   AND LOWER(TRIM(nome)) LIKE $3
+                   AND id != $4
+                 ORDER BY criado_em ASC LIMIT 1`,
+                [a.consultora_id, a.client_email, primeiroNome + '%', a.cliente_id]
             );
             if (older.length > 0) {
                 await pool.query('UPDATE anamneses SET cliente_id = $1 WHERE id = $2', [older[0].id, a.id]);
