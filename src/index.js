@@ -249,6 +249,15 @@ async function runMigration() {
             valor TEXT,
             atualizado_em TIMESTAMPTZ DEFAULT NOW()
         )`);
+        // Promote ADMIN_EMAIL to role='admin' (safe to run every startup — idempotent)
+        if (process.env.ADMIN_EMAIL) {
+            await pool.query(
+                `UPDATE consultoras SET role = 'admin' WHERE LOWER(TRIM(email)) = LOWER(TRIM($1)) AND role != 'admin'`,
+                [process.env.ADMIN_EMAIL]
+            );
+            console.log(`👑 Admin: ${process.env.ADMIN_EMAIL}`);
+        }
+
         console.log('✅ Schema OK');
     } catch (err) {
         console.error('⚠️  Erro na migração (tabelas podem já existir):', err.message);
