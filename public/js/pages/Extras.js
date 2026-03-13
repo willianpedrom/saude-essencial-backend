@@ -260,13 +260,28 @@ export async function renderTestimonials(router) {
       document.querySelectorAll('[data-approve]').forEach(btn => {
         btn.addEventListener('click', async () => {
           const id = btn.dataset.approve;
-          btn.disabled = true; btn.textContent = '⏳ Aprovando...';
+          let success = false;
+          btn.disabled = true;
+          btn.textContent = '⏳ Aprovando...';
           try {
             await store.approveTestimonial(id, true);
-            // Comparação com String() para evitar falha silenciosa number vs string
+            // Usa String() para evitar falha silenciosa: id do banco é number, dataset é string
             localTestimonials = localTestimonials.map(t => String(t.id) === String(id) ? { ...t, aprovado: true } : t);
-            renderView(); window.toast('Depoimento aprovado com sucesso! ✅');
-          } catch (e) { window.toast(e.message || 'Erro ao aprovar. Tente novamente.', 'error'); renderView(); }
+            success = true;
+          } catch (e) {
+            const msg = e?.message || '';
+            if (msg.includes('401') || msg.toLowerCase().includes('expirado') || msg.toLowerCase().includes('inválido')) {
+              window.toast?.('Sua sessão expirou. Recarregue a página e tente novamente.', 'error');
+            } else {
+              window.toast?.(msg || 'Erro ao aprovar. Tente novamente.', 'error');
+            }
+          } finally {
+            // Garante que a UI SEMPRE seja atualizada, mesmo se toast() falhar
+            try { renderView(); } catch { /* silencioso */ }
+            if (success) {
+              try { window.toast('Depoimento aprovado com sucesso! ✅'); } catch { /* silencioso */ }
+            }
+          }
         });
       });
 

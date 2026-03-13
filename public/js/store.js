@@ -27,6 +27,16 @@ export async function api(method, path, body = null) {
         if (res.status === 403 && data.code === 'SUBSCRIPTION_REQUIRED') {
             window.dispatchEvent(new CustomEvent('subscription:required'));
         }
+        if (res.status === 401) {
+            // Sessão expirada ou revogada — limpa a sessão local e redireciona para login
+            sessionStorage.removeItem('se_token');
+            sessionStorage.removeItem('se_csrf');
+            sessionStorage.removeItem('se_user');
+            // Só redireciona se não estiver já na tela de login
+            if (!window.location.hash?.includes('/login') && window.location.hash !== '#/') {
+                window.location.hash = '/';
+            }
+        }
         throw new Error(data.error || `Erro ${res.status}`);
     }
     return data;
