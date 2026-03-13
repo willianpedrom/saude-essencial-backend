@@ -419,9 +419,12 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
 }
 
 // ── Helper: Modern step-by-step Funnel (Circles) ──────────────
+// ── Helper: Modern step-by-step Funnel (Circles) ──────────────
 function buildFunnel(steps) {
-  const top = steps[0]?.count || 0;
-  if (top === 0) return `
+  // Volume base: o valor máximo encontrado em qualquer etapa (resolve o problema de leads entrando no meio do funil)
+  const baseVolume = Math.max(...steps.map(s => s.count)) || 0;
+  
+  if (baseVolume === 0) return `
     <div style="display:flex;flex-direction:column;align-items:center;padding:32px 0;gap:10px;color:var(--text-light)">
       <div style="font-size:2.5rem;opacity:0.3">📊</div>
       <div style="font-size:0.85rem">Sem dados no funil ainda</div>
@@ -430,20 +433,21 @@ function buildFunnel(steps) {
   let html = '<div class="funnel-modern">';
 
   steps.forEach((s, i) => {
-    const pctOfTop = top > 0 ? Math.round((s.count / top) * 100) : 0;
+    // Percentual em relação ao volume máximo (quem passou em algum momento pelo funil)
+    const pctOfBase = baseVolume > 0 ? Math.round((s.count / baseVolume) * 100) : 0;
     const isZero = s.count === 0;
 
     // Use a provided color, or fallback to a standard blue
     const baseColor = s.color || '#3b82f6';
     
-    // Calculo de conversão comparando com etapa anterior para exibir a queda
+    // Calculo de conversão comparando com etapa anterior para exibir a taxa de avanço
     const prev = steps[i - 1];
     let convHtml = '';
     if (prev && prev.count > 0) {
       const conv = Math.round((s.count / prev.count) * 100);
-      const convScaleColor = conv >= 50 ? '#16a34a' : conv >= 20 ? '#f59e0b' : '#ef4444';
+      const convScaleColor = conv >= 70 ? '#16a34a' : conv >= 40 ? '#f59e0b' : '#ef4444';
       convHtml = `
-        <div style="font-size:0.7rem; font-weight:700; color:${convScaleColor}; display:flex; align-items:center; gap:4px;">
+        <div style="font-size:0.7rem; font-weight:700; color:${convScaleColor}; display:flex; align-items:center; gap:4px;" title="Conversão comparada à etapa anterior">
           <svg style="width:12px;height:12px;transform:rotate(90deg)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
           </svg>
@@ -465,12 +469,12 @@ function buildFunnel(steps) {
           </div>
           
           <div class="funnel-stat-bar">
-             <div class="funnel-fill" style="width: ${pctOfTop}%; background: ${isZero ? '#e5e7eb' : baseColor}"></div>
+             <div class="funnel-fill" style="width: ${pctOfBase}%; background: ${isZero ? '#e5e7eb' : baseColor}"></div>
           </div>
           
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
             <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">
-              ${pctOfTop}% do volume inicial
+              ${pctOfBase}% do volume total
             </div>
             ${convHtml}
           </div>
@@ -483,16 +487,17 @@ function buildFunnel(steps) {
 
   // Card Summary de Conversão Global
   const last = steps[steps.length - 1];
-  const convRate = top > 0 ? Math.round((last.count / top) * 100) : 0;
-  const rateColor = convRate >= 10 ? '#16a34a' : convRate >= 5 ? '#f59e0b' : '#ef4444';
+  // A conversão total real é o quanto chegou no fim em relação ao volume máximo que o funil processou
+  const convRate = baseVolume > 0 ? Math.round((last.count / baseVolume) * 100) : 0;
+  const rateColor = convRate >= 15 ? '#16a34a' : convRate >= 5 ? '#f59e0b' : '#ef4444';
   
   return html + `
     <div style="margin-top:16px;padding:12px 16px;background:${rateColor}10;border-radius:12px;display:flex;justify-content:space-between;align-items:center;border:1px solid ${rateColor}33;box-shadow:0 1px 3px rgba(0,0,0,0.03)">
-       <span style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Conversão Total<br><span style="font-size:0.65rem;font-weight:500;color:var(--text-light); text-transform:none;">${steps[0].label} → ${last.label}</span></span>
+       <span style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Conversão Total Geral<br><span style="font-size:0.65rem;font-weight:500;color:var(--text-light); text-transform:none;">Meta Final alcançada por ${convRate}% do fluxo total</span></span>
        <div style="text-align:right;">
          <div style="font-size:1.5rem;font-weight:800;color:${rateColor};display:flex;align-items:center;gap:4px">
            ${convRate}%
-           ${convRate >= 10 ? '✨' : ''}
+           ${convRate >= 15 ? '✨' : ''}
          </div>
        </div>
     </div>
