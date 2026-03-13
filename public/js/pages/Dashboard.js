@@ -418,86 +418,85 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
   return document.getElementById('page-content');
 }
 
-// ── Helper: Premium visual funnel with trapezoid shapes ──────
+// ── Helper: Modern step-by-step Funnel (Circles) ──────────────
 function buildFunnel(steps) {
   const top = steps[0]?.count || 0;
   if (top === 0) return `
     <div style="display:flex;flex-direction:column;align-items:center;padding:32px 0;gap:10px;color:var(--text-light)">
       <div style="font-size:2.5rem;opacity:0.3">📊</div>
-      <div style="font-size:0.85rem">Sem leads no funil ainda</div>
+      <div style="font-size:0.85rem">Sem dados no funil ainda</div>
     </div>`;
 
-  // Gradient palette topo→fundo
-  const palette = [
-    ['#818cf8', '#6366f1'], ['#60a5fa', '#3b82f6'], ['#22d3ee', '#06b6d4'],
-    ['#34d399', '#10b981'], ['#fbbf24', '#f59e0b'], ['#fb923c', '#f97316'], ['#4ade80', '#16a34a']
-  ];
+  let html = '<div class="funnel-modern">';
 
-  const total = steps.length;
-  const rows = steps.map((s, i) => {
+  steps.forEach((s, i) => {
     const pctOfTop = top > 0 ? Math.round((s.count / top) * 100) : 0;
-    // Trapezoid width: top step = 100%, narrows proportionally, min 20%
-    const trapW = Math.max(20, pctOfTop);
-    // Clip-path trapezoid: bottom is 6% narrower per side than top
-    const shrink = i === 0 ? 0 : 3;
-    const [c1, c2] = palette[Math.min(i, palette.length - 1)];
-    const next = steps[i + 1];
-    // Conversion to next step (cap to 100% to handle data anomalies)
-    const conv = next && s.count > 0 ? Math.min(100, Math.round((next.count / s.count) * 100)) : null;
-    const convColor = conv === null ? '' : conv >= 60 ? '#16a34a' : conv >= 30 ? '#f59e0b' : '#ef4444';
-    const isLast = i === total - 1;
-    return `
-      <div style="display:flex;align-items:center;gap:8px;width:100%;margin-bottom:${isLast ? 0 : 2}px">
-        <!-- Left label -->
-        <div style="width:112px;text-align:right;flex-shrink:0">
-          <div style="font-size:0.72rem;font-weight:600;color:var(--text-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.icon} ${s.label}</div>
+    const isZero = s.count === 0;
+
+    // Use a provided color, or fallback to a standard blue
+    const baseColor = s.color || '#3b82f6';
+    
+    // Calculo de conversão comparando com etapa anterior para exibir a queda
+    const prev = steps[i - 1];
+    let convHtml = '';
+    if (prev && prev.count > 0) {
+      const conv = Math.round((s.count / prev.count) * 100);
+      const convScaleColor = conv >= 50 ? '#16a34a' : conv >= 20 ? '#f59e0b' : '#ef4444';
+      convHtml = `
+        <div style="font-size:0.7rem; font-weight:700; color:${convScaleColor}; display:flex; align-items:center; gap:4px;">
+          <svg style="width:12px;height:12px;transform:rotate(90deg)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+          ${conv}% conversão
+        </div>`;
+    }
+
+    html += `
+      <div class="funnel-step">
+        <div class="funnel-step-bg" style="background-color: ${baseColor}"></div>
+        <div class="funnel-bubble" style="background: ${isZero ? '#d1d5db' : baseColor}">
+          ${s.icon || '🔸'}
         </div>
-        <!-- Trapezoid column -->
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center">
-          <div style="
-            width:${trapW}%;
-            height:30px;
-            background:linear-gradient(135deg,${c1},${c2});
-            clip-path:polygon(${shrink}% 0%, ${100 - shrink}% 0%, ${100 - shrink - 3}% 100%, ${shrink + 3}% 100%);
-            display:flex;align-items:center;justify-content:center;
-            border-radius:2px;
-            box-shadow:0 2px 8px ${c2}55;
-            transition:width 0.7s cubic-bezier(.4,0,.2,1)">
-            <span style="font-size:0.72rem;font-weight:800;color:white;letter-spacing:0.3px;text-shadow:0 1px 3px rgba(0,0,0,0.3)">${s.count} · ${pctOfTop}%</span>
+        
+        <div class="funnel-info">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+             <span class="funnel-label" style="opacity: ${isZero ? '0.6' : '1'}">${s.label}</span>
+             <span style="font-size:1.1rem; font-weight:800; color: ${isZero ? '#9ca3af' : baseColor}">${s.count}</span>
           </div>
-          ${conv !== null ? `
-          <div style="display:flex;align-items:center;gap:4px;margin:3px 0">
-            <div style="height:12px;width:1px;background:${convColor}55"></div>
-            <span style="font-size:0.64rem;font-weight:700;color:${convColor}">${conv}% →</span>
-            <div style="height:12px;width:1px;background:${convColor}55"></div>
-          </div>` : ''}
+          
+          <div class="funnel-stat-bar">
+             <div class="funnel-fill" style="width: ${pctOfTop}%; background: ${isZero ? '#e5e7eb' : baseColor}"></div>
+          </div>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">
+              ${pctOfTop}% do volume inicial
+            </div>
+            ${convHtml}
+          </div>
         </div>
-        <!-- Right count badge -->
-        <div style="width:32px;flex-shrink:0;text-align:center">
-          <span style="font-size:0.8rem;font-weight:800;color:${c2}">${s.count}</span>
-        </div>
-      </div>`;
+      </div>
+    `;
   });
 
+  html += '</div>';
+
+  // Card Summary de Conversão Global
   const last = steps[steps.length - 1];
-  // Total correto = soma de todos os estágios
-  // (pessoas que avançaram no funil já saíram do estágio "topo",
-  //  então usar só steps[0].count como denominador causaria 100% errado)
-  const totalFunil = steps.reduce((sum, s) => sum + s.count, 0);
-  const convRate = totalFunil > 0 ? Math.round((last.count / totalFunil) * 100) : 0;
+  const convRate = top > 0 ? Math.round((last.count / top) * 100) : 0;
   const rateColor = convRate >= 10 ? '#16a34a' : convRate >= 5 ? '#f59e0b' : '#ef4444';
-  const rateBg = convRate >= 10 ? '#dcfce7' : convRate >= 5 ? '#fef9c3' : '#fee2e2';
-
-
-  return `
-    <div style="padding:4px 0">${rows.join('')}</div>
-    <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:${rateBg};border-radius:10px">
-      <div>
-        <div style="font-size:0.7rem;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:0.5px">Conversão Total</div>
-        <div style="font-size:0.75rem;color:var(--text-muted)">${steps[0].label} → ${last.label}</div>
-      </div>
-      <div style="font-size:2rem;font-weight:900;color:${rateColor};line-height:1">${convRate}%</div>
-    </div>`;
+  
+  return html + `
+    <div style="margin-top:16px;padding:12px 16px;background:${rateColor}10;border-radius:12px;display:flex;justify-content:space-between;align-items:center;border:1px solid ${rateColor}33;box-shadow:0 1px 3px rgba(0,0,0,0.03)">
+       <span style="font-size:0.75rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Conversão Total<br><span style="font-size:0.65rem;font-weight:500;color:var(--text-light); text-transform:none;">${steps[0].label} → ${last.label}</span></span>
+       <div style="text-align:right;">
+         <div style="font-size:1.5rem;font-weight:800;color:${rateColor};display:flex;align-items:center;gap:4px">
+           ${convRate}%
+           ${convRate >= 10 ? '✨' : ''}
+         </div>
+       </div>
+    </div>
+  `;
 }
 
 // compat shim (still used in some places)

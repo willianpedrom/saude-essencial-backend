@@ -1090,35 +1090,124 @@ body {
   color: #e11d48;
 }
 
-/* ===== DASHBOARD WIDGETS ===== */
-/* Para criar um layout estilo Masonry autêntico no desktop sem buracos verticais e mantendo peças em 2 colunas */
+/* ===== DASHBOARD WIDGETS (REDESIGN) ===== */
 .dashboard-grid {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 24px;
 }
 
 @media (min-width: 901px) {
-  /* No desktop usaremos column-count para simular Masonry Flow perfeitamente */
   .dashboard-grid {
-    display: block;
-    column-count: 2;
-    column-gap: 24px;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    grid-auto-flow: row;
   }
-  
-  .dashboard-grid > .dash-item {
-    break-inside: avoid; /* Evita que um card seja quebrado pela metade na transição de colunas */
-    margin-bottom: 24px; /* O gap vertical vira margin-bottom para elementos de block em colunas */
-  }
+}
 
-  /* Forçar a ordem via display order não funciona bem com column-count 
-     então controlaremos a disposição primária mudando a ordem de renderização 
-     se necessário apenas no Javascript ou CSS se der.
-     Mas o column-count por padrão distribuirá Esquerda->Direita/Cima->Baixo!
-  */
-  
-  /* Ajuste de largura da primeira coluna dos KPIs no column-count para ser maior (simulando o fr) */
-  /* Como CSS columns não suporta fr widths dinâmicos diretamente, os cards podem se alocar. */
+/* 
+  O HTML foi reordenado para que, na versão Desktop 2-Colunas:
+  Linha 1: [Aniversários] | [Reuniões]
+  Linha 2: [Ações] | [Metas Mensais]
+  Linha 3: [KPIs Principais] | [Followup]
+  Linha 4: [Funil 1] | [Funil 2]
+  Isto criará o layout otimizado e ordenado exatamente como o usuário deseja, na ordem linear no mobile.
+*/
+
+/* ===== NOVO FUNIL ROUNDED (STEPS) ===== */
+.funnel-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.funnel-step {
+  display: flex;
+  align-items: center;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 50px; /* Round pill style */
+  padding: 8px 16px 8px 8px; /* Extra padding on right so the text isn't cramped */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.funnel-step:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.06);
+}
+
+.funnel-bubble {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  color: #fff;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: inset 0 -2px 5px rgba(0,0,0,0.15);
+  z-index: 2;
+}
+
+/* The connecting line on desktop behind the bubbles - Optional visual flair */
+.funnel-step::before {
+  content: '';
+  position: absolute;
+  left: 31px; /* Center of the bubble */
+  top: -12px;
+  bottom: -12px;
+  width: 2px;
+  background: var(--border-light);
+  z-index: 1;
+}
+
+.funnel-step:first-child::before {
+  top: 24px; /* Start at center of first bubble */
+}
+.funnel-step:last-child::before {
+  bottom: 24px; /* End at center of last bubble */
+}
+
+.funnel-info {
+  margin-left: 16px;
+  flex: 1;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.funnel-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+.funnel-stat-bar {
+  margin-top: 4px;
+  height: 4px;
+  background: var(--gray-100);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.funnel-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s ease-out;
+}
+
+/* Background gradient to give a subtle color wash matching the stage */
+.funnel-step-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  opacity: 0.05;
+  z-index: 0;
 }
 
 @media (max-width: 900px) {
