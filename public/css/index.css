@@ -1114,12 +1114,21 @@ body {
 
 @media (max-width: 900px) {
   .dashboard-grid {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
   }
 
   .col-span-2 {
     grid-column: unset;
   }
+
+  /* Ordem mobile customizada */
+  .mobile-order-1 { order: 1; }
+  .mobile-order-2 { order: 2; }
+  .mobile-order-3 { order: 3; }
+  .mobile-order-4 { order: 4; }
+  .mobile-order-5 { order: 5; }
+  .mobile-order-6 { order: 6; }
 }
 
 /* ===== CLIENTS TABLE ===== */

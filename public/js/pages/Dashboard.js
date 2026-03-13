@@ -812,8 +812,8 @@ export async function renderDashboard(router) {
   <div class="dashboard-grid">
     
     <!-- TORRE ESQUERDA (GRÁFICOS E DADOS E STATS) -->
-    <div class="dashboard-col left-col">
-      <div class="stats-grid">
+    <div class="dashboard-col left-col" style="display:contents">
+      <div class="stats-grid mobile-order-1">
         <div class="stat-card green" style="cursor:pointer; border-top: 4px solid var(--green-500)" onclick="location.hash='#/clients'">
           <div class="stat-icon">👥</div>
           <div class="stat-value">${totalClients}</div>
@@ -842,7 +842,7 @@ export async function renderDashboard(router) {
         </div>
       </div>
       <!-- Funil de Vendas -->
-      <div class="card">
+      <div class="card mobile-order-3">
         <div class="card-header">
           <h3>📈 Funil de Vendas (Produtos)</h3>
           <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
@@ -861,7 +861,7 @@ export async function renderDashboard(router) {
       </div>
 
       <!-- Funil de Recrutamento (Cadastro) -->
-      <div class="card">
+      <div class="card mobile-order-4">
         <div class="card-header">
           <h3>💼 Funil de Recrutamento (Downlines)</h3>
           <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
@@ -881,20 +881,22 @@ export async function renderDashboard(router) {
     </div>
     
     <!-- TORRE DIREITA (AÇÕES E FEED) -->
-    <div class="dashboard-col right-col">
+    <div class="dashboard-col right-col" style="display:contents">
 
       <!-- Metas Mensais -->
+      <div class="mobile-order-5">
       ${metasHtml}
+      </div>
 
       <!-- Quick Actions -->
-      <div class="quick-actions" style="display:flex;gap:10px;margin-bottom:8px">
+      <div class="quick-actions mobile-order-6" style="display:flex;gap:10px;margin-bottom:8px">
         <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="window.dashboardAddClient()">+ Cliente</button>
         <button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="location.hash='#/links'">🔗 Links</button>
       </div>
 
       <!-- Follow-ups Urgentes -->
       ${urgentFollowups.length > 0 ? `
-      <div class="card" style="border-left:4px solid #f59e0b">
+      <div class="card mobile-order-2" style="border-left:4px solid #f59e0b">
         <div class="card-header" style="background:var(--orange-50)">
           <h3 style="color:#b45309">🔥 Follow-ups Urgentes</h3>
           <button class="btn btn-secondary btn-sm" onclick="location.hash='#/followup'">Ir</button>
@@ -905,7 +907,7 @@ export async function renderDashboard(router) {
       </div>` : ''}
 
       <!-- Aniversariantes -->
-      <div class="card">
+      <div class="card mobile-order-2">
         <div class="card-header">
           <h3>🎂 Aniversários Próximos</h3>
         </div>
