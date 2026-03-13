@@ -1098,18 +1098,19 @@ body {
   align-items: start;
 }
 
-.dashboard-col {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+/* Posições relativas das colunas no Desktop usando grid */
+.dash-item.kpis, 
+.dash-item.funnel-vendas, 
+.dash-item.funnel-recrutamento {
+  grid-column: 1; /* Esquerda */
 }
 
-.col-span-2 {
-  grid-column: span 2;
-}
-
-.col-span-1 {
-  grid-column: span 1;
+.dash-item.actions, 
+.dash-item.followups, 
+.dash-item.birthdays, 
+.dash-item.metas, 
+.dash-item.meetings {
+  grid-column: 2; /* Direita */
 }
 
 @media (max-width: 900px) {
@@ -1117,18 +1118,18 @@ body {
     display: flex;
     flex-direction: column;
   }
+  
+  .dash-item { grid-column: unset; }
 
-  .col-span-2 {
-    grid-column: unset;
-  }
-
-  /* Ordem mobile customizada */
-  .mobile-order-1 { order: 1; }
-  .mobile-order-2 { order: 2; }
-  .mobile-order-3 { order: 3; }
-  .mobile-order-4 { order: 4; }
-  .mobile-order-5 { order: 5; }
-  .mobile-order-6 { order: 6; }
+  /* Ordem mobile customizada e unificada garantindo que todos os itens sigam a lista correta */
+  .dash-item.kpis { order: 1; }
+  .dash-item.actions { order: 2; }       /* Botões no topo */
+  .dash-item.birthdays { order: 3; }     /* Aniversários agora em 3 */
+  .dash-item.followups { order: 4; }
+  .dash-item.metas { order: 5; }         
+  .dash-item.funnel-vendas { order: 6; } /* Funis vão pro final */
+  .dash-item.funnel-recrutamento { order: 7; }
+  .dash-item.meetings { order: 8; }
 }
 
 /* ===== CLIENTS TABLE ===== */

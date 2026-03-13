@@ -788,13 +788,11 @@ export async function renderDashboard(router) {
           <h3 style="color:#1d4ed8">🎯 Metas do Mês</h3>
           <span style="font-size:0.72rem;color:var(--text-muted)">${now.toLocaleString('pt-BR', { month: 'long' }).replace(/^./, s => s.toUpperCase())}</span>
         </div>
-        <div class="card-body">
           ${goalBar('Leads Captados', '💧', leadsMes, metas.leads, 'leads', '#a78bfa,#7c3aed')}
           ${goalBar('Vendas Fechadas', '💰', vendasMes, metas.vendas, 'vendas', '#34d399,#059669')}
           ${goalBar('Cadastros (Recrutamento)', '💼', cadastrosMes, metas.cadastros, 'cadastros', '#f97316,#ea580c')}
         </div>
       </div>`;
-
 
     // ════════════════════════════════════════════════════
     // BUILD HTML
@@ -810,10 +808,8 @@ export async function renderDashboard(router) {
   <p style="color:var(--text-muted);margin:-10px 0 24px;font-size:0.95rem">${metaText}</p>
 
   <div class="dashboard-grid">
-    
-    <!-- TORRE ESQUERDA (GRÁFICOS E DADOS E STATS) -->
-    <div class="dashboard-col left-col" style="display:contents">
-      <div class="stats-grid mobile-order-1">
+    <div class="dash-item kpis">
+      <div class="stats-grid">
         <div class="stat-card green" style="cursor:pointer; border-top: 4px solid var(--green-500)" onclick="location.hash='#/clients'">
           <div class="stat-icon">👥</div>
           <div class="stat-value">${totalClients}</div>
@@ -841,62 +837,20 @@ export async function renderDashboard(router) {
           ${fuTrendHtml || '<div class="stat-trend trend-up">✅ Tudo em dia!</div>'}
         </div>
       </div>
-      <!-- Funil de Vendas -->
-      <div class="card mobile-order-3">
-        <div class="card-header">
-          <h3>📈 Funil de Vendas (Produtos)</h3>
-          <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
-        </div>
-        <div class="card-body">
-          ${buildFunnel([
-      { label: 'Lead Captado', icon: '💧', count: stageCounts.lead_captado || 0, color: '#6366f1' },
-      { label: 'Primeiro Contato', icon: '📞', count: stageCounts.primeiro_contato || 0, color: '#3b82f6' },
-      { label: 'Interesse', icon: '💬', count: stageCounts.interesse_confirmado || 0, color: '#06b6d4' },
-      { label: 'Protocolo Apres.', icon: '🌿', count: stageCounts.protocolo_apresentado || 0, color: '#10b981' },
-      { label: 'Proposta Envia.', icon: '📦', count: stageCounts.proposta_enviada || 0, color: '#f59e0b' },
-      { label: 'Negociando', icon: '🤝', count: stageCounts.negociando || 0, color: '#f97316' },
-      { label: 'Fechado! 🎉', icon: '💰', count: stageCounts.primeira_compra || 0, color: '#22c55e' },
-    ])}
-        </div>
-      </div>
-
-      <!-- Funil de Recrutamento (Cadastro) -->
-      <div class="card mobile-order-4">
-        <div class="card-header">
-          <h3>💼 Funil de Recrutamento (Downlines)</h3>
-          <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
-        </div>
-        <div class="card-body">
-          ${buildFunnel([
-      { label: 'Prospecto de Negócio', icon: '🎯', count: recStageCounts.prospecto_negocio || 0, color: '#8b5cf6' },
-      { label: 'Convite Feito', icon: '✉️', count: recStageCounts.convite_apresentacao || 0, color: '#d946ef' },
-      { label: 'Assistiu Apres.', icon: '📺', count: recStageCounts.apresentacao_assistida || 0, color: '#3b82f6' },
-      { label: 'Acompanhamento', icon: '⏱️', count: recStageCounts.acompanhamento_cadastro || 0, color: '#f59e0b' },
-      { label: 'Cadastrada! 🏅', icon: '💼', count: recStageCounts.cadastrada || 0, color: '#22c55e' },
-    ])}
-        </div>
-      </div>
-
-      
     </div>
-    
-    <!-- TORRE DIREITA (AÇÕES E FEED) -->
-    <div class="dashboard-col right-col" style="display:contents">
 
-      <!-- Metas Mensais -->
-      <div class="mobile-order-5">
-      ${metasHtml}
+    <!-- BLOCO 2: Botões Rápido (Desktop: Right, Mobile: 2) -->
+    <div class="dash-item actions">
+      <div class="quick-actions" style="display:flex;gap:10px;margin-bottom:8px">
+        <button class="btn btn-primary" style="flex:1;justify-content:center;padding:14px" onclick="window.dashboardAddClient()">+ Cliente</button>
+        <button class="btn btn-secondary" style="flex:1;justify-content:center;padding:14px" onclick="location.hash='#/links'">🔗 Links</button>
       </div>
+    </div>
 
-      <!-- Quick Actions -->
-      <div class="quick-actions mobile-order-6" style="display:flex;gap:10px;margin-bottom:8px">
-        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="window.dashboardAddClient()">+ Cliente</button>
-        <button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="location.hash='#/links'">🔗 Links</button>
-      </div>
-
-      <!-- Follow-ups Urgentes -->
-      ${urgentFollowups.length > 0 ? `
-      <div class="card mobile-order-2" style="border-left:4px solid #f59e0b">
+    <!-- BLOCO 3: Follow-ups Urgentes (Desktop: Right, Mobile: 3) -->
+    ${urgentFollowups.length > 0 ? `
+    <div class="dash-item followups">
+      <div class="card" style="border-left:4px solid #f59e0b">
         <div class="card-header" style="background:var(--orange-50)">
           <h3 style="color:#b45309">🔥 Follow-ups Urgentes</h3>
           <button class="btn btn-secondary btn-sm" onclick="location.hash='#/followup'">Ir</button>
@@ -904,30 +858,27 @@ export async function renderDashboard(router) {
         <div class="card-body">
           ${urgentFollowups.map(f => fuRow(f, clients)).join('')}
         </div>
-      </div>` : ''}
+      </div>
+    </div>` : ''}
 
-      <!-- Aniversariantes -->
-      <div class="card mobile-order-2">
+    <!-- BLOCO 4: Aniversários (Desktop: Right, Mobile: 4) -->
+    <div class="dash-item birthdays">
+      <div class="card">
         <div class="card-header">
           <h3>🎂 Aniversários Próximos</h3>
         </div>
         <div class="card-body" style="padding-bottom:10px">
           ${(() => {
-        // Lê IDs marcados como "parabéns enviado" hoje
-        const todayKey = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+        const todayKey = new Date().toISOString().slice(0, 10);
         const doneRaw = localStorage.getItem('bday_done_' + todayKey) || '[]';
         let doneSet;
         try { doneSet = new Set(JSON.parse(doneRaw)); } catch { doneSet = new Set(); }
-
-        // Filtra quem já recebeu os parabéns hoje
         const pending = aniversariantes.filter(c => !doneSet.has(String(c.id)));
-
         if (pending.length === 0) return `
               <div class="empty-state" style="padding:20px 0">
                 <div class="empty-state-icon" style="font-size:2rem;margin-bottom:8px">🎉</div>
                 <p style="font-size:0.85rem">Nenhum aniversário pendente! Tudo em dia 🥳</p>
               </div>`;
-
         return pending.map(c => `
               <div class="birthday-item" data-bid="${c.id}" style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:12px;">
                 <div style="display:flex; align-items:center; gap:12px;">
@@ -959,9 +910,15 @@ export async function renderDashboard(router) {
       })()}
         </div>
       </div>
+    </div>
 
-      
-      <!-- Próximas Reuniões -->
+    <!-- BLOCO 5: Metas Mensais (Desktop: Right, Mobile: 5) -->
+    <div class="dash-item metas">
+      ${metasHtml}
+    </div>
+
+    <!-- BLOCO 6: Reuniões (Desktop: Right, Mobile: 6) -->
+    <div class="dash-item meetings">
       <div class="card">
         <div class="card-header">
           <h3>📅 Próximas Reuniões</h3>
@@ -976,8 +933,47 @@ export async function renderDashboard(router) {
           '</div>').join('')}
         </div>
       </div>
-      
-    </div> <!-- Fim Torre Direita -->
+    </div>
+
+    <!-- BLOCO 7: Funil de Vendas (Desktop: Left, Mobile: 7) -->
+    <div class="dash-item funnel-vendas">
+      <div class="card">
+        <div class="card-header">
+          <h3>📈 Funil de Vendas (Produtos)</h3>
+          <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
+        </div>
+        <div class="card-body">
+          ${buildFunnel([
+      { label: 'Lead Captado', icon: '💧', count: stageCounts.lead_captado || 0, color: '#6366f1' },
+      { label: 'Primeiro Contato', icon: '📞', count: stageCounts.primeiro_contato || 0, color: '#3b82f6' },
+      { label: 'Interesse', icon: '💬', count: stageCounts.interesse_confirmado || 0, color: '#06b6d4' },
+      { label: 'Protocolo Apres.', icon: '🌿', count: stageCounts.protocolo_apresentado || 0, color: '#10b981' },
+      { label: 'Proposta Envia.', icon: '📦', count: stageCounts.proposta_enviada || 0, color: '#f59e0b' },
+      { label: 'Negociando', icon: '🤝', count: stageCounts.negociando || 0, color: '#f97316' },
+      { label: 'Fechado! 🎉', icon: '💰', count: stageCounts.primeira_compra || 0, color: '#22c55e' },
+    ])}
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 8: Funil Recrutamento (Desktop: Left, Mobile: 8) -->
+    <div class="dash-item funnel-recrutamento">
+      <div class="card">
+        <div class="card-header">
+          <h3>💼 Funil de Recrutamento (Downlines)</h3>
+          <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
+        </div>
+        <div class="card-body">
+          ${buildFunnel([
+      { label: 'Prospecto de Negócio', icon: '🎯', count: recStageCounts.prospecto_negocio || 0, color: '#8b5cf6' },
+      { label: 'Convite Feito', icon: '✉️', count: recStageCounts.convite_apresentacao || 0, color: '#d946ef' },
+      { label: 'Assistiu Apres.', icon: '📺', count: recStageCounts.apresentacao_assistida || 0, color: '#3b82f6' },
+      { label: 'Acompanhamento', icon: '⏱️', count: recStageCounts.acompanhamento_cadastro || 0, color: '#f59e0b' },
+      { label: 'Cadastrada! 🏅', icon: '💼', count: recStageCounts.cadastrada || 0, color: '#22c55e' },
+    ])}
+        </div>
+      </div>
+    </div>
 
   </div>`;
 
