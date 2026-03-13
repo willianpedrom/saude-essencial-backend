@@ -404,18 +404,34 @@ router.get('/insights', async (req, res) => {
 // IMPORTANT: must be registered BEFORE /:id to avoid route collision
 router.get('/cliente/:clienteId', async (req, res) => {
     try {
-        // Fetch only anamneses directly linked to this exact client record.
-        // We intentionally do NOT group by email because different family members
-        // may share the same email (e.g. mother filling form for her son) and
-        // must have their anamneses kept separate.
+        // First, get contact info of the target client so we can find all anamneses
+        // even if they were saved under a different (duplicate) client record.
+        const { rows: clientRows } = await pool.query(
+            'SELECT email, telefone FROM clientes WHERE id = $1 AND consultora_id = $2',
+            [req.params.clienteId, req.consultora.id]
+        );
+        const targetEmail = clientRows[0]?.email || null;
+        const targetPhone = clientRows[0]?.telefone || null;
+
+        // Build a query that finds by direct cliente_id OR by matching email/phone
+        // (to recover anamneses saved under duplicate client records)
+        let conditions = ['a.cliente_id = $2'];
+        let params = [req.consultora.id, req.params.clienteId];
+
+        if (targetEmail && targetEmail.trim() !== '') {
+            conditions.push(`(c.email = $${params.length + 1})`);
+            params.push(targetEmail);
+        }
+
         const { rows } = await pool.query(`
-            SELECT a.id, a.tipo, a.subtipo, a.dados, a.preenchido, a.criado_em, a.nome_link, a.protocolo_customizado
+            SELECT DISTINCT ON (a.id) a.id, a.tipo, a.subtipo, a.dados, a.preenchido, a.criado_em, a.nome_link, a.protocolo_customizado
             FROM anamneses a
+            LEFT JOIN clientes c ON a.cliente_id = c.id
             WHERE a.consultora_id = $1
-              AND a.cliente_id    = $2
-              AND a.preenchido    = TRUE
-            ORDER BY a.criado_em DESC
-        `, [req.consultora.id, req.params.clienteId]);
+              AND a.preenchido = TRUE
+              AND (${conditions.join(' OR ')})
+            ORDER BY a.id, a.criado_em DESC
+        `, params);
 
         res.json(rows);
     } catch (err) {
