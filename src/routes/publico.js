@@ -38,13 +38,23 @@ router.get('/perfil/:slug', async (req, res) => {
         );
 
         // 3. Fetch the consultant's generic anamnesis token (for the CTA link)
-        const { rows: anamneseRows } = await pool.query(
+        let { rows: anamneseRows } = await pool.query(
             `SELECT token_publico FROM anamneses
-             WHERE consultora_id = $1 AND subtipo = 'generico' AND preenchido = FALSE
-             ORDER BY criado_em DESC LIMIT 1`,
+             WHERE consultora_id = $1 AND subtipo = 'generico'
+             ORDER BY criado_em ASC LIMIT 1`,
             [consultor.id]
         );
-        const anamnese_token = anamneseRows[0]?.token_publico || null;
+        let anamnese_token = anamneseRows[0]?.token_publico || null;
+
+        if (!anamnese_token) {
+            const { rows: newAnamnese } = await pool.query(
+                `INSERT INTO anamneses(consultora_id, tipo, subtipo, nome_link)
+                 VALUES($1, 'adulto', 'generico', 'Link da Bio')
+                 RETURNING token_publico`,
+                [consultor.id]
+            );
+            anamnese_token = newAnamnese[0].token_publico;
+        }
 
         // Return public data (exclude private fields like CAPI token, internal id)
         const { rastreamento, id: _id, ...publicConsultor } = consultor;
