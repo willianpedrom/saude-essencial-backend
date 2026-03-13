@@ -727,4 +727,81 @@ router.put('/settings', async (req, res) => {
     }
 });
 
+// ══════════════════════════════════════════════════════════════
+//  MANUTENÇÃO: Re-vincular anamneses órfãs aos seus clientes
+// ══════════════════════════════════════════════════════════════
+
+// POST /api/admin/relink-anamneses
+// Busca anamneses preenchidas cujo cliente_id está NULL ou inválido e as vincula
+// ao cliente correto buscando por email/telefone dentro do JSONB dados.
+router.post('/relink-anamneses', async (req, res) => {
+    const fixed = [];
+    const skipped = [];
+
+    try {
+        // 1. Anamneses sem cliente vinculado
+        const { rows: orphans } = await pool.query(`
+            SELECT a.id, a.consultora_id, a.dados, a.subtipo, a.cliente_id
+            FROM anamneses a
+            WHERE a.preenchido = TRUE
+              AND (
+                a.cliente_id IS NULL
+                OR NOT EXISTS (SELECT 1 FROM clientes c WHERE c.id = a.cliente_id AND c.consultora_id = a.consultora_id)
+              )
+            ORDER BY a.criado_em ASC
+        `);
+
+        for (const anamnese of orphans) {
+            const dados = anamnese.dados || {};
+            const pData = dados.personal || dados || {};
+            const email = pData.email || null;
+            const telefone = pData.phone || pData.telefone || null;
+            const nome = pData.full_name || pData.nome || null;
+
+            if (!email && !telefone) { skipped.push({ id: anamnese.id, reason: 'sem contato' }); continue; }
+
+            let params = [anamnese.consultora_id];
+            let conditions = [];
+            if (email) { params.push(email); conditions.push(`email = $${params.length}`); }
+            if (telefone) { params.push(telefone); conditions.push(`telefone = $${params.length}`); }
+
+            const { rows: matches } = await pool.query(
+                `SELECT id, nome FROM clientes WHERE consultora_id = $1 AND (${conditions.join(' OR ')}) ORDER BY criado_em ASC LIMIT 1`,
+                params
+            );
+
+            if (matches.length === 0) { skipped.push({ id: anamnese.id, reason: 'cliente não encontrado', nome }); continue; }
+
+            await pool.query('UPDATE anamneses SET cliente_id = $1 WHERE id = $2', [matches[0].id, anamnese.id]);
+            fixed.push({ anamnese_id: anamnese.id, cliente: matches[0].nome, nome });
+        }
+
+        // 2. Anamneses genéricas com cliente duplicado — re-vincula ao cliente mais antigo com mesmo email
+        const { rows: generics } = await pool.query(`
+            SELECT a.id, a.consultora_id, a.cliente_id, c.email as client_email, c.nome as client_nome
+            FROM anamneses a
+            JOIN clientes c ON c.id = a.cliente_id
+            WHERE a.preenchido = TRUE AND a.subtipo = 'generico' AND c.email IS NOT NULL
+            ORDER BY a.criado_em ASC
+        `);
+
+        for (const a of generics) {
+            const { rows: older } = await pool.query(
+                `SELECT id, nome FROM clientes WHERE consultora_id=$1 AND email=$2 AND id != $3 ORDER BY criado_em ASC LIMIT 1`,
+                [a.consultora_id, a.client_email, a.cliente_id]
+            );
+            if (older.length > 0) {
+                await pool.query('UPDATE anamneses SET cliente_id = $1 WHERE id = $2', [older[0].id, a.id]);
+                fixed.push({ anamnese_id: a.id, cliente: older[0].nome, action: 'dedup generico' });
+            }
+        }
+
+        res.json({ success: true, fixed_count: fixed.length, skipped_count: skipped.length, fixed, skipped });
+    } catch (err) {
+        console.error('[relink-anamneses]', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;
+
