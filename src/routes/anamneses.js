@@ -266,6 +266,7 @@ router.get('/laudo/public/:hash', async (req, res) => {
     try {
         const { rows } = await pool.query(
             `SELECT a.id, a.dados, a.protocolo_customizado, a.cliente_id,
+              cli.nome AS cliente_nome,
               c.nome AS consultora_nome, c.genero AS consultora_genero,
               c.telefone AS consultora_telefone, c.link_afiliada AS consultora_link_afiliada,
               c.slug AS consultora_slug,
@@ -275,10 +276,11 @@ router.get('/laudo/public/:hash', async (req, res) => {
               ) as consultora_token_anamnese
              FROM anamneses a
              JOIN consultoras c ON c.id = a.consultora_id
+             LEFT JOIN clientes cli ON cli.id = a.cliente_id
              WHERE a.hash_laudo = $1`,
             [req.params.hash]
         );
-        if (rows.length === 0) return res.status(404).json({ error: 'Laudo não encontrado ou indisponível.' });
+        if (rows.length === 0) return res.status(404).json({ error: 'Laudo inexistente.' });
         res.json(rows[0]);
     } catch (err) {
         console.error(err);

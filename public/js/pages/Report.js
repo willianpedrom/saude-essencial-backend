@@ -22,7 +22,7 @@ export async function renderReport(router, dataParam, hash = null) {
              phone: data.consultora_telefone,
              link: data.consultora_link_afiliada
           },
-          clientName: data.dados?.personal?.full_name || data.dados?.personal?.nome || data.dados?.nome || 'Você',
+          clientName: data.cliente_nome || data.dados?.personal?.full_name || data.dados?.personal?.nome || data.dados?.nome || 'Você',
        };
      } catch(e) {
        app.innerHTML = `<div class="report-page"><div class="report-card" style="text-align:center;padding:60px">
