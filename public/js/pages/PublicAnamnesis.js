@@ -485,15 +485,13 @@ export async function renderPublicAnamnesis(router, token) {
     if (btn) { btn.disabled = true; btn.textContent = '⏳ Processando...'; }
 
     const allAnswers = Object.values(answers).reduce((acc, v) => ({ ...acc, ...v }), {});
-    const urlParams = new URLSearchParams(window.location.search);
-    const refId = urlParams.get('ref') || null;
 
     try {
       console.log("[Anamnesis] Starting submit process...");
       console.log("[Anamnesis] Payload to be saved:", allAnswers);
 
       // Save to backend - Com timeout pra não travar pra sempre se o DB engasgar
-      const savePromise = store.submitAnamnesis(token, allAnswers, refId);
+      const savePromise = store.submitAnamnesis(token, allAnswers);
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout salvando no banco')), 6000));
 
       let result = null;

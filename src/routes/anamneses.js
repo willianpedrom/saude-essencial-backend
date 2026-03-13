@@ -60,7 +60,6 @@ router.get('/public/:token', async (req, res) => {
 // PUT /api/anamneses/public/:token  (client submits the form)
 router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) => {
     const { dados } = req.body;
-    const refId = req.query.ref && req.query.ref.trim() !== '' ? req.query.ref : null; // Captura UUID do indicador se vier do link viral
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -193,9 +192,9 @@ router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) 
             }
 
             const { rows: cRows } = await client.query(
-                `INSERT INTO clientes (consultora_id, nome, email, telefone, data_nascimento, cidade, genero, status, indicado_por_id, tipo_cadastro)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, 'lead', $8, 'lead') RETURNING id`,
-                [consultora_id, nome, email, telefone, data_nasc, cidade, genero || 'feminino', refId]
+                `INSERT INTO clientes (consultora_id, nome, email, telefone, data_nascimento, cidade, genero, status)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, 'lead') RETURNING id`,
+                [consultora_id, nome, email, telefone, data_nasc, cidade, genero || 'feminino']
             );
             clienteId = cRows[0].id;
         }
@@ -209,8 +208,7 @@ router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) 
                 "UPDATE clientes " +
                 "SET recrutamento_stage = COALESCE(recrutamento_stage, 'prospecto_negocio'), " +
                 "    pipeline_stage = CASE WHEN pipeline_stage IS NULL OR pipeline_stage = 'lead_captado' THEN 'none' ELSE pipeline_stage END, " +
-                "    status = 'lead', " +
-                "    tipo_cadastro = COALESCE(tipo_cadastro, 'lead') " +
+                "    status = 'lead' " +
                 "WHERE id = $1",
                 [clienteId]
             );
@@ -218,8 +216,7 @@ router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) 
             await client.query(
                 "UPDATE clientes " +
                 "SET pipeline_stage = CASE WHEN pipeline_stage IS NULL OR pipeline_stage = 'none' THEN 'lead_captado' ELSE pipeline_stage END, " +
-                "    status = 'lead', " +
-                "    tipo_cadastro = COALESCE(tipo_cadastro, 'lead') " +
+                "    status = 'lead' " +
                 "WHERE id = $1",
                 [clienteId]
             );
