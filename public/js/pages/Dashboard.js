@@ -981,33 +981,7 @@ export async function renderDashboard(router) {
       </div>
     </div> <!-- FIM COLUNA DIREITA -->
 
-  </div>`;_compra || 0, color: '#22c55e' },
-    ])}
-        </div>
-      </div>
-    </div>
-
-    <!-- BLOCO 8: Funil Recrutamento (Desktop: Left, Mobile: 8) -->
-    <div class="dash-item funnel-recrutamento">
-      <div class="card">
-        <div class="card-header">
-          <h3>💼 Funil de Recrutamento (Downlines)</h3>
-          <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
-        </div>
-        <div class="card-body">
-          ${buildFunnel([
-      { label: 'Prospecto de Negócio', icon: '🎯', count: recStageCounts.prospecto_negocio || 0, color: '#8b5cf6' },
-      { label: 'Convite Feito', icon: '✉️', count: recStageCounts.convite_apresentacao || 0, color: '#d946ef' },
-      { label: 'Assistiu Apres.', icon: '📺', count: recStageCounts.apresentacao_assistida || 0, color: '#3b82f6' },
-      { label: 'Acompanhamento', icon: '⏱️', count: recStageCounts.acompanhamento_cadastro || 0, color: '#f59e0b' },
-      { label: 'Cadastrada! 🏅', icon: '💼', count: recStageCounts.cadastrada || 0, color: '#22c55e' },
-    ])}
-        </div>
-      </div>
-    </div>
-
   </div>`;
-
     // Update page-content with real data (no full re-render to avoid losing sidebar)
     const pc = document.getElementById('page-content');
     if (pc) pc.innerHTML = contentHtml;
