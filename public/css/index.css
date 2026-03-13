@@ -1090,125 +1090,114 @@ body {
   color: #e11d48;
 }
 
-/* ===== DASHBOARD WIDGETS (REDESIGN) ===== */
+/* ===== DASHBOARD SENIOR GRID ===== */
 .dashboard-grid {
   display: grid;
+  grid-template-columns: 1fr;
   gap: 24px;
 }
 
-@media (min-width: 901px) {
+@media (min-width: 1024px) {
   .dashboard-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
     align-items: start;
-    grid-auto-flow: row;
+  }
+  /* Cards que devem ocupar largura total se necessário */
+  .dash-item.full-width {
+    grid-column: 1 / -1;
   }
 }
 
-/* 
-  O HTML foi reordenado para que, na versão Desktop 2-Colunas:
-  Linha 1: [Aniversários] | [Reuniões]
-  Linha 2: [Ações] | [Metas Mensais]
-  Linha 3: [KPIs Principais] | [Followup]
-  Linha 4: [Funil 1] | [Funil 2]
-  Isto criará o layout otimizado e ordenado exatamente como o usuário deseja, na ordem linear no mobile.
-*/
+/* Header de Ações Rápidas (Senior Layout) */
+.dash-actions-header {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
 
-/* ===== NOVO FUNIL ROUNDED (STEPS) ===== */
+@media (max-width: 600px) {
+  .dash-actions-header {
+    justify-content: stretch;
+  }
+  .dash-actions-header .btn {
+    flex: 1;
+  }
+}
+
+/* ===== FUNIL ROUNDED PREMIUM ===== */
 .funnel-modern {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 10px 0;
+  gap: 10px;
+  padding: 5px 0;
 }
 
 .funnel-step {
   display: flex;
   align-items: center;
   background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 50px; /* Round pill style */
-  padding: 8px 16px 8px 8px; /* Extra padding on right so the text isn't cramped */
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 12px;
   position: relative;
   overflow: hidden;
+  transition: all 0.2s ease;
 }
 
 .funnel-step:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.06);
+  border-color: var(--border);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 .funnel-bubble {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   color: #fff;
-  font-weight: 700;
   flex-shrink: 0;
-  box-shadow: inset 0 -2px 5px rgba(0,0,0,0.15);
   z-index: 2;
-}
-
-/* The connecting line on desktop behind the bubbles - Optional visual flair */
-.funnel-step::before {
-  content: '';
-  position: absolute;
-  left: 31px; /* Center of the bubble */
-  top: -12px;
-  bottom: -12px;
-  width: 2px;
-  background: var(--border-light);
-  z-index: 1;
-}
-
-.funnel-step:first-child::before {
-  top: 24px; /* Start at center of first bubble */
-}
-.funnel-step:last-child::before {
-  bottom: 24px; /* End at center of last bubble */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .funnel-info {
-  margin-left: 16px;
+  margin-left: 14px;
   flex: 1;
   z-index: 2;
-  display: flex;
-  flex-direction: column;
 }
 
 .funnel-label {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--text-dark);
+  margin-bottom: 2px;
 }
 
 .funnel-stat-bar {
-  margin-top: 4px;
-  height: 4px;
-  background: var(--gray-100);
-  border-radius: 4px;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  margin: 6px 0;
   overflow: hidden;
-  position: relative;
 }
 
 .funnel-fill {
   height: 100%;
-  border-radius: 4px;
-  transition: width 1s ease-out;
+  border-radius: 10px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Background gradient to give a subtle color wash matching the stage */
 .funnel-step-bg {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  opacity: 0.05;
-  z-index: 0;
+  top: 0; left: 0; width: 4px; height: 100%;
+  opacity: 1;
 }
+
 
 @media (max-width: 900px) {
   .dashboard-grid {
