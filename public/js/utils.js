@@ -664,16 +664,8 @@ export function openClientOffcanvas(client) {
              const origText = btnLink.innerHTML;
              btnLink.innerHTML = '<span>⏳ Gerando...</span>';
              try {
-                const { auth } = await import('./store.js');
-                const req = await fetch('/api/anamneses/' + a.id + '/hash', {
-                   method: 'POST',
-                   headers: {
-                       'Content-Type': 'application/json',
-                       'Authorization': 'Bearer ' + auth.token
-                   }
-                });
-                const res = await req.json();
-                if(!req.ok) throw new Error(res.error || 'Erro ao gerar Link Mágico');
+                const { api } = await import('./store.js');
+                const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
 
                 const magicUrl = window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
                 await navigator.clipboard.writeText(magicUrl);
