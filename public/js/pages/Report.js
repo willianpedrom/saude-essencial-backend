@@ -288,7 +288,7 @@ export async function renderReport(router, dataParam, hash = null) {
           <a class="report-cta" href="https://wa.me/${waPhone}?text=${whatsappMsg}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 20px;background:linear-gradient(135deg,#25d366,#128c7e);color:white;border-radius:12px;text-decoration:none;margin-bottom:16px;box-shadow:0 8px 20px rgba(37,211,102,0.3);transition:transform 0.2s">
             <div style="font-size:1.5rem">💬</div>
             <div style="text-align:left">
-              <strong style="display:block;font-size:0.95rem">LIBERE SEU PROTOCOLO COMPLETO NO WHATSAPP</strong>
+              <strong style="display:block;font-size:0.95rem">RECEBA AS INSTRUÇÕES COMPLETAS PELO WHATSAPP</strong>
               <div style="font-size:0.75rem;opacity:0.9">Fale com ${consultant.name?.split(' ')[0] || cTitle} no WhatsApp</div>
             </div>
           </a>
