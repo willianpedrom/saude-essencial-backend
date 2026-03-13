@@ -633,6 +633,17 @@ VALUES($1, $2, $3, $4, $5)
 // DELETE /api/anamneses/:id  (also deletes child records for generic)
 router.delete('/:id', async (req, res) => {
     try {
+        // Safety guard: never allow deletion of a filled anamnese (preenchido=TRUE)
+        // Only link templates (preenchido=FALSE) can be deleted.
+        const { rows: check } = await pool.query(
+            'SELECT preenchido FROM anamneses WHERE id=$1 AND consultora_id=$2',
+            [req.params.id, req.consultora.id]
+        );
+        if (!check.length) return res.status(404).json({ error: 'Anamnese não encontrada.' });
+        if (check[0].preenchido) {
+            return res.status(403).json({ error: 'Não é possível excluir um formulário já preenchido por um cliente. Para remover, desvincule o cliente antes.' });
+        }
+
         // First nullify link_origem_id refs then delete template
         await pool.query(
             'UPDATE anamneses SET link_origem_id = NULL WHERE link_origem_id = $1',
