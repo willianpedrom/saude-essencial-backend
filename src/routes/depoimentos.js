@@ -33,6 +33,31 @@ router.get('/public/:slug', async (req, res) => {
     }
 });
 
+// GET /api/depoimentos/public/:slug/lista — public listing of approved testimonials
+router.get('/public/:slug/lista', async (req, res) => {
+    try {
+        const { rows: consultoras } = await pool.query(
+            'SELECT id FROM consultoras WHERE slug = $1', [req.params.slug]
+        );
+        if (consultoras.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });
+        const { rows } = await pool.query(
+            `SELECT cliente_nome, texto, nota, criado_em,
+                    COALESCE(json_agg(json_build_object('id', e.id, 'nome', e.nome, 'cor', e.cor))
+                        FILTER (WHERE e.id IS NOT NULL), '[]') AS etiquetas
+             FROM depoimentos d
+             LEFT JOIN depoimentos_etiquetas de ON de.depoimento_id = d.id
+             LEFT JOIN etiquetas e ON e.id = de.etiqueta_id
+             WHERE d.consultora_id = $1 AND d.aprovado = TRUE AND d.consentimento = TRUE
+             GROUP BY d.id
+             ORDER BY d.criado_em DESC`,
+            [consultoras[0].id]
+        );
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // POST /api/depoimentos/public/:slug — client submits testimonial
 router.post('/public/:slug', async (req, res) => {
     const { cliente_nome, cliente_email, cliente_telefone, texto, nota, consentimento } = req.body;

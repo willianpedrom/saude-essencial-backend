@@ -127,6 +127,10 @@ export async function renderPublicTestimonial(router, slug) {
         <div class="dep-error" id="dep-error"></div>
         <button class="dep-btn" id="dep-submit">Enviar Depoimento 💧</button>
       </div>
+
+      <!-- Mural de depoimentos aprovados (carregado dinamicamente) -->
+      <div id="dep-mural" style="width:100%;max-width:480px;margin-top:0"></div>
+
     </div>`;
 
     // NPS rating logic
@@ -209,5 +213,57 @@ export async function renderPublicTestimonial(router, slug) {
     </style>`;
   }
 
+  // ── Carrega e exibe o Mural de Depoimentos aprovados ─────────────
+  async function loadMural() {
+    let aprovados = [];
+    try {
+      aprovados = await api('GET', `/api/depoimentos/public/${slug}/lista`);
+    } catch { return; } // falha silenciosa — mural é opcional
+
+    if (!aprovados || aprovados.length === 0) return;
+
+    const muralEl = document.getElementById('dep-mural');
+    if (!muralEl) return;
+
+    const stars = (nota) => {
+      const n = Math.round((nota / 10) * 5);
+      return Array.from({ length: 5 }, (_, i) =>
+        `<span style="color:${i < n ? '#f59e0b' : 'rgba(255,255,255,0.2)'};font-size:1rem">★</span>`
+      ).join('');
+    };
+
+    muralEl.innerHTML = `
+      <div style="margin-top:48px;padding-top:32px;border-top:1px solid rgba(255,255,255,0.1)">
+        <h3 style="color:white;text-align:center;font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:24px">
+          💬 O que dizem sobre ${consultora.nome}
+        </h3>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          ${aprovados.map(d => {
+            const initials = (d.cliente_nome || 'A').substring(0, 2).toUpperCase();
+            return `
+              <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:18px;transition:background 0.2s"
+                   onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+                   onmouseout="this.style.background='rgba(255,255,255,0.06)'">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+                  <div style="width:40px;height:40px;border-radius:50%;background:${themeData.primary};color:white;
+                              font-weight:800;font-size:0.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    ${initials}
+                  </div>
+                  <div>
+                    <div style="color:white;font-weight:700;font-size:0.9rem">${d.cliente_nome}</div>
+                    <div style="margin-top:2px">${stars(d.nota)}</div>
+                  </div>
+                </div>
+                <p style="color:rgba(255,255,255,0.7);font-size:0.88rem;line-height:1.6;margin:0;font-style:italic">
+                  "${d.texto}"
+                </p>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }
+
   renderForm();
+  // Carrega mural após renderizar
+  loadMural();
 }

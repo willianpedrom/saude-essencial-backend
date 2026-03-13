@@ -260,12 +260,13 @@ export async function renderTestimonials(router) {
       document.querySelectorAll('[data-approve]').forEach(btn => {
         btn.addEventListener('click', async () => {
           const id = btn.dataset.approve;
-          btn.disabled = true; btn.textContent = '...';
+          btn.disabled = true; btn.textContent = '⏳ Aprovando...';
           try {
             await store.approveTestimonial(id, true);
-            localTestimonials = localTestimonials.map(t => t.id === id ? { ...t, aprovado: true } : t);
-            renderView(); window.toast('Aprovado com sucesso! ✅');
-          } catch (e) { window.toast(e.message, 'error'); renderView(); }
+            // Comparação com String() para evitar falha silenciosa number vs string
+            localTestimonials = localTestimonials.map(t => String(t.id) === String(id) ? { ...t, aprovado: true } : t);
+            renderView(); window.toast('Depoimento aprovado com sucesso! ✅');
+          } catch (e) { window.toast(e.message || 'Erro ao aprovar. Tente novamente.', 'error'); renderView(); }
         });
       });
 
