@@ -399,27 +399,33 @@ router.get('/insights', async (req, res) => {
 });
 
 // POST /api/anamneses/relink-orphaned
-// Permite que qualquer consultora autenticada recupere suas anamneses sem cliente vinculado.
-// Usa nome + email para casar com segurança (evita misturar familiares com mesmo email).
+// Recupera anamneses sem cliente vinculado usando nome + email como chave.
+// Se o usuário logado for admin: roda para TODAS as consultoras do sistema.
+// Se for consultora comum: roda apenas para a própria conta.
 // IMPORTANT: must be registered BEFORE /:id
 router.post('/relink-orphaned', async (req, res) => {
-    const consultora_id = req.consultora.id;
     const fixed = [];
     const skipped = [];
 
     try {
-        // Anamneses desta consultora sem cliente vinculado
+        // Verifica se o usuário logado tem role admin
+        const { rows: roleRows } = await pool.query(
+            'SELECT role FROM consultoras WHERE id = $1', [req.consultora.id]
+        );
+        const isAdmin = roleRows[0]?.role === 'admin';
+
+        // Se admin: processa TODAS as anamneses órfãs. Se não: apenas as da própria conta.
         const { rows: orphans } = await pool.query(`
-            SELECT a.id, a.dados
+            SELECT a.id, a.consultora_id, a.dados
             FROM anamneses a
-            WHERE a.consultora_id = $1
-              AND a.preenchido = TRUE
+            WHERE a.preenchido = TRUE
+              AND ($1 = TRUE OR a.consultora_id = $2)
               AND (
                 a.cliente_id IS NULL
                 OR NOT EXISTS (SELECT 1 FROM clientes c WHERE c.id = a.cliente_id AND c.consultora_id = a.consultora_id)
               )
             ORDER BY a.criado_em ASC
-        `, [consultora_id]);
+        `, [isAdmin, req.consultora.id]);
 
         for (const anamnese of orphans) {
             const pData = anamnese.dados?.personal || anamnese.dados || {};
@@ -430,8 +436,12 @@ router.post('/relink-orphaned', async (req, res) => {
 
             const primeiroNome = nome.split(' ')[0];
             const { rows: matches } = await pool.query(
-                `SELECT id, nome FROM clientes WHERE consultora_id = $1 AND LOWER(TRIM(email)) = $2 AND LOWER(TRIM(nome)) LIKE $3 ORDER BY criado_em ASC LIMIT 1`,
-                [consultora_id, email, primeiroNome + '%']
+                `SELECT id, nome FROM clientes
+                 WHERE consultora_id = $1
+                   AND LOWER(TRIM(email)) = $2
+                   AND LOWER(TRIM(nome)) LIKE $3
+                 ORDER BY criado_em ASC LIMIT 1`,
+                [anamnese.consultora_id, email, primeiroNome + '%']
             );
 
             if (!matches.length) { skipped.push({ id: anamnese.id, reason: 'cliente não encontrado', nome, email }); continue; }
@@ -440,7 +450,7 @@ router.post('/relink-orphaned', async (req, res) => {
             fixed.push({ anamnese_id: anamnese.id, cliente: matches[0].nome });
         }
 
-        res.json({ success: true, fixed_count: fixed.length, skipped_count: skipped.length, fixed, skipped });
+        res.json({ success: true, is_admin_run: isAdmin, fixed_count: fixed.length, skipped_count: skipped.length, fixed, skipped });
     } catch (err) {
         console.error('[relink-orphaned]', err);
         res.status(500).json({ error: err.message });
