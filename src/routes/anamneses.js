@@ -398,6 +398,65 @@ router.get('/insights', async (req, res) => {
     }
 });
 
+// GET /api/anamneses/diagnostico/:clienteId  — DEBUG: show raw DB state for a client
+// IMPORTANT: must be registered BEFORE /:id
+router.get('/diagnostico/:clienteId', async (req, res) => {
+    try {
+        // 1. The target client
+        const { rows: client } = await pool.query(
+            `SELECT id, nome, email, telefone FROM clientes WHERE id = $1 AND consultora_id = $2`,
+            [req.params.clienteId, req.consultora.id]
+        );
+        if (!client.length) return res.status(404).json({ error: 'Cliente não encontrado.' });
+
+        const { email, telefone, nome } = client[0];
+
+        // 2. Anamneses directly linked
+        const { rows: direct } = await pool.query(
+            `SELECT id, preenchido, subtipo, link_origem_id, cliente_id, criado_em FROM anamneses WHERE cliente_id = $1`,
+            [req.params.clienteId]
+        );
+
+        // 3. Other clients in this consultora with same email or phone
+        const { rows: sibling_clients } = await pool.query(
+            `SELECT id, nome, email, telefone FROM clientes
+             WHERE consultora_id = $1 AND id != $2
+               AND (
+                 (email IS NOT NULL AND LOWER(TRIM(email)) = LOWER(TRIM($3)))
+                 OR (telefone IS NOT NULL AND REGEXP_REPLACE(telefone,'[^0-9]','','g') = REGEXP_REPLACE($4,'[^0-9]','','g'))
+               )`,
+            [req.consultora.id, req.params.clienteId, email || '', telefone || '']
+        );
+
+        // 4. Anamneses linked to those sibling clients
+        let sibling_anamneses = [];
+        for (const s of sibling_clients) {
+            const { rows: sa } = await pool.query(
+                `SELECT id, preenchido, subtipo, link_origem_id, cliente_id, criado_em FROM anamneses WHERE cliente_id = $1`,
+                [s.id]
+            );
+            sibling_anamneses.push({ sibling: s, anamneses: sa });
+        }
+
+        // 5. Anamneses matching by JSONB email
+        const { rows: jsonb_matches } = await pool.query(
+            `SELECT id, preenchido, subtipo, cliente_id, criado_em,
+                    dados->'personal'->>'email' as jsonb_email,
+                    dados->'personal'->>'full_name' as jsonb_nome
+             FROM anamneses
+             WHERE consultora_id = $1
+               AND preenchido = TRUE
+               AND LOWER(TRIM(dados->'personal'->>'email')) = LOWER(TRIM($2))`,
+            [req.consultora.id, email || '']
+        );
+
+        res.json({ client: client[0], direct, sibling_clients, sibling_anamneses, jsonb_matches });
+    } catch (err) {
+        console.error('[diagnostico]', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // POST /api/anamneses/relink-orphaned
 // Recupera anamneses sem cliente vinculado usando nome + email como chave.
 // Se o usuário logado for admin: roda para TODAS as consultoras do sistema.
