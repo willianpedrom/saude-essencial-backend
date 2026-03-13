@@ -462,15 +462,40 @@ router.post('/relink-orphaned', async (req, res) => {
 // IMPORTANT: must be registered BEFORE /:id to avoid route collision
 router.get('/cliente/:clienteId', async (req, res) => {
     try {
+        // Get this client's email and name to find duplicate records safely
+        const { rows: clientRows } = await pool.query(
+            'SELECT email, nome FROM clientes WHERE id = $1 AND consultora_id = $2',
+            [req.params.clienteId, req.consultora.id]
+        );
+        const clientEmail = clientRows[0]?.email || null;
+        const clientNome = clientRows[0]?.nome || null;
+        // Use first word of name for similarity (e.g. "Andrea" from "Andrea Pinto de Souza")
+        const primeiroNome = clientNome ? clientNome.trim().split(' ')[0].toLowerCase() : null;
+
+        // Primary: anamneses directly linked to this client
+        // Secondary: anamneses linked to a duplicate record with SAME email AND same first name
+        //   (safe: avoids merging family members sharing email but with different names)
         const { rows } = await pool.query(`
-            SELECT a.id, a.tipo, a.subtipo, a.dados, a.preenchido,
+            SELECT DISTINCT a.id, a.tipo, a.subtipo, a.dados, a.preenchido,
                    a.criado_em, a.nome_link, a.protocolo_customizado
             FROM anamneses a
             WHERE a.consultora_id = $1
-              AND a.cliente_id    = $2
-              AND a.preenchido    = TRUE
+              AND a.preenchido = TRUE
+              AND (
+                a.cliente_id = $2
+                OR (
+                  $3::text IS NOT NULL AND $4::text IS NOT NULL
+                  AND a.cliente_id IN (
+                    SELECT c2.id FROM clientes c2
+                    WHERE c2.consultora_id = $1
+                      AND LOWER(TRIM(c2.email)) = LOWER(TRIM($3))
+                      AND LOWER(TRIM(c2.nome)) LIKE $4 || '%'
+                      AND c2.id != $2
+                  )
+                )
+              )
             ORDER BY a.criado_em DESC
-        `, [req.consultora.id, req.params.clienteId]);
+        `, [req.consultora.id, req.params.clienteId, clientEmail, primeiroNome]);
 
         res.json(rows);
     } catch (err) {
