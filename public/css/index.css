@@ -1091,26 +1091,34 @@ body {
 }
 
 /* ===== DASHBOARD WIDGETS ===== */
+/* Para criar um layout estilo Masonry autêntico no desktop sem buracos verticais e mantendo peças em 2 colunas */
 .dashboard-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.2fr);
+  display: flex;
+  flex-direction: column;
   gap: 24px;
-  align-items: start;
 }
 
-/* Posições relativas das colunas no Desktop usando grid */
-.dash-item.kpis, 
-.dash-item.funnel-vendas, 
-.dash-item.funnel-recrutamento {
-  grid-column: 1; /* Esquerda */
-}
+@media (min-width: 901px) {
+  /* No desktop usaremos column-count para simular Masonry Flow perfeitamente */
+  .dashboard-grid {
+    display: block;
+    column-count: 2;
+    column-gap: 24px;
+  }
+  
+  .dashboard-grid > .dash-item {
+    break-inside: avoid; /* Evita que um card seja quebrado pela metade na transição de colunas */
+    margin-bottom: 24px; /* O gap vertical vira margin-bottom para elementos de block em colunas */
+  }
 
-.dash-item.actions, 
-.dash-item.followups, 
-.dash-item.birthdays, 
-.dash-item.metas, 
-.dash-item.meetings {
-  grid-column: 2; /* Direita */
+  /* Forçar a ordem via display order não funciona bem com column-count 
+     então controlaremos a disposição primária mudando a ordem de renderização 
+     se necessário apenas no Javascript ou CSS se der.
+     Mas o column-count por padrão distribuirá Esquerda->Direita/Cima->Baixo!
+  */
+  
+  /* Ajuste de largura da primeira coluna dos KPIs no column-count para ser maior (simulando o fr) */
+  /* Como CSS columns não suporta fr widths dinâmicos diretamente, os cards podem se alocar. */
 }
 
 @media (max-width: 900px) {

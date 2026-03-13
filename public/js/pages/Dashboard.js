@@ -808,9 +808,9 @@ export async function renderDashboard(router) {
   <p style="color:var(--text-muted);margin:-10px 0 24px;font-size:0.95rem">${metaText}</p>
 
   <div class="dashboard-grid">
-    
-    <!-- COLUNA ESQUERDA -->
-      <div class="dash-item kpis">
+
+    <!-- --- kpis --- -->
+    <div class="dash-item kpis">
         <div class="stats-grid">
           <div class="stat-card green" style="cursor:pointer; border-top: 4px solid var(--green-500)" onclick="location.hash='#/clients'">
             <div class="stat-icon">👥</div>
@@ -841,73 +841,16 @@ export async function renderDashboard(router) {
         </div>
       </div>
 
-      <!-- BLOCO 7: Funil de Vendas -->
-      <div class="dash-item funnel-vendas">
-        <div class="card">
-          <div class="card-header">
-            <h3>📈 Funil de Vendas (Produtos)</h3>
-            <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
-          </div>
-          <div class="card-body">
-            ${buildFunnel([
-        { label: 'Lead Captado', icon: '💧', count: stageCounts.lead_captado || 0, color: '#6366f1' },
-        { label: 'Primeiro Contato', icon: '📞', count: stageCounts.primeiro_contato || 0, color: '#3b82f6' },
-        { label: 'Interesse', icon: '💬', count: stageCounts.interesse_confirmado || 0, color: '#06b6d4' },
-        { label: 'Protocolo Apres.', icon: '🌿', count: stageCounts.protocolo_apresentado || 0, color: '#10b981' },
-        { label: 'Proposta Envia.', icon: '📦', count: stageCounts.proposta_enviada || 0, color: '#f59e0b' },
-        { label: 'Negociando', icon: '🤝', count: stageCounts.negociando || 0, color: '#f97316' },
-        { label: 'Fechado! 🎉', icon: '💰', count: stageCounts.primeira_compra || 0, color: '#22c55e' },
-      ])}
-          </div>
-        </div>
-      </div>
-
-      <!-- BLOCO 8: Funil Recrutamento -->
-      <div class="dash-item funnel-recrutamento">
-        <div class="card">
-          <div class="card-header">
-            <h3>💼 Funil de Recrutamento (Downlines)</h3>
-            <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
-          </div>
-          <div class="card-body">
-            ${buildFunnel([
-        { label: 'Prospecto de Negócio', icon: '🎯', count: recStageCounts.prospecto_negocio || 0, color: '#8b5cf6' },
-        { label: 'Convite Feito', icon: '✉️', count: recStageCounts.convite_apresentacao || 0, color: '#d946ef' },
-        { label: 'Assistiu Apres.', icon: '📺', count: recStageCounts.apresentacao_assistida || 0, color: '#3b82f6' },
-        { label: 'Acompanhamento', icon: '⏱️', count: recStageCounts.acompanhamento_cadastro || 0, color: '#f59e0b' },
-        { label: 'Cadastrada! 🏅', icon: '💼', count: recStageCounts.cadastrada || 0, color: '#22c55e' },
-      ])}
-          </div>
-        </div>
-      </div>
-    </div> <!-- FIM COLUNA ESQUERDA -->
-
-    <!-- COLUNA DIREITA -->
-    <div class="dashboard-col right-col">
-      <!-- BLOCO 2: Botões Rápido -->
-      <div class="dash-item actions">
+    <!-- --- actions --- -->
+    <div class="dash-item actions">
         <div class="quick-actions" style="display:flex;gap:10px;margin-bottom:8px">
           <button class="btn btn-primary" style="flex:1;justify-content:center;padding:14px" onclick="window.dashboardAddClient()">+ Cliente</button>
           <button class="btn btn-secondary" style="flex:1;justify-content:center;padding:14px" onclick="location.hash='#/links'">🔗 Links</button>
         </div>
       </div>
 
-      <!-- BLOCO 3: Follow-ups Urgentes -->
-      ${urgentFollowups.length > 0 ? `
-      <div class="dash-item followups">
-        <div class="card" style="border-left:4px solid #f59e0b">
-          <div class="card-header" style="background:var(--orange-50)">
-            <h3 style="color:#b45309">🔥 Follow-ups Urgentes</h3>
-            <button class="btn btn-secondary btn-sm" onclick="location.hash='#/followup'">Ir</button>
-          </div>
-          <div class="card-body">
-            ${urgentFollowups.map(f => fuRow(f, clients)).join('')}
-          </div>
-        </div>
-      </div>` : ''}
-
-      <!-- BLOCO 4: Aniversários -->
-      <div class="dash-item birthdays">
+    <!-- --- birthdays --- -->
+    <div class="dash-item birthdays">
         <div class="card">
           <div class="card-header">
             <h3>🎂 Aniversários Próximos</h3>
@@ -957,13 +900,8 @@ export async function renderDashboard(router) {
         </div>
       </div>
 
-      <!-- BLOCO 5: Metas Mensais -->
-      <div class="dash-item metas">
-        ${metasHtml}
-      </div>
-
-      <!-- BLOCO 6: Reuniões -->
-      <div class="dash-item meetings">
+    <!-- --- meetings --- -->
+    <div class="dash-item meetings">
         <div class="card">
           <div class="card-header">
             <h3>📅 Próximas Reuniões</h3>
@@ -979,7 +917,66 @@ export async function renderDashboard(router) {
           </div>
         </div>
       </div>
-    </div> <!-- FIM COLUNA DIREITA -->
+
+    <!-- --- metas --- -->
+    <div class="dash-item metas">
+        ${metasHtml}
+      </div>
+
+    <!-- --- followups --- -->
+    <div class="dash-item followups">
+        <div class="card" style="border-left:4px solid #f59e0b">
+          <div class="card-header" style="background:var(--orange-50)">
+            <h3 style="color:#b45309">🔥 Follow-ups Urgentes</h3>
+            <button class="btn btn-secondary btn-sm" onclick="location.hash='#/followup'">Ir</button>
+          </div>
+          <div class="card-body">
+            ${urgentFollowups.map(f => fuRow(f, clients)).join('')}
+          </div>
+        </div>
+      </div>
+
+    <!-- --- funnel-vendas --- -->
+    <div class="dash-item funnel-vendas">
+        <div class="card">
+          <div class="card-header">
+            <h3>📈 Funil de Vendas (Produtos)</h3>
+            <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
+          </div>
+          <div class="card-body">
+            ${buildFunnel([
+        { label: 'Lead Captado', icon: '💧', count: stageCounts.lead_captado || 0, color: '#6366f1' },
+        { label: 'Primeiro Contato', icon: '📞', count: stageCounts.primeiro_contato || 0, color: '#3b82f6' },
+        { label: 'Interesse', icon: '💬', count: stageCounts.interesse_confirmado || 0, color: '#06b6d4' },
+        { label: 'Protocolo Apres.', icon: '🌿', count: stageCounts.protocolo_apresentado || 0, color: '#10b981' },
+        { label: 'Proposta Envia.', icon: '📦', count: stageCounts.proposta_enviada || 0, color: '#f59e0b' },
+        { label: 'Negociando', icon: '🤝', count: stageCounts.negociando || 0, color: '#f97316' },
+        { label: 'Fechado! 🎉', icon: '💰', count: stageCounts.primeira_compra || 0, color: '#22c55e' },
+      ])}
+          </div>
+        </div>
+      </div>
+
+    <!-- --- funnel-recrutamento --- -->
+    <div class="dash-item funnel-recrutamento">
+        <div class="card">
+          <div class="card-header">
+            <h3>💼 Funil de Recrutamento (Downlines)</h3>
+            <button class="btn btn-secondary btn-sm" onclick="location.hash='#/pipeline'">Kanban</button>
+          </div>
+          <div class="card-body">
+            ${buildFunnel([
+        { label: 'Prospecto de Negócio', icon: '🎯', count: recStageCounts.prospecto_negocio || 0, color: '#8b5cf6' },
+        { label: 'Convite Feito', icon: '✉️', count: recStageCounts.convite_apresentacao || 0, color: '#d946ef' },
+        { label: 'Assistiu Apres.', icon: '📺', count: recStageCounts.apresentacao_assistida || 0, color: '#3b82f6' },
+        { label: 'Acompanhamento', icon: '⏱️', count: recStageCounts.acompanhamento_cadastro || 0, color: '#f59e0b' },
+        { label: 'Cadastrada! 🏅', icon: '💼', count: recStageCounts.cadastrada || 0, color: '#22c55e' },
+      ])}
+          </div>
+        </div>
+      </div>
+
+
 
   </div>`;
     // Update page-content with real data (no full re-render to avoid losing sidebar)
