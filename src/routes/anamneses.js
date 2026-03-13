@@ -493,9 +493,9 @@ router.get('/cliente/:clienteId', async (req, res) => {
                       AND c2.id != $2
                       AND LOWER(TRIM(c2.nome)) LIKE $5 || '%'
                       AND (
-                        ($3::text IS NOT NULL AND LOWER(TRIM(c2.email))    = LOWER(TRIM($3)))
+                        ($3::text IS NOT NULL AND LOWER(TRIM(c2.email)) = LOWER(TRIM($3)))
                         OR
-                        ($4::text IS NOT NULL AND TRIM(c2.telefone)        = TRIM($4))
+                        ($4::text IS NOT NULL AND REGEXP_REPLACE(c2.telefone, '[^0-9]', '', 'g') = REGEXP_REPLACE($4, '[^0-9]', '', 'g'))
                       )
                   )
                 )
