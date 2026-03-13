@@ -805,11 +805,6 @@ export async function renderDashboard(router) {
   ${bannersHtml}
   ${onboardingHtml}
 
-  <div class="dash-actions-header">
-    <button class="btn btn-primary" style="padding:12px 24px; font-weight:600" onclick="window.dashboardAddClient()">+ Novo Cliente</button>
-    <button class="btn btn-secondary" style="padding:12px 24px; font-weight:600" onclick="location.hash='#/links'">🔗 Meus Links</button>
-  </div>
-
   <div class="dashboard-grid">
 
     <!-- 1. ANIVERSÁRIOS -->
