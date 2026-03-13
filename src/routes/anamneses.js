@@ -442,42 +442,7 @@ router.get('/:id', async (req, res) => {
 });
 
 
-// POST /api/anamneses/:id/hash (Gera e retorna um Link Mágico para compartilhamento do protocolo)
-router.post('/:id/hash', async (req, res) => {
-    try {
-        const anamneseId = req.params.id;
-        const consultoraId = req.consultora.id;
 
-        // 1. Checa se anamnese existe e pertence à consultora logada
-        const { rows: anamneses } = await pool.query(
-            'SELECT id, hash_laudo FROM anamneses WHERE id = $1 AND consultora_id = $2',
-            [anamneseId, consultoraId]
-        );
-
-        if (anamneses.length === 0) {
-            return res.status(404).json({ error: 'Anamnese não encontrada.' });
-        }
-
-        let hashLaudo = anamneses[0].hash_laudo;
-
-        // 2. Se já tem um link mágico gerado no passado, só devolve ele.
-        // Se não tiver, cria um novo uuid v4.
-        if (!hashLaudo) {
-            const { v4: uuidv4 } = require('uuid');
-            hashLaudo = uuidv4();
-            await pool.query(
-                'UPDATE anamneses SET hash_laudo = $1 WHERE id = $2 AND consultora_id = $3',
-                [hashLaudo, anamneseId, consultoraId]
-            );
-        }
-
-        res.json({ success: true, hash: hashLaudo });
-    } catch (err) {
-        console.error("Erro ao gerar hash_laudo:", err);
-        res.status(500).json({ error: 'Erro ao gerar Link Mágico. Tente novamente.' });
-    }
-
-});
 
 
 // POST /api/anamneses  (consultora creates a link)
