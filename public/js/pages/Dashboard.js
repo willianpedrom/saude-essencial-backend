@@ -419,83 +419,85 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
 }
 
 // ── Helper: Modern step-by-step Funnel (Circles) ──────────────
-// ── Helper: UHD Vertical Pipeline Funnel (Premium) ──────────────
+// ── Helper: Professional Pipeline Funnel (Senior & Robust) ──────────────
 function buildFunnel(steps) {
   const baseVolume = Math.max(...steps.map(s => s.count)) || 0;
   
   if (baseVolume === 0) return `
-    <div style="display:flex;flex-direction:column;align-items:center;padding:32px 0;gap:10px;color:var(--text-light)">
-      <div style="font-size:2.5rem;opacity:0.3">📊</div>
-      <div style="font-size:0.85rem">Aguardando dados de prospecção...</div>
+    <div style="display:flex;flex-direction:column;align-items:center;padding:40px 0;gap:12px;color:var(--text-light)">
+      <div style="font-size:3rem;opacity:0.2">📊</div>
+      <div style="font-size:0.9rem;font-weight:500">Aguardando dados para gerar o funil...</div>
     </div>`;
 
-  let html = '<div class="funnel-premium">';
+  let html = '<div class="funnel-senior-pipeline" style="display:flex; flex-direction:column; gap:12px;">';
 
   steps.forEach((s, i) => {
-    const pctOfBase = baseVolume > 0 ? Math.round((s.count / baseVolume) * 100) : 0;
-    const isZero = s.count === 0;
+    const pctOfTotal = baseVolume > 0 ? Math.round((s.count / baseVolume) * 100) : 0;
     const baseColor = s.color || '#3b82f6';
-    
-    // Configuração do Anel SVG
-    const radius = 24;
-    const circumference = 2 * Math.PI * radius;
-    const offset = circumference - (pctOfBase / 100) * circumference;
-    
-    // Conversão Comparativa
+    const isZero = s.count === 0;
+
+    // Cálculo de Conversão da Etapa Anterior
+    let conversionHtml = '';
     const prev = steps[i - 1];
-    let convText = '';
     if (prev && prev.count > 0) {
       const conv = Math.round((s.count / prev.count) * 100);
-      convText = `<span style="margin-left:8px; color:${conv >= 70 ? 'var(--green-600)' : 'var(--text-muted)'}">${conv}% conv.</span>`;
+      const convColor = conv >= 70 ? '#10b981' : conv >= 40 ? '#f59e0b' : '#ef4444';
+      conversionHtml = `
+        <div style="display:flex; align-items:center; justify-content:center; margin:-6px 0; position:relative; z-index:5;">
+          <div style="background:${convColor}15; color:${convColor}; border:1px solid ${convColor}30; padding:2px 10px; border-radius:30px; font-size:0.7rem; font-weight:800; display:flex; align-items:center; gap:4px; box-shadow:0 2px 4px rgba(0,0,0,0.05)">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="transform:rotate(90deg)"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            ${conv}% conversão
+          </div>
+        </div>`;
     }
 
-    // Adiciona conector entre degraus
-    if (i > 0) html += '<div class="funnel-connector"></div>';
+    if (i > 0) html += conversionHtml;
 
     html += `
-      <div class="glass-card">
-        <div class="ring-container ${pctOfBase >= 80 ? 'pulse-high' : ''}">
-          <svg class="ring-svg" viewBox="0 0 56 56">
-            <circle class="ring-circle-bg" cx="28" cy="28" r="${radius}" />
-            <circle class="ring-circle-prog" cx="28" cy="28" r="${radius}" 
-              stroke="${baseColor}"
-              stroke-dasharray="${circumference}" 
-              stroke-dashoffset="${offset}" />
-          </svg>
-          <div class="ring-icon">${s.icon || '🔸'}</div>
-        </div>
+      <div class="pipeline-card" style="display:flex; align-items:center; background:#fff; border:1px solid #eef2f6; border-radius:16px; padding:16px; position:relative; transition:transform 0.2s, box-shadow 0.2s; box-shadow:0 2px 6px rgba(0,0,0,0.02);">
+        <div style="position:absolute; left:0; top:15%; bottom:15%; width:4px; background:${baseColor}; border-radius:0 4px 4px 0; opacity:${isZero ? 0.3 : 1}"></div>
         
-        <div class="funnel-premium-info">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-             <div>
-               <span class="funnel-premium-label">${s.label}</span>
-               <span class="funnel-premium-sub">${pctOfBase}% do volume total ${convText}</span>
-             </div>
-             <span class="funnel-premium-count" style="color:${baseColor}">${s.count}</span>
+        <div style="width:48px; height:48px; border-radius:14px; background:${baseColor}10; color:${baseColor}; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0;">
+          ${s.icon || '🔸'}
+        </div>
+
+        <div style="margin-left:16px; flex:1;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-weight:700; font-size:0.95rem; color:#1e293b;">${s.label}</span>
+            <span style="font-size:1.3rem; font-weight:900; color:${isZero ? '#cbd5e1' : '#1e293b'}">${s.count}</span>
+          </div>
+          
+          <div style="height:8px; background:#f1f5f9; border-radius:10px; position:relative; overflow:hidden;">
+            <div style="position:absolute; left:0; top:0; height:100%; width:${pctOfTotal}%; background:${baseColor}; border-radius:10px; transition:width 1s ease-out;"></div>
+          </div>
+          
+          <div style="margin-top:6px; font-size:0.75rem; color:#64748b; font-weight:500;">
+            ${pctOfTotal}% do volume total de leads
           </div>
         </div>
       </div>
     `;
   });
 
-  html += '</div>';
-
-  // Card Global Summary Premium
+  // Resumo de Eficiência Global
   const last = steps[steps.length - 1];
-  const convRate = baseVolume > 0 ? Math.round((last.count / baseVolume) * 100) : 0;
-  const rateColor = convRate >= 15 ? '#16a34a' : convRate >= 5 ? '#f59e0b' : '#ef4444';
-  
-  return html + `
-    <div style="margin-top:20px; padding:16px; background:linear-gradient(135deg, ${rateColor}15, ${rateColor}05); border-radius:20px; display:flex; justify-content:space-between; align-items:center; border:1px solid ${rateColor}30; backdrop-filter:blur(10px);">
-       <div>
-         <div style="font-size:0.7rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Conversão Geral</div>
-         <div style="font-size:0.8rem; font-weight:500; color:var(--text-light);">${last.label} alcançado por ${convRate}% do fluxo.</div>
-       </div>
-       <div style="font-size:1.8rem; font-weight:900; color:${rateColor}; text-shadow: 0 2px 10px ${rateColor}33;">
-         ${convRate}%
-       </div>
+  const finalRate = baseVolume > 0 ? Math.round((last.count / baseVolume) * 100) : 0;
+  const rateColor = finalRate >= 15 ? '#10b981' : finalRate >= 5 ? '#f59e0b' : '#ef4444';
+
+  html += `
+    <div style="margin-top:20px; padding:16px; background:linear-gradient(135deg, #1e293b, #334155); border-radius:20px; color:#fff; display:flex; justify-content:space-between; align-items:center; box-shadow:0 10px 20px rgba(0,0,0,0.1);">
+      <div>
+        <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.7; margin-bottom:4px;">Conversão Geral do Funil</div>
+        <div style="font-size:0.85rem; font-weight:400; opacity:0.9;">Taxa de sucesso de ${steps[0].label} até ${last.label}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:1.8rem; font-weight:900; color:${rateColor}; line-height:1;">${finalRate}%</div>
+        <div style="font-size:0.6rem; text-transform:uppercase; font-weight:700; margin-top:4px;">Eficiência</div>
+      </div>
     </div>
-  `;
+  </div>`;
+
+  return html;
 }
 
 // compat shim (still used in some places)
