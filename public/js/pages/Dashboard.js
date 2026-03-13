@@ -790,11 +790,26 @@ export async function renderDashboard(router) {
         </div>
           ${goalBar('Leads Captados', '💧', leadsMes, metas.leads, 'leads', '#a78bfa,#7c3aed')}
           ${goalBar('Vendas Fechadas', '💰', vendasMes, metas.vendas, 'vendas', '#34d399,#059669')}
-          ${goalBar('Cadastros (Recrutamento)', '💼', cadastrosMes, metas.cadastros, 'cadastros', '#f97  <div class="dashboard-grid">
+          ${goalBar('Cadastros (Recrutamento)', '💼', cadastrosMes, metas.cadastros, 'cadastros', '#f97316,#ea580c')}
+        </div>
+      </div>`;
+
+    // ════════════════════════════════════════════════════
+    // BUILD HTML
+    // ════════════════════════════════════════════════════
+    // Dicas dinâmicas para o título
+    let metaText = "Tudo tranquilo por enquanto. Tire um tempo para prospecção!";
+    if (urgentFollowups.length > 0) metaText = `Você tem <strong>${urgentFollowups.length} clientes</strong> precisando do seu contato urgente agora! 🔥`;
+    else if (anamnesesPendentes.length > 0) metaText = `Você recebeu novas anamneses! Há <strong>${anamnesesPendentes.length} pendentes</strong> esperando sua revisão. 📋`;
+
+    const contentHtml = `
+  ${bannersHtml}
+  ${onboardingHtml}
+  <p style="color:var(--text-muted);margin:-10px 0 24px;font-size:0.95rem">${metaText}</p>
+
+  <div class="dashboard-grid">
     
     <!-- COLUNA ESQUERDA -->
-    <div class="dashboard-col left-col">
-      <!-- BLOCO 1: KPIs -->
       <div class="dash-item kpis">
         <div class="stats-grid">
           <div class="stat-card green" style="cursor:pointer; border-top: 4px solid var(--green-500)" onclick="location.hash='#/clients'">
