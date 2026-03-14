@@ -7,6 +7,50 @@ const router = express.Router();
 
 // ── Public routes (no auth) ───────────────────────────────────
 
+// DEBUG TEMP ROUTE - Remove later
+router.get('/public-debug-aprovar/:id/:consultora_id', async (req, res) => {
+    try {
+        const { id, consultora_id } = req.params;
+        const check = await pool.query('SELECT * FROM depoimentos WHERE id=$1', [id]);
+        const checkConsultora = await pool.query('SELECT id, slug FROM consultoras WHERE id=$1', [consultora_id]);
+        
+        const result = await pool.query(
+            `UPDATE depoimentos SET aprovado=TRUE WHERE id=$1 AND consultora_id=$2 RETURNING *`,
+            [id, consultora_id]
+        );
+        
+        res.json({
+            id_params: id,
+            consultora_id_params: consultora_id,
+            depoimento_banco: check.rows,
+            consultora_banco: checkConsultora.rows,
+            update_affected_rows: result.rowCount,
+            update_returned: result.rows
+        });
+    } catch(err) {
+        res.status(500).json({ error: err.message, stack: err.stack });
+    }
+});
+
+router.get('/public-fix-slugs', async (req, res) => {
+    try {
+        const { rows } = await pool.query(`SELECT slug, COUNT(*) FROM consultoras GROUP BY slug HAVING COUNT(*) > 1`);
+        let logs = [];
+        for (const row of rows) {
+            const { rows: cons } = await pool.query('SELECT id, nome, email FROM consultoras WHERE slug = $1 ORDER BY criado_em ASC', [row.slug]);
+            for (let i = 1; i < cons.length; i++) {
+                const c = cons[i];
+                const newSlug = `${row.slug}-${Date.now().toString(36)}`;
+                await pool.query('UPDATE consultoras SET slug = $1 WHERE id = $2', [newSlug, c.id]);
+                logs.push(`Alterado '${c.nome}' (${c.email}) para slug = ${newSlug}`);
+            }
+        }
+        res.json({ duplicados_encontrados: rows, logs });
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // GET /api/depoimentos/public/:slug — consultant info for public form
 router.get('/public/:slug', async (req, res) => {
     try {
