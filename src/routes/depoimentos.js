@@ -156,11 +156,19 @@ router.post('/', async (req, res) => {
 router.patch('/:id/aprovar', async (req, res) => {
     const { aprovado } = req.body;
     try {
+        console.log(`[DEBUG] Tentando aprovar depoimento ID: ${req.params.id} para consultora: ${req.consultora.id}`);
+        // Verifica oq tem no banco primeiro
+        const check = await pool.query('SELECT consultora_id, origem FROM depoimentos WHERE id=$1', [req.params.id]);
+        console.log(`[DEBUG] No banco, o depoimento tem:`, check.rows[0]);
+
         const { rows } = await pool.query(
             `UPDATE depoimentos SET aprovado=$1 WHERE id=$2 AND consultora_id=$3 RETURNING id, aprovado`,
             [!!aprovado, req.params.id, req.consultora.id]
         );
-        if (rows.length === 0) return res.status(404).json({ error: 'Depoimento não encontrado.' });
+        if (rows.length === 0) {
+            console.log(`[DEBUG] Falhou ao atualizar. affectedRows = 0`);
+            return res.status(404).json({ error: 'Depoimento não encontrado ou não pertence a você.' });
+        }
         res.json(rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
