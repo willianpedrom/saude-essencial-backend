@@ -11,6 +11,7 @@
 }
 
 :root {
+  color-scheme: light;
   /* Tons extraídos da nova identidade visual "Gota App" */
   --green-950: #06120b;
   /* Fundo hiper escuro da logo */
