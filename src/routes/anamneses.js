@@ -355,14 +355,18 @@ router.get('/insights', async (req, res) => {
             const d = row.dados;
             let clienteSintomas = [];
             
-            if (Array.isArray(d.sintomas_emocionais)) clienteSintomas.push(...d.sintomas_emocionais);
-            if (Array.isArray(d.sintomas_fisicos)) clienteSintomas.push(...d.sintomas_fisicos);
-            
-            if (d.sintomas_emocionais && typeof d.sintomas_emocionais === 'object' && !Array.isArray(d.sintomas_emocionais)) {
-                clienteSintomas.push(...Object.keys(d.sintomas_emocionais).filter(k => d.sintomas_emocionais[k]));
-            }
-            if (d.sintomas_fisicos && typeof d.sintomas_fisicos === 'object' && !Array.isArray(d.sintomas_fisicos)) {
-                clienteSintomas.push(...Object.keys(d.sintomas_fisicos).filter(k => d.sintomas_fisicos[k]));
+            const chavesDeSintomas = [
+                'general_symptoms', 'digestive_symptoms', 'hormonal_female', 'chronic_conditions',
+                'emotional_symptoms', 'sleep_symptoms', 'low_energy_symptoms',
+                'skin_symptoms', 'hair_symptoms', 'sintomas_emocionais', 'sintomas_fisicos'
+            ];
+
+            for (const ch of chavesDeSintomas) {
+                if (Array.isArray(d[ch])) {
+                    clienteSintomas.push(...d[ch]);
+                } else if (d[ch] && typeof d[ch] === 'object') {
+                    clienteSintomas.push(...Object.keys(d[ch]).filter(k => d[ch][k]));
+                }
             }
 
             clienteSintomas = clienteSintomas.map(s => String(s).trim().toLowerCase());
