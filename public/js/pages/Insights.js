@@ -142,7 +142,7 @@ export async function renderInsights(router) {
             // Bind client detail click
             container.querySelectorAll('.client-link').forEach(link => {
                 link.addEventListener('click', async (e) => {
-                    const clientId = parseInt(e.currentTarget.dataset.clientId);
+                    const clientId = e.currentTarget.dataset.clientId;
                     try {
                         // Fetch the specific client data directly (faster)
                         const client = await store.getClient(clientId);

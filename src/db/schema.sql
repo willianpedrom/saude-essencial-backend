@@ -118,6 +118,7 @@ ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS motivo_perda    TEXT;
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS recrutamento_stage  VARCHAR(40);
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS recrutamento_notas  TEXT;
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS motivo_perda_recrutamento TEXT;
+ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS indicado_por_id UUID REFERENCES clientes(id) ON DELETE SET NULL;
 
 -- Tipo de Cadastro Visual (Consultora VS Cliente Preferencial)
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS tipo_cadastro VARCHAR(30);
