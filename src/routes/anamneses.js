@@ -340,11 +340,11 @@ router.get('/insights', async (req, res) => {
 
         // Dicionário Sintoma -> Óleo
         const mapping = [
-            { id: 'lavanda', nome: 'Lavanda / Serenity', ticket: 130, rgb: '139, 92, 246', sintomas: ['Ansiedade', 'Insônia', 'Estresse', 'Agitação', 'Dificuldade para dormir', 'Nervosismo'] },
-            { id: 'peppermint', nome: 'Peppermint / PastTense', ticket: 145, rgb: '34, 197, 94', sintomas: ['Dor de cabeça', 'Enxaqueca', 'Falta de energia', 'Fadiga', 'Dores musculares', 'Falta de foco'] },
-            { id: 'balance', nome: 'Balance / Adaptiv', ticket: 160, rgb: '14, 165, 233', sintomas: ['Mudanças de humor', 'Sobrecarga Emocional', 'Traumas', 'Luto', 'Tensão'] },
-            { id: 'onguard', nome: 'On Guard / Copaíba', ticket: 180, rgb: '245, 158, 11', sintomas: ['Baixa imunidade', 'Infecções frequentes', 'Problemas respiratórios', 'Alergias', 'Rinite', 'Dor nas articulações'] },
-            { id: 'zengest', nome: 'ZenGest / Lemon', ticket: 110, rgb: '234, 179, 8', sintomas: ['Azia', 'Refluxo', 'Má digestão', 'Intestino preso', 'Gases', 'Retenção de líquido'] }
+            { id: 'lavanda', nome: 'Lavanda / Serenity', categoria: 'Emocional', ticket: 130, rgb: '139, 92, 246', sintomas: ['Ansiedade', 'Insônia', 'Estresse', 'Agitação', 'Dificuldade para dormir', 'Nervosismo'] },
+            { id: 'peppermint', nome: 'Peppermint / PastTense', categoria: 'Energia & Foco', ticket: 145, rgb: '34, 197, 94', sintomas: ['Dor de cabeça', 'Enxaqueca', 'Falta de energia', 'Fadiga', 'Dores musculares', 'Falta de foco'] },
+            { id: 'balance', nome: 'Balance / Adaptiv', categoria: 'Emocional', ticket: 160, rgb: '14, 165, 233', sintomas: ['Mudanças de humor', 'Sobrecarga Emocional', 'Traumas', 'Luto', 'Tensão'] },
+            { id: 'onguard', nome: 'On Guard / Copaíba', categoria: 'Imunidade', ticket: 180, rgb: '245, 158, 11', sintomas: ['Baixa imunidade', 'Infecções frequentes', 'Problemas respiratórios', 'Alergias', 'Rinite', 'Dor nas articulações'] },
+            { id: 'zengest', nome: 'ZenGest / Lemon', categoria: 'Digestivo', ticket: 110, rgb: '234, 179, 8', sintomas: ['Azia', 'Refluxo', 'Má digestão', 'Intestino preso', 'Gases', 'Retenção de líquido'] }
         ];
 
         // buckets
