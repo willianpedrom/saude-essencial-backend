@@ -1,6 +1,6 @@
-import { api } from '../store.js';
+import { api, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
-import { formatCurrency } from '../utils.js';
+import { formatCurrency, toast, openClientOffcanvas } from '../utils.js';
 
 export async function renderInsights(router) {
     const pageContent = `
@@ -34,7 +34,7 @@ export async function renderInsights(router) {
         }
 
         // --- FILTER UI & LOGIC ---
-        const categories = ['Todos', ...new Set(data.map(b => b.categoria))];
+        const categories = ['Todos', ...new Set(data.filter(b => b.categoria).map(b => b.categoria))];
         let activeFilter = 'Todos';
 
         const renderContent = () => {
@@ -144,12 +144,14 @@ export async function renderInsights(router) {
                 link.addEventListener('click', async (e) => {
                     const clientId = parseInt(e.currentTarget.dataset.clientId);
                     try {
-                        const { store } = await import('../store.js');
-                        const { openClientOffcanvas } = await import('../utils.js');
                         // Fetch the client data from the list or API
                         const clients = await store.getClients();
                         const client = clients.find(c => c.id === clientId);
-                        if (client) openClientOffcanvas(client);
+                        if (client) {
+                            openClientOffcanvas(client);
+                        } else {
+                            toast('Cliente não encontrado.', 'error');
+                        }
                     } catch (err) {
                         toast('Erro ao abrir detalhes: ' + err.message, 'error');
                     }
