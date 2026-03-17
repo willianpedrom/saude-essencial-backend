@@ -77,7 +77,7 @@ export function renderLogin(router) {
           <div class="form-group" style="display:flex;align-items:flex-start;gap:8px;margin-top:12px;margin-bottom:16px">
             <input type="checkbox" id="reg-termos" required style="margin-top:4px" />
             <label for="reg-termos" style="font-size:0.85rem;color:var(--text-muted);line-height:1.4">
-              Li e aceito os <a href="#" target="_blank" style="color:var(--primary-color)">Termos de Uso</a> e Políticas de Privacidade.
+              Li e aceito os <a href="/termos.html" target="_blank" style="color:var(--primary-color)">Termos de Uso</a> e Políticas de Privacidade.
             </label>
           </div>
           <div class="auth-error" id="reg-error"></div>
@@ -96,7 +96,7 @@ export function renderLogin(router) {
           <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px">
             Para continuar acessando o Gota App, leia e aceite nossos novos Termos de Uso.
           </p>
-          <a href="#" target="_blank" style="display:inline-block;padding:8px 16px;background:#f1f5f9;border-radius:6px;color:var(--primary-color);font-weight:600;text-decoration:none;margin-bottom:24px;border:1px solid #cbd5e1">
+          <a href="/termos.html" target="_blank" style="display:inline-block;padding:8px 16px;background:#f1f5f9;border-radius:6px;color:var(--primary-color);font-weight:600;text-decoration:none;margin-bottom:24px;border:1px solid #cbd5e1">
             Ler Termos de Uso Completos
           </a>
           <div class="auth-error" id="terms-error"></div>
