@@ -74,12 +74,34 @@ export function renderLogin(router) {
             </div>
             <div id="reg-strength" style="margin-top:6px;font-size:0.78rem"></div>
           </div>
+          <div class="form-group" style="display:flex;align-items:flex-start;gap:8px;margin-top:12px;margin-bottom:16px">
+            <input type="checkbox" id="reg-termos" required style="margin-top:4px" />
+            <label for="reg-termos" style="font-size:0.85rem;color:var(--text-muted);line-height:1.4">
+              Li e aceito os <a href="#" target="_blank" style="color:var(--primary-color)">Termos de Uso</a> e Políticas de Privacidade.
+            </label>
+          </div>
           <div class="auth-error" id="reg-error"></div>
           <button class="btn-auth" type="submit" id="reg-btn">Criar minha conta ✦</button>
           <p class="auth-link-area">
             <span class="auth-link" data-tab-link="login">Já tenho conta</span>
           </p>
         </form>
+      </div>
+
+      <!-- TERMS ACCEPTANCE -->
+      <div id="panel-terms" style="display:none">
+        <div style="text-align:center;margin-bottom:20px;padding:20px">
+          <div style="font-size:2.5rem">📄</div>
+          <h2 style="margin:8px 0 4px;font-size:1.1rem">Atualizamos nossos Termos</h2>
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px">
+            Para continuar acessando o Gota App, leia e aceite nossos novos Termos de Uso.
+          </p>
+          <a href="#" target="_blank" style="display:inline-block;padding:8px 16px;background:#f1f5f9;border-radius:6px;color:var(--primary-color);font-weight:600;text-decoration:none;margin-bottom:24px;border:1px solid #cbd5e1">
+            Ler Termos de Uso Completos
+          </a>
+          <div class="auth-error" id="terms-error"></div>
+          <button class="btn-auth" id="btn-accept-terms">Li e Aceito (Entrar no Painel)</button>
+        </div>
       </div>
 
       <!-- FORGOT PASSWORD -->
@@ -262,7 +284,13 @@ export function renderLogin(router) {
     const btn = document.getElementById('login-btn');
     btn.disabled = true; btn.textContent = 'Entrando...';
     try {
-      await auth.login(email, senha);
+      const data = await auth.login(email, senha);
+      if (data && data.needs_terms_acceptance) {
+         window.__pendingTermsEmail = email;
+         document.getElementById('panel-login').style.display = 'none';
+         document.getElementById('panel-terms').style.display = 'block';
+         return;
+      }
       toast('Bem-vinda de volta! 💧', 'success');
       router.navigate('/dashboard');
     } catch (err) {
@@ -280,17 +308,34 @@ export function renderLogin(router) {
     const telefone = document.getElementById('reg-phone').value.trim();
     const genero = document.getElementById('reg-genero').value;
     const senha = document.getElementById('reg-password').value;
+    const termos_aceitos = document.getElementById('reg-termos').checked;
     const errEl = document.getElementById('reg-error');
     const btn = document.getElementById('reg-btn');
     btn.disabled = true; btn.textContent = 'Criando conta...';
     try {
-      await auth.register(nome, email, senha, telefone, genero);
+      await auth.register(nome, email, senha, telefone, genero, termos_aceitos);
       toast('Conta criada! 14 dias grátis ativados 💧', 'success');
       router.navigate('/dashboard');
     } catch (err) {
       errEl.textContent = err.message || 'Erro ao criar conta.';
       errEl.classList.add('show');
       btn.disabled = false; btn.textContent = 'Criar minha conta ✦';
+    }
+  });
+
+  // ── Accept Terms form ───────────────────────────────────────────────────
+  document.getElementById('btn-accept-terms')?.addEventListener('click', async () => {
+    const errEl = document.getElementById('terms-error');
+    const btn = document.getElementById('btn-accept-terms');
+    btn.disabled = true; btn.textContent = 'Aguarde...';
+    try {
+      await auth.acceptTerms(window.__pendingTermsEmail);
+      toast('Termos aceitos! Bem-vinda 💧', 'success');
+      router.navigate('/dashboard');
+    } catch (err) {
+      errEl.textContent = err.message || 'Erro ao aceitar termos.';
+      errEl.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Li e Aceito (Entrar no Painel)';
     }
   });
 }

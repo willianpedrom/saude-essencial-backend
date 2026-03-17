@@ -100,6 +100,9 @@ export const auth = {
 
     async login(email, senha) {
         const data = await api('POST', '/api/auth/login', { email, senha });
+        if (data.needs_terms_acceptance) {
+            return data;
+        }
         sessionStorage.setItem('se_token', data.token);
         if (data.csrfToken) sessionStorage.setItem('se_csrf', data.csrfToken);
         sessionStorage.setItem('se_user', JSON.stringify(data.consultora));
@@ -107,8 +110,17 @@ export const auth = {
         return data;
     },
 
-    async register(nome, email, senha, telefone, genero) {
-        const data = await api('POST', '/api/auth/register', { nome, email, senha, telefone, genero });
+    async acceptTerms(email) {
+        const data = await api('POST', '/api/auth/accept-terms', { email });
+        sessionStorage.setItem('se_token', data.token);
+        if (data.csrfToken) sessionStorage.setItem('se_csrf', data.csrfToken);
+        sessionStorage.setItem('se_user', JSON.stringify(data.consultora));
+        this._current = data.consultora;
+        return data;
+    },
+
+    async register(nome, email, senha, telefone, genero, termos_aceitos) {
+        const data = await api('POST', '/api/auth/register', { nome, email, senha, telefone, genero, termos_aceitos });
         sessionStorage.setItem('se_token', data.token);
         if (data.csrfToken) sessionStorage.setItem('se_csrf', data.csrfToken);
         sessionStorage.setItem('se_user', JSON.stringify(data.consultora));

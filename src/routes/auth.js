@@ -46,8 +46,8 @@ router.post('/register', validate(schemas.register), async (req, res, next) => {
 
         // Insert consultora
         const { rows } = await pool.query(
-            `INSERT INTO consultoras (nome, email, senha_hash, telefone, slug, genero)
-       VALUES ($1, $2, $3, $4, $5, $6)
+            `INSERT INTO consultoras (nome, email, senha_hash, telefone, slug, genero, termos_aceitos, termos_aceitos_em)
+       VALUES ($1, $2, $3, $4, $5, $6, TRUE, NOW())
        RETURNING id, nome, email, slug, genero`,
             [nome, email, senhaHash, telefone || null, slug, genero || 'feminino']
         );
@@ -83,7 +83,7 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
         }
 
         const { rows } = await pool.query(
-            'SELECT id, nome, email, senha_hash, slug, role, genero, telefone, foto_url, link_afiliada FROM consultoras WHERE email = $1',
+            'SELECT id, nome, email, senha_hash, slug, role, genero, telefone, foto_url, link_afiliada, termos_aceitos FROM consultoras WHERE email = $1',
             [email]
         );
 
@@ -111,6 +111,18 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
             'SELECT token_version FROM consultoras WHERE id = $1', [consultora.id]
         );
         const tv = tvRows[0]?.token_version ?? 1;
+
+        // Check Terms of Service Acceptance
+        if (!consultora.termos_aceitos) {
+            logger.info({ event: 'login_terms_pending', consultora_id: consultora.id, email: consultora.email, ip: req.ip });
+            // Return only partial data, without JWT
+            const csrfToken = generateCsrfToken();
+            return res.json({ 
+                needs_terms_acceptance: true, 
+                csrfToken, 
+                consultora: { id: consultora.id, email: consultora.email, nome: consultora.nome } 
+            });
+        }
 
         const token = jwt.sign(
             { id: consultora.id, email: consultora.email, nome: consultora.nome, role: consultora.role || 'user', genero: consultora.genero || 'feminino', tv },
@@ -424,6 +436,52 @@ router.post('/logout', authMiddleware, async (req, res, next) => {
         return res.json({ success: true, message: 'Sessão encerrada com segurança.' });
     } catch (err) {
         logger.error({ event: 'logout_error', consultora_id: req.consultora?.id, ip: req.ip, error: err });
+        return next(err);
+    }
+});
+
+// POST /api/auth/accept-terms
+// Chamada quando o usuário aceitar os termos na tela de bloqueio do Login
+router.post('/accept-terms', async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: 'E-mail não fornecido.' });
+
+        const { rows } = await pool.query(
+            'UPDATE consultoras SET termos_aceitos = TRUE, termos_aceitos_em = NOW() WHERE email = $1 RETURNING id, nome, email, slug, role, genero, telefone, foto_url, link_afiliada',
+            [email]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Conta não encontrada.' });
+        }
+
+        const consultora = rows[0];
+
+        // Recalcula subscrição para montar a resposta completa
+        const subResult = await pool.query(
+            `SELECT plano, status, trial_fim, periodo_fim FROM assinaturas WHERE consultora_id = $1 ORDER BY criado_em DESC LIMIT 1`,
+            [consultora.id]
+        );
+        const sub = subResult.rows[0] || { plano: 'none', status: 'none' };
+
+        const { rows: tvRows } = await pool.query(
+            'SELECT token_version FROM consultoras WHERE id = $1', [consultora.id]
+        );
+        const tv = tvRows[0]?.token_version ?? 1;
+
+        // Gera token Final
+        const token = jwt.sign(
+            { id: consultora.id, email: consultora.email, nome: consultora.nome, role: consultora.role || 'user', genero: consultora.genero || 'feminino', tv },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d', issuer: 'gota-app', audience: 'gota-app-api' }
+        );
+
+        logger.info({ event: 'terms_accepted', consultora_id: consultora.id, email: consultora.email, ip: req.ip });
+        return res.json({ token, consultora: { ...consultora, assinatura: sub } });
+
+    } catch (err) {
+        logger.error({ event: 'accept_terms_error', email: req.body?.email, ip: req.ip, error: err }, 'Erro no accept-terms');
         return next(err);
     }
 });

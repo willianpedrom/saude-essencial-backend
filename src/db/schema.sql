@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS consultoras (
   telefone      VARCHAR(20),
   slug          VARCHAR(100) UNIQUE NOT NULL,
   foto_url      TEXT,
+  termos_aceitos BOOLEAN DEFAULT FALSE,
+  termos_aceitos_em TIMESTAMPTZ,
   criado_em     TIMESTAMPTZ DEFAULT NOW(),
   atualizado_em TIMESTAMPTZ DEFAULT NOW()
 );

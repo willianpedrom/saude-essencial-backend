@@ -28,6 +28,9 @@ const register = z.object({
     senha: password,
     telefone: phone,
     genero: genero,
+    termos_aceitos: z.literal(true, {
+        errorMap: () => ({ message: 'Você precisa aceitar os Termos de Uso.' })
+    }),
 });
 
 const changePassword = z.object({
