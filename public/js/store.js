@@ -171,6 +171,10 @@ export const store = {
         const list = await api('GET', '/api/clientes');
         return (Array.isArray(list) ? list : []).map(normalizeClient);
     },
+    async getClient(id) {
+        const res = await api('GET', `/api/clientes/${id}`);
+        return normalizeClient(res);
+    },
     /**
      * Paginated client fetching — sends ?page=&limit=&q=&ativo= to backend.
      * Returns { data: Client[], total, page, limit, totalPages }.

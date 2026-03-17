@@ -144,9 +144,8 @@ export async function renderInsights(router) {
                 link.addEventListener('click', async (e) => {
                     const clientId = parseInt(e.currentTarget.dataset.clientId);
                     try {
-                        // Fetch the client data from the list or API
-                        const clients = await store.getClients();
-                        const client = clients.find(c => c.id === clientId);
+                        // Fetch the specific client data directly (faster)
+                        const client = await store.getClient(clientId);
                         if (client) {
                             openClientOffcanvas(client);
                         } else {
