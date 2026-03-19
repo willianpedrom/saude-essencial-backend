@@ -349,6 +349,7 @@ export async function renderAdmin(router) {
               <button class="btn btn-secondary btn-sm" data-cortesia-id="${u.id}" data-cortesia-nome="${u.nome}" title="Conceder Cortesia">🎁</button>
               <button class="btn btn-secondary btn-sm" data-historico-id="${u.id}" data-historico-nome="${u.nome}" title="Histórico de Assinaturas (Hotmart/Pagamentos)">📜</button>
               <button class="btn btn-secondary btn-sm" data-reenvio-id="${u.id}" data-reenvio-nome="${u.nome}" title="Reenviar Email de Acesso">📧</button>
+              ${u.telefone && u.telefone.replace(/\\D/g, '').length >= 10 ? `<button class="btn btn-sm" style="background:#25D366;color:white;border:none" onclick="window.open('https://wa.me/55${u.telefone.replace(/\\D/g, '')}?text=Ol%C3%A1%2C%20%2A${encodeURIComponent((u.nome || '').split(' ')[0])}%2A%21', '_blank')" title="Chamar no WhatsApp">💬</button>` : `<button class="btn btn-secondary btn-sm" title="Telefone ausente ou inválido" disabled style="opacity: 0.5;">💬</button>`}
               <button class="btn btn-danger btn-sm" data-del-id="${u.id}" data-del-nome="${u.nome}" title="Excluir" ${isMe ? 'disabled' : ''}>🗑️</button>
             </div>
           </td>
