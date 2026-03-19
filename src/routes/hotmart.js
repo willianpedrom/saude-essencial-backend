@@ -124,6 +124,7 @@ router.post('/webhook', express.json(), async (req, res) => {
         const buyerNome = buyer.name || buyer.first_name
             ? `${buyer.first_name || ''} ${buyer.last_name || ''}`.trim()
             : 'Novo Membro';
+        const buyerPhone = buyer.checkout_phone || buyer.phone || null;
         const transactionId = data?.purchase?.transaction || null;
         const subscriptionId = data?.subscription?.subscriber?.code || null;
         const valor = data?.purchase?.price?.value || null;
@@ -152,14 +153,14 @@ router.post('/webhook', express.json(), async (req, res) => {
             const slug = makeSlug(buyerEmail.split('@')[0] + '-' + buyerNome.split(' ')[0]);
 
             const { rows: newUser } = await pool.query(
-                `INSERT INTO consultoras (nome, email, senha_hash, slug, genero)
-                 VALUES ($1, $2, $3, $4, 'feminino')
+                `INSERT INTO consultoras (nome, email, telefone, senha_hash, slug, genero)
+                 VALUES ($1, $2, $3, $4, $5, 'feminino')
                  RETURNING id, nome`,
-                [buyerNome, buyerEmail, senhaHash, slug]
+                [buyerNome, buyerEmail, buyerPhone, senhaHash, slug]
             );
             consultoraId = newUser[0].id;
             isNewAccount = true;
-            console.log(`[Hotmart] 🆕 Conta criada automaticamente: ${buyerEmail} (${buyerNome})`);
+            console.log(`[Hotmart] 🆕 Conta criada automaticamente: ${buyerEmail} (${buyerNome}) com tel: ${buyerPhone || 'nenhum'}`);
         } else {
             console.warn(`[Hotmart] ⚠️ Usuário não encontrado para evento ${event}: ${buyerEmail}`);
             return res.status(200).json({ received: true, warning: 'user not found' });
@@ -205,10 +206,10 @@ router.post('/webhook', express.json(), async (req, res) => {
                     );
                 }
 
-                // Update consultoras denormalized fields (if they exist)
+                // Update consultoras denormalized fields and phone if absent
                 await pool.query(
-                    `UPDATE consultoras SET plano = $1, plano_status = 'active', atualizado_em = NOW() WHERE id = $2`,
-                    [plano, consultoraId]
+                    `UPDATE consultoras SET plano = $1, plano_status = 'active', telefone = COALESCE(telefone, $2), atualizado_em = NOW() WHERE id = $3`,
+                    [plano, buyerPhone, consultoraId]
                 ).catch(() => { });
 
                 await registerPayment(consultoraId, { event, transactionId, subscriptionId, plano, valor });
