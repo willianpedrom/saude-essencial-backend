@@ -4,25 +4,20 @@
    ============================================================ */
 
 export const ANAMNESIS_STEPS = [
-    { id: 'personal', label: 'Dados Pessoais', icon: '👤' },
-    { id: 'health', label: 'Saúde Geral', icon: '🫀' },
+    { id: 'personal', label: 'Início Rápido', icon: '👋' },
+    { id: 'health', label: 'Saúde Física', icon: '🫀' },
     { id: 'emotional', label: 'Emocional & Sono', icon: '🧠' },
     { id: 'body', label: 'Corpo & Hábitos', icon: '✨' },
-    { id: 'goals', label: 'Objetivos', icon: '🎯' },
+    { id: 'goals', label: 'Quase lá!', icon: '🎯' },
 ];
 
 
 export const ANAMNESIS_QUESTIONS = {
     personal: {
-        title: 'Dados Pessoais', icon: '👤',
+        title: 'Olá! Como podemos te chamar?', icon: '👋',
         fields: [
-            { name: 'full_name', label: 'Nome completo', type: 'text', required: true },
-            { name: 'email', label: 'E-mail', type: 'email', required: true },
-            { name: 'phone', label: 'WhatsApp', type: 'tel', required: true },
-            { name: 'birthdate', label: 'Data de nascimento', type: 'date', required: true },
-            { name: 'gender', label: 'Gênero', type: 'select', required: true, options: ['Feminino', 'Masculino'] },
-            { name: 'city', label: 'Cidade / Estado', type: 'text' },
-            { name: 'occupation', label: 'Profissão', type: 'text' },
+            { name: 'full_name', label: 'Seu Nome ou Apelido', type: 'text', required: true, placeholder: 'Ex: Ana Maria' },
+            { name: 'phone', label: 'Seu melhor WhatsApp', type: 'tel', required: true, placeholder: '(11) 99999-9999' }
         ]
     },
     health: {
@@ -118,7 +113,14 @@ export const ANAMNESIS_QUESTIONS = {
         ]
     },
     goals: {
-        title: 'Objetivos & Expectativas', icon: '🎯',
+        title: 'Excelente, {nome}! Seu protocolo está quase pronto.', icon: '🎯',
+        fields: [
+            { name: 'email', label: 'Para qual e-mail enviamos seu Protocolo?', type: 'email', required: true, placeholder: 'seu@email.com' },
+            { name: 'birthdate', label: 'Sua data de nascimento', type: 'date', required: true },
+            { name: 'gender', label: 'Como você se identifica?', type: 'select', required: true, options: ['Feminino', 'Masculino', 'Outro', 'Prefiro não dizer'] },
+            { name: 'city', label: 'Cidade e Estado', type: 'text', placeholder: 'Ex: São Paulo, SP' },
+            { name: 'occupation', label: 'Sua Profissão', type: 'text' }
+        ],
         sections: [
             { label: 'Qual é sua maior queixa de saúde HOJE?', key: 'main_complaint', type: 'textarea', placeholder: 'Descreva o principal problema que quer resolver...' },
             {

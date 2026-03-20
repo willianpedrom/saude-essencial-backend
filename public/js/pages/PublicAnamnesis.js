@@ -94,23 +94,23 @@ export async function renderPublicAnamnesis(router, token) {
   const pageBadge = isBusiness ? 'Análise de Perfil Empreendedor' : 'Avaliação de Saúde Natural';
   const btnFinalLabel = isBusiness ? '🚀 Gerar Diagnóstico' : '💧 Gerar Meu Protocolo';
 
-  function showTransitionEffect(callback) {
+  function showTransitionEffect(msg, callback) {
     app.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;text-align:center;padding:20px;">
-        <div style="font-size:3rem;animation:pulse 1s infinite">✨</div>
-        <h3 style="color:#2d5016;margin-top:16px">Analisando suas respostas...</h3>
-        <p style="color:#888;font-size:0.9rem">Preparando a próxima etapa.</p>
+        <div style="font-size:3.5rem;animation:pulse 1s infinite">✨</div>
+        <h3 style="color:#2d5016;margin-top:16px;font-size:1.4rem;max-width:300px">${msg}</h3>
+        <p style="color:#888;font-size:0.9rem;margin-top:8px">Preparando a próxima etapa...</p>
       </div>
       <style>@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }</style>
     `;
-    setTimeout(callback, 1200);
+    setTimeout(callback, 1600);
   }
 
   function showProcessingEffect(callback) {
     app.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;text-align:center;padding:20px;">
         <div style="font-size:3.5rem;animation:pulse 1s infinite">🤖</div>
-        <h3 style="color:#2d5016;margin-top:16px" id="proc-text">Compilando sintomas...</h3>
+        <h3 style="color:#2d5016;margin-top:16px" id="proc-text">Lendo suas respostas...</h3>
         <p style="color:#888;font-size:0.9em" id="proc-sub">Aguarde, nosso sistema está montando seu protocolo.</p>
         <div style="width:200px;background:#eee;border-radius:99px;height:8px;margin-top:20px;overflow:hidden">
           <div id="proc-bar" style="width:0%;height:100%;background:linear-gradient(to right, #25d366, #128c7e);transition:width 0.5s ease"></div>
@@ -119,7 +119,7 @@ export async function renderPublicAnamnesis(router, token) {
       <style>@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }</style>
     `;
     setTimeout(() => {
-      const t = document.getElementById('proc-text'); if (t) t.innerText = 'Cruzando informações e banco de óleos...';
+      const t = document.getElementById('proc-text'); if (t) t.innerText = 'Cruzando informações com óleos essenciais...';
       const b = document.getElementById('proc-bar'); if (b) b.style.width = '40%';
     }, 1200);
     setTimeout(() => {
@@ -138,6 +138,10 @@ export async function renderPublicAnamnesis(router, token) {
     const stepDef = STEPS[currentStep];
     const section = QUESTIONS[stepDef.id];
     const isLast = currentStep === STEPS.length - 1;
+    
+    // Substitui {nome} pelo primeiro nome, se houver
+    let firstName = (answers.personal?.full_name || '').split(' ')[0] || 'você';
+    let sectionTitle = section.title.replace('{nome}', firstName);
 
     // Timer Logic for Scarcity
     if (!window.anamnesisScarcityTimer) {
@@ -269,7 +273,7 @@ export async function renderPublicAnamnesis(router, token) {
       <div class="anamnesis-container fade-up" style="max-width: 650px; margin: 0 auto; padding: 0 20px;">
         <!-- Progress -->
         <div style="display:flex;justify-content:space-between;color:rgba(255,255,255,0.7);font-size:0.85rem;margin-bottom:8px;font-weight:600;">
-          <span>${stepDef.icon} ${section.title}</span>
+          <span>${stepDef.icon} ${stepDef.label}</span>
           <span>${currentStep + 1} de ${STEPS.length}</span>
         </div>
         <div class="neon-progress">
@@ -277,7 +281,7 @@ export async function renderPublicAnamnesis(router, token) {
         </div>
 
         <div class="form-glass">
-          <h3 style="margin-top:0; margin-bottom: 24px; color:#0f172a; font-size:1.3rem;">${stepDef.icon} ${section.title}</h3>
+          <h3 style="margin-top:0; margin-bottom: 24px; color:#0f172a; font-size:1.3rem;">${stepDef.icon} ${sectionTitle}</h3>
           <div id="step-fields">${renderFields(section, answers[stepDef.id] || {})}</div>
           
           <div style="display:flex;justify-content:space-between;margin-top:24px; border-top: 1px solid #f1f5f9; padding-top:24px;">
@@ -313,19 +317,27 @@ export async function renderPublicAnamnesis(router, token) {
     if (prevBtn) prevBtn.addEventListener('click', () => { collectAnswers(stepDef.id); currentStep--; renderStep(); });
 
     document.getElementById('btn-next').addEventListener('click', () => {
-      if (stepDef.id === 'personal') {
-        const name = document.getElementById('field-full_name')?.value?.trim();
-        const email = document.getElementById('field-email')?.value?.trim();
-        const phone = document.getElementById('field-phone')?.value?.trim();
-        // gender not required for recruiting
-        const gender = document.getElementById('field-gender')?.value;
-        if (!name || !email || !phone || (!isBusiness && !gender)) { toast('Preencha os dados pessoais obrigatórios', 'error'); return; }
-      }
+      // General validation for required fields on current step
+      let isValid = true;
+      (QUESTIONS[stepDef.id].fields || []).forEach(f => {
+        if (f.required && !document.getElementById('field-' + (f.name||f.key))?.value?.trim()) isValid = false;
+      });
+      if (!isValid) { toast('Preencha as informações obrigatórias para continuar.', 'error'); return; }
+
       collectAnswers(stepDef.id);
+      
       if (isLast) {
         showProcessingEffect(submitAnamnesis);
       } else {
-        showTransitionEffect(() => {
+        const curName = (answers.personal?.full_name || 'Amigo(a)').split(' ')[0];
+        const msgs = [
+          `Ótimo começo, ${curName}! Vamos analisar sua saúde física...`,
+          `Isso mesmo, ${curName}! O sono e dores dizem muito sobre você.`,
+          `Excelente, ${curName}! Como estão seus hábitos diários?`,
+          `Última etapa, ${curName}! Seu protocolo já está ganhando forma.`
+        ];
+        
+        showTransitionEffect(msgs[currentStep] || `Avançando, ${curName}...`, () => {
           currentStep++;
           renderStep();
           window.scrollTo({ top: 0, behavior: 'smooth' });
