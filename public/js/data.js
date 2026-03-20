@@ -21,7 +21,7 @@ export const ANAMNESIS_QUESTIONS = {
         ]
     },
     health: {
-        title: 'Saúde Geral', icon: '🫀',
+        title: 'Ótimo começo, {nome}! Como está a sua Saúde Física?', icon: '🫀',
         sections: [
             { label: 'Medicamentos ou suplementos em uso contínuo?', key: 'medications', type: 'textarea', placeholder: 'Liste medicamentos e suplementos (ou deixe em branco)' },
             {
@@ -58,7 +58,7 @@ export const ANAMNESIS_QUESTIONS = {
         ]
     },
     emotional: {
-        title: 'Emocional & Sono', icon: '🧠',
+        title: 'Isso aí, {nome}! Conta pra gente sobre suas Emoções e Sono', icon: '🧠',
         sections: [
             { label: 'Conte como está se sentindo emocionalmente', key: 'emotional_open', type: 'textarea', placeholder: 'Descreva sua situação emocional atual...' },
             {
@@ -90,7 +90,7 @@ export const ANAMNESIS_QUESTIONS = {
         ]
     },
     body: {
-        title: 'Corpo & Hábitos', icon: '✨',
+        title: 'Estamos quase lá, {nome}! Como são seus Hábitos Diários?', icon: '✨',
         sections: [
             {
                 label: 'Condições de pele', key: 'skin_symptoms', type: 'checkbox', options: [
