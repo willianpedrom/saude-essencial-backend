@@ -11,6 +11,7 @@ const adminApi = {
   getTracking: (id) => api('GET', `/api/admin/users/${id}/tracking`),
   updateTracking: (id, data) => api('PUT', `/api/admin/users/${id}/tracking`, data),
   deleteUser: (id) => api('DELETE', `/api/admin/users/${id}`),
+  impersonate: (id) => api('POST', `/api/admin/users/${id}/impersonate`),
   // Planos
   getPlanos: () => api('GET', '/api/admin/planos'),
   createPlano: (data) => api('POST', '/api/admin/planos', data),
@@ -344,6 +345,7 @@ export async function renderAdmin(router) {
                 ${isAdmin ? '👤' : '👑'}
               </button>
               <button class="btn btn-secondary btn-sm" data-pwd-id="${u.id}" title="Alterar Senha">🔑</button>
+              <button class="btn btn-primary btn-sm" data-impersonate-id="${u.id}" data-impersonate-nome="${u.nome}" title="Acessar conta como ${u.nome ? u.nome.split(' ')[0] : 'usuário'}" ${isMe ? 'disabled style="opacity:0.5"' : 'style="background:#3b82f6;border:none"'}>🚪</button>
               <button class="btn btn-secondary btn-sm" data-tracking-id="${u.id}" title="Rastreamento">📊</button>
               <button class="btn btn-secondary btn-sm" data-plan-id="${u.id}" data-plan-current="${u.plano || 'starter'}" data-status-current="${u.plano_status || 'trial'}" title="Alterar Plano">💳</button>
               <button class="btn btn-secondary btn-sm" data-cortesia-id="${u.id}" data-cortesia-nome="${u.nome}" title="Conceder Cortesia">🎁</button>
@@ -400,6 +402,36 @@ export async function renderAdmin(router) {
         const u = users.find(x => x.id === btn.dataset.planId);
         if (!u) return;
         showPlanModal(u);
+      });
+    });
+
+    // Impersonate
+    tbody.querySelectorAll('[data-impersonate-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const u = users.find(x => x.id === btn.dataset.impersonateId);
+        if (!u) return;
+        modal('🚪 Acessar Sistema', `
+          <div style="text-align:center">
+            <div style="font-size:2.5rem;margin-bottom:12px">🕵️‍♂️</div>
+            <p>Deseja acessar a conta de <strong>${u.nome || 'este usuário'}</strong>?</p>
+            <p style="font-size:0.85rem;color:var(--text-muted)">
+              Você será logado na conta deste membro imediatamente, sem a necessidade de senha.<br>
+              <span style="color:#ca8a04;font-weight:600">Para retornar ao seu perfil Admin, você precisará sair da conta (Logout) no menu lateral e fazer login novamente com sua senha.</span>
+            </p>
+          </div>`, {
+          confirmLabel: '🚪 Entrar na Conta',
+          onConfirm: async () => {
+            try {
+              const res = await adminApi.impersonate(u.id);
+              toast(`Bem-vindo, acessando como ${u.nome.split(' ')[0]}...`);
+              auth.setSession(res.token, res.consultora, null); // Will clear CSRF if next endpoints require it, but GETs are fine
+              setTimeout(() => {
+                window.location.hash = '#/dashboard';
+                window.location.reload();
+              }, 600);
+            } catch (err) { toast('Erro: ' + err.message, 'error'); return false; }
+          }
+        });
       });
     });
 

@@ -159,6 +159,31 @@ router.delete('/users/:id', async (req, res) => {
     }
 });
 
+// POST /api/admin/users/:id/impersonate — Log in as another user
+router.post('/users/:id/impersonate', async (req, res) => {
+    try {
+        const { rows } = await pool.query(
+            'SELECT id, nome, email, slug, role, genero, foto_url FROM consultoras WHERE id = $1',
+            [req.params.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado.' });
+        
+        const consultora = rows[0];
+        const jwt = require('jsonwebtoken');
+        const token = jwt.sign(
+            { id: consultora.id, email: consultora.email, nome: consultora.nome, role: consultora.role || 'user' },
+            process.env.JWT_SECRET,
+            { expiresIn: '12h', issuer: 'gota-app', audience: 'gota-app-api' }
+        );
+
+        console.log(`[Admin] 🕵️‍♂️ Admin ${req.consultora.email} entrou como ${consultora.email}`);
+        res.json({ success: true, token, consultora });
+    } catch (err) {
+        console.error('[Admin] impersonate error:', err);
+        res.status(500).json({ error: 'Erro ao tentar acessar a conta.' });
+    }
+});
+
 // GET /api/admin/users/:id/historico — subscription history for a user
 router.get('/users/:id/historico', async (req, res) => {
     try {
