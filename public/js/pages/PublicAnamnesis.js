@@ -108,15 +108,34 @@ export async function renderPublicAnamnesis(router, token) {
 
   function showProcessingEffect(callback) {
     app.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;text-align:center;padding:20px;">
-        <div style="font-size:3.5rem;animation:pulse 1s infinite">🤖</div>
-        <h3 style="color:#2d5016;margin-top:16px" id="proc-text">Lendo suas respostas...</h3>
-        <p style="color:#888;font-size:0.9em" id="proc-sub">Aguarde, nosso sistema está montando seu protocolo.</p>
-        <div style="width:200px;background:#eee;border-radius:99px;height:8px;margin-top:20px;overflow:hidden">
-          <div id="proc-bar" style="width:0%;height:100%;background:linear-gradient(to right, #25d366, #128c7e);transition:width 0.5s ease"></div>
+      <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;text-align:center;padding:20px;background:#f8fafc">
+        <svg class="elegant-spinner" viewBox="0 0 50 50">
+          <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+        </svg>
+        <h3 style="color:#0f172a;margin-top:32px;font-size:1.4rem;font-weight:700" id="proc-text">Lendo suas respostas...</h3>
+        <p style="color:#64748b;font-size:0.95em;margin-top:8px" id="proc-sub">Aguarde, nosso sistema está montando seu protocolo.</p>
+        <div style="width:240px;background:#e2e8f0;border-radius:99px;height:6px;margin-top:24px;overflow:hidden">
+          <div id="proc-bar" style="width:0%;height:100%;background:linear-gradient(90deg, #10b981, #059669);transition:width 0.5s ease"></div>
         </div>
       </div>
-      <style>@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }</style>
+      <style>
+        .elegant-spinner {
+          animation: rotate 2s linear infinite;
+          width: 56px;
+          height: 56px;
+        }
+        .elegant-spinner .path {
+          stroke: #10b981;
+          stroke-linecap: round;
+          animation: dash 1.5s ease-in-out infinite;
+        }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        @keyframes dash {
+          0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+          50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+          100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+        }
+      </style>
     `;
     setTimeout(() => {
       const t = document.getElementById('proc-text'); if (t) t.innerText = 'Cruzando informações com óleos essenciais...';
