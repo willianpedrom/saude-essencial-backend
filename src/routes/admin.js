@@ -163,7 +163,7 @@ router.delete('/users/:id', async (req, res) => {
 router.post('/users/:id/impersonate', async (req, res) => {
     try {
         const { rows } = await pool.query(
-            'SELECT id, nome, email, slug, role, genero, foto_url FROM consultoras WHERE id = $1',
+            'SELECT id, nome, email, slug, role, genero, foto_url, token_version FROM consultoras WHERE id = $1',
             [req.params.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado.' });
@@ -171,7 +171,7 @@ router.post('/users/:id/impersonate', async (req, res) => {
         const consultora = rows[0];
         const jwt = require('jsonwebtoken');
         const token = jwt.sign(
-            { id: consultora.id, email: consultora.email, nome: consultora.nome, role: consultora.role || 'user' },
+            { id: consultora.id, email: consultora.email, nome: consultora.nome, role: consultora.role || 'user', tv: consultora.token_version || 1 },
             process.env.JWT_SECRET,
             { expiresIn: '12h', issuer: 'gota-app', audience: 'gota-app-api' }
         );
