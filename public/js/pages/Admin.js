@@ -424,7 +424,12 @@ export async function renderAdmin(router) {
             try {
               const res = await adminApi.impersonate(u.id);
               toast(`Bem-vindo, acessando como ${u.nome.split(' ')[0]}...`);
-              auth.setSession(res.token, res.consultora, null); // Will clear CSRF if next endpoints require it, but GETs are fine
+              
+              sessionStorage.setItem('se_token', res.token);
+              sessionStorage.removeItem('se_csrf'); 
+              sessionStorage.setItem('se_user', JSON.stringify(res.consultora));
+              auth._current = res.consultora;
+
               setTimeout(() => {
                 window.location.hash = '#/dashboard';
                 window.location.reload();
