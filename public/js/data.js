@@ -117,9 +117,8 @@ export const ANAMNESIS_QUESTIONS = {
         fields: [
             { name: 'email', label: 'Para qual e-mail enviamos seu Protocolo?', type: 'email', required: true, placeholder: 'seu@email.com' },
             { name: 'birthdate', label: 'Sua data de nascimento', type: 'date', required: true },
-            { name: 'gender', label: 'Como você se identifica?', type: 'select', required: true, options: ['Feminino', 'Masculino', 'Outro', 'Prefiro não dizer'] },
-            { name: 'city', label: 'Cidade e Estado', type: 'text', placeholder: 'Ex: São Paulo, SP' },
-            { name: 'occupation', label: 'Sua Profissão', type: 'text' }
+            { name: 'gender', label: 'Qual é o seu Gênero?', type: 'select', required: true, options: ['Feminino', 'Masculino'] },
+            { name: 'city', label: 'Cidade e Estado', type: 'text', placeholder: 'Ex: São Paulo, SP' }
         ],
         sections: [
             { label: 'Qual é sua maior queixa de saúde HOJE?', key: 'main_complaint', type: 'textarea', placeholder: 'Descreva o principal problema que quer resolver...' },
