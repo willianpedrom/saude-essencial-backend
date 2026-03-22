@@ -241,6 +241,10 @@ export const store = {
     submitAnamnesis(token, dados, refId = null) {
         return api('PUT', `/api/anamneses/public/${token}${refId ? `?ref=${refId}` : ''}`, { dados });
     },
+    savePartialLead(token, dados) {
+        // Envio silencioso sem bloquear UI (Fire and forget)
+        return api('POST', `/api/anamneses/public/${token}/partial`, { dados }).catch(() => {});
+    },
 
     /* ---- AGENDAMENTOS ---- */
     async getAgendamentos(_cid) {

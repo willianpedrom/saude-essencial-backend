@@ -57,6 +57,69 @@ router.get('/public/:token', async (req, res) => {
     }
 });
 
+// POST /api/anamneses/public/:token/partial  (silent lead capture at step 1)
+router.post('/public/:token/partial', async (req, res) => {
+    try {
+        const { dados } = req.body;
+        if (!dados || (!dados.phone && !dados.full_name)) return res.json({ ok: false });
+
+        // 1. Get consultora
+        const { rows: tmpl } = await pool.query(
+            `SELECT consultora_id FROM anamneses WHERE token_publico = $1`,
+            [req.params.token]
+        );
+        if (tmpl.length === 0) return res.json({ ok: false });
+        const consultora_id = tmpl[0].consultora_id;
+
+        const nome = dados.full_name || dados.nome || 'Lead Incompleto';
+        const telefone = dados.phone || dados.telefone || null;
+        if (!telefone) return res.json({ ok: false });
+
+        // 2. Check limits to avoid creating leads if blocked
+        const { rows: limitRows } = await pool.query(`
+            SELECT p.clientes_max,
+            (SELECT COUNT(*) FROM clientes WHERE consultora_id = $1 AND ativo = TRUE) as total_ativos
+            FROM assinaturas a
+            LEFT JOIN planos p ON p.slug = a.plano AND p.ativo = TRUE
+            WHERE a.consultora_id = $1
+            ORDER BY a.criado_em DESC LIMIT 1
+        `, [consultora_id]);
+        
+        let clientesMax = 50; 
+        if (limitRows.length > 0 && limitRows[0].clientes_max) clientesMax = limitRows[0].clientes_max;
+        const totalAtivos = limitRows[0]?.total_ativos || 0;
+
+        // 3. Upsert client based on phone and name similarity
+        let params = [consultora_id, telefone, nome.toLowerCase().trim()];
+        const { rows: existing } = await pool.query(`
+            SELECT id FROM clientes
+            WHERE consultora_id = $1 AND telefone = $2 AND LOWER(TRIM(nome)) LIKE ($3 || '%')
+            LIMIT 1
+        `, params);
+
+        if (existing.length > 0) {
+            // Update existing slightly if needed or just do nothing, client exists
+            await pool.query('UPDATE clientes SET nome=COALESCE($1, nome) WHERE id=$2', [nome, existing[0].id]);
+        } else {
+            // New Lead Capture
+            if (totalAtivos >= clientesMax) return res.json({ ok: false, limit: true });
+            
+            await pool.query(
+                `INSERT INTO clientes (consultora_id, nome, telefone, estagio_funil_id, tags)
+                 VALUES ($1, $2, $3, 
+                    (SELECT id FROM funil_estagios WHERE consultora_id = $1 AND tipo = 'vendas' ORDER BY ordem ASC LIMIT 1),
+                    '{"Origem: Anamnese (Incompleta)"}'
+                 )`,
+                [consultora_id, nome, telefone]
+            );
+        }
+        res.json({ ok: true });
+    } catch (e) {
+        console.error('Erro no partial save:', e);
+        res.json({ ok: false });
+    }
+});
+
 // PUT /api/anamneses/public/:token  (client submits the form)
 router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) => {
     const { dados } = req.body;

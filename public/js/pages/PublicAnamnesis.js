@@ -344,6 +344,11 @@ export async function renderPublicAnamnesis(router, token) {
       if (!isValid) { toast('Preencha as informações obrigatórias para continuar.', 'error'); return; }
 
       collectAnswers(stepDef.id);
+
+      // Silent Lead Capture at Step 1
+      if (stepDef.id === 'personal' && answers.personal) {
+          store.savePartialLead(token, answers.personal);
+      }
       
       if (isLast) {
         showProcessingEffect(submitAnamnesis);
