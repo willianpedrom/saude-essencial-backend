@@ -53,7 +53,7 @@ export async function renderPublicTestimonial(router, slug) {
         --theme-bg: ${themeData.bg};
         --theme-color: ${themeData.primary};
       }
-      .dep-page { min-height:100vh; background:var(--theme-bg); display:flex; align-items:center; justify-content:center; padding:24px; }
+      .dep-page { min-height:100vh; background:var(--theme-bg); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px 24px 60px; }
       .dep-card { background:rgba(255,255,255,0.07); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.12); border-radius:24px; padding:40px 36px; width:100%; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.4); }
       .dep-header { text-align:center; margin-bottom:32px; }
       .dep-avatar { width:72px; height:72px; border-radius:50%; background:var(--theme-color); display:flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:700; color:white; margin:0 auto 12px; overflow:hidden; }
