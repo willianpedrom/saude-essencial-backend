@@ -100,6 +100,10 @@ const router = new Router({
         const { renderIntegrations } = await import('./pages/Integracoes.js');
         renderIntegrations(router);
     }),
+    '/prospecting': guard(async () => {
+        const { renderProspecting } = await import('./pages/Prospecting.js');
+        renderProspecting(router);
+    }),
 
     // Public routes (no auth required)
     '/anamnese/:token': async ({ token }) => {

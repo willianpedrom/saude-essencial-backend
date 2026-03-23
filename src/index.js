@@ -174,6 +174,7 @@ app.use('/api/hotmart', require('./routes/hotmart'));
 app.use('/api/links', require('./routes/links'));
 app.use('/api/avisos', require('./routes/avisos'));
 app.use('/api/followups', require('./routes/followups'));
+app.use('/api/prospects', require('./routes/prospects'));
 
 // Rota pública raiz para SEO / Open Graph (Prévias de Link)
 app.use('/convite', require('./routes/share'));
@@ -252,6 +253,24 @@ async function runMigration() {
             valor TEXT,
             atualizado_em TIMESTAMPTZ DEFAULT NOW()
         )`);
+
+        // Prospecting table
+        await pool.query(`CREATE TABLE IF NOT EXISTS prospects (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            consultora_id UUID REFERENCES consultoras(id) ON DELETE CASCADE,
+            nome VARCHAR(255) NOT NULL,
+            place_id VARCHAR(255),
+            endereco TEXT,
+            telefone VARCHAR(50),
+            website TEXT,
+            nicho VARCHAR(100),
+            status VARCHAR(50) DEFAULT 'prospectado', 
+            notas TEXT,
+            criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_prospects_consultora ON prospects(consultora_id)`);
+
         // Promote ADMIN_EMAIL to role='admin' (safe to run every startup — idempotent)
         if (process.env.ADMIN_EMAIL) {
             await pool.query(
