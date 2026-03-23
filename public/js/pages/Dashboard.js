@@ -74,6 +74,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
     { id: 'purchases', icon: '🛒', label: 'Compras' },
     { id: 'integrations', icon: '📊', label: 'Integrações' },
     { id: 'profile', icon: '👤', label: 'Meu Perfil' },
+    { id: 'support', icon: '🎧', label: 'Suporte (Ajuda)' },
   ];
   if (auth.isAdmin) navItems.push({ id: 'admin', icon: '⚙️', label: 'Administração' });
 
@@ -159,6 +160,11 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
   app.querySelectorAll('[data-nav]').forEach(btn => {
     btn.addEventListener('click', () => {
       closeSidebar();
+      if (btn.dataset.nav === 'support') {
+        const msg = encodeURIComponent(`Olá equipe do Gota App! Meu email de acesso é: ${consultant?.email || 'inserir email'}. Preciso de uma ajuda com: `);
+        window.open(`https://wa.me/5521988964012?text=${msg}`, '_blank');
+        return;
+      }
       router.navigate('/' + btn.dataset.nav);
     });
   });
