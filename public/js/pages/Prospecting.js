@@ -224,11 +224,22 @@ export async function renderProspecting(router) {
                         api('GET', `/api/prospects/details/${pid}`),
                         new Promise(r => setTimeout(()=>r({}), 2500))
                     ]);
-                    await api('POST', '/api/prospects', { ...btn.dataset, ...details });
+                    await api('POST', '/api/prospects', { 
+                        nome: btn.dataset.name,
+                        endereco: btn.dataset.addr,
+                        place_id: btn.dataset.placeid,
+                        nicho: btn.dataset.niche,
+                        ...details 
+                    });
                     toast('Lead capturado!');
                     btn.textContent = '✅ Capturado';
                 } catch (err) {
-                    await api('POST', '/api/prospects', { ...btn.dataset });
+                    await api('POST', '/api/prospects', { 
+                        nome: btn.dataset.name,
+                        endereco: btn.dataset.addr,
+                        place_id: btn.dataset.placeid,
+                        nicho: btn.dataset.niche
+                    });
                     btn.textContent = '✅ Capturado';
                 }
             });
