@@ -217,13 +217,19 @@ export async function renderProspecting(router) {
         resultsEl.querySelectorAll('.btn-save-lead').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const pid = btn.dataset.placeid;
-                btn.disabled = true; btn.textContent = 'Salvando...';
+                btn.disabled = true; 
+                btn.innerHTML = '⌛ Capturando...';
+                
                 try {
-                    // Timeout de 2.5s para o enriquecimento (Senior Move: UX First)
+                    // Enriquecimento com timeout generoso (2.5s)
                     const details = await Promise.race([
                         api('GET', `/api/prospects/details/${pid}`),
                         new Promise(r => setTimeout(()=>r({}), 2500))
-                    ]);
+                    ]).catch(e => {
+                        console.warn('[Enrichment Failed]', e);
+                        return {};
+                    });
+
                     await api('POST', '/api/prospects', { 
                         nome: btn.dataset.name,
                         endereco: btn.dataset.addr,
@@ -231,16 +237,20 @@ export async function renderProspecting(router) {
                         nicho: btn.dataset.niche,
                         ...details 
                     });
-                    toast('Lead capturado!');
-                    btn.textContent = '✅ Capturado';
+                    
+                    toast('Lead capturado e enviado ao Flow!');
+                    btn.classList.add('btn-wa-active');
+                    btn.innerHTML = '✅ VER NO FLOW';
+                    btn.disabled = false;
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        renderMyProspects();
+                    };
                 } catch (err) {
-                    await api('POST', '/api/prospects', { 
-                        nome: btn.dataset.name,
-                        endereco: btn.dataset.addr,
-                        place_id: btn.dataset.placeid,
-                        nicho: btn.dataset.niche
-                    });
-                    btn.textContent = '✅ Capturado';
+                    console.error('[Save Lead Error]', err);
+                    toast('Erro ao capturar lead. Redefina e tente novamente.', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Tentar Novamente';
                 }
             });
         });
