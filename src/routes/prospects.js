@@ -1,6 +1,7 @@
 const express = require('express');
 const pool = require('../db/pool');
 const authenticateToken = require('../middleware/auth');
+const axios = require('axios');
 
 const router = express.Router();
 
@@ -23,8 +24,8 @@ router.get('/search', authenticateToken, async (req, res) => {
         const query = encodeURIComponent(`${q} em ${location}`);
         const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&language=pt-BR&key=${GOOGLE_API_KEY}`;
         
-        const response = await fetch(url);
-        const data = await response.json();
+        const response = await axios.get(url);
+        const data = response.data;
 
         if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
             console.error('[Google API Error]', data);
@@ -38,15 +39,34 @@ router.get('/search', authenticateToken, async (req, res) => {
             endereco: place.formatted_address,
             rating: place.rating,
             user_ratings_total: place.user_ratings_total,
-            // A API de TextSearch não traz telefone e website de cara, 
-            // seria necessário um Place Details para cada, o que encarece. 
-            // Vamos deixar o frontend pedir o detalhe se o usuário clicar.
         }));
 
         res.json({ results });
     } catch (err) {
         console.error('[Prospects Search]', err);
         res.status(500).json({ error: 'Falha ao buscar locais no Google.' });
+    }
+});
+
+// GET /api/prospects/details/:placeId - Busca dados de contato enriquecidos
+router.get('/details/:placeId', authenticateToken, async (req, res) => {
+    const { placeId } = req.params;
+    if (!GOOGLE_API_KEY) return res.status(500).json({ error: 'API Key ausente.' });
+
+    try {
+        const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=formatted_phone_number,website,international_phone_number&language=pt-BR&key=${GOOGLE_API_KEY}`;
+        const response = await axios.get(url);
+        const data = response.data;
+
+        if (data.status !== 'OK') throw new Error(data.error_message || 'Erro nos detalhes do Google.');
+
+        res.json({
+            telefone: data.result.formatted_phone_number || data.result.international_phone_number || null,
+            website: data.result.website || null
+        });
+    } catch (err) {
+        console.error('[Prospects Details]', err);
+        res.status(500).json({ error: 'Erro ao buscar detalhes do local.' });
     }
 });
 
@@ -66,13 +86,13 @@ router.get('/', authenticateToken, async (req, res) => {
 
 // POST /api/prospects - Salva um novo prospect
 router.post('/', authenticateToken, async (req, res) => {
-    const { nome, place_id, endereco, telefone, website, nicho } = req.body;
+    const { nome, place_id, endereco, telefone, website, nicho, instagram, facebook, email } = req.body;
     try {
         const { rows } = await pool.query(
-            `INSERT INTO prospects (consultora_id, nome, place_id, endereco, telefone, website, nicho)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)
+            `INSERT INTO prospects (consultora_id, nome, place_id, endereco, telefone, website, nicho, instagram, facebook, email)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
              RETURNING *`,
-            [req.consultora.id, nome, place_id, endereco, telefone, website, nicho]
+            [req.consultora.id, nome, place_id, endereco, telefone, website, nicho, instagram, facebook, email]
         );
         res.status(201).json(rows[0]);
     } catch (err) {
@@ -84,7 +104,7 @@ router.post('/', authenticateToken, async (req, res) => {
 // PATCH /api/prospects/:id - Atualiza status ou notas
 router.patch('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
-    const { status, notas } = req.body;
+    const { status, notas, instagram, facebook, email } = req.body;
     try {
         // Busca o estado atual para comparar
         const current = await pool.query('SELECT status, historico FROM prospects WHERE id = $1 AND consultora_id = $2', [id, req.consultora.id]);
@@ -114,11 +134,14 @@ router.patch('/:id', authenticateToken, async (req, res) => {
             `UPDATE prospects 
              SET status = COALESCE($1, status), 
                  notas = COALESCE($2, notas),
-                 historico = $3,
+                 instagram = COALESCE($3, instagram),
+                 facebook = COALESCE($4, facebook),
+                 email = COALESCE($5, email),
+                 historico = $6,
                  atualizado_em = CURRENT_TIMESTAMP
-             WHERE id = $4 AND consultora_id = $5
+             WHERE id = $7 AND consultora_id = $8
              RETURNING *`,
-            [status, notas, JSON.stringify(newHistory), id, req.consultora.id]
+            [status, notas, instagram, facebook, email, JSON.stringify(newHistory), id, req.consultora.id]
         );
         res.json(rows[0]);
     } catch (err) {
