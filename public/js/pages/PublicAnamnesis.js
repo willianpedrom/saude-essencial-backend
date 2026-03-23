@@ -544,6 +544,7 @@ export async function renderPublicAnamnesis(router, token) {
         answers: allAnswers,
         consultant: { 
             name: consultoraNome, 
+            slug: anamneseData.consultora_slug,
             genero: anamneseData.consultora_genero, 
             phone: anamneseData.consultora_telefone, 
             link: window.location.origin + '/#anamnese/' + token,
