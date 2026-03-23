@@ -69,8 +69,9 @@ export async function renderPublicTestimonial(router, slug) {
       .dep-stars { display:flex; gap:10px; }
       .dep-star { font-size:2rem; cursor:pointer; transition:transform 0.15s; }
       .dep-star:hover { transform:scale(1.2); }
-      .nps-grid { display:flex; gap:6px; flex-wrap:wrap; justify-content:space-between; margin-top:8px; }
-      .nps-btn { flex:1; min-width:32px; height:42px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:white; font-size:1.05rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+      .nps-grid { display:grid; grid-template-columns: repeat(11, 1fr); gap:6px; margin-top:8px; }
+      @media (max-width: 540px) { .nps-grid { grid-template-columns: repeat(6, 1fr); gap:5px; } }
+      .nps-btn { display:flex; align-items:center; justify-content:center; height:44px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:white; font-size:1.05rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
       .nps-btn:hover { background:rgba(255,255,255,0.15); transform:translateY(-2px); }
       .nps-btn.active { background:var(--theme-color); color:white; border-color:var(--theme-color); transform:scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.3); }
       .nps-labels { display:flex; justify-content:space-between; margin-top:8px; font-size:0.75rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.5px; }
