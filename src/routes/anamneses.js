@@ -105,8 +105,8 @@ router.post('/public/:token/partial', async (req, res) => {
             if (totalAtivos >= clientesMax) return res.json({ ok: false, limit: true });
             
             await pool.query(
-                `INSERT INTO clientes (consultora_id, nome, telefone, pipeline_stage, tags)
-                 VALUES ($1, $2, $3, 'lead_captado', '{"Origem: Anamnese (Incompleta)"}')`,
+                `INSERT INTO clientes (consultora_id, nome, telefone, pipeline_stage, status)
+                 VALUES ($1, $2, $3, 'lead_captado', 'lead')`,
                 [consultora_id, nome, telefone]
             );
         }
