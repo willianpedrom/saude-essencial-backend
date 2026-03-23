@@ -57,20 +57,35 @@ export async function renderProspecting(router) {
             </div>
         </div>
 
-        <!-- Modal de Detalhes / Histórico -->
+        <!-- Modal de Detalhes / Edição -->
         <div id="history-modal" class="modal-overlay" style="display:none">
             <div class="modal-content animate-pop-in">
                 <div class="modal-header">
-                    <h3>💎 Detalhes do Lead</h3>
+                    <h3>💎 Gestão do Lead</h3>
                     <button class="btn-close-modal" onclick="document.getElementById('history-modal').style.display='none'">✕</button>
                 </div>
-                <div id="lead-details-form" style="margin-bottom:20px; padding:15px; background:#f8fafc; border-radius:12px;">
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px">
-                        <input type="text" id="edit-insta" placeholder="Instagram (@...)" class="input-modern" style="height:40px; font-size:0.8rem">
-                        <input type="text" id="edit-fb" placeholder="Facebook" class="input-modern" style="height:40px; font-size:0.8rem">
+                <div id="lead-details-form" class="editor-glass">
+                    <div class="form-row">
+                        <div class="input-group-sm">
+                            <label>Telefone / WhatsApp</label>
+                            <input type="text" id="edit-tel" placeholder="Ex: (21) 99999-9999" class="input-modern-sm">
+                        </div>
+                        <div class="input-group-sm">
+                            <label>Site Oficial</label>
+                            <input type="text" id="edit-web" placeholder="https://..." class="input-modern-sm">
+                        </div>
                     </div>
-                    <input type="email" id="edit-email" placeholder="Email de contato" class="input-modern" style="height:40px; font-size:0.8rem; width:100%; margin-bottom:10px">
-                    <button id="btn-save-details" class="btn-premium" style="width:100%; height:36px; font-size:0.8rem">Atualizar Dados</button>
+                    <div class="form-row">
+                        <div class="input-group-sm">
+                            <label>Instagram (@...)</label>
+                            <input type="text" id="edit-insta" placeholder="@perfil" class="input-modern-sm">
+                        </div>
+                        <div class="input-group-sm">
+                            <label>E-mail</label>
+                            <input type="email" id="edit-email" placeholder="contato@..." class="input-modern-sm">
+                        </div>
+                    </div>
+                    <button id="btn-save-details" class="btn-premium-sm">Salvar Alterações</button>
                 </div>
                 <div id="history-list" class="history-timeline"></div>
             </div>
@@ -84,29 +99,30 @@ export async function renderProspecting(router) {
 
             .search-glass-card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; padding: 32px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); margin-bottom: 32px; }
             .search-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-            .search-icon-title { display: flex; align-items: center; gap: 16px; }
-            /* ... outros estilos mantidos ... */
-            .search-controls { display: grid; grid-template-columns: 1fr 1fr 200px; gap: 20px; align-items: flex-end; }
-            .input-modern { width: 100%; height: 52px; border: 2px solid #f1f5f9; border-radius: 14px; padding: 0 16px; font-size: 0.95rem; }
-            .btn-premium { height: 52px; background: #1e293b; color: white; border-radius: 14px; font-weight: 700; cursor: pointer; border: none; }
             
             .pipeline-container { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; min-height: 70vh; }
-            .pipeline-col { min-width: 320px; background: #f8fafc; border-radius: 20px; padding: 16px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 12px; }
-            .pipeline-col.drag-over { background: #f1f5f9; border-color: #22c55e; border-style: dashed; }
-            .prospect-card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); cursor: grab; position: relative; }
+            .pipeline-col { min-width: 320px; background: #f8fafc; border-radius: 24px; padding: 18px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 14px; }
+            .pipeline-col.drag-over { border-color: #22c55e; border-style: dashed; background: #f0fdf4; }
+            .prospect-card { background: white; border-radius: 18px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; cursor: grab; }
             
-            /* Quick Actions on Flow Card */
-            .flow-card-actions { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f1f5f9; }
-            .btn-flow-action { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1rem; transition: transform 0.2s; border: 1px solid #e2e8f0; }
-            .btn-flow-action:hover { transform: translateY(-2px); }
-            .btn-wa { background: #dcfce7; border-color: #86efac; color: #166534; }
-            .btn-web { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
-            .btn-social { background: #f0f9ff; border-color: #bae6fd; color: #0369a1; }
+            /* Quick Actions - Always Visible */
+            .flow-card-actions { display: flex; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #e2e8f0; }
+            .btn-flow-action { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1.1rem; transition: all 0.2s; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; }
+            .btn-flow-action:hover { transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+            .btn-wa { border-color: #22c55e; color: #22c55e; }
+            .btn-wa.empty { border-color: #cbd5e1; color: #cbd5e1; opacity: 0.6; }
+            .btn-web { border-color: #3b82f6; color: #3b82f6; }
+            .btn-web.empty { border-color: #cbd5e1; color: #cbd5e1; opacity: 0.6; }
+            .btn-details { border-color: #64748b; color: #64748b; }
             
-            .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-            .modal-content { background: white; width: 90%; max-width: 500px; border-radius: 24px; padding: 24px; }
-            .history-timeline { display: flex; flex-direction: column; gap: 16px; max-height: 300px; overflow-y: auto; }
-            
+            .editor-glass { background: #f8fafc; padding: 20px; border-radius: 16px; margin-bottom: 24px; border: 1px solid #e2e8f0; }
+            .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+            .input-modern-sm { width: 100%; height: 42px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0 12px; font-size: 0.85rem; }
+            .btn-premium-sm { width: 100%; height: 42px; background: #1e293b; color: #fff; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; }
+
+            .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); }
+            .modal-content { background: #fff; width: 95%; max-width: 500px; border-radius: 28px; padding: 28px; box-shadow: 0 30px 60px -15px rgba(0,0,0,0.3); }
+
             @media (max-width: 768px) {
                 .search-controls { grid-template-columns: 1fr; }
                 .pipeline-container { flex-direction: column; }
@@ -126,8 +142,8 @@ export async function renderProspecting(router) {
         if (!loc) return toast('Digite a localização', 'warning');
         
         searchBtn.disabled = true;
-        searchBtn.textContent = '🛰️ Escaneando...';
-        resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px"><div class="spinner"></div></div>';
+        searchBtn.innerHTML = '🛰️ Escaneando...';
+        resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px"><div class="spinner"></div><p style="margin-top:10px;color:var(--text-muted)">Minerando locais qualificados...</p></div>';
 
         try {
             const data = await api('GET', `/api/prospects/search?q=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}`);
@@ -147,18 +163,18 @@ export async function renderProspecting(router) {
         resetBtn();
         document.getElementById('prospecting-results-header').style.display = 'flex';
         if (results.length === 0) {
-            resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center">Nenhum lead encontrado.</div>';
+            resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px">Nenhum lead encontrado nesta região. Tente mudar o bairro.</div>';
             return;
         }
 
         resultsEl.innerHTML = results.map(p => `
-            <div class="result-card-modern anim-slide-up">
+            <div class="result-card-modern animate-pop-in">
                 <div style="font-size:0.7rem;font-weight:800;color:#22c55e;margin-bottom:8px">${niche}</div>
-                <h4 style="margin:0 0 4px;font-size:1rem">${p.nome}</h4>
-                <p style="font-size:0.8rem;color:#64748b;margin-bottom:16px">${p.endereco.split(',')[0]}</p>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                    <button class="btn-premium btn-save-lead" data-name="${p.nome}" data-addr="${p.endereco}" data-placeid="${p.place_id}" data-niche="${niche}" style="height:44px;font-size:0.85rem">Iniciar Flow</button>
-                    <a href="https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${p.place_id}" target="_blank" class="btn-action-outline" style="height:44px;font-size:0.85rem;text-decoration:none;display:flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;border-radius:12px">Ver Maps</a>
+                <h4 style="margin:0 0 4px;font-size:1.1rem;color:#1e293b">${p.nome}</h4>
+                <p style="font-size:0.85rem;color:#64748b;margin-bottom:20px">${p.endereco.split(',')[0]}</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <button class="btn-premium btn-save-lead" data-name="${p.nome}" data-addr="${p.endereco}" data-placeid="${p.place_id}" data-niche="${niche}" style="height:48px;font-size:0.9rem">Mover para Flow</button>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${p.place_id}" target="_blank" class="btn-action-outline" style="height:48px;font-size:0.9rem;text-decoration:none;display:flex;align-items:center;justify-content:center;border:2px solid #e2e8f0;border-radius:14px;color:#1e293b;font-weight:600">Maps</a>
                 </div>
             </div>
         `).join('');
@@ -166,18 +182,22 @@ export async function renderProspecting(router) {
         resultsEl.querySelectorAll('.btn-save-lead').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const pid = btn.dataset.placeid;
-                btn.disabled = true; btn.textContent = '⌛ Enriquecendo...';
+                btn.disabled = true; 
+                btn.innerHTML = '<span class="spinner-sm"></span> Salva...';
                 
                 try {
-                    // Busca detalhes extras (Telefone/Site) antes de salvar
-                    const details = await api('GET', `/api/prospects/details/${pid}`);
+                    // Tenta enriquecer, mas salva de qualquer jeito após 3s para não travar
+                    const detailsPromise = api('GET', `/api/prospects/details/${pid}`);
+                    const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({}), 3500));
+                    
+                    const details = await Promise.race([detailsPromise, timeoutPromise]);
                     await api('POST', '/api/prospects', { ...btn.dataset, ...details });
-                    toast('Lead salvo com contato!', 'success');
+                    
+                    toast('Lead salvo com sucesso!', 'success');
                     btn.textContent = '✅ Salvo';
                 } catch (err) { 
-                    // Se falhar o detalhe, salva o básico mesmo
                     await api('POST', '/api/prospects', { ...btn.dataset });
-                    toast('Lead salvo (sem detalhes extras)', 'info');
+                    toast('Salvo (sem detalhes extras)', 'info');
                     btn.textContent = '✅ Salvo';
                 }
             });
@@ -211,26 +231,36 @@ export async function renderProspecting(router) {
         const items = all.filter(p => p.status === status);
         return `
             <div class="pipeline-col" data-status="${status}">
-                <div style="font-weight:800;font-size:0.9rem;border-bottom:2px solid #e2e8f0;padding-bottom:10px">${label} (${items.length})</div>
+                <div style="font-weight:800;font-size:0.95rem;color:#1e293b;border-bottom:2px solid #f1f5f9;padding-bottom:12px;display:flex;justify-content:space-between">
+                    <span>${label}</span>
+                    <span style="background:#e2e8f0;padding:2px 8px;border-radius:20px;font-size:0.75rem">${items.length}</span>
+                </div>
                 <div class="col-drop-zone" style="flex:1;min-height:200px">
                     ${items.map(p => {
                         const tel = (p.telefone || '').replace(/\D/g, '');
                         const wa = tel ? `https://wa.me/${tel.startsWith('55') ? tel : '55'+tel}` : null;
                         return `
-                        <div class="prospect-card" draggable="true" data-id="${p.id}">
-                            <div style="font-size:0.6rem;text-transform:uppercase;color:#94a3b8;font-weight:800">${p.nicho}</div>
-                            <div style="font-weight:700;margin:4px 0">${p.nome}</div>
+                        <div class="prospect-card animate-pop-in" draggable="true" data-id="${p.id}">
+                            <div style="font-size:0.65rem;text-transform:uppercase;color:#22c55e;font-weight:800;letter-spacing:1px">${p.nicho}</div>
+                            <div style="font-weight:700;margin:6px 0;font-size:1.05rem;color:#1e293b">${p.nome}</div>
                             
                             <div class="flow-card-actions">
-                                ${wa ? `<a href="${wa}" target="_blank" class="btn-flow-action btn-wa" title="WhatsApp">📱</a>` : ''}
-                                ${p.website ? `<a href="${p.website}" target="_blank" class="btn-flow-action btn-web" title="Site">🌐</a>` : ''}
-                                ${p.instagram ? `<a href="https://instagram.com/${p.instagram.replace('@','')}" target="_blank" class="btn-flow-action btn-social" title="Instagram">📸</a>` : ''}
-                                <button class="btn-flow-action btn-history" data-id="${p.id}" data-p='${JSON.stringify(p)}' title="Mais Detalhes / Histórico">📜</button>
-                                <button class="btn-del-prospect btn-flow-action" data-id="${p.id}" style="border:none; background:none">🗑️</button>
+                                <!-- WhatsApp: Se não tiver, vira botão de adicionar -->
+                                ${wa 
+                                    ? `<a href="${wa}" target="_blank" class="btn-flow-action btn-wa" title="WhatsApp">📱</a>` 
+                                    : `<button class="btn-flow-action btn-wa empty icon-edit-trigger" data-id="${p.id}" data-p='${JSON.stringify(p)}' title="Adicionar WhatsApp">➕📱</button>`}
+                                
+                                <!-- Website -->
+                                ${p.website 
+                                    ? `<a href="${p.website}" target="_blank" class="btn-flow-action btn-web" title="Site">🌐</a>` 
+                                    : `<button class="btn-flow-action btn-web empty icon-edit-trigger" data-id="${p.id}" data-p='${JSON.stringify(p)}' title="Adicionar Site">➕🌐</button>`}
+                                
+                                <button class="btn-flow-action btn-details icon-edit-trigger" data-id="${p.id}" data-p='${JSON.stringify(p)}' title="Mais Opções">⚡</button>
+                                <button class="btn-del-prospect btn-flow-action" data-id="${p.id}" style="border-color:#fca5a5; color:#ef4444">🗑️</button>
                             </div>
 
-                            <div class="mobile-only" style="margin-top:10px;text-align:right">
-                                <button class="btn-next-status" data-id="${p.id}" data-curr="${status}" style="font-size:0.7rem;padding:4px 10px;border-radius:6px;border:1px solid #e2e8f0;background:#fff">Mover →</button>
+                            <div class="mobile-only" style="margin-top:15px;text-align:right">
+                                <button class="btn-next-status" data-id="${p.id}" data-curr="${status}" style="font-size:0.75rem;padding:6px 14px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;font-weight:600">Mover ⮕</button>
                             </div>
                         </div>
                     `}).join('')}
@@ -257,7 +287,7 @@ export async function renderProspecting(router) {
                 try {
                     await api('PATCH', `/api/prospects/${draggedId}`, { status: newStatus });
                     renderMyProspects();
-                    toast('Lead movido com sucesso!');
+                    toast('Lead movido!');
                 } catch (err) { toast('Erro ao mover', 'error'); }
             });
         });
@@ -267,21 +297,26 @@ export async function renderProspecting(router) {
                 const nextMap = { 'prospectado': 'contatado', 'contatado': 'negociacao', 'negociacao': 'fechado' };
                 const next = nextMap[btn.dataset.curr];
                 if (!next) return;
-                await api('PATCH', `/api/prospects/${btn.dataset.id}`, { status: next });
-                renderMyProspects();
+                try {
+                    await api('PATCH', `/api/prospects/${btn.dataset.id}`, { status: next });
+                    renderMyProspects();
+                } catch (err) { toast('Erro ao mover', 'error'); }
             });
         });
         document.querySelectorAll('.btn-del-prospect').forEach(btn => {
             btn.addEventListener('click', async () => {
-                if (!confirm('Excluir este lead?')) return;
-                await api('DELETE', `/api/prospects/${btn.dataset.id}`);
-                renderMyProspects();
+                if (!confirm('Deseja excluir este lead permanentemente?')) return;
+                try {
+                    await api('DELETE', `/api/prospects/${btn.dataset.id}`);
+                    renderMyProspects();
+                    toast('Lead removido.');
+                } catch (err) { toast('Erro ao excluir', 'error'); }
             });
         });
     }
 
     function initHistoryAndDetails() {
-        document.querySelectorAll('.btn-history').forEach(btn => {
+        document.querySelectorAll('.icon-edit-trigger').forEach(btn => {
             btn.addEventListener('click', () => {
                 const p = JSON.parse(btn.dataset.p);
                 const history = p.historico || [];
@@ -289,29 +324,32 @@ export async function renderProspecting(router) {
                 const modal = document.getElementById('history-modal');
                 
                 // Preenche campos de edição
+                document.getElementById('edit-tel').value = p.telefone || '';
+                document.getElementById('edit-web').value = p.website || '';
                 document.getElementById('edit-insta').value = p.instagram || '';
-                document.getElementById('edit-fb').value = p.facebook || '';
                 document.getElementById('edit-email').value = p.email || '';
                 
                 const saveBtn = document.getElementById('btn-save-details');
                 saveBtn.onclick = async () => {
                     saveBtn.disabled = true;
+                    saveBtn.textContent = '⌛ Salvando...';
                     try {
                         await api('PATCH', `/api/prospects/${p.id}`, {
+                            telefone: document.getElementById('edit-tel').value,
+                            website: document.getElementById('edit-web').value,
                             instagram: document.getElementById('edit-insta').value,
-                            facebook: document.getElementById('edit-fb').value,
                             email: document.getElementById('edit-email').value
                         });
-                        toast('Dados atualizados!');
+                        toast('Lead atualizado com sucesso!');
                         modal.style.display = 'none';
                         renderMyProspects();
-                    } catch (err) { toast('Erro ao atualizar', 'error'); saveBtn.disabled = false; }
+                    } catch (err) { toast('Erro ao atualizar', 'error'); saveBtn.disabled = false; saveBtn.textContent = 'Salvar Alterações'; }
                 };
 
                 if (history.length === 0) {
-                    list.innerHTML = '<p style="text-align:center;color:#94a3b8">Nenhuma interação registrada ainda.</p>';
+                    list.innerHTML = '<p style="text-align:center;color:#94a3b8;margin-top:20px;font-size:0.85rem">Nenhuma interação registrada ainda.</p>';
                 } else {
-                    list.innerHTML = `<h4>Linha do Tempo</h4>` + history.reverse().map(h => `
+                    list.innerHTML = `<h4 style="margin:20px 0 10px;font-size:0.9rem">📜 Histórico de Atividade</h4>` + history.reverse().map(h => `
                         <div class="history-item">
                             <div class="hi-date">${new Date(h.data).toLocaleString()}</div>
                             <div class="hi-text">
