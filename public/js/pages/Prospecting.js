@@ -5,25 +5,23 @@ import { toast } from '../utils.js';
 export async function renderProspecting(router) {
     const container = renderLayout(router, 'Radar de Leads Inteligente 🛰️', `
         <div class="prospecting-container animate-fade-in">
-            <!-- Barra de Busca Premium -->
-            <div class="search-glass-card">
-                <div class="search-header">
-                    <div class="search-icon-title">
-                        <span class="icon-pulse">🛰️</span>
-                        <div>
-                            <h3>Expandir meu Negócio</h3>
-                            <p>Encontre parceiros estratégicos usando Inteligência Geográfica.</p>
-                        </div>
+            <!-- Header de Busca Minimalista & Elegante -->
+            <div class="search-premium-card">
+                <div class="search-brand">
+                    <div class="brand-icon">🛰️</div>
+                    <div class="brand-text">
+                        <h3>Radar de Expansão</h3>
+                        <p>Inteligência geográfica para novos parceiros.</p>
                     </div>
-                    <button class="btn-secondary-modern" id="btn-quick-flow">
-                        📈 Ver Meu Flow
+                    <button class="btn-flow-shortcut" id="btn-quick-flow">
+                        📊 Meu Flow de Leads
                     </button>
                 </div>
                 
-                <div class="search-controls">
-                    <div class="input-group">
-                        <label>🎯 Nicho de Atuação</label>
-                        <select id="prospect-niche" class="input-modern">
+                <div class="search-inputs-row">
+                    <div class="input-field">
+                        <label>🎯 Nicho</label>
+                        <select id="prospect-niche" class="select-premium">
                             <option value="Academia">🏋️ Academias & Fitness</option>
                             <option value="Terapeuta">🧘 Terapeutas & Bem-estar</option>
                             <option value="Consultório de Nutrição">🍎 Nutricionistas</option>
@@ -32,99 +30,139 @@ export async function renderProspecting(router) {
                             <option value="Crossfit">🔥 Crossfit</option>
                             <option value="Psicólogo">🧠 Psicólogos</option>
                             <option value="Loja de Produtos Naturais">🌱 Produtos Naturais</option>
-                            <option value="Farmácia de Manipulação">💊 Farmácias</option>
                         </select>
                     </div>
-                    <div class="input-group">
+                    <div class="input-field">
                         <label>📍 Localização</label>
-                        <input type="text" id="prospect-location" class="input-modern" placeholder="Bairro, Cidade ou CEP..." />
+                        <input type="text" id="prospect-location" class="input-premium" placeholder="Bairro ou Cidade..." />
                     </div>
-                    <div class="search-action">
-                        <button id="btn-search-prospects" class="btn-premium">🚀 Escanear Leads</button>
-                    </div>
+                    <button id="btn-search-prospects" class="btn-search-main">Buscar Parceiros</button>
                 </div>
             </div>
 
-            <div id="prospecting-results-header" class="results-header" style="display:none">
-                <div class="results-info">
-                    <h4 id="results-count">Encontramos novos parceiros!</h4>
-                    <span class="badge-live">LIVE</span>
-                </div>
+            <div id="prospecting-results-header" class="results-header-modern" style="display:none">
+                <span>Novas Oportunidades Encontradas</span>
+                <div class="live-indicator">● LIVE</div>
             </div>
 
-            <div id="prospecting-results" class="prospecting-grid">
+            <div id="prospecting-results" class="prospecting-grid-modern">
                 <!-- Resultados via JS -->
             </div>
         </div>
 
-        <!-- Modal de Detalhes / Edição -->
-        <div id="history-modal" class="modal-overlay" style="display:none">
-            <div class="modal-content animate-pop-in">
-                <div class="modal-header">
-                    <h3>💎 Gestão do Lead</h3>
-                    <button class="btn-close-modal" onclick="document.getElementById('history-modal').style.display='none'">✕</button>
-                </div>
-                <div id="lead-details-form" class="editor-glass">
-                    <div class="form-row">
-                        <div class="input-group-sm">
-                            <label>Telefone / WhatsApp</label>
-                            <input type="text" id="edit-tel" placeholder="Ex: (21) 99999-9999" class="input-modern-sm">
-                        </div>
-                        <div class="input-group-sm">
-                            <label>Site Oficial</label>
-                            <input type="text" id="edit-web" placeholder="https://..." class="input-modern-sm">
-                        </div>
+        <!-- Modal de Gestão de Lead (Comando Central) -->
+        <div id="history-modal" class="modal-overlay-modern" style="display:none">
+            <div class="modal-card animate-slide-up">
+                <div class="modal-header-modern">
+                    <div>
+                        <h3 id="modal-lead-name">Gestão do Lead</h3>
+                        <p id="modal-lead-status" class="status-badge-sm"></p>
                     </div>
-                    <div class="form-row">
-                        <div class="input-group-sm">
-                            <label>Instagram (@...)</label>
-                            <input type="text" id="edit-insta" placeholder="@perfil" class="input-modern-sm">
+                    <button class="btn-close-circle" onclick="document.getElementById('history-modal').style.display='none'">✕</button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="section-title">📱 Canais de Contato</div>
+                    <div class="edit-grid">
+                        <div class="edit-field">
+                            <label>WhatsApp</label>
+                            <input type="text" id="edit-tel" placeholder="(00) 00000-0000">
                         </div>
-                        <div class="input-group-sm">
+                        <div class="edit-field">
+                            <label>Website</label>
+                            <input type="text" id="edit-web" placeholder="https://...">
+                        </div>
+                        <div class="edit-field">
+                            <label>Instagram</label>
+                            <input type="text" id="edit-insta" placeholder="@usuario">
+                        </div>
+                        <div class="edit-field">
                             <label>E-mail</label>
-                            <input type="email" id="edit-email" placeholder="contato@..." class="input-modern-sm">
+                            <input type="email" id="edit-email" placeholder="email@exemplo.com">
                         </div>
                     </div>
-                    <button id="btn-save-details" class="btn-premium-sm">Salvar Alterações</button>
+                    
+                    <button id="btn-save-details" class="btn-save-main">Atualizar Contatos</button>
+
+                    <div class="section-divider"></div>
+                    
+                    <div class="section-title">📜 Linha do Tempo</div>
+                    <div id="history-list" class="timeline-compact"></div>
                 </div>
-                <div id="history-list" class="history-timeline"></div>
             </div>
         </div>
 
         <style>
-            .animate-fade-in { animation: fadeIn 0.4s ease-out; }
-            .animate-pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-            @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-            @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+            :root {
+                --p-primary: #10b981;
+                --p-secondary: #3b82f6;
+                --p-dark: #0f172a;
+                --p-gray: #64748b;
+                --p-border: #e2e8f0;
+                --p-bg: #f8fafc;
+            }
 
-            .search-glass-card { background: white; border: 1px solid #e2e8f0; border-radius: 24px; padding: 32px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); margin-bottom: 32px; }
-            .search-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-            
+            .search-premium-card { background: #fff; border-radius: 20px; padding: 25px; border: 1px solid var(--p-border); margin-bottom: 30px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+            .search-brand { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+            .brand-icon { font-size: 2rem; }
+            .brand-text h3 { margin: 0; font-size: 1.25rem; color: var(--p-dark); }
+            .brand-text p { margin: 0; font-size: 0.85rem; color: var(--p-gray); }
+            .btn-flow-shortcut { margin-left: auto; background: var(--p-dark); color: #fff; border: none; padding: 8px 16px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+            .btn-flow-shortcut:hover { opacity: 0.9; transform: translateY(-1px); }
+
+            .search-inputs-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 15px; align-items: flex-end; }
+            .input-field label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--p-dark); margin-bottom: 5px; text-transform: uppercase; }
+            .select-premium, .input-premium { width: 100%; height: 45px; border-radius: 12px; border: 1px solid var(--p-border); padding: 0 15px; font-size: 0.9rem; background: var(--p-bg); outline: none; transition: 0.2s; }
+            .select-premium:focus, .input-premium:focus { border-color: var(--p-secondary); background: #fff; }
+            .btn-search-main { height: 45px; background: var(--p-secondary); color: #fff; border: none; padding: 0 25px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+            .btn-search-main:hover { box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3); }
+
+            /* Grid e Resultados */
+            .results-header-modern { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; font-weight: 700; color: var(--p-dark); }
+            .live-indicator { font-size: 0.65rem; background: #fee2e2; color: #ef4444; padding: 2px 8px; border-radius: 20px; }
+            .prospecting-grid-modern { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+            .result-card-modern { background: #fff; border-radius: 16px; padding: 20px; border: 1px solid var(--p-border); transition: 0.2s; }
+            .result-card-modern:hover { transform: translateY(-3px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); }
+
+            /* Flow / Pipeline */
             .pipeline-container { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; min-height: 70vh; }
-            .pipeline-col { min-width: 320px; background: #f8fafc; border-radius: 24px; padding: 18px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 14px; }
-            .pipeline-col.drag-over { border-color: #22c55e; border-style: dashed; background: #f0fdf4; }
-            .prospect-card { background: white; border-radius: 18px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; cursor: grab; }
+            .pipeline-col { min-width: 300px; max-width: 300px; background: #f1f5f9; border-radius: 20px; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+            .prospect-card { background: #fff; border-radius: 14px; padding: 15px; border: 1px solid var(--p-border); position: relative; cursor: grab; transition: 0.2s; }
+            .prospect-card:active { cursor: grabbing; }
+            .prospect-card h4 { margin: 8px 0; font-size: 0.95rem; color: var(--p-dark); line-height: 1.3; }
             
-            /* Quick Actions - Always Visible */
-            .flow-card-actions { display: flex; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #e2e8f0; }
-            .btn-flow-action { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1.1rem; transition: all 0.2s; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; }
-            .btn-flow-action:hover { transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-            .btn-wa { border-color: #22c55e; color: #22c55e; }
-            .btn-wa.empty { border-color: #cbd5e1; color: #cbd5e1; opacity: 0.6; }
-            .btn-web { border-color: #3b82f6; color: #3b82f6; }
-            .btn-web.empty { border-color: #cbd5e1; color: #cbd5e1; opacity: 0.6; }
-            .btn-details { border-color: #64748b; color: #64748b; }
-            
-            .editor-glass { background: #f8fafc; padding: 20px; border-radius: 16px; margin-bottom: 24px; border: 1px solid #e2e8f0; }
-            .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-            .input-modern-sm { width: 100%; height: 42px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0 12px; font-size: 0.85rem; }
-            .btn-premium-sm { width: 100%; height: 42px; background: #1e293b; color: #fff; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; }
+            /* Card Actions Sênior */
+            .card-actions-row { display: flex; align-items: center; gap: 8px; margin-top: 15px; padding-top: 12px; border-top: 1px solid #f1f5f9; }
+            .action-icon-btn { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--p-border); background: #f8fafc; color: var(--p-gray); cursor: pointer; transition: 0.2s; text-decoration: none; }
+            .action-icon-btn:hover { background: #fff; transform: scale(1.05); }
+            .btn-wa-active { background: #dcfce7; color: #16a34a; border-color: #bbf7d0; }
+            .btn-web-active { background: #dbeafe; color: #2563eb; border-color: #bfdbfe; }
+            .btn-edit-main { margin-left: auto; background: var(--p-dark); color: #fff; border: none; font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 8px; }
 
-            .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px); }
-            .modal-content { background: #fff; width: 95%; max-width: 500px; border-radius: 28px; padding: 28px; box-shadow: 0 30px 60px -15px rgba(0,0,0,0.3); }
+            /* Modal Sênior */
+            .modal-overlay-modern { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+            .modal-card { background: #fff; width: 95%; max-width: 450px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); overflow: hidden; }
+            .modal-header-modern { padding: 20px 25px; background: var(--p-bg); border-bottom: 1px solid var(--p-border); display: flex; justify-content: space-between; align-items: center; }
+            .modal-header-modern h3 { margin: 0; font-size: 1.1rem; color: var(--p-dark); }
+            .modal-body { padding: 25px; }
+            .section-title { font-size: 0.7rem; font-weight: 800; color: var(--p-gray); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px; }
+            .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+            .edit-field label { display: block; font-size: 0.7rem; color: var(--p-gray); margin-bottom: 4px; }
+            .edit-field input { width: 100%; height: 38px; border-radius: 8px; border: 1px solid var(--p-border); padding: 0 10px; font-size: 0.85rem; }
+            .btn-save-main { width: 100%; height: 42px; background: var(--p-secondary); color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
+            .section-divider { height: 1px; background: var(--p-border); margin: 20px 0; }
+            
+            .timeline-compact { max-height: 150px; overflow-y: auto; padding-right: 5px; }
+            .history-item-mini { margin-bottom: 10px; font-size: 0.8rem; color: var(--p-dark); border-left: 2px solid var(--p-border); padding-left: 10px; }
+            .hi-date-mini { font-size: 0.65rem; color: var(--p-gray); }
+
+            .btn-close-circle { width: 30px; height: 30px; border-radius: 50%; border: none; background: #e2e8f0; color: var(--p-dark); cursor: pointer; }
+
+            .animate-slide-up { animation: slideUp 0.3s ease-out; }
+            @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
             @media (max-width: 768px) {
-                .search-controls { grid-template-columns: 1fr; }
+                .search-inputs-row { grid-template-columns: 1fr; }
                 .pipeline-container { flex-direction: column; }
             }
         </style>
@@ -142,8 +180,8 @@ export async function renderProspecting(router) {
         if (!loc) return toast('Digite a localização', 'warning');
         
         searchBtn.disabled = true;
-        searchBtn.innerHTML = '🛰️ Escaneando...';
-        resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px"><div class="spinner"></div><p style="margin-top:10px;color:var(--text-muted)">Minerando locais qualificados...</p></div>';
+        searchBtn.innerHTML = '🔍 Buscando...';
+        resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px"><div class="spinner"></div><p>Sincronizando com radar local...</p></div>';
 
         try {
             const data = await api('GET', `/api/prospects/search?q=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}`);
@@ -156,49 +194,42 @@ export async function renderProspecting(router) {
 
     function resetBtn() {
         searchBtn.disabled = false;
-        searchBtn.textContent = '🚀 Escanear Leads';
+        searchBtn.textContent = 'Buscar Parceiros';
     }
 
     function renderSearchResults(results, niche) {
         resetBtn();
         document.getElementById('prospecting-results-header').style.display = 'flex';
         if (results.length === 0) {
-            resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px">Nenhum lead encontrado nesta região. Tente mudar o bairro.</div>';
+            resultsEl.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:40px">Nenhum resultado nesta localização.</p>';
             return;
         }
 
         resultsEl.innerHTML = results.map(p => `
-            <div class="result-card-modern animate-pop-in">
-                <div style="font-size:0.7rem;font-weight:800;color:#22c55e;margin-bottom:8px">${niche}</div>
-                <h4 style="margin:0 0 4px;font-size:1.1rem;color:#1e293b">${p.nome}</h4>
-                <p style="font-size:0.85rem;color:#64748b;margin-bottom:20px">${p.endereco.split(',')[0]}</p>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-                    <button class="btn-premium btn-save-lead" data-name="${p.nome}" data-addr="${p.endereco}" data-placeid="${p.place_id}" data-niche="${niche}" style="height:48px;font-size:0.9rem">Mover para Flow</button>
-                    <a href="https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${p.place_id}" target="_blank" class="btn-action-outline" style="height:48px;font-size:0.9rem;text-decoration:none;display:flex;align-items:center;justify-content:center;border:2px solid #e2e8f0;border-radius:14px;color:#1e293b;font-weight:600">Maps</a>
-                </div>
+            <div class="result-card-modern animate-slide-up">
+                <div style="font-size:0.65rem;font-weight:900;color:var(--p-primary);margin-bottom:5px;text-transform:uppercase">${niche}</div>
+                <h4 style="margin:0 0 5px;font-size:1rem">${p.nome}</h4>
+                <p style="font-size:0.8rem;color:var(--p-gray);margin-bottom:15px">${p.endereco.split(',')[0]}</p>
+                <button class="btn-save-main btn-save-lead" data-name="${p.nome}" data-addr="${p.endereco}" data-placeid="${p.place_id}" data-niche="${niche}" style="height:40px;font-size:0.85rem">Adicionar ao Flow</button>
             </div>
         `).join('');
 
         resultsEl.querySelectorAll('.btn-save-lead').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const pid = btn.dataset.placeid;
-                btn.disabled = true; 
-                btn.innerHTML = '<span class="spinner-sm"></span> Salva...';
-                
+                btn.disabled = true; btn.textContent = 'Salvando...';
                 try {
-                    // Tenta enriquecer, mas salva de qualquer jeito após 3s para não travar
-                    const detailsPromise = api('GET', `/api/prospects/details/${pid}`);
-                    const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({}), 3500));
-                    
-                    const details = await Promise.race([detailsPromise, timeoutPromise]);
+                    // Timeout de 2.5s para o enriquecimento (Senior Move: UX First)
+                    const details = await Promise.race([
+                        api('GET', `/api/prospects/details/${pid}`),
+                        new Promise(r => setTimeout(()=>r({}), 2500))
+                    ]);
                     await api('POST', '/api/prospects', { ...btn.dataset, ...details });
-                    
-                    toast('Lead salvo com sucesso!', 'success');
-                    btn.textContent = '✅ Salvo';
-                } catch (err) { 
+                    toast('Lead capturado!');
+                    btn.textContent = '✅ Capturado';
+                } catch (err) {
                     await api('POST', '/api/prospects', { ...btn.dataset });
-                    toast('Salvo (sem detalhes extras)', 'info');
-                    btn.textContent = '✅ Salvo';
+                    btn.textContent = '✅ Capturado';
                 }
             });
         });
@@ -207,60 +238,46 @@ export async function renderProspecting(router) {
     async function renderMyProspects() {
         const main = document.querySelector('.prospecting-container');
         main.innerHTML = '<div style="text-align:center;padding:100px"><div class="spinner"></div></div>';
-
         try {
             const prospects = await api('GET', '/api/prospects');
             main.innerHTML = `
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
-                    <h2 style="margin:0">📈 Flow de Parcerias</h2>
-                    <button class="btn-secondary-modern" onclick="window.location.reload()">🛰️ Voltar ao Radar</button>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px">
+                    <h2 style="margin:0;font-size:1.5rem">📊 Fluxo de Prospecção</h2>
+                    <button class="btn-flow-shortcut" onclick="window.location.reload()">🛰️ Abrir Radar</button>
                 </div>
                 <div class="pipeline-container">
                     ${['prospectado', 'contatado', 'negociacao', 'fechado'].map(st => {
-                        const labels = { prospectado:'🔍 Prospecção', contatado:'📱 Contatado', negociacao:'🤝 Negociação', fechado:'🏆 Fechado' };
+                        const labels = { prospectado:'🔍 Radar', contatado:'📱 Contato', negociacao:'🤝 Negociação', fechado:'🏆 Fechado' };
                         return renderCol(st, labels[st], prospects);
                     }).join('')}
                 </div>
             `;
             initDnD();
-            initHistoryAndDetails();
-        } catch (err) { toast('Erro ao carregar flow', 'error'); }
+            initLeadManagement();
+        } catch (err) { toast('Erro ao carregar pipeline'); }
     }
 
     function renderCol(status, label, all) {
         const items = all.filter(p => p.status === status);
         return `
             <div class="pipeline-col" data-status="${status}">
-                <div style="font-weight:800;font-size:0.95rem;color:#1e293b;border-bottom:2px solid #f1f5f9;padding-bottom:12px;display:flex;justify-content:space-between">
+                <div style="font-weight:700;font-size:0.85rem;color:var(--p-gray);text-transform:uppercase;padding-bottom:10px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between">
                     <span>${label}</span>
-                    <span style="background:#e2e8f0;padding:2px 8px;border-radius:20px;font-size:0.75rem">${items.length}</span>
+                    <span>${items.length}</span>
                 </div>
-                <div class="col-drop-zone" style="flex:1;min-height:200px">
+                <div class="col-drop-zone" style="flex:1;min-height:300px">
                     ${items.map(p => {
                         const tel = (p.telefone || '').replace(/\D/g, '');
                         const wa = tel ? `https://wa.me/${tel.startsWith('55') ? tel : '55'+tel}` : null;
                         return `
-                        <div class="prospect-card animate-pop-in" draggable="true" data-id="${p.id}">
-                            <div style="font-size:0.65rem;text-transform:uppercase;color:#22c55e;font-weight:800;letter-spacing:1px">${p.nicho}</div>
-                            <div style="font-weight:700;margin:6px 0;font-size:1.05rem;color:#1e293b">${p.nome}</div>
+                        <div class="prospect-card animate-slide-up" draggable="true" data-id="${p.id}">
+                            <div style="font-size:0.6rem;font-weight:800;color:var(--p-primary);text-transform:uppercase">${p.nicho}</div>
+                            <h4>${p.nome}</h4>
                             
-                            <div class="flow-card-actions">
-                                <!-- WhatsApp: Se não tiver, vira botão de adicionar -->
-                                ${wa 
-                                    ? `<a href="${wa}" target="_blank" class="btn-flow-action btn-wa" title="WhatsApp">📱</a>` 
-                                    : `<button class="btn-flow-action btn-wa empty icon-edit-trigger" data-id="${p.id}" data-p='${JSON.stringify(p)}' title="Adicionar WhatsApp">➕📱</button>`}
-                                
-                                <!-- Website -->
-                                ${p.website 
-                                    ? `<a href="${p.website}" target="_blank" class="btn-flow-action btn-web" title="Site">🌐</a>` 
-                                    : `<button class="btn-flow-action btn-web empty icon-edit-trigger" data-id="${p.id}" data-p='${JSON.stringify(p)}' title="Adicionar Site">➕🌐</button>`}
-                                
-                                <button class="btn-flow-action btn-details icon-edit-trigger" data-id="${p.id}" data-p='${JSON.stringify(p)}' title="Mais Opções">⚡</button>
-                                <button class="btn-del-prospect btn-flow-action" data-id="${p.id}" style="border-color:#fca5a5; color:#ef4444">🗑️</button>
-                            </div>
-
-                            <div class="mobile-only" style="margin-top:15px;text-align:right">
-                                <button class="btn-next-status" data-id="${p.id}" data-curr="${status}" style="font-size:0.75rem;padding:6px 14px;border-radius:10px;border:1px solid #e2e8f0;background:#fff;font-weight:600">Mover ⮕</button>
+                            <div class="card-actions-row">
+                                <a href="${wa || '#'}" target="${wa ? '_blank' : '_self'}" class="action-icon-btn ${wa ? 'btn-wa-active' : ''} ${!wa ? 'open-edit' : ''}" data-p='${JSON.stringify(p)}' title="${wa ? 'WhatsApp' : 'Adicionar WhatsApp'}">📱</a>
+                                <a href="${p.website || '#'}" target="${p.website ? '_blank' : '_self'}" class="action-icon-btn ${p.website ? 'btn-web-active' : ''} ${!p.website ? 'open-edit' : ''}" data-p='${JSON.stringify(p)}' title="${p.website ? 'Site' : 'Adicionar Link'}">🌐</a>
+                                <button class="btn-edit-main open-edit" data-p='${JSON.stringify(p)}'>GERENCIAR</button>
                             </div>
                         </div>
                     `}).join('')}
@@ -272,58 +289,33 @@ export async function renderProspecting(router) {
     function initDnD() {
         let draggedId = null;
         document.querySelectorAll('.prospect-card').forEach(card => {
-            card.addEventListener('dragstart', () => { draggedId = card.dataset.id; card.classList.add('dragging'); });
-            card.addEventListener('dragend', () => card.classList.remove('dragging'));
+            card.addEventListener('dragstart', () => { draggedId = card.dataset.id; card.style.opacity = '0.5'; });
+            card.addEventListener('dragend', () => card.style.opacity = '1');
         });
-
         document.querySelectorAll('.pipeline-col').forEach(col => {
-            col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
-            col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+            col.addEventListener('dragover', e => e.preventDefault());
             col.addEventListener('drop', async e => {
                 e.preventDefault();
-                col.classList.remove('drag-over');
                 const newStatus = col.dataset.status;
-                if (!draggedId) return;
-                try {
-                    await api('PATCH', `/api/prospects/${draggedId}`, { status: newStatus });
-                    renderMyProspects();
-                    toast('Lead movido!');
-                } catch (err) { toast('Erro ao mover', 'error'); }
-            });
-        });
-
-        document.querySelectorAll('.btn-next-status').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const nextMap = { 'prospectado': 'contatado', 'contatado': 'negociacao', 'negociacao': 'fechado' };
-                const next = nextMap[btn.dataset.curr];
-                if (!next) return;
-                try {
-                    await api('PATCH', `/api/prospects/${btn.dataset.id}`, { status: next });
-                    renderMyProspects();
-                } catch (err) { toast('Erro ao mover', 'error'); }
-            });
-        });
-        document.querySelectorAll('.btn-del-prospect').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                if (!confirm('Deseja excluir este lead permanentemente?')) return;
-                try {
-                    await api('DELETE', `/api/prospects/${btn.dataset.id}`);
-                    renderMyProspects();
-                    toast('Lead removido.');
-                } catch (err) { toast('Erro ao excluir', 'error'); }
+                if (draggedId) {
+                    try {
+                        await api('PATCH', `/api/prospects/${draggedId}`, { status: newStatus });
+                        renderMyProspects();
+                    } catch (err) { toast('Erro ao mover lead'); }
+                }
             });
         });
     }
 
-    function initHistoryAndDetails() {
-        document.querySelectorAll('.icon-edit-trigger').forEach(btn => {
-            btn.addEventListener('click', () => {
+    function initLeadManagement() {
+        document.querySelectorAll('.open-edit').forEach(btn => {
+            btn.addEventListener('click', (e) => {
                 const p = JSON.parse(btn.dataset.p);
-                const history = p.historico || [];
-                const list = document.getElementById('history-list');
                 const modal = document.getElementById('history-modal');
                 
-                // Preenche campos de edição
+                document.getElementById('modal-lead-name').textContent = p.nome;
+                document.getElementById('modal-lead-status').textContent = p.status.toUpperCase();
+                
                 document.getElementById('edit-tel').value = p.telefone || '';
                 document.getElementById('edit-web').value = p.website || '';
                 document.getElementById('edit-insta').value = p.instagram || '';
@@ -331,33 +323,32 @@ export async function renderProspecting(router) {
                 
                 const saveBtn = document.getElementById('btn-save-details');
                 saveBtn.onclick = async () => {
-                    saveBtn.disabled = true;
-                    saveBtn.textContent = '⌛ Salvando...';
+                    saveBtn.disabled = true; saveBtn.textContent = 'Gravando...';
                     try {
-                        await api('PATCH', `/api/prospects/${p.id}`, {
+                        const updated = await api('PATCH', `/api/prospects/${p.id}`, {
                             telefone: document.getElementById('edit-tel').value,
                             website: document.getElementById('edit-web').value,
                             instagram: document.getElementById('edit-insta').value,
                             email: document.getElementById('edit-email').value
                         });
-                        toast('Lead atualizado com sucesso!');
+                        toast('Dados atualizados!');
                         modal.style.display = 'none';
                         renderMyProspects();
-                    } catch (err) { toast('Erro ao atualizar', 'error'); saveBtn.disabled = false; saveBtn.textContent = 'Salvar Alterações'; }
+                    } catch (err) { 
+                        toast('Falha ao salvar'); 
+                        saveBtn.disabled = false; saveBtn.textContent = 'Atualizar Contatos'; 
+                    }
                 };
 
-                if (history.length === 0) {
-                    list.innerHTML = '<p style="text-align:center;color:#94a3b8;margin-top:20px;font-size:0.85rem">Nenhuma interação registrada ainda.</p>';
-                } else {
-                    list.innerHTML = `<h4 style="margin:20px 0 10px;font-size:0.9rem">📜 Histórico de Atividade</h4>` + history.reverse().map(h => `
-                        <div class="history-item">
-                            <div class="hi-date">${new Date(h.data).toLocaleString()}</div>
-                            <div class="hi-text">
-                                ${h.tipo === 'status_change' ? `Mudou de <b>${h.de}</b> para <b>${h.para}</b>` : h.texto}
-                            </div>
-                        </div>
-                    `).join('');
-                }
+                const history = p.historico || [];
+                const histList = document.getElementById('history-list');
+                histList.innerHTML = history.length ? history.reverse().map(h => `
+                    <div class="history-item-mini">
+                        <div class="hi-date-mini">${new Date(h.data).toLocaleDateString()}</div>
+                        <div>${h.tipo === 'status_change' ? `Fase: ${h.para}` : h.texto}</div>
+                    </div>
+                `).join('') : '<p>Sem histórico recente.</p>';
+
                 modal.style.display = 'flex';
             });
         });

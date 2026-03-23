@@ -104,7 +104,7 @@ router.post('/', authenticateToken, async (req, res) => {
 // PATCH /api/prospects/:id - Atualiza status ou notas
 router.patch('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
-    const { status, notas, instagram, facebook, email } = req.body;
+    const { status, notas, instagram, facebook, email, telefone, website } = req.body;
     try {
         // Busca o estado atual para comparar
         const current = await pool.query('SELECT status, historico FROM prospects WHERE id = $1 AND consultora_id = $2', [id, req.consultora.id]);
@@ -137,11 +137,13 @@ router.patch('/:id', authenticateToken, async (req, res) => {
                  instagram = COALESCE($3, instagram),
                  facebook = COALESCE($4, facebook),
                  email = COALESCE($5, email),
-                 historico = $6,
+                 telefone = COALESCE($6, telefone),
+                 website = COALESCE($7, website),
+                 historico = $8,
                  atualizado_em = CURRENT_TIMESTAMP
-             WHERE id = $7 AND consultora_id = $8
+             WHERE id = $9 AND consultora_id = $10
              RETURNING *`,
-            [status, notas, instagram, facebook, email, JSON.stringify(newHistory), id, req.consultora.id]
+            [status, notas, instagram, facebook, email, telefone, website, JSON.stringify(newHistory), id, req.consultora.id]
         );
         res.json(rows[0]);
     } catch (err) {
