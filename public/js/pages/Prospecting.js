@@ -319,6 +319,25 @@ export async function renderProspecting(router) {
         } catch (err) { toast('Erro ao carregar pipeline'); }
     }
 
+    function getOutreachScript(p) {
+        const niche = (p.nicho || '').toLowerCase();
+        const nome = p.nome || 'Parceiro';
+        
+        const scripts = {
+            'academia': `Olá! Tudo bem? Sou consultor da Gota Essencial. Vi que a ${nome} é referência na região! Sabia que óleos como Peppermint podem aumentar a performance e foco dos seus alunos? Gostaria de agendar uma breve demonstração sem custo para seus professores?`,
+            'clínica de estética': `Olá! Tudo bem? Sou da Gota Essencial. Parabéns pelo trabalho na ${nome}! Trabalhamos com várias estéticas que usam nossos óleos para elevar a experiência das clientes e potencializar resultados de drenagem. Podemos agendar um café rápido para eu lhe mostrar como agregar esse valor premium?`,
+            'nutricionista': `Olá! Tudo bem? Sou consultor de óleos essenciais dōTERRA. Vi seu perfil e adoraria conversar sobre como nossos protocolos naturais podem complementar seus planos alimentares e trazer mais bem-estar aos seus pacientes. Teria 5 minutos para uma conversa rápida?`,
+            'yoga': `Olá! Tudo bem? Sou consultor da Gota Essencial. Vi o trabalho incrível do seu estúdio ${nome}! Nossos óleos são perfeitos para criar um ambiente de foco e relaxamento profundo nas aulas. Gostaria de conhecer nosso kit corporativo para estúdios de Yoga?`
+        };
+
+        const defaultScript = `Olá! Tudo bem? Sou consultor da Gota Essencial. Estava analisando empresas de destaque na região e a ${nome} me chamou atenção pela ótima reputação. Gostaria de conversar sobre uma possível parceria para agregar valor aos seus serviços com soluções 100% naturais. Qual o melhor horário para falarmos?`;
+
+        for (const key in scripts) {
+            if (niche.includes(key)) return encodeURIComponent(scripts[key]);
+        }
+        return encodeURIComponent(defaultScript);
+    }
+
     function renderCol(status, label, all) {
         const items = all.filter(p => p.status === status);
         return `
@@ -330,7 +349,8 @@ export async function renderProspecting(router) {
                 <div class="col-drop-zone" style="flex:1;min-height:300px">
                     ${items.map(p => {
                         const tel = (p.telefone || '').replace(/\D/g, '');
-                        const wa = tel ? `https://wa.me/${tel.startsWith('55') ? tel : '55'+tel}` : null;
+                        const script = getOutreachScript(p);
+                        const wa = tel ? `https://wa.me/${tel.startsWith('55') ? tel : '55'+tel}?text=${script}` : null;
                         const score = calculateScore(p);
                         const scoreColor = score >= 8 ? '#10b981' : (score >= 6 ? '#f59e0b' : '#6b7280');
 
@@ -343,7 +363,7 @@ export async function renderProspecting(router) {
                             <h4 style="margin:0 0 10px;font-size:0.95rem">${p.nome}</h4>
                             
                             <div class="card-actions-row">
-                                <a href="${wa || '#'}" target="${wa ? '_blank' : '_self'}" class="action-icon-btn ${wa ? 'btn-wa-active' : ''} ${!wa ? 'open-edit' : ''}" data-p='${JSON.stringify(p)}' title="${wa ? 'WhatsApp' : 'Adicionar WhatsApp'}">📱</a>
+                                <a href="${wa || '#'}" target="${wa ? '_blank' : '_self'}" class="action-icon-btn ${wa ? 'btn-wa-active' : ''} ${!wa ? 'open-edit' : ''}" data-p='${JSON.stringify(p)}' title="${wa ? 'WhatsApp com Script Personalizado' : 'Adicionar WhatsApp'}">📱</a>
                                 <a href="${p.website || '#'}" target="${p.website ? '_blank' : '_self'}" class="action-icon-btn ${p.website ? 'btn-web-active' : ''} ${!p.website ? 'open-edit' : ''}" data-p='${JSON.stringify(p)}' title="${p.website ? 'Site' : 'Adicionar Link'}">🌐</a>
                                 <button class="btn-edit-main open-edit" data-p='${JSON.stringify(p)}'>GERENCIAR</button>
                             </div>
