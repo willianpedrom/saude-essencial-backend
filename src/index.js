@@ -274,6 +274,12 @@ async function runMigration() {
         )`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_prospects_consultora ON prospects(consultora_id)`);
         await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS historico JSONB DEFAULT '[]'`);
+        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS instagram TEXT`);
+        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS facebook TEXT`);
+        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS email TEXT`);
+        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS nicho VARCHAR(100)`);
+        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS telefone VARCHAR(50)`);
+        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS website TEXT`);
 
         // Promote ADMIN_EMAIL to role='admin' (safe to run every startup — idempotent)
         if (process.env.ADMIN_EMAIL) {
