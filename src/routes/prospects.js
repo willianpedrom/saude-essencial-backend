@@ -1,6 +1,6 @@
 const express = require('express');
 const pool = require('../db/pool');
-const { authenticateToken } = require('../middleware/auth');
+const authenticateToken = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -55,7 +55,7 @@ router.get('/', authenticateToken, async (req, res) => {
     try {
         const { rows } = await pool.query(
             `SELECT * FROM prospects WHERE consultora_id = $1 ORDER BY criado_em DESC`,
-            [req.user.id]
+            [req.consultora.id]
         );
         res.json(rows);
     } catch (err) {
@@ -72,7 +72,7 @@ router.post('/', authenticateToken, async (req, res) => {
             `INSERT INTO prospects (consultora_id, nome, place_id, endereco, telefone, website, nicho)
              VALUES ($1, $2, $3, $4, $5, $6, $7)
              RETURNING *`,
-            [req.user.id, nome, place_id, endereco, telefone, website, nicho]
+            [req.consultora.id, nome, place_id, endereco, telefone, website, nicho]
         );
         res.status(201).json(rows[0]);
     } catch (err) {
@@ -93,7 +93,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
                  atualizado_em = CURRENT_TIMESTAMP
              WHERE id = $3 AND consultora_id = $4
              RETURNING *`,
-            [status, notas, id, req.user.id]
+            [status, notas, id, req.consultora.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Prospect não encontrado.' });
         res.json(rows[0]);
@@ -109,7 +109,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     try {
         await pool.query(
             `DELETE FROM prospects WHERE id = $1 AND consultora_id = $2`,
-            [id, req.user.id]
+            [id, req.consultora.id]
         );
         res.json({ success: true });
     } catch (err) {
