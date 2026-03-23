@@ -197,6 +197,18 @@ export async function renderProspecting(router) {
         searchBtn.textContent = 'Buscar Parceiros';
     }
 
+    function calculateScore(p) {
+        const rating = parseFloat(p.rating) || 0;
+        const reviews = parseInt(p.user_ratings_total) || 0;
+        // Base: Rating do Google (0-5 pts)
+        let score = rating;
+        // Bônus por volume de avaliações (0-3 pts) - Consideramos 100+ como teto prático
+        score += Math.min(3, (reviews / 100) * 3);
+        // Bônus por ter site (2 pts) - Indica negócio mais estruturado
+        if (p.website) score += 2;
+        return Math.min(10, score).toFixed(1);
+    }
+
     function renderSearchResults(results, niche) {
         resetBtn();
         document.getElementById('prospecting-results-header').style.display = 'flex';
@@ -205,14 +217,41 @@ export async function renderProspecting(router) {
             return;
         }
 
-        resultsEl.innerHTML = results.map(p => `
-            <div class="result-card-modern animate-slide-up">
-                <div style="font-size:0.65rem;font-weight:900;color:var(--p-primary);margin-bottom:5px;text-transform:uppercase">${niche}</div>
-                <h4 style="margin:0 0 5px;font-size:1rem">${p.nome}</h4>
-                <p style="font-size:0.8rem;color:var(--p-gray);margin-bottom:15px">${p.endereco.split(',')[0]}</p>
-                <button class="btn-save-main btn-save-lead" data-name="${p.nome}" data-addr="${p.endereco}" data-placeid="${p.place_id}" data-niche="${niche}" style="height:40px;font-size:0.85rem">Adicionar ao Flow</button>
-            </div>
-        `).join('');
+        // Senior Move: Calcular scores e ordenar pelo melhor potencial
+        const scoredResults = results.map(p => ({ ...p, _score: calculateScore(p) }))
+                                    .sort((a, b) => b._score - a._score);
+
+        resultsEl.innerHTML = scoredResults.map(p => {
+            const scoreColor = p._score >= 8 ? '#10b981' : (p._score >= 6 ? '#f59e0b' : '#6b7280');
+            const scoreLabel = p._score >= 8 ? '🔥 Explosivo' : (p._score >= 6 ? '✅ Bom' : '⚪ Neutro');
+
+            return `
+                <div class="result-card-modern animate-slide-up">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                        <div style="font-size:0.65rem;font-weight:900;color:var(--p-primary);text-transform:uppercase">${niche}</div>
+                        <div style="background:${scoreColor}15;color:${scoreColor};padding:2px 6px;border-radius:4px;font-size:0.6rem;font-weight:800;border:1px solid ${scoreColor}30">
+                            ${scoreLabel} (${p._score})
+                        </div>
+                    </div>
+                    <h4 style="margin:0 0 5px;font-size:1rem;line-height:1.2">${p.nome}</h4>
+                    <p style="font-size:0.8rem;color:var(--p-gray);margin-bottom:12px">${p.endereco.split(',')[0]}</p>
+                    
+                    <div style="display:flex;gap:10px;margin-bottom:15px;font-size:0.75rem;color:var(--p-gray)">
+                        <span title="Rating Google">⭐ ${p.rating || 'N/A'}</span>
+                        <span title="Total de Avaliações">👥 ${p.user_ratings_total || 0}</span>
+                    </div>
+
+                    <button class="btn-save-main btn-save-lead" 
+                        data-name="${p.nome}" 
+                        data-addr="${p.endereco}" 
+                        data-placeid="${p.place_id}" 
+                        data-niche="${niche}"
+                        data-rating="${p.rating || ''}"
+                        data-reviews="${p.user_ratings_total || 0}"
+                        style="height:40px;font-size:0.85rem">Adicionar ao Flow</button>
+                </div>
+            `;
+        }).join('');
 
         resultsEl.querySelectorAll('.btn-save-lead').forEach(btn => {
             btn.addEventListener('click', async () => {
@@ -235,6 +274,8 @@ export async function renderProspecting(router) {
                         endereco: btn.dataset.addr,
                         place_id: btn.dataset.placeid,
                         nicho: btn.dataset.niche,
+                        rating: btn.dataset.rating,
+                        user_ratings_total: btn.dataset.reviews,
                         ...details 
                     });
                     
@@ -290,10 +331,16 @@ export async function renderProspecting(router) {
                     ${items.map(p => {
                         const tel = (p.telefone || '').replace(/\D/g, '');
                         const wa = tel ? `https://wa.me/${tel.startsWith('55') ? tel : '55'+tel}` : null;
+                        const score = calculateScore(p);
+                        const scoreColor = score >= 8 ? '#10b981' : (score >= 6 ? '#f59e0b' : '#6b7280');
+
                         return `
                         <div class="prospect-card animate-slide-up" draggable="true" data-id="${p.id}">
-                            <div style="font-size:0.6rem;font-weight:800;color:var(--p-primary);text-transform:uppercase">${p.nicho}</div>
-                            <h4>${p.nome}</h4>
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                                <div style="font-size:0.55rem;font-weight:900;color:var(--p-primary);text-transform:uppercase">${p.nicho}</div>
+                                <div style="font-size:0.6rem;font-weight:800;color:${scoreColor}" title="Potencial: ${score}/10">⭐ ${score}</div>
+                            </div>
+                            <h4 style="margin:0 0 10px;font-size:0.95rem">${p.nome}</h4>
                             
                             <div class="card-actions-row">
                                 <a href="${wa || '#'}" target="${wa ? '_blank' : '_self'}" class="action-icon-btn ${wa ? 'btn-wa-active' : ''} ${!wa ? 'open-edit' : ''}" data-p='${JSON.stringify(p)}' title="${wa ? 'WhatsApp' : 'Adicionar WhatsApp'}">📱</a>

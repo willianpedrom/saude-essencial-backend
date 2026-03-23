@@ -85,11 +85,11 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 router.post('/', authenticateToken, async (req, res) => {
-    const { nome, place_id, endereco, telefone, website, nicho, instagram, facebook, email } = req.body;
+    const { nome, place_id, endereco, telefone, website, nicho, instagram, facebook, email, rating, user_ratings_total } = req.body;
     try {
         const { rows } = await pool.query(
-            `INSERT INTO prospects (consultora_id, nome, place_id, endereco, telefone, website, nicho, instagram, facebook, email)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            `INSERT INTO prospects (consultora_id, nome, place_id, endereco, telefone, website, nicho, instagram, facebook, email, rating, user_ratings_total)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
              RETURNING *`,
             [
                 req.consultora.id, 
@@ -101,7 +101,9 @@ router.post('/', authenticateToken, async (req, res) => {
                 nicho || null, 
                 instagram || null, 
                 facebook || null, 
-                email || null
+                email || null,
+                rating || null,
+                user_ratings_total || null
             ]
         );
         res.status(201).json(rows[0]);
