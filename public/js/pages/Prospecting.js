@@ -324,13 +324,13 @@ export async function renderProspecting(router) {
         const nome = p.nome || 'Parceiro';
         
         const scripts = {
-            'academia': `Olá! Tudo bem? Sou consultor da Gota Essencial. Vi que a ${nome} é referência na região! Sabia que óleos como Peppermint podem aumentar a performance e foco dos seus alunos? Gostaria de agendar uma breve demonstração sem custo para seus professores?`,
-            'clínica de estética': `Olá! Tudo bem? Sou da Gota Essencial. Parabéns pelo trabalho na ${nome}! Trabalhamos com várias estéticas que usam nossos óleos para elevar a experiência das clientes e potencializar resultados de drenagem. Podemos agendar um café rápido para eu lhe mostrar como agregar esse valor premium?`,
-            'nutricionista': `Olá! Tudo bem? Sou consultor de óleos essenciais dōTERRA. Vi seu perfil e adoraria conversar sobre como nossos protocolos naturais podem complementar seus planos alimentares e trazer mais bem-estar aos seus pacientes. Teria 5 minutos para uma conversa rápida?`,
-            'yoga': `Olá! Tudo bem? Sou consultor da Gota Essencial. Vi o trabalho incrível do seu estúdio ${nome}! Nossos óleos são perfeitos para criar um ambiente de foco e relaxamento profundo nas aulas. Gostaria de conhecer nosso kit corporativo para estúdios de Yoga?`
+            'academia': `Olá! Tudo bem? Sou Especialista em Saúde Integrativa. Vi que a ${nome} é referência na região! Sabia que óleos como Peppermint podem aumentar a performance e foco dos seus alunos? Gostaria de agendar uma breve demonstração sem custo para seus professores?`,
+            'clínica de estética': `Olá! Tudo bem? Sou Especialista em Saúde Integrativa. Parabéns pelo trabalho na ${nome}! Trabalhamos com várias estéticas que usam nossos óleos para elevar a experiência das clientes e potencializar resultados de drenagem. Podemos agendar um café rápido para eu lhe mostrar como agregar esse valor premium?`,
+            'nutricionista': `Olá! Tudo bem? Sou Especialista em Saúde Integrativa. Vi seu perfil e adoraria conversar sobre como nossos protocolos naturais podem complementar seus planos alimentares e trazer mais bem-estar aos seus pacientes. Teria 5 minutos para uma conversa rápida?`,
+            'yoga': `Olá! Tudo bem? Sou Especialista em Saúde Integrativa. Vi o trabalho incrível do seu estúdio ${nome}! Nossos óleos são perfeitos para criar um ambiente de foco e relaxamento profundo nas aulas. Gostaria de conhecer nosso kit corporativo para estúdios de Yoga?`
         };
 
-        const defaultScript = `Olá! Tudo bem? Sou consultor da Gota Essencial. Estava analisando empresas de destaque na região e a ${nome} me chamou atenção pela ótima reputação. Gostaria de conversar sobre uma possível parceria para agregar valor aos seus serviços com soluções 100% naturais. Qual o melhor horário para falarmos?`;
+        const defaultScript = `Olá! Tudo bem? Sou Especialista em Saúde Integrativa. Estava analisando empresas de destaque na região e a ${nome} me chamou atenção pela ótima reputação. Gostaria de conversar sobre uma possível parceria para agregar valor aos seus serviços com soluções 100% naturais. Qual o melhor horário para falarmos?`;
 
         for (const key in scripts) {
             if (niche.includes(key)) return encodeURIComponent(scripts[key]);
