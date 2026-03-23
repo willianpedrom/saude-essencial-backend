@@ -9,6 +9,15 @@ auth.init();
 setupGlobalShortcuts();
 
 
+// Global listener for opening anamnese modal from anywhere (e.g. Pipeline, Dashboard)
+document.addEventListener('open-anamnese', async (e) => {
+    const client = e.detail?.client;
+    if (client) {
+        const { showAnamneseModal } = await import('./pages/Clients.js');
+        showAnamneseModal(client, router);
+    }
+});
+
 // Remove loader
 window.addEventListener('load', () => {
     const loader = document.getElementById('page-loader');

@@ -5,6 +5,386 @@ import { analyzeAnamnesis, PROTOCOLS, OILS_DATABASE } from '../data.js';
 
 let cachedAnamneses = null; // lazy-load once per session
 
+export async function showAnamneseModal(client, router) {
+  // Fetch anamneses directly by client ID (includes filled generic copies)
+  const anamneses = await store.getClientAnamneses(client.id).catch(() => []);
+  if (anamneses.length === 0) {
+    modal('Anamneses de ' + client.name, `
+      <div class="empty-state" style="padding:20px 0">
+        <div class="empty-state-icon">📋</div>
+        <h4>Nenhuma anamnese encontrada</h4>
+        <p>Este cliente ainda não preencheu a ficha de anamnese.</p>
+      </div>`);
+    return;
+  }
+  const a = anamneses[0]; // most recent filled
+  const rawDados = a.dados || {};
+  // Garantir que temos acesso a todos os dados flat
+  const dados = {
+    ...(rawDados.personal || {}),
+    ...(rawDados.health || {}),
+    ...(rawDados.emotional || {}),
+    ...(rawDados.body || {}),
+    ...(rawDados.goals || {}),
+    ...rawDados // fallback
+  };
+  
+  // Reconstruir objeto aninhado se necessário para garantir a leitura do analyzeAnamnesis
+  const nestedForAnalysis = {
+    personal: { ...dados },
+    health: { general_symptoms: dados.general_symptoms, digestive_symptoms: dados.digestive_symptoms, emotional_symptoms: dados.emotional_symptoms, sleep_symptoms: dados.sleep_symptoms, low_energy_symptoms: dados.low_energy_symptoms, skin_symptoms: dados.skin_symptoms, hair_symptoms: dados.hair_symptoms, chronic_conditions: dados.chronic_conditions },
+    goals: { goals: dados.goals, main_complaint: dados.main_complaint }
+  };
+  
+  let analysisResultados = 'Não foi possível gerar prognóstico automático para este perfil.';
+  try {
+    // Se já vier com rawDados.goals, usa ele (novo formato), caso contrário usa o falso aninhado
+    const anamnesisAnalysis = analyzeAnamnesis(rawDados.goals ? rawDados : nestedForAnalysis);
+    const uniqueResults = [...new Set(anamnesisAnalysis.protocols.map(p => p.expectedResults).filter(Boolean))];
+    if (uniqueResults.length > 0) analysisResultados = uniqueResults.join(' ');
+  } catch (e) {
+    console.error("Erro processando anamnese no modal:", e);
+  }
+
+  // Arrays agregados para tags
+  const allSymptoms = [
+    ...(dados.general_symptoms || []),
+    ...(dados.emotional_symptoms || []),
+    ...(dados.digestive_symptoms || []),
+    ...(dados.sleep_symptoms || []),
+    ...(dados.low_energy_symptoms || []),
+    ...(dados.skin_symptoms || []),
+    ...(dados.hair_symptoms || [])
+  ];
+  
+  // Função helper para parse seguro
+  const printVal = (val) => val ? val : '—';
+  const printTagArray = (arr, color='#166534', bg='#dcfce7') => {
+    if (!arr || !Array.isArray(arr) || arr.length === 0) return '—';
+    return arr.map(t => `<span class="report-tag" style="font-size:0.75rem;background:${bg};color:${color}">${t}</span>`).join('');
+  };
+
+  const { el } = modal('📋 Anamnese Compléta — ' + client.name, `
+    <div style="max-height:65vh;overflow-y:auto;padding-right:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;background:#f8fafc;padding:12px;border-radius:12px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.02)">
+        <div style="font-size:0.85rem"><strong>E-mail:</strong><br>${client.email || '—'}</div>
+        <div style="font-size:0.85rem"><strong>WhatsApp:</strong><br>${client.phone || '—'}</div>
+        <div style="font-size:0.85rem"><strong>Nascimento:</strong><br>${formatDate(client.birthdate)}</div>
+        <div style="font-size:0.85rem"><strong>Cidade:</strong><br>${client.city || '—'}</div>
+        <div style="font-size:0.85rem;grid-column: span 2"><strong>Gênero:</strong> ${client.genero || 'Não informado'}</div>
+      </div>
+
+      <h4 style="font-size:1rem;color:#0f172a;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;">Relatos Abertos & Queixas</h4>
+      
+      <div style="margin-bottom:12px">
+        <strong style="font-size:0.85rem;color:#1e293b;">Queixa Principal:</strong>
+        <p style="font-size:0.85rem;color:#475569;margin-top:4px;background:#f1f5f9;padding:10px;border-radius:8px;white-space:pre-wrap;">${printVal(dados.main_complaint)}</p>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <strong style="font-size:0.85rem;color:#1e293b;">Estado Emocional Descrito:</strong>
+        <p style="font-size:0.85rem;color:#475569;margin-top:4px;background:#f1f5f9;padding:10px;border-radius:8px;white-space:pre-wrap;">${printVal(dados.emotional_open)}</p>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <strong style="font-size:0.85rem;color:#1e293b;">Medicamentos em Uso (Contínuo):</strong>
+        <p style="font-size:0.85rem;color:#475569;margin-top:4px;background:#f1f5f9;padding:10px;border-radius:8px;white-space:pre-wrap;">${printVal(dados.medications)}</p>
+      </div>
+
+      <h4 style="font-size:1rem;color:#0f172a;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;margin-top:20px;">Tratamento & Resultados Clínicos</h4>
+
+      <div style="margin-bottom:12px;background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:8px">
+        <strong style="font-size:0.85rem;color:#166534;display:flex;align-items:center;gap:6px"><span style="font-size:1.1rem">🔓</span> Prognóstico do Sistema (Visão Consultora):</strong>
+        <p style="font-size:0.85rem;color:#15803d;margin-top:6px;line-height:1.5">${analysisResultados}</p>
+        <div style="font-size:0.75rem;color:#16a34a;margin-top:8px;font-style:italic">Este é o texto exato que o sistema gerou, mas que aparece borrado com um 🔒 cadeado para o cliente gerar curiosidade.</div>
+      </div>
+
+      <h4 style="font-size:1rem;color:#0f172a;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;margin-top:20px;">Indicadores de Estilo de Vida</h4>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+         <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Nível de Estresse:</strong><br>${dados.stress_level ? dados.stress_level + '/10' : '—'}</div>
+         <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Nível de Energia:</strong><br>${dados.energy_level ? dados.energy_level + '/10' : '—'}</div>
+         <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Diet / Alimentação:</strong><br>${printVal(dados.diet_type)}</div>
+         <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Ingestão de Água:</strong><br>${printVal(dados.water_intake)}</div>
+         <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Horas de Sono:</strong><br>${printVal(dados.sleep_hours)}</div>
+         <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Exercícios:</strong><br>${printVal(dados.exercise_freq)}</div>
+         <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Experiência com Óleos:</strong><br>${printVal(dados.previous_experience)}</div>
+         <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Disposição à Mudança:</strong><br>${dados.commitment_level ? dados.commitment_level + '/5' : '—'}</div>
+      </div>
+
+      <h4 style="font-size:1rem;color:#0f172a;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;margin-top:20px;">Dores e Condições Marcadas</h4>
+
+      <div style="margin-bottom:12px">
+        <strong style="font-size:0.85rem;color:#1e293b;">Sintomas Físicos / Emocionais:</strong>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+          ${printTagArray(allSymptoms, '#b91c1c', '#fef2f2')}
+        </div>
+      </div>
+      
+      <div style="margin-bottom:12px">
+        <strong style="font-size:0.85rem;color:#1e293b;">Condições Crônicas:</strong>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+          ${printTagArray(dados.chronic_conditions, '#9f1239', '#fff1f2')}
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <strong style="font-size:0.85rem;color:#1e293b;">Hábitos Prejudiciais Marcados:</strong>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+          ${printTagArray(dados.bad_habits_food, '#b45309', '#fef3c7')}
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <strong style="font-size:0.85rem;color:#1e293b;">Objetivos do Cliente:</strong>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+          ${printTagArray(dados.goals?.goals || dados.goals, '#15803d', '#dcfce7')}
+        </div>
+      </div>
+
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:16px;text-align:right;">
+        Ficha Registrada em: <span style="font-weight:700">${formatDate(a.criado_em)}</span>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+        <button id="btn-edit-protocol" style="background:#f0fdf4;color:#166534;border:1.5px solid #86efac;border-radius:8px;padding:8px 16px;font-size:0.85rem;font-weight:700;cursor:pointer">✏️ Editar Protocolo</button>
+      </div>
+    </div>`, {
+    confirmLabel: '🌿 Ver Protocolo',
+    onOpen: () => {
+      document.getElementById('btn-edit-protocol')?.addEventListener('click', () => {
+        let protocols = [];
+        try {
+          const ana = analyzeAnamnesis(rawDados.goals ? rawDados : nestedForAnalysis);
+          protocols = ana.protocols || [];
+        } catch (e) { /* ignore */ }
+        openProtocolEditor(client, a, protocols, analysisResultados);
+      });
+    },
+    onConfirm: async () => {
+      // Busca a anamnese mais recente do banco para garantir que o protocolo_customizado salvo há 1 segundo esteja lá
+      const freshAnamneses = await store.getClientAnamneses(client.id).catch(() => []);
+      const freshA = freshAnamneses[0] || a;
+      
+      const consultant = auth.current;
+      const rawPayload = JSON.stringify({
+        answers: dados,
+        protocolo_customizado: freshA.protocolo_customizado,
+        consultant: { name: consultant?.nome || consultant?.name, slug: consultant?.slug, phone: consultant?.telefone || consultant?.phone, genero: consultant?.genero },
+        clientName: client.name,
+        clientMessage: client.protocolo_mensagem,
+        clientId: client.id
+      });
+      
+      // Usa sessionStorage para não estourar o limite de URL e garantir leitura única e limpa pelo Report.js
+      sessionStorage.setItem('tempAnamnesisPayload', rawPayload);
+      router.navigate('/protocolo');
+    }
+  });
+}
+
+
+// ────────────────────────────────────────────────────────────
+// EDITOR DE PROTOCOLO PERSONALIZADO
+// ────────────────────────────────────────────────────────────
+function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
+  // Build catalog from OILS_DATABASE (complete product list)
+  const allOils = Object.entries(OILS_DATABASE || {})
+    .map(([name, oil]) => ({ name, fn: oil.fn || '' }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  // Working copy – prefer saved custom, else use auto-generated
+  const existingCustom = anamnese.protocolo_customizado || null;
+  let editProtocols = existingCustom?.protocols
+    ? JSON.parse(JSON.stringify(existingCustom.protocols))
+    : protocols.map(p => ({ symptom: p.symptom, icon: p.icon || '🌿', oils: [...(p.oils || [])] }));
+  let customNotes = existingCustom?.customNotes || analysisResultados;
+  let customMessage = existingCustom?.customMessage || '';
+  let customUnlock = existingCustom?.customUnlock || false;
+
+  let customRoutine = existingCustom?.customRoutine;
+  if (!customRoutine) {
+    customRoutine = { morning: [], afternoon: [], night: [] };
+    protocols.forEach(p => {
+      if (p.routine) {
+        (p.routine.morning || []).forEach(i => { if (!customRoutine.morning.includes(i)) customRoutine.morning.push(i); });
+        (p.routine.afternoon || []).forEach(i => { if (!customRoutine.afternoon.includes(i)) customRoutine.afternoon.push(i); });
+        (p.routine.night || []).forEach(i => { if (!customRoutine.night.includes(i)) customRoutine.night.push(i); });
+      }
+    });
+  }
+
+  let morningText = customRoutine.morning.join('\n');
+  let afternoonText = customRoutine.afternoon.join('\n');
+  let nightText = customRoutine.night.join('\n');
+
+  function oilChip(oil, pIdx, oIdx) {
+    return `<span style="display:inline-flex;align-items:center;gap:4px;background:#dcfce7;color:#166534;border-radius:20px;padding:4px 10px;font-size:0.78rem;font-weight:600;margin:3px">
+      🌿 ${oil.name}${oil.fn ? ` <span style="opacity:0.65;font-size:0.7rem">— ${oil.fn}</span>` : ''}
+      <button data-rp="${pIdx}" data-ro="${oIdx}" style="background:none;border:none;cursor:pointer;color:#dc2626;font-weight:700;padding:0 0 0 6px;font-size:0.9rem;line-height:1">✕</button>
+    </span>`;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.id = 'protocol-editor-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.5);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;';
+  overlay.innerHTML = `
+    <div style="background:white;border-radius:16px;width:100%;max-width:640px;margin-bottom:40px;box-shadow:0 24px 60px rgba(0,0,0,0.3);display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #e2e8f0">
+        <h3 style="font-size:1rem;font-weight:700;color:#1e293b;margin:0">✏️ Editar Protocolo — ${client.name}</h3>
+        <button id="pe-close" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#94a3b8;line-height:1">✕</button>
+      </div>
+      <div id="pe-body" style="padding:20px;max-height:60vh;overflow-y:auto"></div>
+      <div style="padding:14px 20px;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-end">
+        <button id="pe-cancel" style="background:#f3f4f6;color:#374151;border:none;border-radius:8px;padding:10px 20px;font-size:0.88rem;cursor:pointer">Cancelar</button>
+        <button id="pe-save" style="background:#166534;color:white;border:none;border-radius:8px;padding:10px 24px;font-size:0.88rem;font-weight:700;cursor:pointer">💾 Salvar Protocolo</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  function render() {
+    const body = overlay.querySelector('#pe-body');
+    if (!body) return;
+    body.innerHTML = `
+      <p style="color:#475569;font-size:0.85rem;margin-bottom:16px">Adicione ou remova produtos para personalizar o protocolo de <strong>${client.name}</strong>.</p>
+      ${editProtocols.length === 0 ? '<p style="color:#94a3b8;font-size:0.85rem">Nenhum protocolo gerado automaticamente. <br>Adicione um produto manualmente usando o formulário abaixo.</p>' : ''}
+      ${editProtocols.map((p, pIdx) => `
+        <div style="margin-bottom:12px;background:#f8fafc;border-radius:10px;padding:12px;border:1px solid #e2e8f0">
+          <div style="font-weight:700;font-size:0.88rem;color:#1e293b;margin-bottom:8px">${p.icon} ${p.symptom}</div>
+          <div style="display:flex;flex-wrap:wrap">
+            ${(p.oils || []).map((oil, oIdx) => oilChip(oil, pIdx, oIdx)).join('')}
+            ${!p.oils?.length ? '<span style="font-size:0.78rem;color:#94a3b8">Sem óleos. Adicione abaixo ↓</span>' : ''}
+          </div>
+        </div>`).join('')}
+      <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-top:6px">
+        <div style="font-weight:700;font-size:0.85rem;color:#1e293b;margin-bottom:10px">➕ Adicionar Produto</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${editProtocols.length > 0 ? `<select id="pe-sel-p" style="flex:1;min-width:130px;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.82rem">
+            <option value="">Protocolo…</option>
+            ${editProtocols.map((p, i) => `<option value="${i}">${p.icon} ${p.symptom}</option>`).join('')}
+          </select>` : ''}
+          <input list="pe-datalist-o" id="pe-sel-o" placeholder="Buscar produto..." autocomplete="off" style="flex:2;min-width:160px;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.82rem">
+          <datalist id="pe-datalist-o">
+            ${allOils.map(o => `<option value="${o.name}${o.fn ? ` — ${o.fn}` : ''}"></option>`).join('')}
+          </datalist>
+          <button id="pe-add" style="background:#166534;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap">➕ Adicionar</button>
+        </div>
+      </div>
+
+      <div style="margin-top:24px">
+        <label style="font-weight:700;font-size:0.9rem;color:#1e293b;display:block;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px">⏰ Editar Rotina Diária (um item por linha)</label>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <span style="font-size:0.85rem;font-weight:600;color:#f59e0b">Manhã:</span>
+            <textarea id="pe-rt-morning" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical">${morningText}</textarea>
+          </div>
+          <div>
+            <span style="font-size:0.85rem;font-weight:600;color:#ea580c">Tarde:</span>
+            <textarea id="pe-rt-afternoon" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical">${afternoonText}</textarea>
+          </div>
+          <div>
+            <span style="font-size:0.85rem;font-weight:600;color:#3b82f6">Noite:</span>
+            <textarea id="pe-rt-night" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical">${nightText}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:24px;display:flex;flex-direction:column;gap:16px;">
+        <div>
+          <label style="font-weight:600;font-size:0.85rem;color:#1e293b;display:flex;align-items:center;margin-bottom:6px;gap:6px">
+             <span>Mensagem no Protocolo (Visível ao Cliente)</span> <span style="font-size:0.85rem">🌿</span>
+          </label>
+          <textarea id="pe-message" placeholder="Digite uma recomendação personalizada que aparecerá em destaque no PDF do protocolo..." rows="3" style="width:100%;padding:10px;border-radius:8px;border:1px solid #16a34a;font-size:0.84rem;resize:vertical;box-sizing:border-box;background:#f0fdf4">${customMessage || ''}</textarea>
+        </div>
+        <div>
+          <label style="font-weight:600;font-size:0.85rem;color:#1e293b;display:block;margin-bottom:6px">📝 Texto do Resultado Esperado (visível apenas para você):</label>
+          <textarea id="pe-notes" rows="3" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical;box-sizing:border-box">${customNotes || ''}</textarea>
+          
+          <!-- CHECKBOX LIBERAR -->
+          <label style="display:flex;align-items:center;margin-top:10px;font-size:0.85rem;color:#333;cursor:pointer">
+            <input type="checkbox" id="pe-unlock" style="margin-right:8px;accent-color:#166534;width:16px;height:16px" ${customUnlock ? 'checked' : ''}>
+            🔓 <b>Liberar Resultado Esperado para o cliente</b> (remover o cadeado no PDF final)
+          </label>
+          <!-- FIM CHECKBOX LIBERAR -->
+          
+        </div>
+      </div>`;
+
+    // Remove oil
+    body.querySelectorAll('[data-rp]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editProtocols[+btn.dataset.rp].oils.splice(+btn.dataset.ro, 1);
+        render();
+      });
+    });
+
+    // Add oil
+    body.querySelector('#pe-add')?.addEventListener('click', () => {
+      const pSel = body.querySelector('#pe-sel-p');
+      const oSel = body.querySelector('#pe-sel-o');
+      const pIdx = pSel ? parseInt(pSel.value) : 0;
+      const oVal = oSel?.value?.trim();
+      
+      if (!oVal) { toast('Digite ou selecione um produto.', 'warning'); return; }
+      if (!editProtocols[pIdx]) { toast('Selecione o protocolo.', 'warning'); return; }
+      
+      // Find oil matching the input value exactly
+      const matchedOil = allOils.find(o => `${o.name}${o.fn ? ` — ${o.fn}` : ''}` === oVal || o.name === oVal);
+      if (!matchedOil) {
+        toast('Produto não encontrado no catálogo.', 'warning'); return;
+      }
+
+      const oil = { name: matchedOil.name, fn: matchedOil.fn };
+
+      if (editProtocols[pIdx].oils.find(o => o.name === oil.name)) {
+        toast(`${oil.name} já está nesse protocolo.`, 'info'); return;
+      }
+      editProtocols[pIdx].oils.push(oil);
+      toast(`${oil.name} adicionado! 🌿`, 'success');
+      
+      // Clear input after adding
+      if (oSel) oSel.value = '';
+      render();
+    });
+
+    // Sync notes & messaging
+    body.querySelector('#pe-notes')?.addEventListener('input', e => { customNotes = e.target.value; });
+    body.querySelector('#pe-message')?.addEventListener('input', e => { customMessage = e.target.value; });
+  }
+
+  render();
+
+  function close() { overlay.remove(); }
+  overlay.querySelector('#pe-close').addEventListener('click', close);
+  overlay.querySelector('#pe-cancel').addEventListener('click', close);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+  overlay.querySelector('#pe-save').addEventListener('click', async (e) => {
+    const btn = e.target;
+    btn.disabled = true; btn.textContent = '⏳ Salvando…';
+    customNotes = overlay.querySelector('#pe-notes')?.value || customNotes;
+    customMessage = overlay.querySelector('#pe-message')?.value || customMessage;
+    customUnlock = overlay.querySelector('#pe-unlock')?.checked || false;
+    
+    const updatedRoutine = {
+      morning: (overlay.querySelector('#pe-rt-morning')?.value || morningText).split('\n').map(l => l.trim()).filter(Boolean),
+      afternoon: (overlay.querySelector('#pe-rt-afternoon')?.value || afternoonText).split('\n').map(l => l.trim()).filter(Boolean),
+      night: (overlay.querySelector('#pe-rt-night')?.value || nightText).split('\n').map(l => l.trim()).filter(Boolean),
+    };
+
+    try {
+      await store.saveCustomProtocol(anamnese.id, { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock });
+      toast('✅ Protocolo personalizado salvo!', 'success');
+      // Store in anamnese object so re-opening the editor shows the saved state
+      anamnese.protocolo_customizado = { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock };
+      close();
+    } catch (err) {
+      toast('Erro ao salvar: ' + err.message, 'error');
+      btn.disabled = false; btn.textContent = '💾 Salvar Protocolo';
+    }
+  });
+}
+
+
 export async function renderClients(router) {
   // Render layout immediately with loading
   renderLayout(router, 'Clientes', `
@@ -203,385 +583,6 @@ export async function renderClients(router) {
     });
   }
 
-  async function showAnamneseModal(client, router) {
-    // Fetch anamneses directly by client ID (includes filled generic copies)
-    const anamneses = await store.getClientAnamneses(client.id).catch(() => []);
-    if (anamneses.length === 0) {
-      modal('Anamneses de ' + client.name, `
-        <div class="empty-state" style="padding:20px 0">
-          <div class="empty-state-icon">📋</div>
-          <h4>Nenhuma anamnese encontrada</h4>
-          <p>Este cliente ainda não preencheu a ficha de anamnese.</p>
-        </div>`);
-      return;
-    }
-    const a = anamneses[0]; // most recent filled
-    const rawDados = a.dados || {};
-    // Garantir que temos acesso a todos os dados flat
-    const dados = {
-      ...(rawDados.personal || {}),
-      ...(rawDados.health || {}),
-      ...(rawDados.emotional || {}),
-      ...(rawDados.body || {}),
-      ...(rawDados.goals || {}),
-      ...rawDados // fallback
-    };
-    
-    // Reconstruir objeto aninhado se necessário para garantir a leitura do analyzeAnamnesis
-    const nestedForAnalysis = {
-      personal: { ...dados },
-      health: { general_symptoms: dados.general_symptoms, digestive_symptoms: dados.digestive_symptoms, emotional_symptoms: dados.emotional_symptoms, sleep_symptoms: dados.sleep_symptoms, low_energy_symptoms: dados.low_energy_symptoms, skin_symptoms: dados.skin_symptoms, hair_symptoms: dados.hair_symptoms, chronic_conditions: dados.chronic_conditions },
-      goals: { goals: dados.goals, main_complaint: dados.main_complaint }
-    };
-    
-    let analysisResultados = 'Não foi possível gerar prognóstico automático para este perfil.';
-    try {
-      // Se já vier com rawDados.goals, usa ele (novo formato), caso contrário usa o falso aninhado
-      const anamnesisAnalysis = analyzeAnamnesis(rawDados.goals ? rawDados : nestedForAnalysis);
-      const uniqueResults = [...new Set(anamnesisAnalysis.protocols.map(p => p.expectedResults).filter(Boolean))];
-      if (uniqueResults.length > 0) analysisResultados = uniqueResults.join(' ');
-    } catch (e) {
-      console.error("Erro processando anamnese no modal:", e);
-    }
-
-    // Arrays agregados para tags
-    const allSymptoms = [
-      ...(dados.general_symptoms || []),
-      ...(dados.emotional_symptoms || []),
-      ...(dados.digestive_symptoms || []),
-      ...(dados.sleep_symptoms || []),
-      ...(dados.low_energy_symptoms || []),
-      ...(dados.skin_symptoms || []),
-      ...(dados.hair_symptoms || [])
-    ];
-    
-    // Função helper para parse seguro
-    const printVal = (val) => val ? val : '—';
-    const printTagArray = (arr, color='#166534', bg='#dcfce7') => {
-      if (!arr || !Array.isArray(arr) || arr.length === 0) return '—';
-      return arr.map(t => `<span class="report-tag" style="font-size:0.75rem;background:${bg};color:${color}">${t}</span>`).join('');
-    };
-
-    const { el } = modal('📋 Anamnese Compléta — ' + client.name, `
-      <div style="max-height:65vh;overflow-y:auto;padding-right:10px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;background:#f8fafc;padding:12px;border-radius:12px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.02)">
-          <div style="font-size:0.85rem"><strong>E-mail:</strong><br>${client.email || '—'}</div>
-          <div style="font-size:0.85rem"><strong>WhatsApp:</strong><br>${client.phone || '—'}</div>
-          <div style="font-size:0.85rem"><strong>Nascimento:</strong><br>${formatDate(client.birthdate)}</div>
-          <div style="font-size:0.85rem"><strong>Cidade:</strong><br>${client.city || '—'}</div>
-          <div style="font-size:0.85rem;grid-column: span 2"><strong>Gênero:</strong> ${client.genero || 'Não informado'}</div>
-        </div>
-
-        <h4 style="font-size:1rem;color:#0f172a;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;">Relatos Abertos & Queixas</h4>
-        
-        <div style="margin-bottom:12px">
-          <strong style="font-size:0.85rem;color:#1e293b;">Queixa Principal:</strong>
-          <p style="font-size:0.85rem;color:#475569;margin-top:4px;background:#f1f5f9;padding:10px;border-radius:8px;white-space:pre-wrap;">${printVal(dados.main_complaint)}</p>
-        </div>
-
-        <div style="margin-bottom:12px">
-          <strong style="font-size:0.85rem;color:#1e293b;">Estado Emocional Descrito:</strong>
-          <p style="font-size:0.85rem;color:#475569;margin-top:4px;background:#f1f5f9;padding:10px;border-radius:8px;white-space:pre-wrap;">${printVal(dados.emotional_open)}</p>
-        </div>
-
-        <div style="margin-bottom:16px">
-          <strong style="font-size:0.85rem;color:#1e293b;">Medicamentos em Uso (Contínuo):</strong>
-          <p style="font-size:0.85rem;color:#475569;margin-top:4px;background:#f1f5f9;padding:10px;border-radius:8px;white-space:pre-wrap;">${printVal(dados.medications)}</p>
-        </div>
-
-        <h4 style="font-size:1rem;color:#0f172a;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;margin-top:20px;">Tratamento & Resultados Clínicos</h4>
-
-        <div style="margin-bottom:12px;background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:8px">
-          <strong style="font-size:0.85rem;color:#166534;display:flex;align-items:center;gap:6px"><span style="font-size:1.1rem">🔓</span> Prognóstico do Sistema (Visão Consultora):</strong>
-          <p style="font-size:0.85rem;color:#15803d;margin-top:6px;line-height:1.5">${analysisResultados}</p>
-          <div style="font-size:0.75rem;color:#16a34a;margin-top:8px;font-style:italic">Este é o texto exato que o sistema gerou, mas que aparece borrado com um 🔒 cadeado para o cliente gerar curiosidade.</div>
-        </div>
-
-        <h4 style="font-size:1rem;color:#0f172a;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;margin-top:20px;">Indicadores de Estilo de Vida</h4>
-        
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Nível de Estresse:</strong><br>${dados.stress_level ? dados.stress_level + '/10' : '—'}</div>
-           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Nível de Energia:</strong><br>${dados.energy_level ? dados.energy_level + '/10' : '—'}</div>
-           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Diet / Alimentação:</strong><br>${printVal(dados.diet_type)}</div>
-           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Ingestão de Água:</strong><br>${printVal(dados.water_intake)}</div>
-           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Horas de Sono:</strong><br>${printVal(dados.sleep_hours)}</div>
-           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Exercícios:</strong><br>${printVal(dados.exercise_freq)}</div>
-           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Experiência com Óleos:</strong><br>${printVal(dados.previous_experience)}</div>
-           <div style="font-size:0.85rem;background:#f8fafc;padding:8px;border-radius:8px;"><strong>Disposição à Mudança:</strong><br>${dados.commitment_level ? dados.commitment_level + '/5' : '—'}</div>
-        </div>
-
-        <h4 style="font-size:1rem;color:#0f172a;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;margin-top:20px;">Dores e Condições Marcadas</h4>
-
-        <div style="margin-bottom:12px">
-          <strong style="font-size:0.85rem;color:#1e293b;">Sintomas Físicos / Emocionais:</strong>
-          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
-            ${printTagArray(allSymptoms, '#b91c1c', '#fef2f2')}
-          </div>
-        </div>
-        
-        <div style="margin-bottom:12px">
-          <strong style="font-size:0.85rem;color:#1e293b;">Condições Crônicas:</strong>
-          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
-            ${printTagArray(dados.chronic_conditions, '#9f1239', '#fff1f2')}
-          </div>
-        </div>
-
-        <div style="margin-bottom:12px">
-          <strong style="font-size:0.85rem;color:#1e293b;">Hábitos Prejudiciais Marcados:</strong>
-          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
-            ${printTagArray(dados.bad_habits_food, '#b45309', '#fef3c7')}
-          </div>
-        </div>
-
-        <div style="margin-bottom:16px">
-          <strong style="font-size:0.85rem;color:#1e293b;">Objetivos do Cliente:</strong>
-          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
-            ${printTagArray(dados.goals?.goals || dados.goals, '#15803d', '#dcfce7')}
-          </div>
-        </div>
-
-        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:16px;text-align:right;">
-          Ficha Registrada em: <span style="font-weight:700">${formatDate(a.criado_em)}</span>
-        </div>
-        <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
-          <button id="btn-edit-protocol" style="background:#f0fdf4;color:#166534;border:1.5px solid #86efac;border-radius:8px;padding:8px 16px;font-size:0.85rem;font-weight:700;cursor:pointer">✏️ Editar Protocolo</button>
-        </div>
-      </div>`, {
-      confirmLabel: '🌿 Ver Protocolo',
-      onOpen: () => {
-        document.getElementById('btn-edit-protocol')?.addEventListener('click', () => {
-          let protocols = [];
-          try {
-            const ana = analyzeAnamnesis(rawDados.goals ? rawDados : nestedForAnalysis);
-            protocols = ana.protocols || [];
-          } catch (e) { /* ignore */ }
-          openProtocolEditor(client, a, protocols, analysisResultados);
-        });
-      },
-      onConfirm: async () => {
-        // Busca a anamnese mais recente do banco para garantir que o protocolo_customizado salvo há 1 segundo esteja lá
-        const freshAnamneses = await store.getClientAnamneses(client.id).catch(() => []);
-        const freshA = freshAnamneses[0] || a;
-        
-        const consultant = auth.current;
-        const rawPayload = JSON.stringify({
-          answers: dados,
-          protocolo_customizado: freshA.protocolo_customizado,
-          consultant: { name: consultant?.nome || consultant?.name, slug: consultant?.slug, phone: consultant?.telefone || consultant?.phone, genero: consultant?.genero },
-          clientName: client.name,
-          clientMessage: client.protocolo_mensagem,
-          clientId: client.id
-        });
-        
-        // Usa sessionStorage para não estourar o limite de URL e garantir leitura única e limpa pelo Report.js
-        sessionStorage.setItem('tempAnamnesisPayload', rawPayload);
-        router.navigate('/protocolo');
-      }
-    });
-  }
-
-
-  // ────────────────────────────────────────────────────────────
-  // EDITOR DE PROTOCOLO PERSONALIZADO
-  // ────────────────────────────────────────────────────────────
-  function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
-    // Build catalog from OILS_DATABASE (complete product list)
-    const allOils = Object.entries(OILS_DATABASE || {})
-      .map(([name, oil]) => ({ name, fn: oil.fn || '' }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    // Working copy – prefer saved custom, else use auto-generated
-    const existingCustom = anamnese.protocolo_customizado || null;
-    let editProtocols = existingCustom?.protocols
-      ? JSON.parse(JSON.stringify(existingCustom.protocols))
-      : protocols.map(p => ({ symptom: p.symptom, icon: p.icon || '🌿', oils: [...(p.oils || [])] }));
-    let customNotes = existingCustom?.customNotes || analysisResultados;
-    let customMessage = existingCustom?.customMessage || '';
-    let customUnlock = existingCustom?.customUnlock || false;
-
-    let customRoutine = existingCustom?.customRoutine;
-    if (!customRoutine) {
-      customRoutine = { morning: [], afternoon: [], night: [] };
-      protocols.forEach(p => {
-        if (p.routine) {
-          (p.routine.morning || []).forEach(i => { if (!customRoutine.morning.includes(i)) customRoutine.morning.push(i); });
-          (p.routine.afternoon || []).forEach(i => { if (!customRoutine.afternoon.includes(i)) customRoutine.afternoon.push(i); });
-          (p.routine.night || []).forEach(i => { if (!customRoutine.night.includes(i)) customRoutine.night.push(i); });
-        }
-      });
-    }
-
-    let morningText = customRoutine.morning.join('\n');
-    let afternoonText = customRoutine.afternoon.join('\n');
-    let nightText = customRoutine.night.join('\n');
-
-    function oilChip(oil, pIdx, oIdx) {
-      return `<span style="display:inline-flex;align-items:center;gap:4px;background:#dcfce7;color:#166534;border-radius:20px;padding:4px 10px;font-size:0.78rem;font-weight:600;margin:3px">
-        🌿 ${oil.name}${oil.fn ? ` <span style="opacity:0.65;font-size:0.7rem">— ${oil.fn}</span>` : ''}
-        <button data-rp="${pIdx}" data-ro="${oIdx}" style="background:none;border:none;cursor:pointer;color:#dc2626;font-weight:700;padding:0 0 0 6px;font-size:0.9rem;line-height:1">✕</button>
-      </span>`;
-    }
-
-    const overlay = document.createElement('div');
-    overlay.id = 'protocol-editor-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.5);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;';
-    overlay.innerHTML = `
-      <div style="background:white;border-radius:16px;width:100%;max-width:640px;margin-bottom:40px;box-shadow:0 24px 60px rgba(0,0,0,0.3);display:flex;flex-direction:column">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #e2e8f0">
-          <h3 style="font-size:1rem;font-weight:700;color:#1e293b;margin:0">✏️ Editar Protocolo — ${client.name}</h3>
-          <button id="pe-close" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#94a3b8;line-height:1">✕</button>
-        </div>
-        <div id="pe-body" style="padding:20px;max-height:60vh;overflow-y:auto"></div>
-        <div style="padding:14px 20px;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-end">
-          <button id="pe-cancel" style="background:#f3f4f6;color:#374151;border:none;border-radius:8px;padding:10px 20px;font-size:0.88rem;cursor:pointer">Cancelar</button>
-          <button id="pe-save" style="background:#166534;color:white;border:none;border-radius:8px;padding:10px 24px;font-size:0.88rem;font-weight:700;cursor:pointer">💾 Salvar Protocolo</button>
-        </div>
-      </div>`;
-    document.body.appendChild(overlay);
-
-    function render() {
-      const body = overlay.querySelector('#pe-body');
-      if (!body) return;
-      body.innerHTML = `
-        <p style="color:#475569;font-size:0.85rem;margin-bottom:16px">Adicione ou remova produtos para personalizar o protocolo de <strong>${client.name}</strong>.</p>
-        ${editProtocols.length === 0 ? '<p style="color:#94a3b8;font-size:0.85rem">Nenhum protocolo gerado automaticamente. <br>Adicione um produto manualmente usando o formulário abaixo.</p>' : ''}
-        ${editProtocols.map((p, pIdx) => `
-          <div style="margin-bottom:12px;background:#f8fafc;border-radius:10px;padding:12px;border:1px solid #e2e8f0">
-            <div style="font-weight:700;font-size:0.88rem;color:#1e293b;margin-bottom:8px">${p.icon} ${p.symptom}</div>
-            <div style="display:flex;flex-wrap:wrap">
-              ${(p.oils || []).map((oil, oIdx) => oilChip(oil, pIdx, oIdx)).join('')}
-              ${!p.oils?.length ? '<span style="font-size:0.78rem;color:#94a3b8">Sem óleos. Adicione abaixo ↓</span>' : ''}
-            </div>
-          </div>`).join('')}
-        <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-top:6px">
-          <div style="font-weight:700;font-size:0.85rem;color:#1e293b;margin-bottom:10px">➕ Adicionar Produto</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            ${editProtocols.length > 0 ? `<select id="pe-sel-p" style="flex:1;min-width:130px;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.82rem">
-              <option value="">Protocolo…</option>
-              ${editProtocols.map((p, i) => `<option value="${i}">${p.icon} ${p.symptom}</option>`).join('')}
-            </select>` : ''}
-            <input list="pe-datalist-o" id="pe-sel-o" placeholder="Buscar produto..." autocomplete="off" style="flex:2;min-width:160px;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.82rem">
-            <datalist id="pe-datalist-o">
-              ${allOils.map(o => `<option value="${o.name}${o.fn ? ` — ${o.fn}` : ''}"></option>`).join('')}
-            </datalist>
-            <button id="pe-add" style="background:#166534;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap">➕ Adicionar</button>
-          </div>
-        </div>
-
-        <div style="margin-top:24px">
-          <label style="font-weight:700;font-size:0.9rem;color:#1e293b;display:block;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px">⏰ Editar Rotina Diária (um item por linha)</label>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div>
-              <span style="font-size:0.85rem;font-weight:600;color:#f59e0b">Manhã:</span>
-              <textarea id="pe-rt-morning" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical">${morningText}</textarea>
-            </div>
-            <div>
-              <span style="font-size:0.85rem;font-weight:600;color:#ea580c">Tarde:</span>
-              <textarea id="pe-rt-afternoon" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical">${afternoonText}</textarea>
-            </div>
-            <div>
-              <span style="font-size:0.85rem;font-weight:600;color:#3b82f6">Noite:</span>
-              <textarea id="pe-rt-night" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical">${nightText}</textarea>
-            </div>
-          </div>
-        </div>
-
-        <div style="margin-top:24px;display:flex;flex-direction:column;gap:16px;">
-          <div>
-            <label style="font-weight:600;font-size:0.85rem;color:#1e293b;display:flex;align-items:center;margin-bottom:6px;gap:6px">
-               <span>Mensagem no Protocolo (Visível ao Cliente)</span> <span style="font-size:0.85rem">🌿</span>
-            </label>
-            <textarea id="pe-message" placeholder="Digite uma recomendação personalizada que aparecerá em destaque no PDF do protocolo..." rows="3" style="width:100%;padding:10px;border-radius:8px;border:1px solid #16a34a;font-size:0.84rem;resize:vertical;box-sizing:border-box;background:#f0fdf4">${customMessage || ''}</textarea>
-          </div>
-          <div>
-            <label style="font-weight:600;font-size:0.85rem;color:#1e293b;display:block;margin-bottom:6px">📝 Texto do Resultado Esperado (visível apenas para você):</label>
-            <textarea id="pe-notes" rows="3" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical;box-sizing:border-box">${customNotes || ''}</textarea>
-            
-            <!-- CHECKBOX LIBERAR -->
-            <label style="display:flex;align-items:center;margin-top:10px;font-size:0.85rem;color:#333;cursor:pointer">
-              <input type="checkbox" id="pe-unlock" style="margin-right:8px;accent-color:#166534;width:16px;height:16px" ${customUnlock ? 'checked' : ''}>
-              🔓 <b>Liberar Resultado Esperado para o cliente</b> (remover o cadeado no PDF final)
-            </label>
-            <!-- FIM CHECKBOX LIBERAR -->
-            
-          </div>
-        </div>`;
-
-      // Remove oil
-      body.querySelectorAll('[data-rp]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          editProtocols[+btn.dataset.rp].oils.splice(+btn.dataset.ro, 1);
-          render();
-        });
-      });
-
-      // Add oil
-      body.querySelector('#pe-add')?.addEventListener('click', () => {
-        const pSel = body.querySelector('#pe-sel-p');
-        const oSel = body.querySelector('#pe-sel-o');
-        const pIdx = pSel ? parseInt(pSel.value) : 0;
-        const oVal = oSel?.value?.trim();
-        
-        if (!oVal) { toast('Digite ou selecione um produto.', 'warning'); return; }
-        if (!editProtocols[pIdx]) { toast('Selecione o protocolo.', 'warning'); return; }
-        
-        // Find oil matching the input value exactly
-        const matchedOil = allOils.find(o => `${o.name}${o.fn ? ` — ${o.fn}` : ''}` === oVal || o.name === oVal);
-        if (!matchedOil) {
-          toast('Produto não encontrado no catálogo.', 'warning'); return;
-        }
-
-        const oil = { name: matchedOil.name, fn: matchedOil.fn };
-
-        if (editProtocols[pIdx].oils.find(o => o.name === oil.name)) {
-          toast(`${oil.name} já está nesse protocolo.`, 'info'); return;
-        }
-        editProtocols[pIdx].oils.push(oil);
-        toast(`${oil.name} adicionado! 🌿`, 'success');
-        
-        // Clear input after adding
-        if (oSel) oSel.value = '';
-        render();
-      });
-
-      // Sync notes & messaging
-      body.querySelector('#pe-notes')?.addEventListener('input', e => { customNotes = e.target.value; });
-      body.querySelector('#pe-message')?.addEventListener('input', e => { customMessage = e.target.value; });
-    }
-
-    render();
-
-    function close() { overlay.remove(); }
-    overlay.querySelector('#pe-close').addEventListener('click', close);
-    overlay.querySelector('#pe-cancel').addEventListener('click', close);
-    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
-
-    overlay.querySelector('#pe-save').addEventListener('click', async (e) => {
-      const btn = e.target;
-      btn.disabled = true; btn.textContent = '⏳ Salvando…';
-      customNotes = overlay.querySelector('#pe-notes')?.value || customNotes;
-      customMessage = overlay.querySelector('#pe-message')?.value || customMessage;
-      customUnlock = overlay.querySelector('#pe-unlock')?.checked || false;
-      
-      const updatedRoutine = {
-        morning: (overlay.querySelector('#pe-rt-morning')?.value || morningText).split('\n').map(l => l.trim()).filter(Boolean),
-        afternoon: (overlay.querySelector('#pe-rt-afternoon')?.value || afternoonText).split('\n').map(l => l.trim()).filter(Boolean),
-        night: (overlay.querySelector('#pe-rt-night')?.value || nightText).split('\n').map(l => l.trim()).filter(Boolean),
-      };
-
-      try {
-        await store.saveCustomProtocol(anamnese.id, { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock });
-        toast('✅ Protocolo personalizado salvo!', 'success');
-        // Store in anamnese object so re-opening the editor shows the saved state
-        anamnese.protocolo_customizado = { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock };
-        close();
-      } catch (err) {
-        toast('Erro ao salvar: ' + err.message, 'error');
-        btn.disabled = false; btn.textContent = '💾 Salvar Protocolo';
-      }
-    });
-  }
-
   function buildPage() {
     const pc = document.getElementById('page-content');
     if (!pc) return;
@@ -648,13 +649,7 @@ export async function renderClients(router) {
     });
 
     // Event listener for opening anamnesis from offcanvas
-    const anamneseHandler = e => {
-      const client = e.detail?.client;
-      if (client) showAnamneseModal(client, router);
-    };
-    document.removeEventListener('open-anamnese', window._anamneseHandlerObj);
-    window._anamneseHandlerObj = anamneseHandler;
-    document.addEventListener('open-anamnese', anamneseHandler);
+    // Global listener is now handled in app.js
 
     // Novo listener pra Ordenação (local sort on current page)
     const selectSort = pc.querySelector('#filter-sort');
