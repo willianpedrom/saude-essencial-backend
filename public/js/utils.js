@@ -759,7 +759,20 @@ export function openClientOffcanvas(client) {
   // Action: Open Anamnese
   const bannerOc = overlay.querySelector('#anamnese-banner-oc');
   if (bannerOc) {
-    bannerOc.addEventListener('click', () => {
+    bannerOc.addEventListener('click', async () => {
+      // 1. Checar rapidamente se tem anamnese antes de forçar o fechamento e disparo
+      try {
+        const { store } = await import('./store.js');
+        const anamneses = await store.getClientAnamneses(client.id).catch(() => []);
+        
+        if (!anamneses || anamneses.length === 0) {
+          toast(`⚠️ ${client.nome || 'Este contato'} ainda não finalizou de preencher o formulário.`, 'warning');
+          return; // Aborta e mantém a ficha aberta
+        }
+      } catch (e) {
+         // ignorar e tentar abrir
+      }
+      
       closeOC();
       document.dispatchEvent(new CustomEvent('open-anamnese', { detail: { client } }));
     });
