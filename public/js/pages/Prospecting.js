@@ -248,7 +248,7 @@ export async function renderProspecting(router) {
                     };
                 } catch (err) {
                     console.error('[Save Lead Error]', err);
-                    toast('Erro ao capturar lead. Redefina e tente novamente.', 'error');
+                    toast(`Erro: ${err.message || 'Falha na captura'}`, 'error');
                     btn.disabled = false;
                     btn.innerHTML = 'Tentar Novamente';
                 }
