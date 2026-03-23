@@ -270,6 +270,7 @@ async function runMigration() {
             atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_prospects_consultora ON prospects(consultora_id)`);
+        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS historico JSONB DEFAULT '[]'`);
 
         // Promote ADMIN_EMAIL to role='admin' (safe to run every startup — idempotent)
         if (process.env.ADMIN_EMAIL) {

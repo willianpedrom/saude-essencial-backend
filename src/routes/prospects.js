@@ -86,16 +86,40 @@ router.patch('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { status, notas } = req.body;
     try {
+        // Busca o estado atual para comparar
+        const current = await pool.query('SELECT status, historico FROM prospects WHERE id = $1 AND consultora_id = $2', [id, req.consultora.id]);
+        if (current.rows.length === 0) return res.status(404).json({ error: 'Prospect não encontrado.' });
+        
+        const oldStatus = current.rows[0].status;
+        const currentHistory = current.rows[0].historico || [];
+        
+        let newHistory = [...currentHistory];
+        if (status && status !== oldStatus) {
+            newHistory.push({
+                tipo: 'status_change',
+                de: oldStatus,
+                para: status,
+                data: new Date().toISOString()
+            });
+        }
+        if (notas) {
+            newHistory.push({
+                tipo: 'nota',
+                texto: notas,
+                data: new Date().toISOString()
+            });
+        }
+
         const { rows } = await pool.query(
             `UPDATE prospects 
              SET status = COALESCE($1, status), 
                  notas = COALESCE($2, notas),
+                 historico = $3,
                  atualizado_em = CURRENT_TIMESTAMP
-             WHERE id = $3 AND consultora_id = $4
+             WHERE id = $4 AND consultora_id = $5
              RETURNING *`,
-            [status, notas, id, req.consultora.id]
+            [status, notas, JSON.stringify(newHistory), id, req.consultora.id]
         );
-        if (rows.length === 0) return res.status(404).json({ error: 'Prospect não encontrado.' });
         res.json(rows[0]);
     } catch (err) {
         console.error('[Update Prospect]', err);
