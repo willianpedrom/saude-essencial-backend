@@ -84,7 +84,6 @@ router.get('/', authenticateToken, async (req, res) => {
     }
 });
 
-// POST /api/prospects - Salva um novo prospect
 router.post('/', authenticateToken, async (req, res) => {
     const { nome, place_id, endereco, telefone, website, nicho, instagram, facebook, email } = req.body;
     try {
@@ -92,12 +91,23 @@ router.post('/', authenticateToken, async (req, res) => {
             `INSERT INTO prospects (consultora_id, nome, place_id, endereco, telefone, website, nicho, instagram, facebook, email)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
              RETURNING *`,
-            [req.consultora.id, nome, place_id, endereco, telefone, website, nicho, instagram, facebook, email]
+            [
+                req.consultora.id, 
+                nome || null, 
+                place_id || null, 
+                endereco || null, 
+                telefone || null, 
+                website || null, 
+                nicho || null, 
+                instagram || null, 
+                facebook || null, 
+                email || null
+            ]
         );
         res.status(201).json(rows[0]);
     } catch (err) {
-        console.error('[Post Prospect]', err);
-        res.status(500).json({ error: 'Erro ao salvar prospecção.' });
+        console.error('[Post Prospect Error]', err);
+        res.status(500).json({ error: 'Erro ao salvar prospecção no banco de dados.' });
     }
 });
 
@@ -143,7 +153,18 @@ router.patch('/:id', authenticateToken, async (req, res) => {
                  atualizado_em = CURRENT_TIMESTAMP
              WHERE id = $9 AND consultora_id = $10
              RETURNING *`,
-            [status, notas, instagram, facebook, email, telefone, website, JSON.stringify(newHistory), id, req.consultora.id]
+            [
+                status || null, 
+                notas || null, 
+                instagram || null, 
+                facebook || null, 
+                email || null, 
+                telefone || null, 
+                website || null, 
+                JSON.stringify(newHistory), 
+                id, 
+                req.consultora.id
+            ]
         );
         res.json(rows[0]);
     } catch (err) {
