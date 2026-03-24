@@ -40,11 +40,6 @@ export async function renderProspecting(router) {
                 </div>
             </div>
 
-            <div class="view-toggles" style="display:flex; gap:10px; margin-bottom:20px">
-                <button class="btn-toggle active" id="view-list">📋 Lista de Busca</button>
-                <button class="btn-toggle" id="view-flow">📊 Meu Flow (CRM)</button>
-            </div>
-
             <div id="prospecting-results-header" class="results-header-modern" style="display:none">
                 <span>Novas Oportunidades Encontradas</span>
                 <div class="live-indicator">● LIVE</div>
@@ -144,10 +139,6 @@ export async function renderProspecting(router) {
             .btn-web-active { background: #dbeafe; color: #2563eb; border-color: #bfdbfe; }
             .btn-edit-main { margin-left: auto; background: var(--p-dark); color: #fff; border: none; font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 8px; }
 
-            .view-toggles { background: #f1f5f9; padding: 6px; border-radius: 14px; width: fit-content; }
-            .btn-toggle { border: none; background: transparent; padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; color: var(--p-gray); cursor: pointer; transition: 0.2s; }
-            .btn-toggle.active { background: #fff; color: var(--p-secondary); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-
             /* Modal Sênior */
             .modal-overlay-modern { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 2000; }
             .modal-card { background: #fff; width: 95%; max-width: 450px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); overflow: hidden; }
@@ -180,91 +171,31 @@ export async function renderProspecting(router) {
     const resultsEl = document.getElementById('prospecting-results');
     const searchBtn = document.getElementById('btn-search-prospects');
     const quickFlowBtn = document.getElementById('btn-quick-flow');
-    const selectNiche = document.getElementById('prospect-niche');
-    const inputLoc = document.getElementById('prospect-location');
-    
-    const viewList = document.getElementById('view-list');
-    const viewFlow = document.getElementById('view-flow');
 
-    let searchResults = [];
+    quickFlowBtn.addEventListener('click', () => renderMyProspects());
 
-    quickFlowBtn.addEventListener('click', () => switchView('flow'));
-    
-    viewList.onclick = () => switchView('list');
-    viewFlow.onclick = () => switchView('flow');
-
-    function switchView(view) {
-        [viewList, viewFlow].forEach(b => b.classList.remove('active'));
-        resultsEl.style.display = 'none';
-        const pipeline = document.querySelector('.pipeline-container');
-        if (pipeline) pipeline.style.display = 'none';
-        document.getElementById('prospecting-results-header').style.display = 'none';
-
-        if (view === 'list') {
-            viewList.classList.add('active');
-            resultsEl.style.display = 'grid';
-            if (searchResults.length) document.getElementById('prospecting-results-header').style.display = 'flex';
-        } else if (view === 'flow') {
-            viewFlow.classList.add('active');
-            renderMyProspects();
-        }
-    }
-
-    searchBtn.onclick = async () => {
+    searchBtn.addEventListener('click', async () => {
+        const q = document.getElementById('prospect-niche').value;
+        const loc = document.getElementById('prospect-location').value.trim();
+        if (!loc) return toast('Digite a localização', 'warning');
+        
         searchBtn.disabled = true;
-        searchBtn.textContent = 'Buscando...';
-        resultsEl.innerHTML = '<div class="loader-premium">📡 Escaneando região...</div>';
-        switchView('list');
+        searchBtn.innerHTML = '🔍 Buscando...';
+        resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px"><div class="spinner"></div><p>Sincronizando com radar local...</p></div>';
 
         try {
-            const data = await api('GET', `/api/prospects/search?q=${encodeURIComponent(selectNiche.value)}&location=${encodeURIComponent(inputLoc.value)}`);
-            searchResults = data.results || [];
-            renderSearchResults(searchResults, selectNiche.value);
+            const data = await api('GET', `/api/prospects/search?q=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}`);
+            renderSearchResults(data.results, q);
         } catch (err) {
-            toast('Erro na busca');
-            resultsEl.innerHTML = '<p>Falha ao buscar prospectos.</p>';
-        } finally {
-            searchBtn.disabled = false;
-            searchBtn.textContent = 'Buscar Parceiros';
+            toast('Erro na busca', 'error');
+            resetBtn();
         }
-    };
+    });
 
-    window.saveProspectOnMap = async (placeId) => {
-        const p = searchResults.find(r => r.place_id === placeId);
-        if (!p) return;
-        try {
-            // Enriquecimento com timeout generoso (2.5s)
-            const details = await Promise.race([
-                api('GET', `/api/prospects/details/${p.place_id}`),
-                new Promise(r => setTimeout(()=>r({}), 2500))
-            ]).catch(e => {
-                console.warn('[Enrichment Failed]', e);
-                return {};
-            });
-
-            await api('POST', '/api/prospects', { 
-                nome: p.nome,
-                endereco: p.endereco,
-                place_id: p.place_id,
-                nicho: selectNiche.value, // Use the current niche from the select
-                rating: p.rating || '',
-                user_ratings_total: p.user_ratings_total || 0,
-                lat: p.lat,
-                lng: p.lng,
-                ...details 
-            });
-            toast('Lead salvo no Flow! 🎯');
-            // Optionally, update the list view if it's active
-            if (viewList.classList.contains('active')) {
-                renderSearchResults(searchResults, selectNiche.value);
-            }
-        } catch (e) { toast('Erro ao salvar'); }
-    };
-
-    window.manageLeadOnMap = async (id) => {
-        const p = savedProspects.find(r => r.id === id);
-        if (p) openLeadModal(p); // Assuming openLeadModal is defined elsewhere or will be added
-    };
+    function resetBtn() {
+        searchBtn.disabled = false;
+        searchBtn.textContent = 'Buscar Parceiros';
+    }
 
     function calculateScore(p) {
         const rating = parseFloat(p.rating) || 0;
@@ -388,25 +319,6 @@ export async function renderProspecting(router) {
         } catch (err) { toast('Erro ao carregar pipeline'); }
     }
 
-    function getOutreachScript(p) {
-        const niche = (p.nicho || '').toLowerCase();
-        const nome = p.nome || 'Parceiro';
-        
-        const scripts = {
-            'academia': `Olá! Tudo bem? Sou Especialista em Saúde Integrativa. Vi que a ${nome} é referência na região! Sabia que óleos como Peppermint podem aumentar a performance e foco dos seus alunos? Gostaria de agendar uma breve demonstração sem custo para seus professores?`,
-            'clínica de estética': `Olá! Tudo bem? Sou Especialista em Saúde Integrativa. Parabéns pelo trabalho na ${nome}! Trabalhamos com várias estéticas que usam nossos óleos para elevar a experiência das clientes e potencializar resultados de drenagem. Podemos agendar um café rápido para eu lhe mostrar como agregar esse valor premium?`,
-            'nutricionista': `Olá! Tudo bem? Sou Especialista em Saúde Integrativa. Vi seu perfil e adoraria conversar sobre como nossos protocolos naturais podem complementar seus planos alimentares e trazer mais bem-estar aos seus pacientes. Teria 5 minutos para uma conversa rápida?`,
-            'yoga': `Olá! Tudo bem? Sou Especialista em Saúde Integrativa. Vi o trabalho incrível do seu estúdio ${nome}! Nossos óleos são perfeitos para criar um ambiente de foco e relaxamento profundo nas aulas. Gostaria de conhecer nosso kit corporativo para estúdios de Yoga?`
-        };
-
-        const defaultScript = `Olá! Tudo bem? Sou Especialista em Saúde Integrativa. Estava analisando empresas de destaque na região e a ${nome} me chamou atenção pela ótima reputação. Gostaria de conversar sobre uma possível parceria para agregar valor aos seus serviços com soluções 100% naturais. Qual o melhor horário para falarmos?`;
-
-        for (const key in scripts) {
-            if (niche.includes(key)) return encodeURIComponent(scripts[key]);
-        }
-        return encodeURIComponent(defaultScript);
-    }
-
     function renderCol(status, label, all) {
         const items = all.filter(p => p.status === status);
         return `
@@ -418,8 +330,7 @@ export async function renderProspecting(router) {
                 <div class="col-drop-zone" style="flex:1;min-height:300px">
                     ${items.map(p => {
                         const tel = (p.telefone || '').replace(/\D/g, '');
-                        const script = getOutreachScript(p);
-                        const wa = tel ? `https://wa.me/${tel.startsWith('55') ? tel : '55'+tel}?text=${script}` : null;
+                        const wa = tel ? `https://wa.me/${tel.startsWith('55') ? tel : '55'+tel}` : null;
                         const score = calculateScore(p);
                         const scoreColor = score >= 8 ? '#10b981' : (score >= 6 ? '#f59e0b' : '#6b7280');
 
@@ -432,7 +343,7 @@ export async function renderProspecting(router) {
                             <h4 style="margin:0 0 10px;font-size:0.95rem">${p.nome}</h4>
                             
                             <div class="card-actions-row">
-                                <a href="${wa || '#'}" target="${wa ? '_blank' : '_self'}" class="action-icon-btn ${wa ? 'btn-wa-active btn-wa-outreach' : ''} ${!wa ? 'open-edit' : ''}" data-p='${JSON.stringify(p)}' title="${wa ? 'WhatsApp com Script Personalizado' : 'Adicionar WhatsApp'}">📱</a>
+                                <a href="${wa || '#'}" target="${wa ? '_blank' : '_self'}" class="action-icon-btn ${wa ? 'btn-wa-active' : ''} ${!wa ? 'open-edit' : ''}" data-p='${JSON.stringify(p)}' title="${wa ? 'WhatsApp' : 'Adicionar WhatsApp'}">📱</a>
                                 <a href="${p.website || '#'}" target="${p.website ? '_blank' : '_self'}" class="action-icon-btn ${p.website ? 'btn-web-active' : ''} ${!p.website ? 'open-edit' : ''}" data-p='${JSON.stringify(p)}' title="${p.website ? 'Site' : 'Adicionar Link'}">🌐</a>
                                 <button class="btn-edit-main open-edit" data-p='${JSON.stringify(p)}'>GERENCIAR</button>
                             </div>
@@ -464,78 +375,50 @@ export async function renderProspecting(router) {
         });
     }
 
-    function openLeadModal(p) {
-        const modal = document.getElementById('history-modal');
-        if (!modal) return;
-        
-        document.getElementById('modal-lead-name').textContent = p.nome;
-        document.getElementById('modal-lead-status').textContent = p.status.toUpperCase();
-        
-        document.getElementById('edit-tel').value = p.telefone || '';
-        document.getElementById('edit-web').value = p.website || '';
-        document.getElementById('edit-insta').value = p.instagram || '';
-        document.getElementById('edit-email').value = p.email || '';
-        
-        const saveBtn = document.getElementById('btn-save-details');
-        saveBtn.onclick = async () => {
-            saveBtn.disabled = true; saveBtn.textContent = 'Gravando...';
-            try {
-                const updated = await api('PATCH', `/api/prospects/${p.id}`, {
-                    telefone: document.getElementById('edit-tel').value,
-                    website: document.getElementById('edit-web').value,
-                    instagram: document.getElementById('edit-insta').value,
-                    email: document.getElementById('edit-email').value
-                });
-                toast('Dados atualizados!');
-                modal.style.display = 'none';
-                // Se o mapa estiver ativo, atualiza markers, senão re-renderiza o flow
-                if (viewMap.classList.contains('active')) updateMarkers();
-                else renderMyProspects();
-            } catch (err) { 
-                toast('Falha ao salvar'); 
-                saveBtn.disabled = false; saveBtn.textContent = 'Atualizar Contatos'; 
-            }
-        };
-
-        const history = p.historico || [];
-        const histList = document.getElementById('history-list');
-        histList.innerHTML = history.length ? [...history].reverse().map(h => `
-            <div class="history-item-mini">
-                <div class="hi-date-mini">${new Date(h.data).toLocaleDateString()}</div>
-                <div>${h.tipo === 'status_change' ? `Fase: ${h.para}` : h.texto}</div>
-            </div>
-        `).join('') : '<p>Sem histórico recente.</p>';
-
-        modal.style.display = 'flex';
-    }
-
     function initLeadManagement() {
         document.querySelectorAll('.open-edit').forEach(btn => {
-            btn.onclick = (e) => {
+            btn.addEventListener('click', (e) => {
                 const p = JSON.parse(btn.dataset.p);
-                openLeadModal(p);
-            };
-        });
-
-        // CRM Inteligente: Registro Automático de Abordagem
-        document.querySelectorAll('.btn-wa-outreach').forEach(btn => {
-            btn.onclick = async (e) => {
-                const p = JSON.parse(btn.dataset.p);
-                // Apenas registrar se estiver em 'prospectado'
-                if (p.status === 'prospectado') {
+                const modal = document.getElementById('history-modal');
+                
+                document.getElementById('modal-lead-name').textContent = p.nome;
+                document.getElementById('modal-lead-status').textContent = p.status.toUpperCase();
+                
+                document.getElementById('edit-tel').value = p.telefone || '';
+                document.getElementById('edit-web').value = p.website || '';
+                document.getElementById('edit-insta').value = p.instagram || '';
+                document.getElementById('edit-email').value = p.email || '';
+                
+                const saveBtn = document.getElementById('btn-save-details');
+                saveBtn.onclick = async () => {
+                    saveBtn.disabled = true; saveBtn.textContent = 'Gravando...';
                     try {
-                        await api('PATCH', `/api/prospects/${p.id}`, {
-                            status: 'contatado',
-                            notas: `Auto-Log: Abordagem via WhatsApp (Script: ${p.nicho || 'Geral'})`
+                        const updated = await api('PATCH', `/api/prospects/${p.id}`, {
+                            telefone: document.getElementById('edit-tel').value,
+                            website: document.getElementById('edit-web').value,
+                            instagram: document.getElementById('edit-insta').value,
+                            email: document.getElementById('edit-email').value
                         });
-                        toast('CRM: Abordagem registrada e lead movido para Contatado!');
-                        // Delay para dar tempo do WhatsApp abrir antes do refresh visual
-                        setTimeout(() => renderMyProspects(), 1000);
-                    } catch (err) {
-                        console.error('[Auto Log Error]', err);
+                        toast('Dados atualizados!');
+                        modal.style.display = 'none';
+                        renderMyProspects();
+                    } catch (err) { 
+                        toast('Falha ao salvar'); 
+                        saveBtn.disabled = false; saveBtn.textContent = 'Atualizar Contatos'; 
                     }
-                }
-            };
+                };
+
+                const history = p.historico || [];
+                const histList = document.getElementById('history-list');
+                histList.innerHTML = history.length ? history.reverse().map(h => `
+                    <div class="history-item-mini">
+                        <div class="hi-date-mini">${new Date(h.data).toLocaleDateString()}</div>
+                        <div>${h.tipo === 'status_change' ? `Fase: ${h.para}` : h.texto}</div>
+                    </div>
+                `).join('') : '<p>Sem histórico recente.</p>';
+
+                modal.style.display = 'flex';
+            });
         });
     }
 }

@@ -37,8 +37,8 @@ router.get('/search', authenticateToken, async (req, res) => {
             place_id: place.place_id,
             nome: place.name,
             endereco: place.formatted_address,
-            rating: place.rating || 0,
-            user_ratings_total: place.user_ratings_total || 0
+            rating: place.rating,
+            user_ratings_total: place.user_ratings_total,
         }));
 
         res.json({ results });
@@ -85,23 +85,25 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 router.post('/', authenticateToken, async (req, res) => {
-    const { 
-        place_id, nome, endereco, telefone, website, 
-        instagram, facebook, email, nicho, rating, user_ratings_total,
-        lat, lng 
-    } = req.body;
-    
+    const { nome, place_id, endereco, telefone, website, nicho, instagram, facebook, email, rating, user_ratings_total } = req.body;
     try {
         const { rows } = await pool.query(
-            `INSERT INTO prospects 
-            (consultora_id, place_id, nome, endereco, telefone, website, instagram, facebook, email, nicho, rating, user_ratings_total, lat, lng) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
-            ON CONFLICT (consultora_id, place_id) DO UPDATE SET updated_at = NOW() 
-            RETURNING *`,
+            `INSERT INTO prospects (consultora_id, nome, place_id, endereco, telefone, website, nicho, instagram, facebook, email, rating, user_ratings_total)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+             RETURNING *`,
             [
-                req.consultora.id, place_id, nome, endereco, telefone, website, 
-                instagram, facebook, email, nicho, rating || 0, user_ratings_total || 0,
-                lat, lng
+                req.consultora.id, 
+                nome || null, 
+                place_id || null, 
+                endereco || null, 
+                telefone || null, 
+                website || null, 
+                nicho || null, 
+                instagram || null, 
+                facebook || null, 
+                email || null,
+                rating || null,
+                user_ratings_total || null
             ]
         );
         res.status(201).json(rows[0]);
@@ -187,27 +189,5 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Erro ao remover prospecção.' });
     }
 });
-
-// DDL operations for database schema updates (should ideally be in migration scripts)
-// Added here based on user instruction to ensure columns and unique constraint exist.
-(async () => {
-    try {
-        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS lat DECIMAL(10,8)`);
-        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS lng DECIMAL(11,8)`);
-        
-        // Add unique constraint for ON CONFLICT support
-        try {
-            await pool.query(`ALTER TABLE prospects ADD CONSTRAINT prospects_consultora_place_unique UNIQUE (consultora_id, place_id)`);
-        } catch (e) {
-            // If constraint already exists or there's a data violation, log and ignore.
-            // This is a common pattern when running DDL idempotently.
-            if (!e.message.includes('already exists') && !e.message.includes('could not create unique index')) {
-                console.error('Error adding unique constraint:', e.message);
-            }
-        }
-    } catch (err) {
-        console.error('Error during database schema setup:', err);
-    }
-})();
 
 module.exports = router;
