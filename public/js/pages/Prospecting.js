@@ -178,7 +178,6 @@ export async function renderProspecting(router) {
     `, 'prospecting');
 
     const resultsEl = document.getElementById('prospecting-results');
-    const mapEl = document.getElementById('prospecting-map');
     const searchBtn = document.getElementById('btn-search-prospects');
     const quickFlowBtn = document.getElementById('btn-quick-flow');
     const selectNiche = document.getElementById('prospect-niche');
@@ -186,23 +185,17 @@ export async function renderProspecting(router) {
     
     const viewList = document.getElementById('view-list');
     const viewFlow = document.getElementById('view-flow');
-    const viewMap = document.getElementById('view-map');
 
     let searchResults = [];
-    let savedProspects = [];
-    let googleMap = null;
-    let markers = [];
 
     quickFlowBtn.addEventListener('click', () => switchView('flow'));
     
     viewList.onclick = () => switchView('list');
     viewFlow.onclick = () => switchView('flow');
-    viewMap.onclick = () => switchView('map');
 
     function switchView(view) {
-        [viewList, viewFlow, viewMap].forEach(b => b.classList.remove('active'));
+        [viewList, viewFlow].forEach(b => b.classList.remove('active'));
         resultsEl.style.display = 'none';
-        mapEl.style.display = 'none';
         const pipeline = document.querySelector('.pipeline-container');
         if (pipeline) pipeline.style.display = 'none';
         document.getElementById('prospecting-results-header').style.display = 'none';
