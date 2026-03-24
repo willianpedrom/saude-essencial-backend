@@ -363,7 +363,7 @@ export async function renderProspecting(router) {
                             <h4 style="margin:0 0 10px;font-size:0.95rem">${p.nome}</h4>
                             
                             <div class="card-actions-row">
-                                <a href="${wa || '#'}" target="${wa ? '_blank' : '_self'}" class="action-icon-btn ${wa ? 'btn-wa-active' : ''} ${!wa ? 'open-edit' : ''}" data-p='${JSON.stringify(p)}' title="${wa ? 'WhatsApp com Script Personalizado' : 'Adicionar WhatsApp'}">📱</a>
+                                <a href="${wa || '#'}" target="${wa ? '_blank' : '_self'}" class="action-icon-btn ${wa ? 'btn-wa-active btn-wa-outreach' : ''} ${!wa ? 'open-edit' : ''}" data-p='${JSON.stringify(p)}' title="${wa ? 'WhatsApp com Script Personalizado' : 'Adicionar WhatsApp'}">📱</a>
                                 <a href="${p.website || '#'}" target="${p.website ? '_blank' : '_self'}" class="action-icon-btn ${p.website ? 'btn-web-active' : ''} ${!p.website ? 'open-edit' : ''}" data-p='${JSON.stringify(p)}' title="${p.website ? 'Site' : 'Adicionar Link'}">🌐</a>
                                 <button class="btn-edit-main open-edit" data-p='${JSON.stringify(p)}'>GERENCIAR</button>
                             </div>
@@ -439,6 +439,27 @@ export async function renderProspecting(router) {
 
                 modal.style.display = 'flex';
             });
+        });
+
+        // CRM Inteligente: Registro Automático de Abordagem
+        document.querySelectorAll('.btn-wa-outreach').forEach(btn => {
+            btn.onclick = async (e) => {
+                const p = JSON.parse(btn.dataset.p);
+                // Apenas registrar se estiver em 'prospectado'
+                if (p.status === 'prospectado') {
+                    try {
+                        await api('PATCH', `/api/prospects/${p.id}`, {
+                            status: 'contatado',
+                            notas: `Auto-Log: Abordagem via WhatsApp (Script: ${p.nicho || 'Geral'})`
+                        });
+                        toast('CRM: Abordagem registrada e lead movido para Contatado!');
+                        // Delay para dar tempo do WhatsApp abrir antes do refresh visual
+                        setTimeout(() => renderMyProspects(), 1000);
+                    } catch (err) {
+                        console.error('[Auto Log Error]', err);
+                    }
+                }
+            };
         });
     }
 }
