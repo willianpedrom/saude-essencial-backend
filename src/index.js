@@ -282,6 +282,8 @@ async function runMigration() {
         await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS website TEXT`);
         await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS rating DECIMAL(2,1)`);
         await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS user_ratings_total INTEGER`);
+        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS lat DECIMAL(10,8)`);
+        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS lng DECIMAL(11,8)`);
 
         // Promote ADMIN_EMAIL to role='admin' (safe to run every startup — idempotent)
         if (process.env.ADMIN_EMAIL) {

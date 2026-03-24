@@ -40,6 +40,12 @@ export async function renderProspecting(router) {
                 </div>
             </div>
 
+            <div class="view-toggles" style="display:flex; gap:10px; margin-bottom:20px">
+                <button class="btn-toggle active" id="view-list">📋 Lista de Busca</button>
+                <button class="btn-toggle" id="view-flow">📊 Meu Flow (CRM)</button>
+                <button class="btn-toggle" id="view-map">📍 Modo Mapa</button>
+            </div>
+
             <div id="prospecting-results-header" class="results-header-modern" style="display:none">
                 <span>Novas Oportunidades Encontradas</span>
                 <div class="live-indicator">● LIVE</div>
@@ -47,6 +53,12 @@ export async function renderProspecting(router) {
 
             <div id="prospecting-results" class="prospecting-grid-modern">
                 <!-- Resultados via JS -->
+            </div>
+
+            <div id="prospecting-map" style="display:none; height:600px; border-radius:20px; margin-top:10px; border: 1px solid var(--p-border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow:hidden">
+                <div style="display:flex; align-items:center; justify-content:center; height:100%; color:var(--p-gray); background:#f1f5f9">
+                    Iniciando Mapa Interativo...
+                </div>
             </div>
         </div>
 
@@ -139,6 +151,10 @@ export async function renderProspecting(router) {
             .btn-web-active { background: #dbeafe; color: #2563eb; border-color: #bfdbfe; }
             .btn-edit-main { margin-left: auto; background: var(--p-dark); color: #fff; border: none; font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 8px; }
 
+            .view-toggles { background: #f1f5f9; padding: 6px; border-radius: 14px; width: fit-content; }
+            .btn-toggle { border: none; background: transparent; padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; color: var(--p-gray); cursor: pointer; transition: 0.2s; }
+            .btn-toggle.active { background: #fff; color: var(--p-secondary); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+
             /* Modal Sênior */
             .modal-overlay-modern { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 2000; }
             .modal-card { background: #fff; width: 95%; max-width: 450px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); overflow: hidden; }
@@ -169,33 +185,204 @@ export async function renderProspecting(router) {
     `, 'prospecting');
 
     const resultsEl = document.getElementById('prospecting-results');
+    const mapEl = document.getElementById('prospecting-map');
     const searchBtn = document.getElementById('btn-search-prospects');
     const quickFlowBtn = document.getElementById('btn-quick-flow');
+    const selectNiche = document.getElementById('prospect-niche');
+    const inputLoc = document.getElementById('prospect-location');
+    
+    const viewList = document.getElementById('view-list');
+    const viewFlow = document.getElementById('view-flow');
+    const viewMap = document.getElementById('view-map');
 
-    quickFlowBtn.addEventListener('click', () => renderMyProspects());
+    let searchResults = [];
+    let savedProspects = [];
+    let googleMap = null;
+    let markers = [];
 
-    searchBtn.addEventListener('click', async () => {
-        const q = document.getElementById('prospect-niche').value;
-        const loc = document.getElementById('prospect-location').value.trim();
-        if (!loc) return toast('Digite a localização', 'warning');
-        
+    quickFlowBtn.addEventListener('click', () => switchView('flow'));
+    
+    viewList.onclick = () => switchView('list');
+    viewFlow.onclick = () => switchView('flow');
+    viewMap.onclick = () => switchView('map');
+
+    function switchView(view) {
+        [viewList, viewFlow, viewMap].forEach(b => b.classList.remove('active'));
+        resultsEl.style.display = 'none';
+        mapEl.style.display = 'none';
+        const pipeline = document.querySelector('.pipeline-container');
+        if (pipeline) pipeline.style.display = 'none';
+        document.getElementById('prospecting-results-header').style.display = 'none';
+
+        if (view === 'list') {
+            viewList.classList.add('active');
+            resultsEl.style.display = 'grid';
+            if (searchResults.length) document.getElementById('prospecting-results-header').style.display = 'flex';
+        } else if (view === 'flow') {
+            viewFlow.classList.add('active');
+            renderMyProspects();
+        } else if (view === 'map') {
+            viewMap.classList.add('active');
+            mapEl.style.display = 'block';
+            initGoogleMap();
+        }
+    }
+
+    searchBtn.onclick = async () => {
+        const query = `${selectNiche.value} em ${inputLoc.value || 'Brasil'}`;
         searchBtn.disabled = true;
-        searchBtn.innerHTML = '🔍 Buscando...';
-        resultsEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px"><div class="spinner"></div><p>Sincronizando com radar local...</p></div>';
+        searchBtn.textContent = 'Buscando...';
+        resultsEl.innerHTML = '<div class="loader-premium">📡 Escaneando região...</div>';
+        switchView('list');
 
         try {
-            const data = await api('GET', `/api/prospects/search?q=${encodeURIComponent(q)}&location=${encodeURIComponent(loc)}`);
-            renderSearchResults(data.results, q);
+            const data = await api('GET', `/api/prospects/search?q=${encodeURIComponent(query)}`);
+            searchResults = data.results || [];
+            renderSearchResults(searchResults, selectNiche.value);
+            if (viewMap.classList.contains('active')) updateMarkers();
         } catch (err) {
-            toast('Erro na busca', 'error');
-            resetBtn();
+            toast('Erro na busca');
+            resultsEl.innerHTML = '<p>Falha ao buscar prospectos.</p>';
+        } finally {
+            searchBtn.disabled = false;
+            searchBtn.textContent = 'Buscar Parceiros';
         }
-    });
+    };
 
-    function resetBtn() {
-        searchBtn.disabled = false;
-        searchBtn.textContent = 'Buscar Parceiros';
+    function initGoogleMap() {
+        if (!window.google || !window.google.maps) {
+            toast('Google Maps não carregado.');
+            return;
+        }
+        if (googleMap) {
+            updateMarkers();
+            return;
+        }
+
+        googleMap = new google.maps.Map(mapEl, {
+            zoom: 13,
+            center: { lat: -23.5505, lng: -46.6333 }, // Default SP
+            styles: [
+                { featureType: 'poi.business', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+                { featureType: 'transit', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] }
+            ]
+        });
+
+        // Se houver busca recente, centralizar no primeiro resultado
+        if (searchResults.length && searchResults[0].lat) {
+            googleMap.setCenter({ lat: searchResults[0].lat, lng: searchResults[0].lng });
+        }
+
+        updateMarkers();
     }
+
+    async function updateMarkers() {
+        if (!googleMap) return;
+        markers.forEach(m => m.setMap(null));
+        markers = [];
+
+        try {
+            savedProspects = await api('GET', '/api/prospects');
+        } catch (e) {
+            console.error('Erro ao buscar prospects salvos para o mapa');
+        }
+
+        const infoWindow = new google.maps.InfoWindow();
+
+        // 1. Renderizar Resultados da Busca (Laranja/Vermelho)
+        searchResults.forEach(p => {
+            if (!p.lat) return;
+            const marker = new google.maps.Marker({
+                position: { lat: p.lat, lng: p.lng },
+                map: googleMap,
+                title: p.nome,
+                icon: 'http://maps.google.com/mapfiles/ms/icons/red-pushpin.png'
+            });
+
+            marker.addListener('click', () => {
+                const score = calculateScore(p);
+                const content = `
+                    <div style="padding:10px; min-width:200px">
+                        <h4 style="margin:0 0 5px">${p.nome}</h4>
+                        <div style="font-size:0.75rem; color:#64748b; margin-bottom:8px">${p.endereco}</div>
+                        <div style="font-weight:700; color:#10b981; margin-bottom:10px">⭐ Score: ${score}/10</div>
+                        <button onclick="window.saveProspectOnMap('${p.place_id}')" style="width:100%; background:#3b82f6; color:#fff; border:none; padding:8px; border-radius:6px; font-weight:700; cursor:pointer">
+                            📥 Adicionar ao Flow
+                        </button>
+                    </div>
+                `;
+                infoWindow.setContent(content);
+                infoWindow.open(googleMap, marker);
+            });
+            markers.push(marker);
+        });
+
+        // 2. Renderizar Prospects do CRM (Verde/Azul)
+        savedProspects.forEach(p => {
+            if (!p.lat) return;
+            const marker = new google.maps.Marker({
+                position: { lat: Number(p.lat), lng: Number(p.lng) },
+                map: googleMap,
+                title: p.nome,
+                icon: p.status === 'fechado' ? 'http://maps.google.com/mapfiles/ms/icons/blue-pushpin.png' : 'http://maps.google.com/mapfiles/ms/icons/green-pushpin.png'
+            });
+
+            marker.addListener('click', () => {
+                const content = `
+                    <div style="padding:10px; min-width:200px">
+                        <div style="font-size:0.6rem; font-weight:800; color:#3b82f6; text-transform:uppercase">${p.status}</div>
+                        <h4 style="margin:4px 0">${p.nome}</h4>
+                        <div style="font-size:0.75rem; color:#64748b; margin-bottom:10px">${p.endereco || 'No Flow'}</div>
+                        <button onclick="window.manageLeadOnMap('${p.id}')" style="width:100%; background:#1e293b; color:#fff; border:none; padding:8px; border-radius:6px; font-weight:700; cursor:pointer">
+                            ⚙️ Gerenciar Lead
+                        </button>
+                    </div>
+                `;
+                infoWindow.setContent(content);
+                infoWindow.open(googleMap, marker);
+            });
+            markers.push(marker);
+        });
+    }
+
+    // Expor funções globais para o InfoWindow
+    window.saveProspectOnMap = async (placeId) => {
+        const p = searchResults.find(r => r.place_id === placeId);
+        if (!p) return;
+        try {
+            // Enriquecimento com timeout generoso (2.5s)
+            const details = await Promise.race([
+                api('GET', `/api/prospects/details/${p.place_id}`),
+                new Promise(r => setTimeout(()=>r({}), 2500))
+            ]).catch(e => {
+                console.warn('[Enrichment Failed]', e);
+                return {};
+            });
+
+            await api('POST', '/api/prospects', { 
+                nome: p.nome,
+                endereco: p.endereco,
+                place_id: p.place_id,
+                nicho: selectNiche.value, // Use the current niche from the select
+                rating: p.rating || '',
+                user_ratings_total: p.user_ratings_total || 0,
+                lat: p.lat,
+                lng: p.lng,
+                ...details 
+            });
+            toast('Lead salvo no Flow! 🎯');
+            updateMarkers();
+            // Optionally, update the list view if it's active
+            if (viewList.classList.contains('active')) {
+                renderSearchResults(searchResults, selectNiche.value);
+            }
+        } catch (e) { toast('Erro ao salvar'); }
+    };
+
+    window.manageLeadOnMap = async (id) => {
+        const p = savedProspects.find(r => r.id === id);
+        if (p) openLeadModal(p); // Assuming openLeadModal is defined elsewhere or will be added
+    };
 
     function calculateScore(p) {
         const rating = parseFloat(p.rating) || 0;
@@ -395,50 +582,57 @@ export async function renderProspecting(router) {
         });
     }
 
+    function openLeadModal(p) {
+        const modal = document.getElementById('history-modal');
+        if (!modal) return;
+        
+        document.getElementById('modal-lead-name').textContent = p.nome;
+        document.getElementById('modal-lead-status').textContent = p.status.toUpperCase();
+        
+        document.getElementById('edit-tel').value = p.telefone || '';
+        document.getElementById('edit-web').value = p.website || '';
+        document.getElementById('edit-insta').value = p.instagram || '';
+        document.getElementById('edit-email').value = p.email || '';
+        
+        const saveBtn = document.getElementById('btn-save-details');
+        saveBtn.onclick = async () => {
+            saveBtn.disabled = true; saveBtn.textContent = 'Gravando...';
+            try {
+                const updated = await api('PATCH', `/api/prospects/${p.id}`, {
+                    telefone: document.getElementById('edit-tel').value,
+                    website: document.getElementById('edit-web').value,
+                    instagram: document.getElementById('edit-insta').value,
+                    email: document.getElementById('edit-email').value
+                });
+                toast('Dados atualizados!');
+                modal.style.display = 'none';
+                // Se o mapa estiver ativo, atualiza markers, senão re-renderiza o flow
+                if (viewMap.classList.contains('active')) updateMarkers();
+                else renderMyProspects();
+            } catch (err) { 
+                toast('Falha ao salvar'); 
+                saveBtn.disabled = false; saveBtn.textContent = 'Atualizar Contatos'; 
+            }
+        };
+
+        const history = p.historico || [];
+        const histList = document.getElementById('history-list');
+        histList.innerHTML = history.length ? [...history].reverse().map(h => `
+            <div class="history-item-mini">
+                <div class="hi-date-mini">${new Date(h.data).toLocaleDateString()}</div>
+                <div>${h.tipo === 'status_change' ? `Fase: ${h.para}` : h.texto}</div>
+            </div>
+        `).join('') : '<p>Sem histórico recente.</p>';
+
+        modal.style.display = 'flex';
+    }
+
     function initLeadManagement() {
         document.querySelectorAll('.open-edit').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.onclick = (e) => {
                 const p = JSON.parse(btn.dataset.p);
-                const modal = document.getElementById('history-modal');
-                
-                document.getElementById('modal-lead-name').textContent = p.nome;
-                document.getElementById('modal-lead-status').textContent = p.status.toUpperCase();
-                
-                document.getElementById('edit-tel').value = p.telefone || '';
-                document.getElementById('edit-web').value = p.website || '';
-                document.getElementById('edit-insta').value = p.instagram || '';
-                document.getElementById('edit-email').value = p.email || '';
-                
-                const saveBtn = document.getElementById('btn-save-details');
-                saveBtn.onclick = async () => {
-                    saveBtn.disabled = true; saveBtn.textContent = 'Gravando...';
-                    try {
-                        const updated = await api('PATCH', `/api/prospects/${p.id}`, {
-                            telefone: document.getElementById('edit-tel').value,
-                            website: document.getElementById('edit-web').value,
-                            instagram: document.getElementById('edit-insta').value,
-                            email: document.getElementById('edit-email').value
-                        });
-                        toast('Dados atualizados!');
-                        modal.style.display = 'none';
-                        renderMyProspects();
-                    } catch (err) { 
-                        toast('Falha ao salvar'); 
-                        saveBtn.disabled = false; saveBtn.textContent = 'Atualizar Contatos'; 
-                    }
-                };
-
-                const history = p.historico || [];
-                const histList = document.getElementById('history-list');
-                histList.innerHTML = history.length ? history.reverse().map(h => `
-                    <div class="history-item-mini">
-                        <div class="hi-date-mini">${new Date(h.data).toLocaleDateString()}</div>
-                        <div>${h.tipo === 'status_change' ? `Fase: ${h.para}` : h.texto}</div>
-                    </div>
-                `).join('') : '<p>Sem histórico recente.</p>';
-
-                modal.style.display = 'flex';
-            });
+                openLeadModal(p);
+            };
         });
 
         // CRM Inteligente: Registro Automático de Abordagem
