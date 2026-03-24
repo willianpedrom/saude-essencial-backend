@@ -249,11 +249,33 @@ export async function renderProspecting(router) {
         }
     };
 
-    function initGoogleMap() {
-        if (!window.google || !window.google.maps) {
-            toast('Google Maps não carregado.');
+    async function loadGoogleMapsScript() {
+        if (window.google && window.google.maps) return true;
+        try {
+            const { apiKey } = await api('GET', '/api/prospects/maps-config');
+            if (!apiKey) return false;
+            return new Promise((resolve) => {
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+                script.async = true;
+                script.onload = () => resolve(true);
+                script.onerror = () => resolve(false);
+                document.head.appendChild(script);
+            });
+        } catch (e) { return false; }
+    }
+
+    async function initGoogleMap() {
+        const mapLoadingDiv = mapEl.querySelector('div');
+        if (mapLoadingDiv) mapLoadingDiv.textContent = 'Carregando Google Maps... 📡';
+
+        const loaded = await loadGoogleMapsScript();
+        if (!loaded) {
+            toast('Não foi possível carregar o Google Maps. Verifique sua chave API.');
+            if (mapLoadingDiv) mapLoadingDiv.textContent = 'Erro ao carregar o mapa. Verifique a configuração.';
             return;
         }
+
         if (googleMap) {
             updateMarkers();
             return;

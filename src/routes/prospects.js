@@ -10,18 +10,18 @@ const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
 // GET /api/prospects/search?q=nicho&location=local
 router.get('/search', authenticateToken, async (req, res) => {
-    const { q, location } = req.query;
+    const { q } = req.query;
 
     if (!GOOGLE_API_KEY) {
         return res.status(500).json({ error: 'Configuração do Google Maps ausente no servidor.' });
     }
 
-    if (!q || !location) {
-        return res.status(400).json({ error: 'Nicho e Localização são obrigatórios.' });
+    if (!q) {
+        return res.status(400).json({ error: 'Termo de busca é obrigatório.' });
     }
 
     try {
-        const query = encodeURIComponent(`${q} em ${location}`);
+        const query = encodeURIComponent(q);
         const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&language=pt-BR&key=${GOOGLE_API_KEY}`;
         
         const response = await axios.get(url);
@@ -211,5 +211,10 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         console.error('Error during database schema setup:', err);
     }
 })();
+
+// GET /api/prospects/maps-config - Retorna a chave (publicamente no front restrito)
+router.get('/maps-config', authenticateToken, (req, res) => {
+    res.json({ apiKey: GOOGLE_API_KEY });
+});
 
 module.exports = router;
