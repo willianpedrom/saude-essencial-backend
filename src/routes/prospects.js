@@ -5,8 +5,8 @@ const axios = require('axios');
 
 const router = express.Router();
 
-// A API Key deve estar no .env como GOOGLE_MAPS_API_KEY
-const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+// A API Key deve estar no .env como GOOGLE_MAPS_API_KEY ou GOOGLE_PLACES_API_KEY
+const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_PLACES_API_KEY;
 
 // GET /api/prospects/search?q=nicho&location=local
 router.get('/search', authenticateToken, async (req, res) => {
