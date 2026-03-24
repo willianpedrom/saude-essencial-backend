@@ -211,21 +211,18 @@ export async function renderProspecting(router) {
     }
 
     searchBtn.onclick = async () => {
-        const query = `${selectNiche.value} em ${inputLoc.value || 'Brasil'}`;
         searchBtn.disabled = true;
         searchBtn.textContent = 'Buscando...';
         resultsEl.innerHTML = '<div class="loader-premium">📡 Escaneando região...</div>';
         switchView('list');
 
         try {
-            const data = await api('GET', `/api/prospects/search?q=${encodeURIComponent(query)}`);
+            const data = await api('GET', `/api/prospects/search?q=${encodeURIComponent(selectNiche.value)}&location=${encodeURIComponent(inputLoc.value)}`);
             searchResults = data.results || [];
             renderSearchResults(searchResults, selectNiche.value);
         } catch (err) {
-            console.error('[Prospecting Search Error]', err);
-            const msg = err.message || (err.error ? `${err.error}: ${err.message}` : 'Erro desconhecido');
-            toast(`Erro: ${msg}`, 'error');
-            resultsEl.innerHTML = `<p style="color:#ef4444; text-align:center; padding:20px">⚠️ ${msg}</p>`;
+            toast('Erro na busca');
+            resultsEl.innerHTML = '<p>Falha ao buscar prospectos.</p>';
         } finally {
             searchBtn.disabled = false;
             searchBtn.textContent = 'Buscar Parceiros';
