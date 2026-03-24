@@ -43,7 +43,6 @@ export async function renderProspecting(router) {
             <div class="view-toggles" style="display:flex; gap:10px; margin-bottom:20px">
                 <button class="btn-toggle active" id="view-list">📋 Lista de Busca</button>
                 <button class="btn-toggle" id="view-flow">📊 Meu Flow (CRM)</button>
-                <button class="btn-toggle" id="view-map">📍 Modo Mapa</button>
             </div>
 
             <div id="prospecting-results-header" class="results-header-modern" style="display:none">
@@ -53,12 +52,6 @@ export async function renderProspecting(router) {
 
             <div id="prospecting-results" class="prospecting-grid-modern">
                 <!-- Resultados via JS -->
-            </div>
-
-            <div id="prospecting-map" style="display:none; height:600px; border-radius:20px; margin-top:10px; border: 1px solid var(--p-border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow:hidden">
-                <div style="display:flex; align-items:center; justify-content:center; height:100%; color:var(--p-gray); background:#f1f5f9">
-                    Iniciando Mapa Interativo...
-                </div>
             </div>
         </div>
 
@@ -221,10 +214,6 @@ export async function renderProspecting(router) {
         } else if (view === 'flow') {
             viewFlow.classList.add('active');
             renderMyProspects();
-        } else if (view === 'map') {
-            viewMap.classList.add('active');
-            mapEl.style.display = 'block';
-            initGoogleMap();
         }
     }
 
@@ -239,7 +228,6 @@ export async function renderProspecting(router) {
             const data = await api('GET', `/api/prospects/search?q=${encodeURIComponent(query)}`);
             searchResults = data.results || [];
             renderSearchResults(searchResults, selectNiche.value);
-            if (viewMap.classList.contains('active')) updateMarkers();
         } catch (err) {
             toast('Erro na busca');
             resultsEl.innerHTML = '<p>Falha ao buscar prospectos.</p>';
@@ -249,125 +237,6 @@ export async function renderProspecting(router) {
         }
     };
 
-    async function loadGoogleMapsScript() {
-        if (window.google && window.google.maps) return true;
-        try {
-            const { apiKey } = await api('GET', '/api/prospects/maps-config');
-            if (!apiKey) return false;
-            return new Promise((resolve) => {
-                const script = document.createElement('script');
-                script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-                script.async = true;
-                script.onload = () => resolve(true);
-                script.onerror = () => resolve(false);
-                document.head.appendChild(script);
-            });
-        } catch (e) { return false; }
-    }
-
-    async function initGoogleMap() {
-        const mapLoadingDiv = mapEl.querySelector('div');
-        if (mapLoadingDiv) mapLoadingDiv.textContent = 'Carregando Google Maps... 📡';
-
-        const loaded = await loadGoogleMapsScript();
-        if (!loaded) {
-            toast('Não foi possível carregar o Google Maps. Verifique sua chave API.');
-            if (mapLoadingDiv) mapLoadingDiv.textContent = 'Erro ao carregar o mapa. Verifique a configuração.';
-            return;
-        }
-
-        if (googleMap) {
-            updateMarkers();
-            return;
-        }
-
-        googleMap = new google.maps.Map(mapEl, {
-            zoom: 13,
-            center: { lat: -23.5505, lng: -46.6333 }, // Default SP
-            styles: [
-                { featureType: 'poi.business', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-                { featureType: 'transit', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] }
-            ]
-        });
-
-        // Se houver busca recente, centralizar no primeiro resultado
-        if (searchResults.length && searchResults[0].lat) {
-            googleMap.setCenter({ lat: searchResults[0].lat, lng: searchResults[0].lng });
-        }
-
-        updateMarkers();
-    }
-
-    async function updateMarkers() {
-        if (!googleMap) return;
-        markers.forEach(m => m.setMap(null));
-        markers = [];
-
-        try {
-            savedProspects = await api('GET', '/api/prospects');
-        } catch (e) {
-            console.error('Erro ao buscar prospects salvos para o mapa');
-        }
-
-        const infoWindow = new google.maps.InfoWindow();
-
-        // 1. Renderizar Resultados da Busca (Laranja/Vermelho)
-        searchResults.forEach(p => {
-            if (!p.lat) return;
-            const marker = new google.maps.Marker({
-                position: { lat: p.lat, lng: p.lng },
-                map: googleMap,
-                title: p.nome,
-                icon: 'http://maps.google.com/mapfiles/ms/icons/red-pushpin.png'
-            });
-
-            marker.addListener('click', () => {
-                const score = calculateScore(p);
-                const content = `
-                    <div style="padding:10px; min-width:200px">
-                        <h4 style="margin:0 0 5px">${p.nome}</h4>
-                        <div style="font-size:0.75rem; color:#64748b; margin-bottom:8px">${p.endereco}</div>
-                        <div style="font-weight:700; color:#10b981; margin-bottom:10px">⭐ Score: ${score}/10</div>
-                        <button onclick="window.saveProspectOnMap('${p.place_id}')" style="width:100%; background:#3b82f6; color:#fff; border:none; padding:8px; border-radius:6px; font-weight:700; cursor:pointer">
-                            📥 Adicionar ao Flow
-                        </button>
-                    </div>
-                `;
-                infoWindow.setContent(content);
-                infoWindow.open(googleMap, marker);
-            });
-            markers.push(marker);
-        });
-
-        // 2. Renderizar Prospects do CRM (Verde/Azul)
-        savedProspects.forEach(p => {
-            if (!p.lat) return;
-            const marker = new google.maps.Marker({
-                position: { lat: Number(p.lat), lng: Number(p.lng) },
-                map: googleMap,
-                title: p.nome,
-                icon: p.status === 'fechado' ? 'http://maps.google.com/mapfiles/ms/icons/blue-pushpin.png' : 'http://maps.google.com/mapfiles/ms/icons/green-pushpin.png'
-            });
-
-            marker.addListener('click', () => {
-                const content = `
-                    <div style="padding:10px; min-width:200px">
-                        <div style="font-size:0.6rem; font-weight:800; color:#3b82f6; text-transform:uppercase">${p.status}</div>
-                        <h4 style="margin:4px 0">${p.nome}</h4>
-                        <div style="font-size:0.75rem; color:#64748b; margin-bottom:10px">${p.endereco || 'No Flow'}</div>
-                        <button onclick="window.manageLeadOnMap('${p.id}')" style="width:100%; background:#1e293b; color:#fff; border:none; padding:8px; border-radius:6px; font-weight:700; cursor:pointer">
-                            ⚙️ Gerenciar Lead
-                        </button>
-                    </div>
-                `;
-                infoWindow.setContent(content);
-                infoWindow.open(googleMap, marker);
-            });
-            markers.push(marker);
-        });
-    }
-
-    // Expor funções globais para o InfoWindow
     window.saveProspectOnMap = async (placeId) => {
         const p = searchResults.find(r => r.place_id === placeId);
         if (!p) return;
@@ -393,7 +262,6 @@ export async function renderProspecting(router) {
                 ...details 
             });
             toast('Lead salvo no Flow! 🎯');
-            updateMarkers();
             // Optionally, update the list view if it's active
             if (viewList.classList.contains('active')) {
                 renderSearchResults(searchResults, selectNiche.value);

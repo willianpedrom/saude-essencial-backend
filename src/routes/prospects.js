@@ -212,9 +212,4 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 })();
 
-// GET /api/prospects/maps-config - Retorna a chave (publicamente no front restrito)
-router.get('/maps-config', authenticateToken, (req, res) => {
-    res.json({ apiKey: GOOGLE_API_KEY });
-});
-
 module.exports = router;
