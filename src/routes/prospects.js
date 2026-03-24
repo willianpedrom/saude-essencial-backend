@@ -13,7 +13,8 @@ router.get('/search', authenticateToken, async (req, res) => {
     const { q } = req.query;
 
     if (!GOOGLE_API_KEY) {
-        return res.status(500).json({ error: 'Configuração do Google Maps ausente no servidor.' });
+        console.error('[Prospects] Erro: GOOGLE_MAPS_API_KEY ou GOOGLE_PLACES_API_KEY não encontrada no process.env');
+        return res.status(500).json({ error: 'Configuração da API do Google ausente no servidor.' });
     }
 
     if (!q) {
@@ -21,18 +22,26 @@ router.get('/search', authenticateToken, async (req, res) => {
     }
 
     try {
-        const query = encodeURIComponent(q);
-        const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&language=pt-BR&key=${GOOGLE_API_KEY}`;
+        const url = `https://maps.googleapis.com/maps/api/place/textsearch/json`;
         
-        const response = await axios.get(url);
+        const response = await axios.get(url, {
+            params: {
+                query: q,
+                key: GOOGLE_API_KEY,
+                language: 'pt-BR'
+            }
+        });
+
         const data = response.data;
 
         if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-            console.error('[Google API Error]', data);
-            throw new Error(data.error_message || 'Erro na busca do Google.');
+            console.error('[Google API Detailed Error]', data);
+            return res.status(500).json({ 
+                error: `Google API: ${data.status}`, 
+                message: data.error_message || 'Erro desconhecido na API do Google.' 
+            });
         }
 
-        // Formata os resultados para o frontend
         const results = (data.results || []).map(place => ({
             place_id: place.place_id,
             nome: place.name,
@@ -45,8 +54,11 @@ router.get('/search', authenticateToken, async (req, res) => {
 
         res.json({ results });
     } catch (err) {
-        console.error('[Prospects Search]', err);
-        res.status(500).json({ error: 'Falha ao buscar locais no Google.' });
+        console.error('[Prospects Search Exception]', err.message);
+        res.status(500).json({ 
+            error: 'Falha na comunicação com o Google.', 
+            details: err.message 
+        });
     }
 });
 
@@ -211,5 +223,15 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         console.error('Error during database schema setup:', err);
     }
 })();
+
+// Rota de diagnóstico (remover após correção)
+router.get('/debug-key', authenticateToken, (req, res) => {
+    res.json({ 
+        configured: !!GOOGLE_API_KEY,
+        prefix: GOOGLE_API_KEY ? GOOGLE_API_KEY.substring(0, 4) + '...' : 'NONE',
+        env_names: ['GOOGLE_MAPS_API_KEY', 'GOOGLE_PLACES_API_KEY'],
+        current_env: process.env.NODE_ENV
+    });
+});
 
 module.exports = router;

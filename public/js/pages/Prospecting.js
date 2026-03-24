@@ -222,8 +222,10 @@ export async function renderProspecting(router) {
             searchResults = data.results || [];
             renderSearchResults(searchResults, selectNiche.value);
         } catch (err) {
-            toast('Erro na busca');
-            resultsEl.innerHTML = '<p>Falha ao buscar prospectos.</p>';
+            console.error('[Prospecting Search Error]', err);
+            const msg = err.message || (err.error ? `${err.error}: ${err.message}` : 'Erro desconhecido');
+            toast(`Erro: ${msg}`, 'error');
+            resultsEl.innerHTML = `<p style="color:#ef4444; text-align:center; padding:20px">⚠️ ${msg}</p>`;
         } finally {
             searchBtn.disabled = false;
             searchBtn.textContent = 'Buscar Parceiros';
