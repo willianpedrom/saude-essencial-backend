@@ -882,23 +882,6 @@ export async function renderDashboard(router) {
         </div>
       </div>
 
-    <!-- 3. RADAR DE LEADS -->
-    <div class="dash-item radar-leads">
-        <div class="card" style="height:100%; background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); border: 1px solid #bbf7d0;">
-          <div class="card-header" style="padding: 16px 20px; border-bottom: 1px solid #dcfce7">
-            <h3 style="font-size: 1.1rem; display:flex; align-items:center; gap:8px; color: #166534">🛰️ Radar de Parcerias</h3>
-          </div>
-          <div class="card-body" style="padding:20px; text-align:center">
-            <div style="font-size:2.5rem; margin-bottom:10px">📡</div>
-            <div style="font-size:1.8rem; font-weight:900; color:#1e293b">${summary.totalProspects || 0}</div>
-            <p style="color:#64748b; font-size:0.85rem; margin-bottom:16px">Leads sendo prospectados hoje.</p>
-            <button class="btn btn-primary btn-sm" style="width:100%; background:#166534; border:none" onclick="location.hash='#/prospecting'">
-                Gerenciar Flow →
-            </button>
-          </div>
-        </div>
-      </div>
-
     <!-- 4. METAS (Largura Total no Decktop) -->
     <div class="dash-item metas full-width">
         ${metasHtml}
