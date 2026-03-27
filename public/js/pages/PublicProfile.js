@@ -4,6 +4,10 @@ import { injectTrackingScripts, ARCHETYPE_THEMES } from '../utils.js';
 const DOTERRA_BADGE_COLORS = {
   'Wellness Advocate': { bg: '#e0f2fe', color: '#0369a1' },
   'Consultor': { bg: '#f0fdf4', color: '#166534' },
+  'Manager': { bg: '#fff7ed', color: '#9a3412' },
+  'Director': { bg: '#fdf2f8', color: '#9d174d' },
+  'Executive': { bg: '#f0f9ff', color: '#075985' },
+  'Premier': { bg: '#ecfdf5', color: '#065f46' },
   'Silver': { bg: '#f1f5f9', color: '#475569' },
   'Gold': { bg: '#fefce8', color: '#854d0e' },
   'Platinum': { bg: '#f5f3ff', color: '#6d28d9' },
@@ -22,7 +26,7 @@ function badge(nivel) {
         color:${c.color};padding:5px 14px;border-radius:20px;
         font-size:0.78rem;font-weight:600;letter-spacing:.4px;
         ${isGrad ? 'border:1px solid #e2c97e' : ''}">
-        ${nivel === 'Presidential Diamond' ? '👑' : nivel === 'Diamond' || nivel === 'Blue Diamond' ? '💠' : nivel === 'Gold' ? '🥇' : nivel === 'Platinum' ? '💎' : nivel === 'Silver' ? '🥈' : '🌿'} ${nivel}
+        ${nivel === 'Presidential Diamond' ? '👑' : nivel === 'Diamond' || nivel === 'Blue Diamond' ? '💠' : nivel === 'Gold' ? '🥇' : nivel === 'Platinum' ? '💎' : nivel === 'Silver' ? '🥈' : nivel === 'Premier' ? '✨' : '🌿'} ${nivel}
     </span>`;
 }
 
