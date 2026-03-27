@@ -1,6 +1,7 @@
 // Minimal Service Worker — required for PWA install prompt
-const CACHE_NAME = 'gota-app-v1';
-const PRECACHE = ['/', '/css/index.css', '/js/app.js', '/js/config.js', '/logo.png'];
+// v3: 2026-03 — bust cache to pick up new routes (estoque)
+const CACHE_NAME = 'gota-app-v3';
+const PRECACHE = ['/', '/css/index.css', '/logo.png'];
 
 self.addEventListener('install', e => {
     e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(PRECACHE)));
