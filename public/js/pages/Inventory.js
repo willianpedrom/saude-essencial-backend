@@ -555,7 +555,7 @@ export async function renderInventory(router) {
         <table><thead><tr>
             <th>Produto</th><th>Categoria</th><th>Tamanho</th><th>Qtd.</th><th>Uso</th><th>Validade</th><th>Notas</th><th>Custo/un.</th>
         </tr></thead><tbody>${rows}</tbody></table>
-        <div class="footer">Gota App — Sistema de Gestão doTerra</div>
+        <div class="footer">Gota App — Sistema de Gestão de Relacionamento</div>
         </body></html>`;
 
         const w = window.open('', '_blank');
