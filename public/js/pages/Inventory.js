@@ -1,26 +1,26 @@
 import { store } from '../store.js';
-import { toast, formatDate, escapeHTML } from '../utils.js';
+import { toast, escapeHTML } from '../utils.js';
 import { doterraProducts } from '../utils/doterraProducts.js';
+import { renderLayout } from './Dashboard.js';
 
 export async function renderInventory(router) {
-    const main = document.getElementById('main-content');
-    main.innerHTML = `
-        <div class="header-basic">
+    const pageContent = `
+        <div class="header-basic" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
             <div>
                 <h1 class="page-title">📦 Meu Estoque doTerra</h1>
-                <p class="text-secondary">Gerencie seus óleos e produtos de forma simples e independente</p>
+                <p class="text-secondary">Gerencie seus produtos de forma prática e individual</p>
             </div>
             <button id="add-item-btn" class="btn btn-primary">+ Adicionar Produto</button>
         </div>
 
-        <div class="kpi-grid" style="margin-bottom: 24px;">
-            <div class="kpi-card">
-                <div class="kpi-title">Total de Itens na Prateleira</div>
-                <div class="kpi-value" id="kpi-total-items">0</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px; margin-bottom:24px;">
+            <div class="card" style="text-align:center; padding:20px;">
+                <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.5px;">Total em Prateleira</div>
+                <div id="kpi-total-items" style="font-size:2.2rem; font-weight:800; color:var(--green-600); margin-top:4px;">0</div>
             </div>
-            <div class="kpi-card" style="border-left-color: #f59e0b;">
-                <div class="kpi-title">Alerta (Estoque Baixo/Zerado)</div>
-                <div class="kpi-value" id="kpi-low-stock">0</div>
+            <div class="card" style="text-align:center; padding:20px; border-left: 4px solid #f59e0b;">
+                <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.5px;">Baixo / Zerado</div>
+                <div id="kpi-low-stock" style="font-size:2.2rem; font-weight:800; color:#f59e0b; margin-top:4px;">0</div>
             </div>
         </div>
 
@@ -32,34 +32,33 @@ export async function renderInventory(router) {
                             <th>Produto</th>
                             <th>Categoria</th>
                             <th>Tamanho</th>
-                            <th>Lotes / Notas</th>
-                            <th style="text-align:center;">Qtd. Disponível</th>
-                            <th>Ações</th>
+                            <th>Notas / Lote</th>
+                            <th style="text-align:center;">Qtd.</th>
+                            <th style="text-align:center;">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="inventory-list">
-                        <tr><td colspan="6" class="text-center py-8">Carregando estoque...</td></tr>
+                        <tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-muted);">Carregando estoque...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Modal: Adicionar Produto -->
-        <div class="modal-overlay" id="inventory-modal">
-            <div class="modal-content" style="max-width: 500px;">
+        <!-- Modal -->
+        <div class="modal-overlay" id="inventory-modal" style="display:none;">
+            <div class="modal-content" style="max-width:480px; width:100%;">
                 <div class="modal-header">
-                    <h2>Registrar Produto</h2>
-                    <button class="modal-close" id="close-inventory-modal">&times;</button>
+                    <h2 style="margin:0; font-size:1.1rem;">Registrar Produto</h2>
+                    <button id="close-inventory-modal" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-muted);">&times;</button>
                 </div>
-                <form id="inventory-form">
-                    <div class="form-group" style="position: relative;">
-                        <label>Nome do Produto (Digite para buscar) *</label>
-                        <input type="text" id="inv-name" class="form-control" autocomplete="off" placeholder="Ex: Lavanda, Peppermint, Veráge..." required>
-                        <div id="autocomplete-results" class="autocomplete-dropdown hidden"></div>
+                <form id="inventory-form" style="padding:20px; display:flex; flex-direction:column; gap:14px;">
+                    <div style="position:relative;">
+                        <label class="form-label">Nome do Produto *</label>
+                        <input type="text" id="inv-name" class="form-control" autocomplete="off" placeholder="Ex: Lavanda, On Guard, MetaPWR..." required>
+                        <div id="autocomplete-results" style="position:absolute; left:0; right:0; z-index:999; background:white; border:1px solid var(--border); border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.12); max-height:220px; overflow-y:auto; display:none;"></div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>Categoria</label>
+                    <div>
+                        <label class="form-label">Categoria</label>
                         <select id="inv-category" class="form-control">
                             <option value="Óleo Essencial">Óleo Essencial (Single)</option>
                             <option value="Blend">Mix / Blend</option>
@@ -72,170 +71,145 @@ export async function renderInventory(router) {
                             <option value="Outros">Outros</option>
                         </select>
                     </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <div class="form-group">
-                            <label>Tamanho / Medida</label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div>
+                            <label class="form-label">Tamanho</label>
                             <select id="inv-size" class="form-control">
                                 <option value="15ml">15ml</option>
                                 <option value="5ml">5ml</option>
                                 <option value="10ml Touch">10ml (Touch)</option>
-                                <option value="Unidade">Unidade (Caixa/Kit/Difusor)</option>
-                                <option value="Outro">Outro...</option>
+                                <option value="Unidade">Unidade / Kit</option>
+                                <option value="Outro">Outro</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>Qtd. de Entrada</label>
+                        <div>
+                            <label class="form-label">Qtd. de Entrada</label>
                             <input type="number" id="inv-qty" class="form-control" min="0" value="1" required>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label>Notas / Lote / Validade / Origem (Opcional)</label>
-                        <input type="text" id="inv-notes" class="form-control" placeholder="Ex: Ganhei no LRP, Val 10/24">
+                    <div>
+                        <label class="form-label">Notas / Origem (Opcional)</label>
+                        <input type="text" id="inv-notes" class="form-control" placeholder="Ex: LRP Março, BOGO, Kit Brasil">
                     </div>
-
-                    <div class="modal-actions mt-4">
+                    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
                         <button type="button" class="btn btn-secondary" id="cancel-inventory-modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary">Salvar no Estoque</button>
                     </div>
                 </form>
             </div>
         </div>
+
+        <style>
+            .autocomplete-item {
+                padding: 10px 14px;
+                cursor: pointer;
+                border-bottom: 1px solid var(--border);
+                transition: background 0.1s;
+            }
+            .autocomplete-item:hover { background: var(--green-50); }
+            .autocomplete-item:last-child { border-bottom: none; }
+        </style>
     `;
 
-    // Elements
-    const addBtn = document.getElementById('add-item-btn');
+    renderLayout(router, '📦 Meu Estoque', pageContent, 'estoque');
+
+    // Get references AFTER renderLayout injects the DOM
+    const main = document.getElementById('page-content');
+    if (!main) return;
+
     const modal = document.getElementById('inventory-modal');
-    const closeBtn = document.getElementById('close-inventory-modal');
-    const cancelBtn = document.getElementById('cancel-inventory-modal');
     const form = document.getElementById('inventory-form');
     const listEl = document.getElementById('inventory-list');
-
-    // Autocomplete elements
     const inputName = document.getElementById('inv-name');
     const inputCat = document.getElementById('inv-category');
-    const autocompleteDropdown = document.getElementById('autocomplete-results');
+    const autocompleteEl = document.getElementById('autocomplete-results');
 
-    // State
     let inventory = [];
 
-    // Setup Modals
+    // Modal open/close
     const openModal = () => {
         form.reset();
-        document.getElementById('inv-qty').value = "1";
-        document.getElementById('inv-size').value = "15ml";
-        inputCat.value = "Óleo Essencial";
-        autocompleteDropdown.classList.add('hidden');
+        document.getElementById('inv-qty').value = '1';
+        autocompleteEl.style.display = 'none';
         modal.style.display = 'flex';
-        inputName.focus();
+        setTimeout(() => inputName.focus(), 50);
     };
-    const closeModal = () => modal.style.display = 'none';
-    addBtn.onclick = openModal;
-    closeBtn.onclick = closeModal;
-    cancelBtn.onclick = closeModal;
+    const closeModal = () => { modal.style.display = 'none'; };
+
+    document.getElementById('add-item-btn').onclick = openModal;
+    document.getElementById('close-inventory-modal').onclick = closeModal;
+    document.getElementById('cancel-inventory-modal').onclick = closeModal;
     modal.onclick = (e) => { if (e.target === modal) closeModal(); };
 
-    // Set up Autocomplete Logic
-    inputName.addEventListener('input', (e) => {
-        const val = e.target.value.toLowerCase().trim();
-        if (val.length < 2) {
-            autocompleteDropdown.classList.add('hidden');
-            return;
-        }
-
-        const matches = doterraProducts.filter(p => p.nome.toLowerCase().includes(val)).slice(0, 10);
-        
-        if (matches.length > 0) {
-            autocompleteDropdown.innerHTML = matches.map(m => `
-                <div class="autocomplete-item" data-name="${escapeHTML(m.nome)}" data-cat="${escapeHTML(m.categoria)}">
-                    <strong>${escapeHTML(m.nome)}</strong> <span class="text-secondary text-sm">(${escapeHTML(m.categoria)})</span>
-                </div>
-            `).join('');
-            autocompleteDropdown.classList.remove('hidden');
-        } else {
-            autocompleteDropdown.classList.add('hidden');
-        }
+    // Autocomplete
+    inputName.addEventListener('input', () => {
+        const val = inputName.value.toLowerCase().trim();
+        if (val.length < 2) { autocompleteEl.style.display = 'none'; return; }
+        const matches = doterraProducts.filter(p => p.nome.toLowerCase().includes(val)).slice(0, 8);
+        if (!matches.length) { autocompleteEl.style.display = 'none'; return; }
+        autocompleteEl.innerHTML = matches.map(m => `
+            <div class="autocomplete-item" data-name="${escapeHTML(m.nome)}" data-cat="${escapeHTML(m.categoria)}">
+                <strong style="font-size:0.9rem;">${escapeHTML(m.nome)}</strong>
+                <span style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;">${escapeHTML(m.categoria)}</span>
+            </div>
+        `).join('');
+        autocompleteEl.style.display = 'block';
     });
 
-    // Close autocomplete on blur if clicked outside
-    document.addEventListener('click', (e) => {
-        if (!inputName.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
-            autocompleteDropdown.classList.add('hidden');
-        }
-    });
-
-    // Select autocomplete item
-    autocompleteDropdown.addEventListener('click', (e) => {
+    autocompleteEl.addEventListener('click', (e) => {
         const item = e.target.closest('.autocomplete-item');
-        if (item) {
-            inputName.value = item.dataset.name;
-            const catMatch = Array.from(inputCat.options).find(opt => opt.value === item.dataset.cat);
-            if(catMatch) inputCat.value = item.dataset.cat;
-            
-            // Auto select size based on some heuristics
-            const sizeInput = document.getElementById('inv-size');
-            if (item.dataset.cat.includes("Touch")) {
-                sizeInput.value = "10ml Touch";
-            } else if (item.dataset.cat === "Difusor" || item.dataset.cat === "Kit" || item.dataset.cat === "Personal Care" || item.dataset.cat === "Acessório") {
-                sizeInput.value = "Unidade";
-            } else {
-                sizeInput.value = "15ml"; // default oil
-            }
+        if (!item) return;
+        inputName.value = item.dataset.name;
+        const catOpt = Array.from(inputCat.options).find(o => o.value === item.dataset.cat);
+        if (catOpt) inputCat.value = item.dataset.cat;
+        const sizeEl = document.getElementById('inv-size');
+        if (item.dataset.cat.includes('Touch')) sizeEl.value = '10ml Touch';
+        else if (['Difusor','Kit','Personal Care','Acessório'].includes(item.dataset.cat)) sizeEl.value = 'Unidade';
+        else sizeEl.value = '15ml';
+        autocompleteEl.style.display = 'none';
+    });
 
-            autocompleteDropdown.classList.add('hidden');
+    document.addEventListener('click', (e) => {
+        if (!inputName.contains(e.target) && !autocompleteEl.contains(e.target)) {
+            autocompleteEl.style.display = 'none';
         }
     });
 
-
-    // Render Table
+    // Render table
     const renderTable = () => {
         if (!inventory.length) {
-            listEl.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-secondary">Seu estoque está vazio. Clique em "Adicionar Produto" para começar.</td></tr>`;
+            listEl.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-muted);">Estoque vazio. Clique em "+ Adicionar Produto" para começar!</td></tr>`;
             document.getElementById('kpi-total-items').textContent = '0';
             document.getElementById('kpi-low-stock').textContent = '0';
             return;
         }
-
-        // Stats
-        let totalItems = 0;
-        let lowStockCount = 0;
-
-        const html = inventory.map(item => {
-            totalItems += item.quantidade;
-            if (item.quantidade <= 1) lowStockCount++;
-            
-            let qtyBadgeClass = 'badge-success';
-            if (item.quantidade === 0) qtyBadgeClass = 'badge-danger';
-            else if (item.quantidade === 1) qtyBadgeClass = 'badge-warning';
-
+        let totalQtd = 0, lowCount = 0;
+        listEl.innerHTML = inventory.map(item => {
+            totalQtd += item.quantidade;
+            if (item.quantidade <= 1) lowCount++;
+            let badgeStyle = 'background:#dcfce7; color:#166534;';
+            if (item.quantidade === 0) badgeStyle = 'background:#fee2e2; color:#991b1b;';
+            else if (item.quantidade === 1) badgeStyle = 'background:#fef3c7; color:#92400e;';
             return `
-                <tr>
-                    <td class="font-medium">${escapeHTML(item.nome_produto)}</td>
-                    <td class="text-secondary">${escapeHTML(item.categoria)}</td>
-                    <td class="text-secondary">${escapeHTML(item.ml_tamanho || '-')}</td>
-                    <td class="text-secondary text-sm">${escapeHTML(item.notas || '-')}</td>
-                    <td style="text-align:center;">
-                        <span class="badge ${qtyBadgeClass}" style="font-size: 1.1em; padding: 4px 10px;">
-                            ${item.quantidade}
-                        </span>
-                    </td>
-                    <td>
-                        <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-outline btn-sm action-btn" data-id="${item.id}" data-action="decrease" title="Remover uma unidade" ${item.quantidade <= 0 ? 'disabled' : ''}>-</button>
-                            <button class="btn btn-outline btn-sm action-btn" data-id="${item.id}" data-action="increase" title="Adicionar uma unidade">+</button>
-                            <button class="btn btn-ghost text-danger action-btn" data-id="${item.id}" data-action="delete" title="Excluir produto do registro">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
+            <tr>
+                <td style="font-weight:600;">${escapeHTML(item.nome_produto)}</td>
+                <td style="color:var(--text-muted); font-size:0.85rem;">${escapeHTML(item.categoria || '—')}</td>
+                <td style="color:var(--text-muted); font-size:0.85rem;">${escapeHTML(item.ml_tamanho || '—')}</td>
+                <td style="color:var(--text-muted); font-size:0.8rem; max-width:160px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHTML(item.notas || '')}">${escapeHTML(item.notas || '—')}</td>
+                <td style="text-align:center;">
+                    <span style="display:inline-block; ${badgeStyle} font-weight:700; font-size:1rem; padding:4px 14px; border-radius:20px;">${item.quantidade}</span>
+                </td>
+                <td>
+                    <div style="display:flex; gap:6px; justify-content:center; align-items:center;">
+                        <button class="btn btn-outline btn-sm action-btn" data-id="${item.id}" data-action="decrease" ${item.quantidade <= 0 ? 'disabled' : ''} title="Remover 1">−</button>
+                        <button class="btn btn-outline btn-sm action-btn" data-id="${item.id}" data-action="increase" title="Adicionar 1">+</button>
+                        <button class="btn btn-sm action-btn" data-id="${item.id}" data-action="delete" title="Apagar" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; padding:4px 8px;">🗑</button>
+                    </div>
+                </td>
+            </tr>`;
         }).join('');
-
-        listEl.innerHTML = html;
-        document.getElementById('kpi-total-items').textContent = totalItems.toString();
-        document.getElementById('kpi-low-stock').textContent = lowStockCount.toString();
+        document.getElementById('kpi-total-items').textContent = String(totalQtd);
+        document.getElementById('kpi-low-stock').textContent = String(lowCount);
     };
 
     const loadData = async () => {
@@ -244,75 +218,63 @@ export async function renderInventory(router) {
             renderTable();
         } catch (err) {
             toast('Falha ao carregar estoque', 'error');
-            listEl.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-danger">Erro ao carregar dados.</td></tr>`;
+            listEl.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:32px; color:#ef4444;">Erro ao carregar dados do estoque.</td></tr>`;
         }
     };
 
-    // Handle Form Submit (Add New or Sum Existing)
+    // Form submit
     form.onsubmit = async (e) => {
         e.preventDefault();
-        const btn = form.querySelector('button[type="submit"]');
-        const originalText = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = 'Salvando...';
-
-        const payload = {
-            nome_produto: inputName.value.trim(),
-            categoria: inputCat.value,
-            quantidade: parseInt(document.getElementById('inv-qty').value, 10),
-            ml_tamanho: document.getElementById('inv-size').value,
-            notas: document.getElementById('inv-notes').value.trim()
-        };
-
+        const btn = form.querySelector('[type="submit"]');
+        btn.disabled = true; btn.textContent = 'Salvando...';
         try {
-            await store.addEstoque(payload);
-            toast('Produto registrado no estoque!');
+            await store.addEstoque({
+                nome_produto: inputName.value.trim(),
+                categoria: inputCat.value,
+                quantidade: parseInt(document.getElementById('inv-qty').value, 10) || 0,
+                ml_tamanho: document.getElementById('inv-size').value,
+                notas: document.getElementById('inv-notes').value.trim()
+            });
+            toast('Produto salvo no estoque! ✅');
             closeModal();
             loadData();
         } catch (err) {
-            toast(err.message || 'Erro ao registrar produto', 'error');
+            toast(err.message || 'Erro ao salvar', 'error');
         } finally {
-            btn.disabled = false;
-            btn.textContent = originalText;
+            btn.disabled = false; btn.textContent = 'Salvar no Estoque';
         }
     };
 
-    // Handle Table Actions (+ / - / delete)
+    // Table actions
     listEl.addEventListener('click', async (e) => {
         const btn = e.target.closest('.action-btn');
         if (!btn) return;
-        
-        const id = btn.dataset.id;
-        const action = btn.dataset.action;
+        const { id, action } = btn.dataset;
         const item = inventory.find(i => i.id === id);
         if (!item) return;
-
+        btn.disabled = true;
         try {
             if (action === 'increase') {
-                btn.disabled = true;
                 await store.updateEstoque(id, { quantidade: item.quantidade + 1, notas: item.notas });
                 item.quantidade++;
                 renderTable();
-            } else if (action === 'decrease') {
-                if (item.quantidade <= 0) return;
-                btn.disabled = true;
+            } else if (action === 'decrease' && item.quantidade > 0) {
                 await store.updateEstoque(id, { quantidade: item.quantidade - 1, notas: item.notas });
                 item.quantidade--;
                 renderTable();
             } else if (action === 'delete') {
-                if(confirm(`Tem certeza que deseja apagar o registro de ${item.nome_produto} do seu estoque?`)) {
+                if (confirm(`Apagar "${item.nome_produto}" do estoque?`)) {
                     await store.deleteEstoque(id);
-                    toast('Registro apagado.');
+                    toast('Produto removido.');
                     loadData();
-                }
+                } else { btn.disabled = false; }
             }
-        } catch (err) {
+        } catch {
             toast('Erro na operação', 'error');
         } finally {
-            if (btn && btn.tagName === 'BUTTON') btn.disabled = false;
+            if (btn) btn.disabled = false;
         }
     });
 
-    // Initial Load
     loadData();
 }
