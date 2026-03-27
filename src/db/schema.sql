@@ -322,13 +322,21 @@ CREATE TABLE IF NOT EXISTS estoque (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   consultora_id UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
   nome_produto  VARCHAR(200) NOT NULL,
-  categoria     VARCHAR(100), -- Óleo Essencial, Suplemento, Personal Care, Kit, Difusor
+  categoria     VARCHAR(100),
   quantidade    INT DEFAULT 0,
-  ml_tamanho    VARCHAR(50),  -- 15ml, 5ml, 10ml Touch, Gramas, Cápsulas
-  notas         TEXT,         -- Origem (Ex: LRP, Kit Brasil, BOGO)
+  ml_tamanho    VARCHAR(50),
+  notas         TEXT,
+  validade      DATE,           -- Data de validade do lote
+  preco_custo   NUMERIC(10,2),  -- Preço de custo unitário
+  uso_tipo      VARCHAR(20) DEFAULT 'venda', -- 'venda' ou 'pessoal'
   criado_em     TIMESTAMPTZ DEFAULT NOW(),
   atualizado_em TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migrations idempotentes para tabela estoque já existente
+ALTER TABLE estoque ADD COLUMN IF NOT EXISTS validade    DATE;
+ALTER TABLE estoque ADD COLUMN IF NOT EXISTS preco_custo NUMERIC(10,2);
+ALTER TABLE estoque ADD COLUMN IF NOT EXISTS uso_tipo    VARCHAR(20) DEFAULT 'venda';
 
 CREATE INDEX IF NOT EXISTS idx_estoque_consultora ON estoque(consultora_id);
 
