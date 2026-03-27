@@ -1,70 +1,188 @@
 import { store } from '../store.js';
 import { toast, escapeHTML } from '../utils.js';
-import { doterraProducts } from '../utils/doterraProducts.js';
 import { renderLayout } from './Dashboard.js';
+
+// Lista completa de produtos doTERRA embutida para evitar problemas de import
+const DOTERRA_PRODUCTS = [
+    // Óleos Individuais
+    { nome: "Lavanda (Lavender)", cat: "Óleo Essencial" },
+    { nome: "Hortelã-Pimenta (Peppermint)", cat: "Óleo Essencial" },
+    { nome: "Olíbano (Frankincense)", cat: "Óleo Essencial" },
+    { nome: "Melaleuca (Tea Tree)", cat: "Óleo Essencial" },
+    { nome: "Laranja Doce (Wild Orange)", cat: "Óleo Essencial" },
+    { nome: "Limão Siciliano (Lemon)", cat: "Óleo Essencial" },
+    { nome: "Copaíba", cat: "Óleo Essencial" },
+    { nome: "Orégano", cat: "Óleo Essencial" },
+    { nome: "Gengibre (Ginger)", cat: "Óleo Essencial" },
+    { nome: "Alecrim (Rosemary)", cat: "Óleo Essencial" },
+    { nome: "Bergamota", cat: "Óleo Essencial" },
+    { nome: "Eucalipto", cat: "Óleo Essencial" },
+    { nome: "Gerânio", cat: "Óleo Essencial" },
+    { nome: "Helicriso (Helichrysum)", cat: "Óleo Essencial" },
+    { nome: "Canela (Cinnamon Bark)", cat: "Óleo Essencial" },
+    { nome: "Rosa (Rose)", cat: "Óleo Essencial" },
+    { nome: "Melissa", cat: "Óleo Essencial" },
+    { nome: "Mirra (Myrrh)", cat: "Óleo Essencial" },
+    { nome: "Cedro (Cedarwood)", cat: "Óleo Essencial" },
+    { nome: "Pimenta Preta (Black Pepper)", cat: "Óleo Essencial" },
+    { nome: "Sálvia Esclareia (Clary Sage)", cat: "Óleo Essencial" },
+    { nome: "Ylang Ylang", cat: "Óleo Essencial" },
+    { nome: "Vetiver", cat: "Óleo Essencial" },
+    { nome: "Sândalo Havaiano (Hawaiian Sandalwood)", cat: "Óleo Essencial" },
+    { nome: "Cravo (Clove)", cat: "Óleo Essencial" },
+    { nome: "Toranja (Grapefruit)", cat: "Óleo Essencial" },
+    { nome: "Tangerina", cat: "Óleo Essencial" },
+    { nome: "Capim-Limão (Lemongrass)", cat: "Óleo Essencial" },
+    { nome: "Erva Doce (Fennel)", cat: "Óleo Essencial" },
+    { nome: "Manjerona (Marjoram)", cat: "Óleo Essencial" },
+    { nome: "Patchouli", cat: "Óleo Essencial" },
+    { nome: "Tomilho (Thyme)", cat: "Óleo Essencial" },
+    { nome: "Cipreste (Cypress)", cat: "Óleo Essencial" },
+    { nome: "Zimbro (Juniper Berry)", cat: "Óleo Essencial" },
+    { nome: "Arborvitae", cat: "Óleo Essencial" },
+    { nome: "Pinho Siberiano (Siberian Fir)", cat: "Óleo Essencial" },
+    { nome: "Coentro (Coriander)", cat: "Óleo Essencial" },
+    { nome: "Camomila Romana (Roman Chamomile)", cat: "Óleo Essencial" },
+    // Blends
+    { nome: "On Guard (Mix Protetor)", cat: "Blend" },
+    { nome: "Breathe / Clarify (Mix Respiratório)", cat: "Blend" },
+    { nome: "Deep Blue (Mix Suavizante)", cat: "Blend" },
+    { nome: "ZenGest / DigestZen (Mix Digestivo)", cat: "Blend" },
+    { nome: "Serenity (Mix Repousante)", cat: "Blend" },
+    { nome: "Balance (Mix Aterrador)", cat: "Blend" },
+    { nome: "Citrus Bliss (Mix Revigorante)", cat: "Blend" },
+    { nome: "Elevation (Mix Alegre)", cat: "Blend" },
+    { nome: "Purify (Mix Purificador)", cat: "Blend" },
+    { nome: "AromaTouch", cat: "Blend" },
+    { nome: "PastTense (Mix Tensão)", cat: "Blend" },
+    { nome: "InTune (Mix Foco)", cat: "Blend" },
+    { nome: "ClaryCalm (Mix Mensal Mulher)", cat: "Blend" },
+    { nome: "Cheer (Mix Animador)", cat: "Blend" },
+    { nome: "Motivate (Mix Encorajador)", cat: "Blend" },
+    { nome: "Peace (Mix Tranquilizador)", cat: "Blend" },
+    { nome: "Zendocrine (Mix Desintoxicante)", cat: "Blend" },
+    { nome: "Adaptiv", cat: "Blend" },
+    { nome: "MetaPWR Blend", cat: "Blend" },
+    { nome: "TerraShield (Mix Repelente)", cat: "Blend" },
+    // Touch (Roll-on)
+    { nome: "Lavanda Touch", cat: "Roll-on (Touch)" },
+    { nome: "Peppermint Touch", cat: "Roll-on (Touch)" },
+    { nome: "Frankincense Touch", cat: "Roll-on (Touch)" },
+    { nome: "Melaleuca Touch", cat: "Roll-on (Touch)" },
+    { nome: "On Guard Touch", cat: "Roll-on (Touch)" },
+    { nome: "Breathe Touch", cat: "Roll-on (Touch)" },
+    { nome: "Deep Blue Touch", cat: "Roll-on (Touch)" },
+    { nome: "ZenGest Touch", cat: "Roll-on (Touch)" },
+    { nome: "Rose Touch", cat: "Roll-on (Touch)" },
+    // Kids
+    { nome: "Thinker (Kids)", cat: "Linha Kids" },
+    { nome: "Calmer (Kids)", cat: "Linha Kids" },
+    { nome: "Stronger (Kids)", cat: "Linha Kids" },
+    { nome: "Rescuer (Kids)", cat: "Linha Kids" },
+    { nome: "Steady (Kids)", cat: "Linha Kids" },
+    { nome: "Brave (Kids)", cat: "Linha Kids" },
+    // Suplementos
+    { nome: "Lifelong Vitality Pack (LLV)", cat: "Suplemento" },
+    { nome: "Microplex VMz", cat: "Suplemento" },
+    { nome: "xEO Mega", cat: "Suplemento" },
+    { nome: "Alpha CRS+", cat: "Suplemento" },
+    { nome: "PB Assist+ (Probiótico)", cat: "Suplemento" },
+    { nome: "TerraZyme", cat: "Suplemento" },
+    { nome: "MetaPWR Advantage (Colágeno)", cat: "Suplemento" },
+    { nome: "MetaPWR Assist", cat: "Suplemento" },
+    { nome: "Deep Blue Polyphenol Complex", cat: "Suplemento" },
+    { nome: "Peppermint Softgels", cat: "Suplemento" },
+    { nome: "ZenGest Softgels", cat: "Suplemento" },
+    { nome: "On Guard Softgels", cat: "Suplemento" },
+    { nome: "Copaíba Softgels", cat: "Suplemento" },
+    { nome: "Mito2Max", cat: "Suplemento" },
+    // Personal Care
+    { nome: "Pasta de Dente On Guard", cat: "Personal Care" },
+    { nome: "Enxaguante Bucal On Guard", cat: "Personal Care" },
+    { nome: "Sabonete Líquido On Guard", cat: "Personal Care" },
+    { nome: "Pomada Deep Blue Rub", cat: "Personal Care" },
+    { nome: "Bálsamo Labial Original", cat: "Personal Care" },
+    { nome: "Loção Mãos e Corpo", cat: "Personal Care" },
+    { nome: "Shampoo Salon Essentials", cat: "Personal Care" },
+    { nome: "Condicionador Salon Essentials", cat: "Personal Care" },
+    { nome: "Veráge Cleanser", cat: "Personal Care" },
+    { nome: "Veráge Toner", cat: "Personal Care" },
+    { nome: "Veráge Sérum", cat: "Personal Care" },
+    { nome: "Veráge Loção Hidratante", cat: "Personal Care" },
+    // Kits e Difusores
+    { nome: "Kit Brasil Living (10 óleos 5ml)", cat: "Kit" },
+    { nome: "Kit Essencial para o Lar", cat: "Kit" },
+    { nome: "Kit Kids Completo (7 unidades)", cat: "Kit" },
+    { nome: "Difusor Pétala (Petal)", cat: "Difusor" },
+    { nome: "Difusor Volo", cat: "Difusor" },
+    { nome: "Difusor Pilot", cat: "Difusor" },
+    { nome: "Difusor Roam", cat: "Difusor" },
+    { nome: "Óleo de Coco Fracionado (115ml)", cat: "Acessório" },
+    { nome: "Cápsulas Vegetais (Vazias)", cat: "Acessório" },
+];
 
 export async function renderInventory(router) {
     const pageContent = `
-        <div class="header-basic" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
             <div>
                 <h1 class="page-title">📦 Meu Estoque doTerra</h1>
-                <p class="text-secondary">Gerencie seus produtos de forma prática e individual</p>
+                <p style="color:var(--text-muted); margin:4px 0 0;">Controle individual dos seus produtos</p>
             </div>
             <button id="add-item-btn" class="btn btn-primary">+ Adicionar Produto</button>
         </div>
 
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px; margin-bottom:24px;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:16px; margin-bottom:24px;">
             <div class="card" style="text-align:center; padding:20px;">
-                <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.5px;">Total em Prateleira</div>
-                <div id="kpi-total-items" style="font-size:2.2rem; font-weight:800; color:var(--green-600); margin-top:4px;">0</div>
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.5px;">Total em Prateleira</div>
+                <div id="kpi-total" style="font-size:2rem; font-weight:800; color:var(--green-600); margin-top:6px;">—</div>
             </div>
-            <div class="card" style="text-align:center; padding:20px; border-left: 4px solid #f59e0b;">
-                <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.5px;">Baixo / Zerado</div>
-                <div id="kpi-low-stock" style="font-size:2.2rem; font-weight:800; color:#f59e0b; margin-top:4px;">0</div>
-            </div>
-        </div>
-
-        <div class="card p-0">
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Produto</th>
-                            <th>Categoria</th>
-                            <th>Tamanho</th>
-                            <th>Notas / Lote</th>
-                            <th style="text-align:center;">Qtd.</th>
-                            <th style="text-align:center;">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inventory-list">
-                        <tr><td colspan="6" style="text-align:center; padding:32px; color:var(--text-muted);">Carregando estoque...</td></tr>
-                    </tbody>
-                </table>
+            <div class="card" style="text-align:center; padding:20px; border-left:4px solid #f59e0b;">
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.5px;">Baixo / Zerado</div>
+                <div id="kpi-low" style="font-size:2rem; font-weight:800; color:#f59e0b; margin-top:6px;">—</div>
             </div>
         </div>
 
-        <!-- Modal -->
-        <div class="modal-overlay" id="inventory-modal" style="display:none;">
-            <div class="modal-content" style="max-width:480px; width:100%;">
-                <div class="modal-header">
-                    <h2 style="margin:0; font-size:1.1rem;">Registrar Produto</h2>
-                    <button id="close-inventory-modal" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-muted);">&times;</button>
+        <div class="card" style="padding:0; overflow:hidden;">
+            <table style="width:100%; border-collapse:collapse;">
+                <thead style="background:var(--green-50);">
+                    <tr>
+                        <th style="padding:12px 16px; text-align:left; font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Produto</th>
+                        <th style="padding:12px 8px; text-align:left; font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; display:none;" class="col-cat">Categoria</th>
+                        <th style="padding:12px 8px; text-align:left; font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Tamanho</th>
+                        <th style="padding:12px 8px; text-align:left; font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; display:none;" class="col-notas">Notas</th>
+                        <th style="padding:12px 8px; text-align:center; font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Qtd.</th>
+                        <th style="padding:12px 16px; text-align:center; font-size:0.78rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="inv-tbody">
+                    <tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-muted);">Carregando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Modal Adicionar -->
+        <div id="inv-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+            <div style="background:white; border-radius:16px; width:90%; max-width:460px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:20px 24px; border-bottom:1px solid var(--border);">
+                    <h3 style="margin:0; font-size:1.05rem;">Registrar Produto</h3>
+                    <button id="inv-modal-close" style="background:none; border:none; font-size:1.6rem; cursor:pointer; color:var(--text-muted); line-height:1;">&times;</button>
                 </div>
-                <form id="inventory-form" style="padding:20px; display:flex; flex-direction:column; gap:14px;">
+                <form id="inv-form" style="padding:24px; display:flex; flex-direction:column; gap:16px;">
                     <div style="position:relative;">
-                        <label class="form-label">Nome do Produto *</label>
-                        <input type="text" id="inv-name" class="form-control" autocomplete="off" placeholder="Ex: Lavanda, On Guard, MetaPWR..." required>
-                        <div id="autocomplete-results" style="position:absolute; left:0; right:0; z-index:999; background:white; border:1px solid var(--border); border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.12); max-height:220px; overflow-y:auto; display:none;"></div>
+                        <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; color:var(--text-dark);">Nome do Produto *</label>
+                        <input type="text" id="inv-name" autocomplete="off" placeholder="Ex: Lavanda, On Guard, MetaPWR..."
+                            style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.95rem; box-sizing:border-box; outline:none;">
+                        <div id="inv-ac" style="position:absolute; left:0; right:0; top:100%; z-index:9999; background:white; border:1px solid var(--border); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); display:none; max-height:200px; overflow-y:auto;"></div>
                     </div>
                     <div>
-                        <label class="form-label">Categoria</label>
-                        <select id="inv-category" class="form-control">
-                            <option value="Óleo Essencial">Óleo Essencial (Single)</option>
+                        <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; color:var(--text-dark);">Categoria</label>
+                        <select id="inv-cat" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.95rem; background:white;">
+                            <option value="Óleo Essencial">Óleo Essencial</option>
                             <option value="Blend">Mix / Blend</option>
                             <option value="Roll-on (Touch)">Roll-on (Touch)</option>
+                            <option value="Linha Kids">Linha Kids</option>
                             <option value="Suplemento">Suplemento</option>
-                            <option value="Personal Care">Cuidados Pessoais / Cosmético</option>
+                            <option value="Personal Care">Cuidados Pessoais</option>
                             <option value="Kit">Kit Fechado</option>
                             <option value="Difusor">Difusor</option>
                             <option value="Acessório">Acessório</option>
@@ -73,208 +191,183 @@ export async function renderInventory(router) {
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                         <div>
-                            <label class="form-label">Tamanho</label>
-                            <select id="inv-size" class="form-control">
-                                <option value="15ml">15ml</option>
-                                <option value="5ml">5ml</option>
-                                <option value="10ml Touch">10ml (Touch)</option>
-                                <option value="Unidade">Unidade / Kit</option>
-                                <option value="Outro">Outro</option>
+                            <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; color:var(--text-dark);">Tamanho</label>
+                            <select id="inv-size" style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.95rem; background:white;">
+                                <option>15ml</option>
+                                <option>5ml</option>
+                                <option>10ml Touch</option>
+                                <option>Unidade / Kit</option>
+                                <option>Outro</option>
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">Qtd. de Entrada</label>
-                            <input type="number" id="inv-qty" class="form-control" min="0" value="1" required>
+                            <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; color:var(--text-dark);">Quantidade</label>
+                            <input type="number" id="inv-qty" value="1" min="0"
+                                style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.95rem; box-sizing:border-box;">
                         </div>
                     </div>
                     <div>
-                        <label class="form-label">Notas / Origem (Opcional)</label>
-                        <input type="text" id="inv-notes" class="form-control" placeholder="Ex: LRP Março, BOGO, Kit Brasil">
+                        <label style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; color:var(--text-dark);">Notas / Origem (opcional)</label>
+                        <input type="text" id="inv-notes" placeholder="Ex: LRP Março, BOGO, Kit Brasil"
+                            style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.95rem; box-sizing:border-box;">
                     </div>
-                    <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
-                        <button type="button" class="btn btn-secondary" id="cancel-inventory-modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Salvar no Estoque</button>
+                    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:4px;">
+                        <button type="button" id="inv-cancel" class="btn btn-secondary">Cancelar</button>
+                        <button type="submit" id="inv-submit" class="btn btn-primary">Salvar</button>
                     </div>
                 </form>
             </div>
         </div>
-
-        <style>
-            .autocomplete-item {
-                padding: 10px 14px;
-                cursor: pointer;
-                border-bottom: 1px solid var(--border);
-                transition: background 0.1s;
-            }
-            .autocomplete-item:hover { background: var(--green-50); }
-            .autocomplete-item:last-child { border-bottom: none; }
-        </style>
     `;
 
     renderLayout(router, '📦 Meu Estoque', pageContent, 'estoque');
 
-    // Get references AFTER renderLayout injects the DOM
-    const main = document.getElementById('page-content');
-    if (!main) return;
+    // ── Refs ──────────────────────────────────────────────────
+    const modal   = document.getElementById('inv-modal');
+    const form    = document.getElementById('inv-form');
+    const tbody   = document.getElementById('inv-tbody');
+    const nameEl  = document.getElementById('inv-name');
+    const catEl   = document.getElementById('inv-cat');
+    const sizeEl  = document.getElementById('inv-size');
+    const qtyEl   = document.getElementById('inv-qty');
+    const notesEl = document.getElementById('inv-notes');
+    const acEl    = document.getElementById('inv-ac');
 
-    const modal = document.getElementById('inventory-modal');
-    const form = document.getElementById('inventory-form');
-    const listEl = document.getElementById('inventory-list');
-    const inputName = document.getElementById('inv-name');
-    const inputCat = document.getElementById('inv-category');
-    const autocompleteEl = document.getElementById('autocomplete-results');
+    let db = [];
 
-    let inventory = [];
+    // ── Modal helpers ─────────────────────────────────────────
+    const openModal  = () => { form.reset(); qtyEl.value = 1; modal.style.display = 'flex'; nameEl.focus(); };
+    const closeModal = () => { modal.style.display = 'none'; acEl.style.display = 'none'; };
 
-    // Modal open/close
-    const openModal = () => {
-        form.reset();
-        document.getElementById('inv-qty').value = '1';
-        autocompleteEl.style.display = 'none';
-        modal.style.display = 'flex';
-        setTimeout(() => inputName.focus(), 50);
-    };
-    const closeModal = () => { modal.style.display = 'none'; };
+    document.getElementById('add-item-btn').addEventListener('click', openModal);
+    document.getElementById('inv-modal-close').addEventListener('click', closeModal);
+    document.getElementById('inv-cancel').addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 
-    document.getElementById('add-item-btn').onclick = openModal;
-    document.getElementById('close-inventory-modal').onclick = closeModal;
-    document.getElementById('cancel-inventory-modal').onclick = closeModal;
-    modal.onclick = (e) => { if (e.target === modal) closeModal(); };
-
-    // Autocomplete
-    inputName.addEventListener('input', () => {
-        const val = inputName.value.toLowerCase().trim();
-        if (val.length < 2) { autocompleteEl.style.display = 'none'; return; }
-        const matches = doterraProducts.filter(p => p.nome.toLowerCase().includes(val)).slice(0, 8);
-        if (!matches.length) { autocompleteEl.style.display = 'none'; return; }
-        autocompleteEl.innerHTML = matches.map(m => `
-            <div class="autocomplete-item" data-name="${escapeHTML(m.nome)}" data-cat="${escapeHTML(m.categoria)}">
-                <strong style="font-size:0.9rem;">${escapeHTML(m.nome)}</strong>
-                <span style="font-size:0.75rem; color:var(--text-muted); margin-left:8px;">${escapeHTML(m.categoria)}</span>
-            </div>
-        `).join('');
-        autocompleteEl.style.display = 'block';
+    // ── Autocomplete ──────────────────────────────────────────
+    nameEl.addEventListener('input', () => {
+        const q = nameEl.value.toLowerCase().trim();
+        if (q.length < 2) { acEl.style.display = 'none'; return; }
+        const hits = DOTERRA_PRODUCTS.filter(p => p.nome.toLowerCase().includes(q)).slice(0, 8);
+        if (!hits.length) { acEl.style.display = 'none'; return; }
+        acEl.innerHTML = hits.map(p =>
+            `<div data-name="${escapeHTML(p.nome)}" data-cat="${escapeHTML(p.cat)}"
+                  style="padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); font-size:0.9rem;"
+                  onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background=''">
+                <strong>${escapeHTML(p.nome)}</strong>
+                <span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">${escapeHTML(p.cat)}</span>
+            </div>`
+        ).join('');
+        acEl.style.display = 'block';
     });
 
-    autocompleteEl.addEventListener('click', (e) => {
-        const item = e.target.closest('.autocomplete-item');
+    acEl.addEventListener('click', e => {
+        const item = e.target.closest('[data-name]');
         if (!item) return;
-        inputName.value = item.dataset.name;
-        const catOpt = Array.from(inputCat.options).find(o => o.value === item.dataset.cat);
-        if (catOpt) inputCat.value = item.dataset.cat;
-        const sizeEl = document.getElementById('inv-size');
-        if (item.dataset.cat.includes('Touch')) sizeEl.value = '10ml Touch';
-        else if (['Difusor','Kit','Personal Care','Acessório'].includes(item.dataset.cat)) sizeEl.value = 'Unidade';
-        else sizeEl.value = '15ml';
-        autocompleteEl.style.display = 'none';
+        nameEl.value = item.dataset.name;
+        catEl.value  = Array.from(catEl.options).some(o => o.value === item.dataset.cat) ? item.dataset.cat : catEl.value;
+        const c = item.dataset.cat;
+        sizeEl.value = c.includes('Touch') ? '10ml Touch'
+            : ['Difusor','Kit','Personal Care','Acessório'].includes(c) ? 'Unidade / Kit'
+            : '15ml';
+        acEl.style.display = 'none';
     });
 
-    document.addEventListener('click', (e) => {
-        if (!inputName.contains(e.target) && !autocompleteEl.contains(e.target)) {
-            autocompleteEl.style.display = 'none';
-        }
-    });
+    document.addEventListener('click', e => {
+        if (!nameEl.contains(e.target) && !acEl.contains(e.target)) acEl.style.display = 'none';
+    }, { capture: true });
 
-    // Render table
-    const renderTable = () => {
-        if (!inventory.length) {
-            listEl.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-muted);">Estoque vazio. Clique em "+ Adicionar Produto" para começar!</td></tr>`;
-            document.getElementById('kpi-total-items').textContent = '0';
-            document.getElementById('kpi-low-stock').textContent = '0';
+    // ── Render table ──────────────────────────────────────────
+    const render = () => {
+        if (!db.length) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:48px; color:var(--text-muted);">
+                Estoque vazio 📭<br><small>Clique em "+ Adicionar Produto" para começar</small></td></tr>`;
+            document.getElementById('kpi-total').textContent = '0';
+            document.getElementById('kpi-low').textContent = '0';
             return;
         }
-        let totalQtd = 0, lowCount = 0;
-        listEl.innerHTML = inventory.map(item => {
-            totalQtd += item.quantidade;
-            if (item.quantidade <= 1) lowCount++;
-            let badgeStyle = 'background:#dcfce7; color:#166534;';
-            if (item.quantidade === 0) badgeStyle = 'background:#fee2e2; color:#991b1b;';
-            else if (item.quantidade === 1) badgeStyle = 'background:#fef3c7; color:#92400e;';
-            return `
-            <tr>
-                <td style="font-weight:600;">${escapeHTML(item.nome_produto)}</td>
-                <td style="color:var(--text-muted); font-size:0.85rem;">${escapeHTML(item.categoria || '—')}</td>
-                <td style="color:var(--text-muted); font-size:0.85rem;">${escapeHTML(item.ml_tamanho || '—')}</td>
-                <td style="color:var(--text-muted); font-size:0.8rem; max-width:160px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHTML(item.notas || '')}">${escapeHTML(item.notas || '—')}</td>
-                <td style="text-align:center;">
-                    <span style="display:inline-block; ${badgeStyle} font-weight:700; font-size:1rem; padding:4px 14px; border-radius:20px;">${item.quantidade}</span>
+        let total = 0, low = 0;
+        tbody.innerHTML = db.map(it => {
+            total += it.quantidade;
+            if (it.quantidade <= 1) low++;
+            const color = it.quantidade === 0 ? '#fee2e2;color:#991b1b'
+                : it.quantidade === 1 ? '#fef3c7;color:#92400e'
+                : '#dcfce7;color:#166534';
+            return `<tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:12px 16px; font-weight:600; font-size:0.9rem;">${escapeHTML(it.nome_produto)}</td>
+                <td style="padding:12px 8px; color:var(--text-muted); font-size:0.82rem;">${escapeHTML(it.ml_tamanho || '—')}</td>
+                <td style="padding:12px 8px; text-align:center;">
+                    <span style="background:${color}; padding:3px 14px; border-radius:20px; font-weight:700; font-size:1rem;">${it.quantidade}</span>
                 </td>
-                <td>
-                    <div style="display:flex; gap:6px; justify-content:center; align-items:center;">
-                        <button class="btn btn-outline btn-sm action-btn" data-id="${item.id}" data-action="decrease" ${item.quantidade <= 0 ? 'disabled' : ''} title="Remover 1">−</button>
-                        <button class="btn btn-outline btn-sm action-btn" data-id="${item.id}" data-action="increase" title="Adicionar 1">+</button>
-                        <button class="btn btn-sm action-btn" data-id="${item.id}" data-action="delete" title="Apagar" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.1rem; padding:4px 8px;">🗑</button>
+                <td style="padding:12px 16px;">
+                    <div style="display:flex; gap:6px; align-items:center; justify-content:center;">
+                        <button data-id="${it.id}" data-act="dec"
+                            style="width:30px; height:30px; border:1px solid var(--border); background:white; border-radius:6px; cursor:pointer; font-size:1.1rem; font-weight:700;" ${it.quantidade<=0?'disabled':''}>−</button>
+                        <button data-id="${it.id}" data-act="inc"
+                            style="width:30px; height:30px; border:1px solid var(--border); background:white; border-radius:6px; cursor:pointer; font-size:1.1rem; font-weight:700;">+</button>
+                        <button data-id="${it.id}" data-act="del"
+                            style="width:30px; height:30px; border:none; background:none; cursor:pointer; color:#ef4444; font-size:1rem;">🗑</button>
                     </div>
                 </td>
             </tr>`;
         }).join('');
-        document.getElementById('kpi-total-items').textContent = String(totalQtd);
-        document.getElementById('kpi-low-stock').textContent = String(lowCount);
+        document.getElementById('kpi-total').textContent = String(total);
+        document.getElementById('kpi-low').textContent   = String(low);
     };
 
-    const loadData = async () => {
-        try {
-            inventory = await store.getEstoque();
-            renderTable();
-        } catch (err) {
-            toast('Falha ao carregar estoque', 'error');
-            listEl.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:32px; color:#ef4444;">Erro ao carregar dados do estoque.</td></tr>`;
-        }
+    // ── Load data ─────────────────────────────────────────────
+    const load = async () => {
+        try { db = await store.getEstoque(); render(); }
+        catch { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:#ef4444;">Falha ao carregar estoque.</td></tr>`; }
     };
 
-    // Form submit
-    form.onsubmit = async (e) => {
+    // ── Form submit ───────────────────────────────────────────
+    form.addEventListener('submit', async e => {
         e.preventDefault();
-        const btn = form.querySelector('[type="submit"]');
+        const btn = document.getElementById('inv-submit');
         btn.disabled = true; btn.textContent = 'Salvando...';
         try {
             await store.addEstoque({
-                nome_produto: inputName.value.trim(),
-                categoria: inputCat.value,
-                quantidade: parseInt(document.getElementById('inv-qty').value, 10) || 0,
-                ml_tamanho: document.getElementById('inv-size').value,
-                notas: document.getElementById('inv-notes').value.trim()
+                nome_produto: nameEl.value.trim(),
+                categoria: catEl.value,
+                quantidade: parseInt(qtyEl.value, 10) || 0,
+                ml_tamanho: sizeEl.value,
+                notas: notesEl.value.trim()
             });
-            toast('Produto salvo no estoque! ✅');
+            toast('Produto salvo! ✅');
             closeModal();
-            loadData();
+            load();
         } catch (err) {
             toast(err.message || 'Erro ao salvar', 'error');
         } finally {
-            btn.disabled = false; btn.textContent = 'Salvar no Estoque';
-        }
-    };
-
-    // Table actions
-    listEl.addEventListener('click', async (e) => {
-        const btn = e.target.closest('.action-btn');
-        if (!btn) return;
-        const { id, action } = btn.dataset;
-        const item = inventory.find(i => i.id === id);
-        if (!item) return;
-        btn.disabled = true;
-        try {
-            if (action === 'increase') {
-                await store.updateEstoque(id, { quantidade: item.quantidade + 1, notas: item.notas });
-                item.quantidade++;
-                renderTable();
-            } else if (action === 'decrease' && item.quantidade > 0) {
-                await store.updateEstoque(id, { quantidade: item.quantidade - 1, notas: item.notas });
-                item.quantidade--;
-                renderTable();
-            } else if (action === 'delete') {
-                if (confirm(`Apagar "${item.nome_produto}" do estoque?`)) {
-                    await store.deleteEstoque(id);
-                    toast('Produto removido.');
-                    loadData();
-                } else { btn.disabled = false; }
-            }
-        } catch {
-            toast('Erro na operação', 'error');
-        } finally {
-            if (btn) btn.disabled = false;
+            btn.disabled = false; btn.textContent = 'Salvar';
         }
     });
 
-    loadData();
+    // ── Table actions (+/-/delete) ────────────────────────────
+    tbody.addEventListener('click', async e => {
+        const btn = e.target.closest('[data-act]');
+        if (!btn) return;
+        const { id, act } = btn.dataset;
+        const item = db.find(x => x.id === id);
+        if (!item) return;
+        btn.disabled = true;
+        try {
+            if (act === 'inc') {
+                await store.updateEstoque(id, { quantidade: item.quantidade + 1 });
+                item.quantidade++; render();
+            } else if (act === 'dec' && item.quantidade > 0) {
+                await store.updateEstoque(id, { quantidade: item.quantidade - 1 });
+                item.quantidade--; render();
+            } else if (act === 'del') {
+                if (confirm(`Apagar "${item.nome_produto}" do estoque?`)) {
+                    await store.deleteEstoque(id);
+                    toast('Removed!'); load();
+                }
+            }
+        } catch { toast('Erro na operação', 'error'); }
+        finally { if (btn) btn.disabled = false; }
+    });
+
+    load();
 }
