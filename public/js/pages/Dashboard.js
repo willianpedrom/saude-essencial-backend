@@ -75,6 +75,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
     { id: 'integrations', icon: '📊', label: 'Integrações' },
     { id: 'profile', icon: '👤', label: 'Meu Perfil' },
     { id: 'prospecting', icon: '🛰️', label: 'Radar de Leads' },
+    { id: 'estoque', icon: '📦', label: 'Meu Estoque' },
     { id: 'support', icon: '🎧', label: 'Suporte (Ajuda)' },
   ];
   if (auth.isAdmin) navItems.push({ id: 'admin', icon: '⚙️', label: 'Administração' });

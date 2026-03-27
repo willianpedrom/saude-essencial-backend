@@ -300,5 +300,11 @@ export const store = {
     saveCustomProtocol(anamneseId, data) {
         return api('PUT', `/api/anamneses/${anamneseId}/protocolo`, { protocolo_customizado: data });
     },
+
+    /* ---- ESTOQUE ---- */
+    getEstoque() { return api('GET', '/api/estoque'); },
+    addEstoque(data) { return api('POST', '/api/estoque', data); },
+    updateEstoque(id, data) { return api('PUT', `/api/estoque/${id}`, data); },
+    deleteEstoque(id) { return api('DELETE', `/api/estoque/${id}`); },
 };
 

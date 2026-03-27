@@ -314,3 +314,29 @@ BEGIN
     );
   END LOOP;
 END $$;
+
+-- ==========================================
+-- CONTROLE DE ESTOQUE INDIVIDUAL
+-- ==========================================
+CREATE TABLE IF NOT EXISTS estoque (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  consultora_id UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+  nome_produto  VARCHAR(200) NOT NULL,
+  categoria     VARCHAR(100), -- Óleo Essencial, Suplemento, Personal Care, Kit, Difusor
+  quantidade    INT DEFAULT 0,
+  ml_tamanho    VARCHAR(50),  -- 15ml, 5ml, 10ml Touch, Gramas, Cápsulas
+  notas         TEXT,         -- Origem (Ex: LRP, Kit Brasil, BOGO)
+  criado_em     TIMESTAMPTZ DEFAULT NOW(),
+  atualizado_em TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_estoque_consultora ON estoque(consultora_id);
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename  = 'estoque') THEN
+    EXECUTE 'DROP TRIGGER IF EXISTS trg_atualizado_em ON estoque; '
+         || 'CREATE TRIGGER trg_atualizado_em BEFORE UPDATE ON estoque '
+         || 'FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();';
+  END IF;
+END $$;

@@ -104,6 +104,10 @@ const router = new Router({
         const { renderProspecting } = await import('./pages/Prospecting.js');
         renderProspecting(router);
     }),
+    '/estoque': guard(async () => {
+        const { renderInventory } = await import('./pages/Inventory.js');
+        renderInventory(router);
+    }),
 
     // Public routes (no auth required)
     '/anamnese/:token': async ({ token }) => {
