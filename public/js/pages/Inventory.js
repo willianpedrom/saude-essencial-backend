@@ -1,8 +1,10 @@
 import { store } from '../store.js';
-import { toast, escapeHTML } from '../utils.js';
+import { toast } from '../utils.js';
 import { renderLayout } from './Dashboard.js';
 
-// Lista completa de produtos doTERRA embutida para evitar problemas de import
+// Local safe string escaping (escapeHTML does not exist in utils.js)
+const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
 const DOTERRA_PRODUCTS = [
     // Óleos Individuais
     { nome: "Lavanda (Lavender)", cat: "Óleo Essencial" },
@@ -251,11 +253,11 @@ export async function renderInventory(router) {
         const hits = DOTERRA_PRODUCTS.filter(p => p.nome.toLowerCase().includes(q)).slice(0, 8);
         if (!hits.length) { acEl.style.display = 'none'; return; }
         acEl.innerHTML = hits.map(p =>
-            `<div data-name="${escapeHTML(p.nome)}" data-cat="${escapeHTML(p.cat)}"
+            `<div data-name="${esc(p.nome)}" data-cat="${esc(p.cat)}"
                   style="padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); font-size:0.9rem;"
                   onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background=''">
-                <strong>${escapeHTML(p.nome)}</strong>
-                <span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">${escapeHTML(p.cat)}</span>
+                <strong>${esc(p.nome)}</strong>
+                <span style="font-size:0.75rem; color:var(--text-muted); margin-left:6px;">${esc(p.cat)}</span>
             </div>`
         ).join('');
         acEl.style.display = 'block';
@@ -294,8 +296,8 @@ export async function renderInventory(router) {
                 : it.quantidade === 1 ? '#fef3c7;color:#92400e'
                 : '#dcfce7;color:#166534';
             return `<tr style="border-bottom:1px solid var(--border);">
-                <td style="padding:12px 16px; font-weight:600; font-size:0.9rem;">${escapeHTML(it.nome_produto)}</td>
-                <td style="padding:12px 8px; color:var(--text-muted); font-size:0.82rem;">${escapeHTML(it.ml_tamanho || '—')}</td>
+                <td style="padding:12px 16px; font-weight:600; font-size:0.9rem;">${esc(it.nome_produto)}</td>
+                <td style="padding:12px 8px; color:var(--text-muted); font-size:0.82rem;">${esc(it.ml_tamanho || '—')}</td>
                 <td style="padding:12px 8px; text-align:center;">
                     <span style="background:${color}; padding:3px 14px; border-radius:20px; font-weight:700; font-size:1rem;">${it.quantidade}</span>
                 </td>
