@@ -5,10 +5,25 @@ import { renderLayout } from './Dashboard.js';
 const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 const fmt_brl = v => v != null ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v) : '—';
-const fmt_date = s => s ? new Date(s + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
-const days_until = s => {
+const parseDate = s => {
     if (!s) return null;
-    return Math.ceil((new Date(s + 'T12:00:00') - new Date()) / 86400000);
+    // Se for YYYY-MM-DD (comum em inputs), anexa meio-dia para evitar problemas de fuso horário
+    const iso = s.length === 10 ? s + 'T12:00:00' : s;
+    const d = new Date(iso);
+    return isNaN(d) ? null : d;
+};
+
+const fmt_date = s => {
+    const d = parseDate(s);
+    return d ? d.toLocaleDateString('pt-BR') : '—';
+};
+
+const days_until = s => {
+    const d = parseDate(s);
+    if (!d) return null;
+    const today = new Date();
+    today.setHours(12, 0, 0, 0); // Compara meio-dia com meio-dia
+    return Math.ceil((d - today) / 86400000);
 };
 
 const DOTERRA_PRODUCTS = [
