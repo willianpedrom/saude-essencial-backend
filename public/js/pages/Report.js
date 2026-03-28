@@ -11,7 +11,26 @@ export async function renderReport(router, dataParam, hash = null) {
        const res = await fetch('/api/anamneses/laudo/public/' + hash);
        if (!res.ok) throw new Error();
        const data = await res.json();
-       payload = {
+        
+        // Se for um laudo de RECRUTAMENTO (Negócio), redireciona p/ o BusinessReport
+        if (data.tipo === 'recrutamento' || data.subtipo === 'recrutamento') {
+          const { renderBusinessReport } = await import('./BusinessReport.js');
+          return renderBusinessReport(router, null, {
+            answers: data.dados,
+            protocolo_customizado: data.protocolo_customizado,
+            clientId: data.cliente_id,
+            consultant: {
+              name: data.consultora_nome,
+              slug: data.consultora_slug,
+              genero: data.consultora_genero,
+              phone: data.consultora_telefone,
+              link: data.consultora_link_afiliada
+            },
+            clientName: data.cliente_nome || data.dados?.personal?.full_name || data.dados?.personal?.nome || data.dados?.nome || 'Você',
+          });
+        }
+
+        payload = {
           answers: data.dados,
           protocolo_customizado: data.protocolo_customizado,
           clientId: data.cliente_id,

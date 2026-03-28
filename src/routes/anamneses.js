@@ -322,7 +322,7 @@ router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) 
 router.get('/laudo/public/:hash', async (req, res) => {
     try {
         const { rows } = await pool.query(
-            `SELECT a.id, a.dados, a.protocolo_customizado, a.cliente_id,
+            `SELECT a.id, a.dados, a.protocolo_customizado, a.cliente_id, a.tipo, a.subtipo,
               cli.nome AS cliente_nome,
               c.nome AS consultora_nome, c.genero AS consultora_genero,
               c.telefone AS consultora_telefone, c.link_afiliada AS consultora_link_afiliada,
