@@ -70,7 +70,10 @@ export function clientToApi(data) {
     if ('name' in data || 'nome' in data) apiObj.nome = data.name || data.nome || '';
     if ('email' in data) apiObj.email = data.email || null;
     if ('phone' in data || 'telefone' in data) apiObj.telefone = data.phone || data.telefone || null;
-    if ('birthdate' in data || 'data_nascimento' in data) apiObj.data_nascimento = data.birthdate || data.data_nascimento || null;
+    if ('birthdate' in data || 'data_nascimento' in data) {
+        const bd = data.birthdate || data.data_nascimento;
+        apiObj.data_nascimento = bd ? String(bd).slice(0, 10) : null;
+    }
     if ('city' in data || 'cidade' in data) apiObj.cidade = data.city || data.cidade || null;
     
     const notas = data.notes !== undefined ? data.notes : (data.notas !== undefined ? data.notas : data.observacoes);

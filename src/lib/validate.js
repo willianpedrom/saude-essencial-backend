@@ -13,7 +13,9 @@ const phone = z.string().min(8, 'Telefone muito curto.').max(20).regex(/^[\d\s\-
 const password = z.string().min(8, 'Senha deve ter no mínimo 8 caracteres.').max(128);
 const shortStr = (max = 255) => z.string().trim().min(1).max(max);
 const optStr = (max = 255) => z.string().trim().max(max).optional().nullable();
-const dateBR = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida. Use YYYY-MM-DD.').optional().nullable();
+const dateBR = z.string().transform(v => v.slice(0, 10)).pipe(
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida. Use YYYY-MM-DD.')
+).optional().nullable();
 const genero = z.enum(['masculino', 'feminino']).optional().nullable();
 
 // ── Auth schemas ─────────────────────────────────────────────────────────────
