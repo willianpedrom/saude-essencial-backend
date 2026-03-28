@@ -32,6 +32,13 @@ router.get('/', async (req, res) => {
             queryParams.push(`%${req.query.q.trim()}%`);
         }
 
+        // Filtro por Link de Anamnese (origem)
+        if (req.query.link) {
+            const idx = queryParams.length + 1;
+            baseWhere += ` AND c.id IN (SELECT cliente_id FROM anamneses WHERE (link_origem_id = $${idx} OR id = $${idx}) AND preenchido = TRUE)`;
+            queryParams.push(req.query.link);
+        }
+
         const cols = `c.id, c.nome, c.email, c.telefone, c.cpf, c.data_nascimento, c.genero, c.cidade, c.notas, c.ativo, c.status,
                    c.pipeline_stage, c.pipeline_notas, c.motivo_perda,
                    c.recrutamento_stage, c.recrutamento_notas, c.motivo_perda_recrutamento, c.tipo_cadastro, c.protocolo_mensagem, c.criado_em`;

@@ -44,21 +44,21 @@ const router = new Router({
         const { renderLogin } = await import('./pages/Login.js');
         renderLogin(router);
     },
-    '/dashboard': guard(async () => {
+    '/dashboard': guard(async (params) => {
         const { renderDashboard } = await import('./pages/Dashboard.js');
-        renderDashboard(router);
+        renderDashboard(router, params);
     }),
-    '/clients': guard(async () => {
+    '/clients': guard(async (params) => {
         const { renderClients } = await import('./pages/Clients.js?v=3');
-        renderClients(router);
+        renderClients(router, params);
     }),
-    '/links': guard(async () => {
+    '/links': guard(async (params) => {
         const { renderLinks } = await import('./pages/Links.js');
-        renderLinks(router);
+        renderLinks(router, params);
     }),
-    '/anamnesis': guard(async () => {
+    '/anamnesis': guard(async (params) => {
         const { renderAnamnesisList } = await import('./pages/Anamneses.js');
-        renderAnamnesisList(router);
+        renderAnamnesisList(router, params);
     }),
     '/schedule': guard(async () => {
         const { renderSchedule } = await import('./pages/Schedule.js');

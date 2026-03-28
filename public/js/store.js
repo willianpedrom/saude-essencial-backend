@@ -187,9 +187,10 @@ export const store = {
      * Paginated client fetching — sends ?page=&limit=&q=&ativo= to backend.
      * Returns { data: Client[], total, page, limit, totalPages }.
      */
-    async getClientsPaginated({ page = 1, limit = 50, q = '', ativo = 'all' } = {}) {
+    async getClientsPaginated({ page = 1, limit = 50, q = '', ativo = 'all', link = '' } = {}) {
         const params = new URLSearchParams({ page, limit, ativo });
         if (q) params.set('q', q);
+        if (link) params.set('link', link);
         const res = await api('GET', `/api/clientes?${params}`);
         // Backend responds { data, total, page, limit, totalPages }
         if (res && Array.isArray(res.data)) {

@@ -217,19 +217,9 @@ export async function renderAnamnesisList(router) {
   }
 
   async function showGenericFills(linkOrigemId, nome, router) {
-    // Fetch all anamneses that were generated from this generic link
-    // We use the full anamneses list from the Clients page via store
-    toast('Carregando fichas...', 'info');
-    try {
-      const all = await store.getAnamneses();
-      // The filled copies of a generic link have link_origem_id = linkOrigemId
-      // But our GET /api/anamneses only returns templates... we need a different approach
-      // For now, navigate to clients filtered — or show a toast message
-      toast(`As fichas preenchidas do link "${nome}" estão na seção Clientes`, 'info');
-      router.navigate('/clients');
-    } catch (e) {
-      toast('Erro ao carregar fichas.', 'error');
-    }
+    // Navigate to clients page with the filter parameter
+    toast(`Filtrando clientes da campanha "${nome}"...`, 'info');
+    router.navigate('/clients?link=' + linkOrigemId);
   }
 
   await load();

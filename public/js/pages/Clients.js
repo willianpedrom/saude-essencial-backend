@@ -385,7 +385,7 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
 }
 
 
-export async function renderClients(router) {
+export async function renderClients(router, params) {
   // Render layout immediately with loading
   renderLayout(router, 'Clientes', `
       <div style="display:flex;align-items:center;justify-content:center;height:200px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando clientes...</div>
@@ -396,6 +396,7 @@ export async function renderClients(router) {
   let tipoFilter = 'all';  // tipo_cadastro → local filter on current page
   let sortOrder = 'name';  // sort → local on current page
   let search = '';          // search → sent to server (debounced)
+  let linkFilter = params?.link || ''; // anamnese source filter
   let currentPage = 1;
   let totalClients = 0;
   let totalPages = 1;
@@ -405,7 +406,13 @@ export async function renderClients(router) {
   async function refresh(resetPage = true) {
     if (resetPage) currentPage = 1;
     try {
-      const res = await store.getClientsPaginated({ page: currentPage, limit: PAGE_SIZE, q: search, ativo: 'all' });
+      const res = await store.getClientsPaginated({
+        page: currentPage,
+        limit: PAGE_SIZE,
+        q: search,
+        ativo: 'all',
+        link: linkFilter
+      });
       clients = res.data;
       totalClients = res.total;
       totalPages = res.totalPages;
@@ -587,6 +594,18 @@ export async function renderClients(router) {
     const pc = document.getElementById('page-content');
     if (!pc) return;
     pc.innerHTML = `
+        ${linkFilter ? `
+          <div style="background:var(--green-50);border:1px solid var(--green-200);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:1.2rem">🔍</span>
+              <div>
+                <div style="font-size:0.85rem;color:var(--green-800);font-weight:700">Mostrando apenas leads desta campanha</div>
+                <div style="font-size:0.75rem;color:var(--green-600)">Os resultados foram filtrados pelo link de anamnese / captação selecionado.</div>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btn-clear-link-filter">✕ Limpar Filtro</button>
+          </div>
+        ` : ''}
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <div class="tab-bar" style="margin:0">
@@ -609,7 +628,7 @@ export async function renderClients(router) {
               <option value="oldest">Mais Antigos</option>
             </select>
 
-            <input class="field-input" id="search-input" placeholder="🔍 Buscar cliente..." style="width:200px;padding:8px 12px" />
+            <input class="field-input" id="search-input" value="${search}" placeholder="🔍 Buscar cliente..." style="width:200px;padding:8px 12px" />
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-secondary" id="btn-import-csv">📥 Importar CSV</button>
@@ -630,6 +649,11 @@ export async function renderClients(router) {
 
 
     renderTable();
+    pc.querySelector('#btn-clear-link-filter')?.addEventListener('click', () => {
+      linkFilter = '';
+      router.navigate('/clients');
+      refresh();
+    });
     pc.querySelector('#btn-add-client').addEventListener('click', () => showClientModal());
     pc.querySelector('#btn-import-csv').addEventListener('click', () => showImportModal());
     pc.querySelectorAll('[data-filter]').forEach(btn => {
