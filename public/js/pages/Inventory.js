@@ -414,7 +414,11 @@ export async function renderInventory(router) {
             (!q || it.nome_produto.toLowerCase().includes(q)) &&
             (!cat || it.categoria === cat) &&
             (!uso || it.uso_tipo === uso)
-        );
+        ).sort((a,b) => {
+            if (a.nome_produto !== b.nome_produto) return a.nome_produto.localeCompare(b.nome_produto);
+            if (a.ml_tamanho !== b.ml_tamanho) return (a.ml_tamanho || '').localeCompare(b.ml_tamanho || '');
+            return (a.validade || '9999').localeCompare(b.validade || '9999');
+        });
 
         updateKPIs(db);
 

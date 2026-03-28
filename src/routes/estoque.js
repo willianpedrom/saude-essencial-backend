@@ -25,11 +25,15 @@ router.post('/', async (req, res) => {
     if (!nome_produto) return res.status(400).json({ error: 'Nome do produto é obrigatório.' });
 
     try {
-        // Se o mesmo produto+tamanho já existir, soma a quantidade
+        // Se o mesmo produto+tamanho+validade+uso já existir, soma a quantidade
         const existing = await pool.query(
             `SELECT id, quantidade FROM estoque 
-             WHERE consultora_id = $1 AND nome_produto = $2 AND COALESCE(ml_tamanho,'') = COALESCE($3,'')`,
-            [req.consultora.id, nome_produto, ml_tamanho]
+             WHERE consultora_id = $1 
+               AND nome_produto = $2 
+               AND COALESCE(ml_tamanho,'') = COALESCE($3,'')
+               AND COALESCE(validade::text,'') = COALESCE($4::text,'')
+               AND COALESCE(uso_tipo,'venda') = COALESCE($5,'venda')`,
+            [req.consultora.id, nome_produto, ml_tamanho, validade || null, uso_tipo || 'venda']
         );
 
         if (existing.rows.length > 0) {
@@ -37,9 +41,9 @@ router.post('/', async (req, res) => {
             const newQtd = existing.rows[0].quantidade + (Number(quantidade) || 1);
             const updated = await pool.query(
                 `UPDATE estoque 
-                 SET quantidade=$1, notas=$2, validade=$3, preco_custo=$4, uso_tipo=$5, atualizado_em=NOW()
-                 WHERE id=$6 RETURNING *`,
-                [newQtd, notas, validade || null, preco_custo || null, uso_tipo || 'venda', id]
+                 SET quantidade=$1, notas=COALESCE($2, notas), preco_custo=COALESCE($3, preco_custo), atualizado_em=NOW()
+                 WHERE id=$4 RETURNING *`,
+                [newQtd, notas, preco_custo || null, id]
             );
             return res.json(updated.rows[0]);
         }
