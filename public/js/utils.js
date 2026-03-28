@@ -381,8 +381,9 @@ export function openClientOffcanvas(client) {
               <div style="font-size:0.8rem;color:var(--text-muted);display:flex;gap:8px;margin-top:4px">
                  <span>${client.cidade || 'Sem cidade'}</span>
                  <span>•</span>
-                 <span style="color:${isLost ? '#ef4444' : 'var(--green-600)'};font-weight:600">${stageName}</span>
-                 ${client.indicador_nome ? `<span>•</span><span style="color:#d97706;font-weight:600;background:#fef3c7;padding:2px 6px;border-radius:4px" title="Este cliente chegou no Funil porque foi indicado.">🎁 Indicado(a) por: ${client.indicador_nome}</span>` : ''}
+                  <span id="oc-stage-badge" style="color:${isLost ? '#ef4444' : 'var(--green-600)'};font-weight:600">${stageName}</span>
+                  <span id="oc-tipo-icon">${client.tipo_cadastro === 'preferencial' ? '🛍️' : client.tipo_cadastro === 'consultora' ? '💼' : ''}</span>
+                  ${client.indicador_nome ? `<span>•</span><span style="color:#d97706;font-weight:600;background:#fef3c7;padding:2px 6px;border-radius:4px" title="Este cliente chegou no Funil porque foi indicado.">🎁 Indicado(a) por: ${client.indicador_nome}</span>` : ''}
               </div>
             </div>
           </div>
@@ -418,9 +419,12 @@ export function openClientOffcanvas(client) {
                <span style="color:#4a7c40;font-size:1.1rem">›</span>
              </div>
 
-             <div class="form-group" style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid var(--border);margin-bottom:16px">
+             <div class="form-group" style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid var(--border);margin-bottom:16px;position:relative">
                 <label class="field-label" style="font-size:0.75rem;margin-bottom:8px;display:block">Classificação de Atuação</label>
-                <div style="display:flex;gap:12px;font-size:0.8rem">
+                <div id="oc-tipo-loading" style="position:absolute;inset:0;background:rgba(255,255,255,0.7);display:none;align-items:center;justify-content:center;z-index:10;border-radius:8px;font-size:0.7rem;font-weight:600;color:var(--green-700)">
+                  ⏳ Salvando...
+                </div>
+                <div id="oc-tipo-group" style="display:flex;gap:12px;font-size:0.8rem">
                   <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
                     <input type="radio" name="oc_tipo_cadastro" value="lead" ${!client.tipo_cadastro || client.tipo_cadastro === 'lead' ? 'checked' : ''}>
                     <span>Prospecto</span>
@@ -557,26 +561,41 @@ export function openClientOffcanvas(client) {
   });
 
   // Classificação Action (Radio buttons)
-  const tipoRadios = overlay.querySelectorAll('input[name="oc_tipo_cadastro"]');
-  tipoRadios.forEach(radio => {
-    radio.addEventListener('change', async (e) => {
-      try {
-        const val = e.target.value === 'lead' ? null : e.target.value;
-        const { store } = await import('./store.js');
-        // Fetch current full client object to avoid overriding to null
-        const atual = client;
-        atual.tipo_cadastro = val;
-        await store.updateClient(client.id, atual);
-        toast('Classificação atualizada salvo!', 'success');
+   const tipoRadios = overlay.querySelectorAll('input[name="oc_tipo_cadastro"]');
+   const tipoLoading = overlay.querySelector('#oc-tipo-loading');
+   const tipoIcon = overlay.querySelector('#oc-tipo-icon');
 
-        // Disparar evento customizado pra não ter que dar reload a todo instante
-        window.dispatchEvent(new Event('client-updated'));
+   tipoRadios.forEach(radio => {
+     radio.addEventListener('change', async (e) => {
+       try {
+         if (tipoLoading) tipoLoading.style.display = 'flex';
+         const val = e.target.value === 'lead' ? null : e.target.value;
+         const { store } = await import('./store.js');
+         
+         // Fetch fresh data or use existing to preserve other fields
+         const atual = { ...client };
+         atual.tipo_cadastro = val;
+         
+         await store.updateClient(client.id, atual);
+         
+         // UI Feedback
+         if (tipoIcon) {
+           tipoIcon.textContent = val === 'preferencial' ? '🛍️' : val === 'consultora' ? '💼' : '';
+         }
+         toast('Classificação atualizada! ✅', 'success');
 
-      } catch (err) {
-        toast('Erro ao mudar classificação: ' + err.message, 'error');
-      }
-    });
-  });
+         // Disparar evento customizado pra não ter que dar reload a todo instante
+         window.dispatchEvent(new Event('client-updated'));
+
+       } catch (err) {
+         toast('Erro ao mudar classificação: ' + err.message, 'error');
+         // Rollback radio visual if error
+         tipoRadios.forEach(r => r.checked = (r.value === (client.tipo_cadastro || 'lead')));
+       } finally {
+         if (tipoLoading) tipoLoading.style.display = 'none';
+       }
+     });
+   });
 
   // Action: Adicionar ao Recrutamento
   const btnAddRecrutamento = overlay.querySelector('#btn-add-recrutamento');

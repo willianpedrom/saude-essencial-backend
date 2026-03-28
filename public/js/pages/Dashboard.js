@@ -1030,6 +1030,10 @@ export async function renderDashboard(router) {
     if (avisosModais && avisosModais.length > 0) {
       setTimeout(() => processNextAviso(avisosModais, 0), 600);
     }
+    
+    // Sincronização em tempo real: ouve mudanças feitas via Offcanvas
+    const onUpdated = () => renderDashboard(router);
+    window.addEventListener('client-updated', onUpdated);
 
   } catch (err) {
     console.error('Dashboard error:', err);

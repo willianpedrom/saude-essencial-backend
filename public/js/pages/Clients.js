@@ -665,6 +665,14 @@ export async function renderClients(router) {
       clearTimeout(_searchTimer);
       _searchTimer = setTimeout(() => refresh(), 300);
     });
+
+    // Sincronização em tempo real: ouve mudanças feitas via Offcanvas
+    const onUpdated = () => refresh(false);
+    window.addEventListener('client-updated', onUpdated);
+    
+    // Limpeza opcional se necessário, mas como o hashRouting reconstrói o DOM, 
+    // os eventos no window podem se acumular se não tomarmos cuidado.
+    // O router desse app parece reconstruir o app.innerHTML inteiro.
   }
 
   function showClientModal(client = null) {
