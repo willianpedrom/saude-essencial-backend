@@ -80,7 +80,12 @@ export function clientToApi(data) {
     if (notas !== undefined) apiObj.notas = notas || null;
     
     if ('status' in data) apiObj.status = data.status;
-    if ('genero' in data) apiObj.genero = data.genero;
+    if ('genero' in data) {
+        const g = String(data.genero || '').toLowerCase();
+        if (g.includes('fem') || g === 'f') apiObj.genero = 'feminino';
+        else if (g.includes('masc') || g === 'm') apiObj.genero = 'masculino';
+        else apiObj.genero = data.genero || null;
+    }
     if ('protocolo_mensagem' in data) apiObj.protocolo_mensagem = data.protocolo_mensagem || null;
     if ('pipeline_stage' in data) apiObj.pipeline_stage = data.pipeline_stage;
     if ('tipo_cadastro' in data) apiObj.tipo_cadastro = data.tipo_cadastro;
