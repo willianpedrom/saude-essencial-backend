@@ -319,10 +319,10 @@ router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) 
 
             sendPushNotification(consultora_id, {
                 title: `💧 Novo formulário de ${nome.split(' ')[0]}${subject}`,
-                body: `Um novo protocolo de ${tipo} foi preenchido. Clique para visualizar.`,
+                body: `Um novo protocolo de ${tipo} foi preenchido. Clique para visualizar no Pipeline.`,
                 icon: '/icon-512.png',
                 data: {
-                    url: `/#/clients?id=${clienteId}`
+                    url: `/#/pipeline`
                 }
             });
         } catch (e) {

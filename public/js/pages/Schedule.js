@@ -363,11 +363,16 @@ export async function renderFollowup(router) {
       if (delay <= 0 || delay > MAX_DELAY) return;
       setTimeout(() => {
         if (Notification.permission === 'granted') {
-          new Notification(`${label} — ${clientName}`, {
+          const n = new Notification(`${label} — ${clientName}`, {
             body,
             icon: '/favicon.ico',
             tag: `fu-${followup.id}-${offset}`,
           });
+          n.onclick = function() {
+            window.focus();
+            window.location.hash = '/followup';
+            n.close();
+          };
         }
       }, delay);
     });
