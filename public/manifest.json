@@ -1,5 +1,6 @@
 {
     "name": "Gota App – Gestão de Relacionamento",
+    "gcm_sender_id": "103953800507",
     "short_name": "Gota App",
     "description": "Plataforma para consultoras gerenciarem clientes, anamneses e protocolos.",
     "start_url": "/",
