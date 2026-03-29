@@ -665,6 +665,9 @@ export async function renderProfile(router) {
 
         function updateUI(active) {
             btn.style.display = 'inline-block';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            
             if (active) {
                 badge.textContent = '✅ Ativo';
                 badge.style.background = '#dcfce7';
