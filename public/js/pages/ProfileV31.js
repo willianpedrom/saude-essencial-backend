@@ -298,6 +298,13 @@ export async function renderProfile(router) {
   }
 
   function bindEvents(pc) {
+    // 0. Initialize Push Notifications first to ensure it's not blocked by other events
+    try {
+        initPush();
+    } catch (e) {
+        console.error('Push initialisation failed', e);
+    }
+
     // Photo file upload
     const avatarDisplay = pc.querySelector('#avatar-display');
     const fotoInput = pc.querySelector('#foto-input');
@@ -689,7 +696,13 @@ export async function renderProfile(router) {
                     toast('Notificações desativadas neste dispositivo.');
                 } else {
                     // SUBSCRIBE
-                    const { publicKey } = await store.getVapidKey();
+                    const response = await store.getVapidKey();
+                    const publicKey = response?.publicKey;
+                    
+                    if (!publicKey || publicKey.includes('X7X6')) { // Detect placeholder pattern
+                         throw new Error('Chave de segurança (VAPID) não configurada no servidor. Verifique as variáveis de ambiente.');
+                    }
+
                     subscription = await registration.pushManager.subscribe({
                         userVisibleOnly: true,
                         applicationServerKey: urlBase64ToUint8Array(publicKey)
@@ -718,8 +731,6 @@ export async function renderProfile(router) {
             }
         });
     }
-
-    initPush();
   }
 
   render();
