@@ -718,7 +718,17 @@ export async function renderClients(router, params) {
         </div>
         <div class="form-group">
           <label class="field-label">Data de Nascimento</label>
-          <input class="field-input" id="m-birthdate" type="date" value="${client?.birthdate || ''}" />
+          <input class="field-input" id="m-birthdate" type="tel" inputmode="numeric" 
+            placeholder="DD/MM/AAAA"
+            value="${(() => {
+              const val = client?.birthdate || client?.data_nascimento || '';
+              if (val && val.includes('-')) {
+                const [y, m, d] = val.split('T')[0].split('-');
+                return `${d}/${m}/${y}`;
+              }
+              return val;
+            })()}" 
+            oninput="this.value = this.value.replace(/\\D/g, '').replace(/(\\d{2})(\\d)/, '$1/$2').replace(/(\\d{2})\\/(\\d{2})(\\d)/, '$1/$2/$3').slice(0, 10)" />
         </div>
         <div class="form-group">
           <label class="field-label">Cidade</label>
@@ -749,7 +759,14 @@ export async function renderClients(router, params) {
           name: document.getElementById('m-name').value.trim(),
           email: document.getElementById('m-email').value.trim(),
           phone: document.getElementById('m-phone').value.trim(),
-          birthdate: document.getElementById('m-birthdate').value,
+          birthdate: (() => {
+            const val = document.getElementById('m-birthdate').value;
+            if (val && val.includes('/')) {
+              const [d, m, y] = val.split('/');
+              if (y && y.length === 4) return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+            }
+            return val;
+          })(),
           city: document.getElementById('m-city').value.trim(),
           genero: document.getElementById('m-genero').value,
           status: document.getElementById('m-status').value,

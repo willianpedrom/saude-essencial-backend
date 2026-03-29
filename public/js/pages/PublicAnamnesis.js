@@ -2,6 +2,27 @@ import { store } from '../store.js';
 import { ANAMNESIS_QUESTIONS, ANAMNESIS_STEPS, BUSINESS_STEPS, BUSINESS_QUESTIONS } from '../data.js';
 import { toast, injectTrackingScripts } from '../utils.js';
 
+/** 
+ * Helper to apply DD/MM/YYYY mask to an input
+ */
+function applyBirthdateMask(input) {
+  let val = input.value.replace(/\D/g, '');
+  if (val.length > 8) val = val.slice(0, 8);
+  
+  let formatted = '';
+  if (val.length > 0) {
+    formatted = val.slice(0, 2);
+    if (val.length > 2) {
+      formatted += '/' + val.slice(2, 4);
+      if (val.length > 4) {
+        formatted += '/' + val.slice(4, 8);
+      }
+    }
+  }
+  input.value = formatted;
+}
+
+
 export async function renderPublicAnamnesis(router, token) {
   const app = document.getElementById('app');
 
@@ -393,6 +414,21 @@ export async function renderPublicAnamnesis(router, token) {
               <input class="field-input" id="field-${key}" type="${f.type}" value="${val}" placeholder="${f.placeholder || ''}" ${f.required ? 'required' : ''} />
             </div>`;
         }
+        if (f.type === 'birthdate') {
+          // Special masked birthdate input for better UX (tel type opens numeric keyboard)
+          // Value is stored as YYYY-MM-DD, but displayed as DD/MM/YYYY
+          let displayVal = val;
+          if (val && val.includes('-')) {
+             const [y, m, d] = val.split('-');
+             displayVal = `${d}/${m}/${y}`;
+          }
+          return `<div class="form-group" style="margin-bottom:14px">
+              <label class="field-label">${f.label}${f.required ? ' *' : ''}</label>
+              <input class="field-input" id="field-${key}" type="tel" inputmode="numeric" 
+                value="${displayVal}" placeholder="DD/MM/AAAA" ${f.required ? 'required' : ''} 
+                oninput="this.value = this.value.replace(/\\D/g, '').replace(/(\\d{2})(\\d)/, '$1/$2').replace(/(\\d{2})\\/(\\d{2})(\\d)/, '$1/$2/$3').slice(0, 10)" />
+            </div>`;
+        }
         if (f.type === 'select') {
           return `<div class="form-group" style="margin-bottom:14px">
               <label class="field-label">${f.label}${f.required ? ' *' : ''}</label>
@@ -484,9 +520,20 @@ export async function renderPublicAnamnesis(router, token) {
     if (fields) {
       fields.forEach(f => {
         const key = f.name || f.key;
-        if (['text', 'email', 'tel', 'date', 'select'].includes(f.type)) {
+        if (['text', 'email', 'tel', 'date', 'birthdate', 'select'].includes(f.type)) {
           const el = document.getElementById('field-' + key);
-          if (el) data[key] = el.value;
+          if (el) {
+            let val = el.value;
+            // Normalize birthdate from DD/MM/YYYY to YYYY-MM-DD
+            if (f.type === 'birthdate' && val.includes('/')) {
+               const parts = val.split('/');
+               if (parts.length === 3) {
+                  const [d, m, y] = parts;
+                  if (y.length === 4) val = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+               }
+            }
+            data[key] = val;
+          }
         } else if (f.type === 'radio') {
           const sel = document.querySelector(`input[name="${key}"]:checked`);
           data[key] = sel ? sel.value : null;

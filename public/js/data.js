@@ -116,7 +116,7 @@ export const ANAMNESIS_QUESTIONS = {
         title: 'Excelente, {nome}! Seu protocolo está quase pronto.', icon: '🎯',
         fields: [
             { name: 'email', label: 'Para qual e-mail enviamos seu Protocolo?', type: 'email', required: true, placeholder: 'seu@email.com' },
-            { name: 'birthdate', label: 'Sua data de nascimento', type: 'date', required: true },
+            { name: 'birthdate', label: 'Sua data de nascimento', type: 'birthdate', required: true },
             { name: 'gender', label: 'Qual é o seu Gênero?', type: 'select', required: true, options: ['Feminino', 'Masculino'] },
             { name: 'city', label: 'Cidade e Estado', type: 'text', placeholder: 'Ex: São Paulo, SP' }
         ],
