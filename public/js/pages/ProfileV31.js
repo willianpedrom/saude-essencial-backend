@@ -1,4 +1,4 @@
-import { auth, store, api } from '../store.js';
+import { auth, store, api, urlBase64ToUint8Array } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { toast, btnLoading, copyToClipboard, ARCHETYPE_THEMES } from '../utils.js';
 
@@ -116,6 +116,30 @@ export async function renderProfile(router) {
             </div>
           </div>
 
+          <!-- Notificações Mobile (Web Push) -->
+          <div class="card" style="margin-bottom:16px; border:2px solid var(--green-200); background:#fcfdfc">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;align-items:center">
+              <h3 style="margin:0;font-size:1rem">🔔 Notificações em Tempo Real</h3>
+              <div id="push-status-badge" style="font-size:0.75rem;padding:4px 10px;border-radius:20px;font-weight:700">🔍 Verificando...</div>
+            </div>
+            <div style="padding:20px">
+                <div style="display:flex;align-items:flex-start;gap:16px">
+                    <div style="font-size:2rem;background:#f0fdf4;width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">📱</div>
+                    <div>
+                        <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px">Alertas no Celular</div>
+                        <p style="font-size:0.85rem;color:var(--text-muted);margin:0 0 16px 0;line-height:1.5">
+                            Seja avisada na hora sempre que uma nova anamnese for preenchida. 
+                            <br><small><i>Disponível no Desktop e Mobile (PWA).</i></small>
+                        </p>
+                        <button type="button" id="btn-push-toggle" class="btn btn-primary btn-sm" style="display:inline-block; opacity:0.8" disabled>
+                            ⌛ Verificando suporte...
+                        </button>
+                        <div id="push-error-msg" style="color:#dc2626;font-size:0.78rem;margin-top:8px;display:none"></div>
+                    </div>
+                </div>
+            </div>
+          </div>
+
           <!-- Redes Sociais -->
           <div class="card" style="margin-bottom:16px">
             <div style="padding:16px 20px;border-bottom:1px solid var(--border-light)">
@@ -180,6 +204,7 @@ export async function renderProfile(router) {
               </div>
             </div>
           </div>
+
 
           <!-- Public profile link with editable slug -->
           ${profile.slug ? `
@@ -262,6 +287,9 @@ export async function renderProfile(router) {
           <div style="display:flex;justify-content:flex-end;gap:10px">
             <button type="button" class="btn btn-secondary" id="btn-cancel">Cancelar</button>
             <button type="submit" class="btn btn-primary" id="btn-save">💾 Salvar Perfil</button>
+            <div style="text-align:center; padding:20px; font-size:0.75rem; color:var(--text-muted); opacity:0.5">
+              Build ID: v1.8.31-push-stable
+            </div>
           </div>
         </form>
       </div>`;
@@ -588,6 +616,103 @@ export async function renderProfile(router) {
         toast('Erro ao salvar: ' + err.message, 'error');
       }
     });
+
+    // === GESTÃO DE PUSH NOTIFICATIONS ===
+    async function initPush() {
+        const btn = pc.querySelector('#btn-push-toggle');
+        const badge = pc.querySelector('#push-status-badge');
+        const errorMsg = pc.querySelector('#push-error-msg');
+        
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            badge.textContent = '❌ Não suportado';
+            badge.style.background = '#fee2e2';
+            badge.style.color = '#991b1b';
+            errorMsg.textContent = 'Este navegador/dispositivo não suporta notificações Push.';
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        // Ensure button is visible
+        btn.style.display = 'inline-block';
+
+        // Add a timeout to prevent hanging if SW is not ready
+        const registration = await Promise.race([
+            navigator.serviceWorker.ready,
+            new Promise((_, reject) => setTimeout(() => reject('Timeout: Service Worker demorou muito'), 3000))
+        ]).catch(e => {
+            console.warn(e);
+            badge.textContent = '⚠️ Requer Atualização';
+            badge.style.background = '#fef3c7';
+            badge.style.color = '#92400e';
+            return null;
+        });
+
+        if (!registration) {
+            btn.textContent = 'Recarregar Página';
+            btn.disabled = false;
+            btn.addEventListener('click', () => window.location.reload(), { once: true });
+            return;
+        }
+
+        let subscription = await registration.pushManager.getSubscription();
+
+        function updateUI(active) {
+            btn.style.display = 'inline-block';
+            if (active) {
+                badge.textContent = '✅ Ativo';
+                badge.style.background = '#dcfce7';
+                badge.style.color = '#166534';
+                btn.textContent = '🔕 Desativar Notificações';
+                btn.classList.replace('btn-primary', 'btn-secondary');
+            } else {
+                badge.textContent = '⚪ Desativado';
+                badge.style.background = '#f3f4f6';
+                badge.style.color = '#374151';
+                btn.textContent = '🔔 Ativar Notificações';
+                btn.classList.replace('btn-secondary', 'btn-primary');
+            }
+        }
+
+        updateUI(!!subscription);
+
+        btn.addEventListener('click', async () => {
+            const restore = btnLoading(btn, 'Processando...');
+            try {
+                if (subscription) {
+                    // UNSUBSCRIBE
+                    await subscription.unsubscribe();
+                    await store.unsubscribePush(subscription.endpoint);
+                    subscription = null;
+                    updateUI(false);
+                    toast('Notificações desativadas neste dispositivo.');
+                } else {
+                    // SUBSCRIBE
+                    const { publicKey } = await store.getVapidKey();
+                    subscription = await registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: urlBase64ToUint8Array(publicKey)
+                    });
+                    
+                    await store.subscribePush(
+                        subscription, 
+                        navigator.userAgent.split(' ')[0], 
+                        /Mobi|Android/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
+                    );
+                    updateUI(true);
+                    toast('Notificações ativadas com sucesso! 🎉');
+                }
+                restore(true);
+            } catch (err) {
+                console.error(err);
+                restore(false);
+                errorMsg.textContent = 'Erro ao configurar notificações: ' + err.message;
+                errorMsg.style.display = 'block';
+                toast('Erro nas notificações: ' + err.message, 'error');
+            }
+        });
+    }
+
+    initPush();
   }
 
   render();

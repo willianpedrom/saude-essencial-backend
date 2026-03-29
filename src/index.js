@@ -176,6 +176,7 @@ app.use('/api/avisos', require('./routes/avisos'));
 app.use('/api/followups', require('./routes/followups'));
 app.use('/api/prospects', require('./routes/prospects'));
 app.use('/api/estoque', require('./routes/estoque'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // Rota pública raiz para SEO / Open Graph (Prévias de Link)
 app.use('/convite', require('./routes/share'));
@@ -285,6 +286,20 @@ async function runMigration() {
         await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS user_ratings_total INTEGER`);
         await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS lat DECIMAL(10,8)`);
         await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS lng DECIMAL(11,8)`);
+
+        // Push Notifications Subscriptions table
+        await pool.query(`CREATE TABLE IF NOT EXISTS push_subscriptions (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            consultora_id UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+            endpoint TEXT UNIQUE NOT NULL,
+            expiration_time TIMESTAMPTZ,
+            keys JSONB NOT NULL,
+            browser_name VARCHAR(100),
+            device_type VARCHAR(50),
+            criado_em TIMESTAMPTZ DEFAULT NOW(),
+            atualizado_em TIMESTAMPTZ DEFAULT NOW()
+        )`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_push_consultora ON push_subscriptions(consultora_id)`);
 
         // Promote ADMIN_EMAIL to role='admin' (safe to run every startup — idempotent)
         if (process.env.ADMIN_EMAIL) {

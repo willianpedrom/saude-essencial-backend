@@ -348,3 +348,20 @@ BEGIN
          || 'FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();';
   END IF;
 END $$;
+
+-- ==========================================
+-- NOTIFICAÇÕES WEB PUSH
+-- ==========================================
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  consultora_id   UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+  endpoint        TEXT UNIQUE NOT NULL,
+  expiration_time TIMESTAMPTZ,
+  keys            JSONB NOT NULL, -- auth e p256dh
+  browser_name    VARCHAR(100),
+  device_type     VARCHAR(50),
+  criado_em       TIMESTAMPTZ DEFAULT NOW(),
+  atualizado_em   TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_push_consultora ON push_subscriptions(consultora_id);

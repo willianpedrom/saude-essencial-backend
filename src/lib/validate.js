@@ -16,7 +16,10 @@ const optStr = (max = 255) => z.string().trim().max(max).optional().nullable();
 const dateBR = z.string().transform(v => v.slice(0, 10)).pipe(
     z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida. Use YYYY-MM-DD.')
 ).optional().nullable();
-const genero = z.enum(['masculino', 'feminino']).optional().nullable();
+const genero = z.preprocess(
+    (val) => (typeof val === 'string' ? val.toLowerCase().trim() : val),
+    z.enum(['masculino', 'feminino'])
+).optional().nullable();
 
 // ── Auth schemas ─────────────────────────────────────────────────────────────
 const login = z.object({

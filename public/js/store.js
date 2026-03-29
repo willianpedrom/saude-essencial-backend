@@ -315,5 +315,26 @@ export const store = {
     addEstoque(data) { return api('POST', '/api/estoque', data); },
     updateEstoque(id, data) { return api('PUT', `/api/estoque/${id}`, data); },
     deleteEstoque(id) { return api('DELETE', `/api/estoque/${id}`); },
+
+    /* ---- NOTIFICAÇÕES PUSH ---- */
+    getVapidKey() { return api('GET', '/api/notifications/vapid-key'); },
+    subscribePush(subscription, browser_name, device_type) {
+        return api('POST', '/api/notifications/subscribe', { subscription, browser_name, device_type });
+    },
+    unsubscribePush(endpoint) {
+        return api('POST', '/api/notifications/unsubscribe', { endpoint });
+    },
 };
+
+// Helper for VAPID key conversion
+export function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
 

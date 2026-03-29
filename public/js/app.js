@@ -81,7 +81,7 @@ const router = new Router({
         renderAssinatura(router);
     }),
     '/profile': guard(async () => {
-        const { renderProfile } = await import('./pages/Profile.js');
+        const { renderProfile } = await import('./pages/ProfileV31.js');
         renderProfile(router);
     }),
     '/admin': guard(async () => {

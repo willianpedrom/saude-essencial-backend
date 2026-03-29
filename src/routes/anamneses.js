@@ -185,7 +185,7 @@ router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) 
         const telefone = pData.phone || pData.telefone || null;
         const data_nasc = (pData.birthdate && pData.birthdate.length > 5) ? pData.birthdate : null;
         const cidade = pData.city || pData.cidade || null;
-        const genero = pData.gender || pData.genero || 'feminino'; // 'masculino' or 'feminino' from the form
+        const genero = (pData.gender || pData.genero || 'feminino').toLowerCase().trim();
 
         // 4. Upsert client — match by name similarity + (email OR phone)
         // Using name matching prevents treating different people sharing the same
@@ -299,12 +299,34 @@ router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) 
                     {
                         clientIp: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
                         userAgent: req.headers['user-agent'],
-                        pageUrl: req.headers.referer,
+                        clientEmail: email,
+                        clientPhone: telefone,
+                        fbc: req.query.fbc,
+                        fbp: req.query.fbp,
                     }
-                ).catch(() => { }); // Never throw
+                );
             }
-        } catch (capiErr) {
-            console.warn('[CAPI] Could not fire Lead event:', capiErr.message);
+        } catch (e) {
+            console.error('[CAPI] Error:', e);
+        }
+
+        // 7. Fire Push Notification (non-blocking)
+        try {
+            const { sendPushNotification } = require('../lib/push');
+            const queixa = dados.main_complaint || dados.queixa_principal || dados.goals || '';
+            const queixaStr = Array.isArray(queixa) ? queixa.slice(0, 2).join(', ') : String(queixa);
+            const subject = queixaStr ? `: ${queixaStr.slice(0, 30)}${queixaStr.length > 30 ? '...' : ''}` : '';
+
+            sendPushNotification(consultora_id, {
+                title: `💧 Novo formulário de ${nome.split(' ')[0]}${subject}`,
+                body: `Um novo protocolo de ${tipo} foi preenchido. Clique para visualizar.`,
+                icon: '/icon-512.png',
+                data: {
+                    url: `/#/clients?id=${clienteId}`
+                }
+            });
+        } catch (e) {
+            console.error('[Push] Trigger error:', e);
         }
 
         res.json({ success: true, id: anamnese_id, cliente_id: clienteId });

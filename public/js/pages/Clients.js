@@ -471,7 +471,7 @@ export async function renderClients(router, params) {
             </div>
           </div></td>
           <td>${phone}</td>
-          <td>${c.genero === 'masculino' ? '♂ Masc.' : '♀ Fem.'}</td>
+          <td>${String(c.genero || '').toLowerCase() === 'masculino' ? '♂ Masc.' : String(c.genero || '').toLowerCase() === 'feminino' ? '♀ Fem.' : '—'}</td>
           <td>${formatDate(c.data_nascimento || c.birthdate) || '—'}</td>
           <td>${city}</td>
           <td><span class="status-badge status-${c.status || 'active'}">${{ active: 'Ativo', inactive: 'Inativo' }[c.status] || 'Ativo'}</span></td>

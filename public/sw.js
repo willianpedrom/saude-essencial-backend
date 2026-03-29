@@ -1,6 +1,6 @@
 // Minimal Service Worker — required for PWA install prompt
 // v3: 2026-03 — bust cache to pick up new routes (estoque)
-const CACHE_NAME = 'gota-app-v3';
+const CACHE_NAME = 'gota-app-v4';
 const PRECACHE = ['/', '/css/index.css', '/logo.png'];
 
 self.addEventListener('install', e => {
@@ -28,5 +28,43 @@ self.addEventListener('fetch', e => {
                 return res;
             })
             .catch(() => caches.match(e.request))
+    );
+});
+
+/* ─── WEB PUSH NOTIFICATIONS ─── */
+
+self.addEventListener('push', e => {
+    try {
+        const data = e.data ? e.data.json() : { title: 'Gota App', body: 'Nova notificação recebida.' };
+        const options = {
+            body: data.body || '',
+            icon: data.icon || '/icon-512.png',
+            badge: '/icon-512.png',
+            vibrate: [100, 50, 100],
+            data: data.data || {}
+        };
+        e.waitUntil(
+            self.registration.showNotification(data.title, options)
+        );
+    } catch (err) {
+        console.error('[SW] Push error:', err);
+    }
+});
+
+self.addEventListener('notificationclick', e => {
+    e.notification.close();
+    const urlToOpen = e.notification.data?.url || '/';
+    e.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
+            for (let client of windowClients) {
+                if ('focus' in client) {
+                    client.postMessage({ type: 'navigate', url: urlToOpen });
+                    return client.focus();
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow(urlToOpen);
+            }
+        })
     );
 });
