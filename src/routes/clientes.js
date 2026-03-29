@@ -3,7 +3,6 @@ const pool = require('../db/pool');
 const auth = require('../middleware/auth');
 const checkSub = require('../middleware/checkSubscription');
 const checkFeature = require('../middleware/checkFeature');
-const { validate, schemas } = require('../lib/validate');
 
 const router = express.Router();
 
@@ -13,73 +12,32 @@ router.use(auth, checkSub);
 // GET /api/clientes
 router.get('/', async (req, res) => {
     try {
-        // Filtra ativo=TRUE por padrão.
-        let baseWhere = `WHERE c.consultora_id = $1`;
+        // Filtra ativo=TRUE por padrão. Use ?ativo=false para ver inativos, ?ativo=all para todos.
+        let queryStr = `
+            SELECT id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, ativo, status,
+                   pipeline_stage, pipeline_notas, motivo_perda, pipeline_stage_updated_at,
+                   recrutamento_stage, recrutamento_notas, motivo_perda_recrutamento, recrutamento_stage_updated_at,
+                   tipo_cadastro, criado_em, atualizado_em
+            FROM clientes
+            WHERE consultora_id = $1
+        `;
         const queryParams = [req.consultora.id];
 
         if (req.query.ativo === 'all') {
-            // não filtra
+            // não filtra — retorna todos
         } else if (req.query.ativo === 'false') {
-            baseWhere += ` AND c.ativo = FALSE`;
+            queryStr += ` AND ativo = FALSE`;
         } else {
-            baseWhere += ` AND c.ativo = TRUE`;
+            // padrão: só ativos
+            queryStr += ` AND ativo = TRUE`;
         }
 
-        // Optional search filter (server-side)
-        if (req.query.q && req.query.q.trim()) {
-            const idx = queryParams.length + 1;
-            baseWhere += ` AND (c.nome ILIKE $${idx} OR c.email ILIKE $${idx} OR c.telefone ILIKE $${idx})`;
-            queryParams.push(`%${req.query.q.trim()}%`);
-        }
+        queryStr += ` ORDER BY nome ASC`;
 
-        // Filtro por Link de Anamnese (origem)
-        if (req.query.link) {
-            const idx = queryParams.length + 1;
-            baseWhere += ` AND c.id IN (SELECT cliente_id FROM anamneses WHERE (link_origem_id = $${idx} OR id = $${idx}) AND preenchido = TRUE)`;
-            queryParams.push(req.query.link);
-        }
-
-        const cols = `c.id, c.nome, c.email, c.telefone, c.cpf, c.data_nascimento, c.genero, c.cidade, c.notas, c.ativo, c.status,
-                   c.pipeline_stage, c.pipeline_notas, c.motivo_perda,
-                   c.recrutamento_stage, c.recrutamento_notas, c.motivo_perda_recrutamento, c.tipo_cadastro, c.protocolo_mensagem, c.criado_em`;
-        
-        const fromJoins = `FROM clientes c`;
-
-        // Paginação opcional: ?page=1&limit=50
-        // Sem os parâmetros, retorna tudo (retrocompatível)
-        if (req.query.page !== undefined) {
-            const page = Math.max(1, parseInt(req.query.page) || 1);
-            const limit = Math.min(200, Math.max(1, parseInt(req.query.limit) || 50));
-            const offset = (page - 1) * limit;
-
-            const countRes = await pool.query(
-                `SELECT COUNT(*) ${fromJoins} ${baseWhere}`,
-                queryParams
-            );
-            const total = parseInt(countRes.rows[0].count);
-
-            const dataRes = await pool.query(
-                `SELECT ${cols} ${fromJoins} ${baseWhere} ORDER BY c.nome ASC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`,
-                [...queryParams, limit, offset]
-            );
-
-            return res.json({
-                data: dataRes.rows,
-                total,
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
-            });
-        }
-
-        // Retrocompatível: retorna array simples
-        const { rows } = await pool.query(
-            `SELECT ${cols} ${fromJoins} ${baseWhere} ORDER BY c.nome ASC`,
-            queryParams
-        );
+        const { rows } = await pool.query(queryStr, queryParams);
         res.json(rows);
     } catch (err) {
-        console.error('[ERRO FATAL CRÍTICO LISTAGEM]', err.message, err.stack);
+        console.error(err);
         res.status(500).json({ error: 'Erro ao buscar clientes.' });
     }
 });
@@ -88,10 +46,7 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const { rows } = await pool.query(
-            `SELECT c.*, i.nome AS indicador_nome 
-             FROM clientes c 
-             LEFT JOIN clientes i ON c.indicado_por_id = i.id 
-             WHERE c.id = $1 AND c.consultora_id = $2`,
+            'SELECT * FROM clientes WHERE id = $1 AND consultora_id = $2',
             [req.params.id, req.consultora.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Cliente não encontrado.' });
@@ -103,8 +58,8 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/clientes
-router.post('/', validate(schemas.createCliente), async (req, res) => {
-    const { nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status, tipo_cadastro, protocolo_mensagem } = req.body;
+router.post('/', async (req, res) => {
+    const { nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status, tipo_cadastro } = req.body;
     if (!nome) return res.status(400).json({ error: 'Nome é obrigatório.' });
 
     try {
@@ -133,10 +88,10 @@ router.post('/', validate(schemas.createCliente), async (req, res) => {
         }
 
         const { rows } = await pool.query(
-            `INSERT INTO clientes (consultora_id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status, tipo_cadastro, protocolo_mensagem)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            `INSERT INTO clientes (consultora_id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status, tipo_cadastro)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING *`,
-            [req.consultora.id, nome, email, telefone, cpf, data_nascimento || null, genero, cidade, notas, status || 'active', tipo_cadastro || null, protocolo_mensagem || '']
+            [req.consultora.id, nome, email, telefone, cpf, data_nascimento || null, genero, cidade, notas, status || 'active', tipo_cadastro || null]
         );
         res.status(201).json(rows[0]);
     } catch (err) {
@@ -147,17 +102,17 @@ router.post('/', validate(schemas.createCliente), async (req, res) => {
 
 
 // PUT /api/clientes/:id
-router.put('/:id', validate(schemas.updateCliente), async (req, res) => {
-    const { nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status, tipo_cadastro, protocolo_mensagem } = req.body;
+router.put('/:id', async (req, res) => {
+    const { nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status, tipo_cadastro } = req.body;
     try {
         const { rows } = await pool.query(
             `UPDATE clientes
        SET nome=$1, email=$2, telefone=$3, cpf=$4, data_nascimento=$5,
-           genero=$6, cidade=$7, notas=$8, status=$9, tipo_cadastro=$10, protocolo_mensagem=$11, atualizado_em=NOW()
-       WHERE id=$12 AND consultora_id=$13
+           genero=$6, cidade=$7, notas=$8, status=$9, tipo_cadastro=$10, atualizado_em=NOW()
+       WHERE id=$11 AND consultora_id=$12
        RETURNING *`,
             [nome, email, telefone, cpf, data_nascimento || null, genero, cidade, notas,
-                status || 'active', tipo_cadastro || null, protocolo_mensagem || null, req.params.id, req.consultora.id]
+                status || 'active', tipo_cadastro || null, req.params.id, req.consultora.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Cliente não encontrado.' });
         res.json(rows[0]);
@@ -181,7 +136,8 @@ router.patch('/:id/stage', checkFeature('tem_pipeline'), async (req, res) => {
              SET pipeline_stage=$1, 
                  pipeline_notas=COALESCE($2, pipeline_notas), 
                  motivo_perda=$3,
-                 atualizado_em=NOW()
+                 atualizado_em=NOW(),
+                 pipeline_stage_updated_at=NOW()
              WHERE id=$4 AND consultora_id=$5
              RETURNING id, nome, pipeline_stage, pipeline_notas, motivo_perda`,
             [stage, notas || null, motivo_perda || null, req.params.id, req.consultora.id]
@@ -209,7 +165,8 @@ router.patch('/:id/recrutamento-stage', checkFeature('tem_pipeline'), async (req
              SET recrutamento_stage=$1, 
                  recrutamento_notas=COALESCE($2, recrutamento_notas), 
                  motivo_perda_recrutamento=$3,
-                 atualizado_em=NOW()
+                 atualizado_em=NOW(),
+                 recrutamento_stage_updated_at=NOW()
              WHERE id=$4 AND consultora_id=$5
              RETURNING id, nome, recrutamento_stage, recrutamento_notas, motivo_perda_recrutamento`,
             [stage, notas || null, motivo_perda || null, req.params.id, req.consultora.id]
@@ -222,21 +179,7 @@ router.patch('/:id/recrutamento-stage', checkFeature('tem_pipeline'), async (req
     }
 });
 
-// DELETE /api/clientes/:id/hard (hard delete irreversível)
-router.delete('/:id/hard', async (req, res) => {
-    try {
-        await pool.query(
-            'DELETE FROM clientes WHERE id=$1 AND consultora_id=$2',
-            [req.params.id, req.consultora.id]
-        );
-        res.json({ success: true });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Erro ao excluir cliente.' });
-    }
-});
-
-// DELETE /api/clientes/:id (soft delete/arquivar)
+// DELETE /api/clientes/:id (soft delete)
 router.delete('/:id', async (req, res) => {
     try {
         await pool.query(
