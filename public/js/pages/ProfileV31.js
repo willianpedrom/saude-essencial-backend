@@ -676,6 +676,8 @@ export async function renderProfile(router) {
         updateUI(!!subscription);
 
         btn.addEventListener('click', async () => {
+            console.log('[Push] Toggle clicked');
+            errorMsg.style.display = 'none';
             const restore = btnLoading(btn, 'Processando...');
             try {
                 if (subscription) {
@@ -703,11 +705,16 @@ export async function renderProfile(router) {
                 }
                 restore(true);
             } catch (err) {
-                console.error(err);
+                console.error('[Push] Error:', err);
                 restore(false);
-                errorMsg.textContent = 'Erro ao configurar notificações: ' + err.message;
+                let msg = 'Erro ao configurar notificações';
+                if (err.name === 'NotAllowedError') msg = 'Permissão negada pelo navegador. Redefina as permissões no cadeado da barra de endereços.';
+                else if (err.message.includes('VAPID')) msg = 'Erro de comunicação com o servidor (Chave VAPID).';
+                else msg = 'Erro: ' + (err.message || 'Desconhecido');
+                
+                errorMsg.textContent = msg;
                 errorMsg.style.display = 'block';
-                toast('Erro nas notificações: ' + err.message, 'error');
+                toast(msg, 'error');
             }
         });
     }
