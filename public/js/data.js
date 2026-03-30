@@ -142,7 +142,7 @@ export const ANAMNESIS_QUESTIONS = {
 export const OILS_DATABASE = {
     'Lavanda': { nameEn: 'Lavender', cat: 'single', fn: 'Calmante, relaxante, anti-inflamatório', uses: 'Ansiedade, insônia, queimaduras, irritação na pele', topical: 'Pulsos, nuca, solas dos pés', aromatic: '3-4 gotas no difusor' },
     'Peppermint': { nameEn: 'Peppermint', cat: 'single', fn: 'Estimulante, digestivo, analgésico', uses: 'Dor de cabeça, náusea, fadiga, congestão', topical: 'Têmporas, nuca (diluído 1:3)', aromatic: 'Inalação direta' },
-    'Tea Tree': { nameEn: 'Melaleuca', cat: 'single', fn: 'Antisséptico, antifúngico, purificante', uses: 'Acne, infecções, caspa, feridas', topical: 'Aplicar diluído nas áreas afetadas', aromatic: 'Difusor para purificação do ar' },
+    'Melaleuca': { nameEn: 'Melaleuca', cat: 'single', fn: 'Antisséptico, antifúngico, purificante', uses: 'Acne, infecções, caspa, feridas', topical: 'Aplicar diluído nas áreas afetadas', aromatic: 'Difusor para purificação do ar' },
     'Lemon': { nameEn: 'Lemon', cat: 'single', fn: 'Detox, energizante, purificante', uses: 'Detox hepático, limpeza, energia matinal', topical: 'Evitar exposição solar após uso tópico', aromatic: '2-3 gotas no difusor ou em água' },
     'Frankincense': { nameEn: 'Frankincense', cat: 'single', fn: 'Regeneração celular, suporte neuroimune', uses: 'Anti-aging, meditação, inflamação, imunidade', topical: 'Topo da cabeça, peito, solas dos pés', aromatic: 'Difusor para meditação' },
     'Wild Orange': { nameEn: 'Wild Orange', cat: 'single', fn: 'Elevação do humor, energizante', uses: 'Depressão, ansiedade, falta de motivação', topical: 'Pulsos, difusor, em água', aromatic: '3 gotas no difusor' },
@@ -171,7 +171,7 @@ export const OILS_DATABASE = {
     'Juniper Berry': { nameEn: 'Juniper Berry', cat: 'single', fn: 'Detox, drenagem linfática', uses: 'Desintoxicação, pele oleosa, celulite', topical: 'Massagem (diluído)', aromatic: 'Difusor' },
     'Marjoram': { nameEn: 'Marjoram', cat: 'single', fn: 'Relaxante muscular', uses: 'Tensão muscular, cólicas, hipertensão', topical: 'Músculos tensionados (diluído)', aromatic: 'Difusor noturno' },
     'Lemongrass': { nameEn: 'Lemongrass', cat: 'single', fn: 'Anti-inflamatório, digestivo', uses: 'Dores articulares, digestão, repelente', topical: 'Articulações (diluído)', aromatic: 'Difusor (repelente natural)' },
-    'DigestZen': { nameEn: 'DigestZen', cat: 'blend', fn: 'Suporte digestivo completo', uses: 'Gases, inchaço, azia, náuseas, intestino irritável', topical: 'Massagem abdominal circular (diluído)', aromatic: 'Inalação para náusea' },
+    'ZenGest': { nameEn: 'ZenGest', cat: 'blend', fn: 'Suporte digestivo completo', uses: 'Gases, inchaço, azia, náuseas, intestino irritável', topical: 'Massagem abdominal circular (diluído)', aromatic: 'Inalação para náusea' },
     'Balance': { nameEn: 'Balance', cat: 'blend', fn: 'Estabilização emocional, aterramento', uses: 'Ansiedade, estresse, desequilíbrio emocional', topical: 'Solas dos pés, pulsos, nuca', aromatic: 'Difusor' },
     'Serenity': { nameEn: 'Serenity', cat: 'blend', fn: 'Sono e relaxamento profundo', uses: 'Insônia, agitação, ansiedade noturna', topical: 'Solas dos pés, peito, travesseiro', aromatic: 'Difusor no quarto (30min antes)' },
     'Deep Blue': { nameEn: 'Deep Blue', cat: 'blend', fn: 'Alívio de dores musculares e articulares', uses: 'Dores musculares, artrite, fibromialgia, lesões', topical: 'Áreas doloridas (massagem)', aromatic: 'Não recomendado' },
@@ -319,12 +319,12 @@ export const LIVING_KIT = new Set([
     'Lemon',          // Lemon
     'Peppermint',     // Peppermint
     'Breathe',        // dTERRA Breathe®
-    'Tea Tree',       // Melaleuca
+    'Melaleuca',       // Melaleuca
     'Frankincense',   // Frankincense (Olíbano)
     'Tangerina',      // Tangerine
     'Copaiba',        // Copaiba
     'Balance',        // dTERRA Balance®
-    'DigestZen',      // ZenGest® (DigestZen no Brasil)
+    'ZenGest',      // ZenGest® (ZenGest no Brasil)
 ]);
 
 
@@ -538,13 +538,13 @@ export const PROTOCOLS = {
         focus: 'Eixo Digestivo', icon: '🌿',
         therapeuticObjective: 'Redução da inflamação gástrica e suporte à motilidade digestiva.',
         oils: [
-            { name: 'DigestZen', fn: 'Suporte digestivo completo' },
+            { name: 'ZenGest', fn: 'Suporte digestivo completo' },
             { name: 'Ginger', fn: 'Anti-náusea e digestivo' },
             { name: 'Peppermint', fn: 'Alívio gástrico' },
         ],
         routine: {
             morning: ['1 gota de Lemon em água (detox suave)'],
-            afternoon: ['DigestZen no abdômen após refeição (diluído)'],
+            afternoon: ['ZenGest no abdômen após refeição (diluído)'],
             night: ['Ginger em cápsula ou chá'],
         },
         expectedResults: 'Redução do refluxo e azia, melhora na digestão e conforto gástrico.',
@@ -554,13 +554,13 @@ export const PROTOCOLS = {
         focus: 'Eixo Digestivo', icon: '🫁',
         therapeuticObjective: 'Alívio do desconforto abdominal e reequilíbrio da flora intestinal.',
         oils: [
-            { name: 'DigestZen', fn: 'Suporte digestivo e alívio de gases' },
+            { name: 'ZenGest', fn: 'Suporte digestivo e alívio de gases' },
             { name: 'Fennel', fn: 'Redução de gases e inchaço' },
             { name: 'Ginger', fn: 'Motilidade gástrica' },
         ],
         routine: {
             morning: ['Lemon em água morna'],
-            afternoon: ['DigestZen massagem abdominal circular após almoço'],
+            afternoon: ['ZenGest massagem abdominal circular após almoço'],
             night: ['Fennel no abdômen (diluído)'],
         },
         expectedResults: 'Redução do inchaço, melhor evacuação e conforto abdominal.',
@@ -570,13 +570,13 @@ export const PROTOCOLS = {
         focus: 'Eixo Digestivo', icon: '🌿',
         therapeuticObjective: 'Redução da inflamação gástrica e proteção da mucosa.',
         oils: [
-            { name: 'DigestZen', fn: 'Suporte digestivo' },
+            { name: 'ZenGest', fn: 'Suporte digestivo' },
             { name: 'Copaiba', fn: 'Anti-inflamatório da mucosa' },
             { name: 'Frankincense', fn: 'Regeneração celular' },
         ],
         routine: {
             morning: ['Copaiba sublingual em jejum'],
-            afternoon: ['DigestZen no abdômen após refeições'],
+            afternoon: ['ZenGest no abdômen após refeições'],
             night: ['Frankincense sublingual'],
         },
         expectedResults: 'Redução da inflamação gástrica e alívio dos sintomas.',
@@ -586,14 +586,14 @@ export const PROTOCOLS = {
         focus: 'Eixo Digestivo', icon: '🌿',
         therapeuticObjective: 'Estimular motilidade intestinal de forma natural.',
         oils: [
-            { name: 'DigestZen', fn: 'Ativação da motilidade' },
+            { name: 'ZenGest', fn: 'Ativação da motilidade' },
             { name: 'Ginger', fn: 'Aquecimento e estimulação digestiva' },
             { name: 'Lemon', fn: 'Detox e estimulação intestinal' },
         ],
         routine: {
-            morning: ['1 gota de Lemon em água morna ao acordar', 'DigestZen no abdômen'],
+            morning: ['1 gota de Lemon em água morna ao acordar', 'ZenGest no abdômen'],
             afternoon: ['Ginger após almoço (diluído no abdômen)'],
-            night: ['Massagem abdominal circular com DigestZen'],
+            night: ['Massagem abdominal circular com ZenGest'],
         },
         expectedResults: 'Regularização do trânsito intestinal e maior conforto.',
         affirmation: 'Seu intestino pode funcionar naturalmente.',
@@ -619,12 +619,12 @@ export const PROTOCOLS = {
         focus: 'Eixo Pele', icon: '🌱',
         therapeuticObjective: 'Equilíbrio da microbiota cutânea e controle da inflamação.',
         oils: [
-            { name: 'Tea Tree', fn: 'Antisséptico e antibacteriano' },
+            { name: 'Melaleuca', fn: 'Antisséptico e antibacteriano' },
             { name: 'Lavanda', fn: 'Anti-inflamatório e cicatrizante' },
             { name: 'Copaiba', fn: 'Modulação inflamatória' },
         ],
         routine: {
-            morning: ['Tea Tree ponto a ponto nas áreas afetadas'],
+            morning: ['Melaleuca ponto a ponto nas áreas afetadas'],
             afternoon: ['Manter pele limpa e hidratada'],
             night: ['Lavanda + Copaiba diluídos em gel base neutro'],
         },
@@ -818,14 +818,14 @@ export const PROTOCOLS = {
         focus: 'Eixo Pele', icon: '✨',
         therapeuticObjective: 'Regulação da produção de sebo e equilíbrio da microbiota cutânea.',
         oils: [
-            { name: 'Tea Tree', fn: 'Controle da oleosidade e antisséptico' },
+            { name: 'Melaleuca', fn: 'Controle da oleosidade e antisséptico' },
             { name: 'Geranium', fn: 'Equilíbrio da produção de sebo' },
             { name: 'Lavanda', fn: 'Anti-inflamatório suave' },
         ],
         routine: {
             morning: ['Geranium diluído em gel hidratante facial'],
             afternoon: [],
-            night: ['Tea Tree + Lavanda em gel base neutro'],
+            night: ['Melaleuca + Lavanda em gel base neutro'],
         },
         expectedResults: 'Pele mais equilibrada, menos brilho e oleosidade.',
         affirmation: 'Sua pele encontra equilíbrio quando cuidada com carinho.',
