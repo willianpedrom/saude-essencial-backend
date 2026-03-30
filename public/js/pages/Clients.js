@@ -505,8 +505,8 @@ export async function renderClients(router, params) {
           <td>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <button class="btn btn-secondary btn-sm" data-action="anamnese" data-id="${c.id}" title="Ver anamnese">📋</button>
-              <button class="btn btn-secondary btn-sm" data-action="edit" data-id="${c.id}">✏️</button>
-              <button class="btn btn-danger btn-sm" data-action="delete" data-id="${c.id}">🗑️</button>
+              <button class="btn btn-secondary btn-sm" data-action="edit" data-id="${c.id}" title="Editar">✏️</button>
+              <button class="btn btn-danger btn-sm" data-action="delete" data-id="${c.id}" title="Excluir">🗑️</button>
             </div>
           </td>
         </tr>`;
