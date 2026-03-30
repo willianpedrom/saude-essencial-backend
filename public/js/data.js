@@ -598,6 +598,23 @@ export const PROTOCOLS = {
         expectedResults: 'Regularização do trânsito intestinal e maior conforto.',
         affirmation: 'Seu intestino pode funcionar naturalmente.',
     },
+    'Emagrecer / metabolismo': {
+        focus: 'Eixo Metabólico', icon: '⚖️',
+        therapeuticObjective: 'Desintoxicação sistêmica, controle da compulsão alimentar e aceleração do metabolismo basal.',
+        oils: [
+            { name: 'Smart & Sassy', fn: 'Apoio metabólico e controle de apetite' },
+            { name: 'Toranja', fn: 'Drenagem linfática e redução de compulsão' },
+            { name: 'Lemon', fn: 'Detox corporal profundo' },
+            { name: 'Peppermint', fn: 'Energia e redução da vontade de doces' },
+        ],
+        routine: {
+            morning: ['2 gotas de Lemon em jejum com água', '2 gotas de Smart & Sassy antes do café da manhã'],
+            afternoon: ['Peppermint inalado para barrar desejos por doce', 'Toranja diluída em óleo de coco massageada no abdômen'],
+            night: ['Evitar estimulantes, manter hidratação apenas'],
+        },
+        expectedResults: 'Aceleração da queima metabólica, diminuição visível do inchaço e retenção de líquidos, e redução natural na vontade de comer doces.',
+        affirmation: 'Seu corpo responde a cada bom hábito. Você está no controle das suas escolhas.',
+    },
     'Acne / Espinhas frequentes': {
         focus: 'Eixo Pele', icon: '🌱',
         therapeuticObjective: 'Equilíbrio da microbiota cutânea e controle da inflamação.',
