@@ -225,6 +225,26 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// DELETE /api/clientes/:id/hard (hard delete)
+router.delete('/:id/hard', async (req, res) => {
+    try {
+        // Remove dependências para evitar erro de Foreign Key
+        await pool.query('DELETE FROM anamneses WHERE cliente_id=$1', [req.params.id]);
+        await pool.query('DELETE FROM agendamentos WHERE cliente_id=$1', [req.params.id]);
+        
+        const { rowCount } = await pool.query(
+            'DELETE FROM clientes WHERE id=$1 AND consultora_id=$2',
+            [req.params.id, req.consultora.id]
+        );
+        
+        if (rowCount === 0) return res.status(404).json({ error: 'Cliente não encontrado ou você não tem permissão.' });
+        res.json({ success: true, hard: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao excluir cliente permanentemente.' });
+    }
+});
+
 // POST /api/clientes/import — importação em massa via CSV (enviado como JSON array)
 router.post('/import', async (req, res) => {
     const { clientes } = req.body;
