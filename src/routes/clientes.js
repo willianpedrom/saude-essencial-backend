@@ -12,7 +12,7 @@ router.use(auth, checkSub);
 // GET /api/clientes
 router.get('/', async (req, res) => {
     try {
-        // Filtra ativo=TRUE por padrão. Use ?ativo=false para ver inativos, ?ativo=all para todos.
+        const { ativo, q, link, page, limit } = req.query;
         let queryStr = `
             SELECT id, nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, ativo, status,
                    pipeline_stage, pipeline_notas, motivo_perda, pipeline_stage_updated_at,
@@ -22,20 +22,52 @@ router.get('/', async (req, res) => {
             WHERE consultora_id = $1
         `;
         const queryParams = [req.consultora.id];
+        let paramIndex = 2;
 
-        if (req.query.ativo === 'all') {
+        if (ativo === 'all') {
             // não filtra — retorna todos
-        } else if (req.query.ativo === 'false') {
+        } else if (ativo === 'false') {
             queryStr += ` AND ativo = FALSE`;
         } else {
             // padrão: só ativos
             queryStr += ` AND ativo = TRUE`;
         }
+        
+        if (q && q.trim() !== '') {
+            queryStr += ` AND (nome ILIKE $${paramIndex} OR email ILIKE $${paramIndex} OR telefone ILIKE $${paramIndex})`;
+            queryParams.push(`%${q.trim()}%`);
+            paramIndex++;
+        }
+        
+        // Count total for pagination before applying LIMIT
+        const countQueryStr = `SELECT COUNT(*) FROM (${queryStr}) as total`;
+        const { rows: countRows } = await pool.query(countQueryStr, queryParams);
+        const total = parseInt(countRows[0].count);
 
         queryStr += ` ORDER BY nome ASC`;
+        
+        let p = 1, l = 0; // l=0 means no limit (return flat array)
+        if (page && limit) {
+            p = parseInt(page) || 1;
+            l = parseInt(limit) || 50;
+            const offset = (p - 1) * l;
+            queryStr += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+            queryParams.push(l, offset);
+        }
 
         const { rows } = await pool.query(queryStr, queryParams);
-        res.json(rows);
+        
+        if (page && limit) {
+             res.json({
+                 data: rows,
+                 total: total,
+                 page: p,
+                 limit: l,
+                 totalPages: Math.ceil(total / l)
+             });
+        } else {
+             res.json(rows);
+        }
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erro ao buscar clientes.' });
