@@ -195,8 +195,21 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
   // Working copy – prefer saved custom, else use auto-generated
   const existingCustom = anamnese.protocolo_customizado || null;
   let editProtocols = existingCustom?.protocols
-    ? JSON.parse(JSON.stringify(existingCustom.protocols))
-    : protocols.map(p => ({ symptom: p.symptom, icon: p.icon || '🌿', oils: [...(p.oils || [])] }));
+    ? JSON.parse(JSON.stringify(existingCustom.protocols)).map(cp => {
+        if (!cp.specificProtocol) {
+            const baseProto = protocols.find(bp => bp.symptom === cp.symptom);
+            if (baseProto && baseProto.specificProtocol) {
+                cp.specificProtocol = JSON.parse(JSON.stringify(baseProto.specificProtocol));
+            }
+        }
+        return cp;
+      })
+    : protocols.map(p => ({ 
+        symptom: p.symptom, 
+        icon: p.icon || '🌿', 
+        oils: [...(p.oils || [])],
+        specificProtocol: p.specificProtocol ? JSON.parse(JSON.stringify(p.specificProtocol)) : undefined
+      }));
   let customNotes = existingCustom?.customNotes || analysisResultados;
   let customMessage = existingCustom?.customMessage || '';
   let customUnlock = existingCustom?.customUnlock || false;
@@ -288,6 +301,12 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
         </div>
       </div>
 
+      ${editProtocols.filter(p => p.specificProtocol).map((p, i) => `
+      <div style="margin-top:24px" class="specific-protocol-container">
+        <label style="font-weight:700;font-size:0.9rem;color:#1e293b;display:block;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px">🎯 Editar ${p.specificProtocol.title} (um por linha)</label>
+        <textarea class="pe-sp-textarea" data-symptom="${p.symptom}" rows="5" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical;box-sizing:border-box">${p.specificProtocol.instructions.join('\n')}</textarea>
+      </div>`).join('')}
+
       <div style="margin-top:24px;display:flex;flex-direction:column;gap:16px;">
         <div>
           <label style="font-weight:600;font-size:0.85rem;color:#1e293b;display:flex;align-items:center;margin-bottom:6px;gap:6px">
@@ -370,6 +389,14 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
       afternoon: (overlay.querySelector('#pe-rt-afternoon')?.value || afternoonText).split('\n').map(l => l.trim()).filter(Boolean),
       night: (overlay.querySelector('#pe-rt-night')?.value || nightText).split('\n').map(l => l.trim()).filter(Boolean),
     };
+
+    overlay.querySelectorAll('textarea.pe-sp-textarea').forEach(ta => {
+      const sym = ta.dataset.symptom;
+      const targetP = editProtocols.find(p => p.symptom === sym);
+      if (targetP && targetP.specificProtocol) {
+        targetP.specificProtocol.instructions = ta.value.split('\n').map(l => l.trim()).filter(Boolean);
+      }
+    });
 
     try {
       await store.saveCustomProtocol(anamnese.id, { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock });
