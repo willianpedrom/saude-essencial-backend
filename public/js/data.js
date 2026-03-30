@@ -989,6 +989,7 @@ export function analyzeAnamnesis(answers) {
         ...(answers.low_energy_symptoms || []),
         ...(answers.sleep_symptoms || []),
         ...(answers.hormonal_female || []),
+        ...(answers.goals || []),
     ];
 
     allSymptoms.forEach(symptom => {
