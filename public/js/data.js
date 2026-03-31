@@ -222,6 +222,7 @@ export const OILS_DATABASE = {
     'Spikenard': { nameEn: 'Spikenard', cat: 'single', fn: 'Calmante profundo, spiritual', uses: 'Meditação, insônia severa, estresse emocional', topical: 'Solas dos pés, nuca', aromatic: 'Difusor' },
 
     // ── Blends Adicionais ────────────────────────────────────────────────
+    'Lifeshōt': { nameEn: 'Lifeshōt', cat: 'blend', fn: 'Imunidade, energia e proteção celular', uses: 'Apoio à imunidade, aumento da energia, melhora da função cognitiva, saúde cardiovascular e proteção contra o envelhecimento precoce', topical: 'Uso interno', aromatic: 'Não é a via principal' },
     'Citrus Bliss': { nameEn: 'Citrus Bliss', cat: 'blend', fn: 'Alegria, energia, bom humor', uses: 'Depressão leve, energia matinal, ambiente positivo', topical: 'Pulsos, peito', aromatic: 'Difusor matinal' },
     'Cheer': { nameEn: 'Cheer', cat: 'blend', fn: 'Otimismo e positividade', uses: 'Baixo astral, falta de motivação, pensamentos negativos', topical: 'Pulsos, peito', aromatic: 'Difusor' },
     'Console': { nameEn: 'Console', cat: 'blend', fn: 'Suporte emocional em luto/perda', uses: 'Luto, tristeza profunda, perda emocional', topical: 'Peito, pulsos', aromatic: 'Difusor' },
