@@ -262,14 +262,20 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
       ${editProtocols.length === 0 ? '<p style="color:#94a3b8;font-size:0.85rem">Nenhum protocolo gerado automaticamente. <br>Adicione um produto manualmente usando o formulário abaixo.</p>' : ''}
       ${editProtocols.map((p, pIdx) => `
         <div style="margin-bottom:12px;background:#f8fafc;border-radius:10px;padding:12px;border:1px solid #e2e8f0">
-          <div style="font-weight:700;font-size:0.88rem;color:#1e293b;margin-bottom:8px">${p.icon} ${p.symptom}</div>
+          <div style="font-weight:700;font-size:0.88rem;color:#1e293b;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+             <span>${p.icon} ${p.symptom}</span>
+             <button class="pe-remove-protocol" data-idx="${pIdx}" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.85rem" title="Excluir queixa inteira (e seus óleos)">❌ Remover</button>
+          </div>
           <div style="display:flex;flex-wrap:wrap">
             ${(p.oils || []).map((oil, oIdx) => oilChip(oil, pIdx, oIdx)).join('')}
             ${!p.oils?.length ? '<span style="font-size:0.78rem;color:#94a3b8">Sem óleos. Adicione abaixo ↓</span>' : ''}
           </div>
         </div>`).join('')}
       <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-top:6px">
-        <div style="font-weight:700;font-size:0.85rem;color:#1e293b;margin-bottom:10px">➕ Adicionar Produto</div>
+        <div style="font-weight:700;font-size:0.85rem;color:#1e293b;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+          <span>➕ Adicionar Produto (Óleo)</span>
+          <button id="pe-new-symptom" style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;border-radius:6px;padding:4px 10px;font-size:0.75rem;font-weight:700;cursor:pointer" title="Criar bloco 100% customizado">➕ Nova Queixa (Bloco Vazio)</button>
+        </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           ${editProtocols.length > 0 ? `<select id="pe-sel-p" style="flex:1;min-width:130px;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.82rem">
             <option value="">Protocolo…</option>
@@ -334,6 +340,25 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
         editProtocols[+btn.dataset.rp].oils.splice(+btn.dataset.ro, 1);
         render();
       });
+    });
+
+    // Remove whole protocol group
+    body.querySelectorAll('.pe-remove-protocol').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (confirm('Deseja realmente apagar todo este bloco e seus óleos?')) {
+          editProtocols.splice(+btn.dataset.idx, 1);
+          render();
+        }
+      });
+    });
+
+    // Create New Custom Protocol Group
+    body.querySelector('#pe-new-symptom')?.addEventListener('click', () => {
+      const title = prompt('Qual o título ou foco deste novo bloco/queixa? (Ex: Imunidade, Dores no Joelho)');
+      if (title && title.trim()) {
+        editProtocols.push({ symptom: title.trim(), icon: '✨', focus: 'Tratamento Personalizado', oils: [] });
+        render();
+      }
     });
 
     // Add oil
