@@ -23,6 +23,17 @@ export const ANAMNESIS_QUESTIONS = {
     health: {
         title: 'Ótimo começo, {nome}! Como está a sua Saúde Física?', icon: '🫀',
         sections: [
+            {
+                label: 'Atenção especial: O uso será para alguém com alguma destas condições?', key: 'special_conditions', type: 'checkbox', options: [
+                    'Gestante',
+                    'Lactante',
+                    'Criança (menor de 3 anos)',
+                    'Criança (entre 3 e 12 anos)',
+                    'Epilepsia',
+                    'Hipertensão (Pressão Alta)',
+                    'Nenhuma destas'
+                ]
+            },
             { label: 'Medicamentos ou suplementos em uso contínuo?', key: 'medications', type: 'textarea', placeholder: 'Liste medicamentos e suplementos (ou deixe em branco)' },
             {
                 label: 'Sintomas físicos frequentes', key: 'general_symptoms', type: 'checkbox', options: [
@@ -1021,6 +1032,31 @@ export function analyzeAnamnesis(answers) {
         axisCounts[axis] = (axisCounts[axis] || 0) + 1;
     });
     const primaryAxis = Object.entries(axisCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Saúde Integral';
+
+    const specialConditions = answers.special_conditions || [];
+    const chronicConditions = answers.chronic_conditions || [];
+    const isSensitive = specialConditions.some(c => c !== 'Nenhuma destas') || chronicConditions.some(c => ['Hipertensão', 'Epilepsia'].includes(c));
+    
+    // SAFETY FILTERING
+    if (isSensitive) {
+        const blockedOilsRegex = /Wintergreen|Gaultéria|Peppermint|Hortelã-pimenta|Hortelã pimenta|Sálvia|Clary Sage|Alecrim|Deep Blue|PastTense/i;
+        
+        protocols.forEach(p => {
+            // Remove contra-indicated oils from the selection list
+            if (p.oils) {
+                p.oils = p.oils.filter(oil => !blockedOilsRegex.test(oil.name) && !blockedOilsRegex.test(oil.fn));
+            }
+
+            // Remove strings in the routine that mention the blocked oils
+            if (p.routine) {
+                ['morning', 'afternoon', 'night'].forEach(period => {
+                    if (p.routine[period]) {
+                        p.routine[period] = p.routine[period].filter(step => !blockedOilsRegex.test(step));
+                    }
+                });
+            }
+        });
+    }
 
     const goals = answers.goals || [];
     return {
