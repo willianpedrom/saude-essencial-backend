@@ -307,11 +307,23 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
         </div>
       </div>
 
-      ${editProtocols.filter(p => p.specificProtocol).map((p, i) => `
-      <div style="margin-top:24px" class="specific-protocol-container">
-        <label style="font-weight:700;font-size:0.9rem;color:#1e293b;display:block;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px">🎯 Editar ${p.specificProtocol.title} (um por linha)</label>
-        <textarea class="pe-sp-textarea" data-symptom="${p.symptom}" rows="5" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical;box-sizing:border-box">${p.specificProtocol.instructions.join('\n')}</textarea>
-      </div>`).join('')}
+      ${editProtocols.map((p, i) => {
+        if (!p.specificProtocol) return '';
+        return `
+        <div style="margin-top:24px" class="specific-protocol-container">
+          <label style="font-weight:700;font-size:0.9rem;color:#1e293b;display:block;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+               <span>🎯 Editar ${p.specificProtocol.title} (um por linha)</span>
+               <button class="pe-remove-specific" data-idx="${i}" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.85rem">❌ Excluir Passo-a-Passo</button>
+            </div>
+          </label>
+          <textarea class="pe-sp-textarea" data-idx="${i}" rows="5" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical;box-sizing:border-box">${p.specificProtocol.instructions.join('\n')}</textarea>
+        </div>`;
+      }).join('')}
+      
+      <div style="margin-top:16px;text-align:right">
+         <button id="pe-new-sp" style="background:#e0e7ff;color:#4338ca;border:1px solid #c7d2fe;border-radius:6px;padding:6px 14px;font-size:0.8rem;font-weight:700;cursor:pointer">➕ Preencher Novo Passo-a-Passo Livre</button>
+      </div>
 
       <div style="margin-top:24px;display:flex;flex-direction:column;gap:16px;">
         <div>
@@ -352,11 +364,36 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
       });
     });
 
+    // Remove specific passablity block
+    body.querySelectorAll('.pe-remove-specific').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (confirm('Deseja realmente apagar este Passo-a-Passo Específico (suas instruções)?')) {
+          delete editProtocols[+btn.dataset.idx].specificProtocol;
+          render();
+        }
+      });
+    });
+
     // Create New Custom Protocol Group
     body.querySelector('#pe-new-symptom')?.addEventListener('click', () => {
       const title = prompt('Qual o título ou foco deste novo bloco/queixa? (Ex: Imunidade, Dores no Joelho)');
       if (title && title.trim()) {
         editProtocols.push({ symptom: title.trim(), icon: '✨', focus: 'Tratamento Personalizado', oils: [] });
+        render();
+      }
+    });
+
+    // Create New Specific Protocol
+    body.querySelector('#pe-new-sp')?.addEventListener('click', () => {
+      const title = prompt('Qual o título deste Passo-a-Passo Livre? (Ex: PROTOCOLO CAPILAR DE CRESCIMENTO)');
+      if (title && title.trim()) {
+        editProtocols.push({
+          symptom: 'Passo a Passo Adicional',
+          icon: '📝',
+          focus: 'Tratamento Personalizado',
+          oils: [],
+          specificProtocol: { title: title.trim().toUpperCase(), instructions: ['(Escreva suas instruções linha por linha)'] }
+        });
         render();
       }
     });
@@ -416,10 +453,9 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
     };
 
     overlay.querySelectorAll('textarea.pe-sp-textarea').forEach(ta => {
-      const sym = ta.dataset.symptom;
-      const targetP = editProtocols.find(p => p.symptom === sym);
-      if (targetP && targetP.specificProtocol) {
-        targetP.specificProtocol.instructions = ta.value.split('\n').map(l => l.trim()).filter(Boolean);
+      const pIdx = parseInt(ta.dataset.idx, 10);
+      if (editProtocols[pIdx] && editProtocols[pIdx].specificProtocol) {
+        editProtocols[pIdx].specificProtocol.instructions = ta.value.split('\n').map(l => l.trim()).filter(Boolean);
       }
     });
 

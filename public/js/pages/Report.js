@@ -124,9 +124,15 @@ export async function renderReport(router, dataParam, hash = null) {
     });
   }
 
-  // Specific protocols (e.g. capilar)
-  const specificProts = protocols.filter(p => p.specificProtocol).map(p => p.specificProtocol);
-
+  // Specific protocols (e.g. capilar) - Deduplicated by title
+  const specificProts = [];
+  const _seenSp = new Set();
+  protocols.filter(p => p.specificProtocol).forEach(p => {
+    if (!_seenSp.has(p.specificProtocol.title)) {
+      _seenSp.add(p.specificProtocol.title);
+      specificProts.push(p.specificProtocol);
+    }
+  });
   // Combined therapeutic objective
   const focusAreas = [...new Set(protocols.map(p => p.focus).filter(Boolean))];
   const focusText = focusAreas.join(' · ');
