@@ -87,22 +87,46 @@ export function toast(msg, type = 'success', duration = 3000) {
  * @param {HTMLElement} [btn] — optional button element to animate with "✅ Copiado!"
  */
 export async function copyToClipboard(text, btn) {
+  let success = false;
   try {
-    await navigator.clipboard.writeText(text);
-    // Haptic feedback on mobile
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      success = true;
+    }
+  } catch (err) {
+    console.warn("Clipboard API rejected (likely Safari async):", err);
+  }
+
+  if (!success) {
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      success = document.execCommand('copy');
+      textArea.remove();
+    } catch (e) {
+      console.warn("ExecCommand failed:", e);
+    }
+  }
+
+  if (success) {
     if (navigator.vibrate) navigator.vibrate(50);
-    toast('Link copiado! 🔗');
-    // Animate the button
+    // Evitar disparar o toast duas vezes se quem chamou já fizer isso (Opcional, mas mantém comportamento atual)
+    toast('Link copiado! 🔗', 'success');
     if (btn) {
       const orig = btn.innerHTML;
       btn.innerHTML = '✅ Copiado!';
       btn.style.background = '#16a34a';
       btn.style.color = '#fff';
-      setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; btn.style.color = ''; }, 1500);
+      setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; btn.style.color = ''; }, 2000);
     }
-  } catch {
-    // Fallback for devices where clipboard API is blocked
-    prompt('Copie o link:', text);
+  } else {
+    prompt('Copie o link manualmente:', text);
   }
 }
 
@@ -687,9 +711,11 @@ export function openClientOffcanvas(client) {
                 const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
 
                 const magicUrl = window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
-                await navigator.clipboard.writeText(magicUrl);
                 
-                toast('Link Mágico copiado! Envie para o paciente.', 'success');
+                // Usar a função de cópia global que aciona o fallback antigo para iOS Safari
+                await copyToClipboard(magicUrl);
+                
+                // UI override especial deste botão de Link Mágico
                 btnLink.innerHTML = '<span style="color:#10b981">✅ Copiado!</span>';
              } catch(err) {
                 toast(err.message, 'error');
