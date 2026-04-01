@@ -1,4 +1,4 @@
-import { api } from '../store.js';
+import { api, auth } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { toast } from '../utils.js';
 
@@ -330,7 +330,15 @@ export async function renderProspecting(router) {
                 <div class="col-drop-zone" style="flex:1;min-height:300px">
                     ${items.map(p => {
                         const tel = (p.telefone || '').replace(/\D/g, '');
-                        const wa = tel ? `https://wa.me/${tel.startsWith('55') ? tel : '55'+tel}` : null;
+                        let wa = null;
+                        if (tel) {
+                            const rawName = p.nome || '';
+                            // Tenta pegar a primeira palavra (Academia, Consultório, Clínica, etc) ou o primeiro nome se for pessoa
+                            const bizName = rawName.split(/[ ,\|-]/)[0]; 
+                            const myName = auth.current?.nome?.split(' ')[0] || 'Consultor(a)';
+                            const msg = encodeURIComponent(`Olá, acompanho o trabalho da ${bizName} e acho fantástico! Tudo bem com vocês?\nMeu nome é ${myName}, sou especialista em bem-estar e soluções naturais.\n\nGostaria de falar rapidamente com o responsável sobre uma oportunidade muito legal de parceria para agregar ainda mais valor aos seus clientes. Podemos bater um papo rápido?`);
+                            wa = `https://wa.me/${tel.startsWith('55') ? tel : '55'+tel}?text=${msg}`;
+                        }
                         const score = calculateScore(p);
                         const scoreColor = score >= 8 ? '#10b981' : (score >= 6 ? '#f59e0b' : '#6b7280');
 
