@@ -457,7 +457,10 @@ export async function renderPurchases(router) {
                 <td style="font-weight:700;color:var(--green-700)">${formatCurrency(p.value)}</td>
                 <td style="color:var(--text-muted);font-size:0.82rem">${p.note || '—'}</td>
                 <td>
-                  <button class="btn-del-pu" data-id="${p.id}" title="Excluir" style="background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:0.7;padding:5px">🗑️</button>
+                  <div style="display:flex;gap:4px">
+                    <button class="btn-edit-pu" data-id="${p.id}" title="Editar" style="background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:0.7;padding:5px">✏️</button>
+                    <button class="btn-del-pu" data-id="${p.id}" title="Excluir" style="background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:0.7;padding:5px">🗑️</button>
+                  </div>
                 </td>
               </tr>`;
       }).join('')}
@@ -477,6 +480,56 @@ export async function renderPurchases(router) {
           }
         });
       });
+    });
+
+    // Bind edit events
+    container.querySelectorAll('.btn-edit-pu').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const p = purchases.find(x => x.id === id);
+        if (!p) return;
+        const c = clients.find(cl => cl.id === p.clientId);
+        showEditModal(p, c?.name || c?.nome || 'Cliente Removido');
+      });
+    });
+  }
+
+  function showEditModal(p, clientName) {
+    modal('Editar Compra', `
+      <div class="form-grid">
+        <div class="form-group form-field-full">
+          <label class="field-label">Cliente (Leitura)</label>
+          <input class="field-input" value="${clientName}" disabled style="background:#f1f5f9;cursor:not-allowed;" />
+        </div>
+        <div class="form-group form-field-full">
+          <label class="field-label">Produto / Kit *</label>
+          <input class="field-input" id="pu-product-edt" value="${p.product || ''}" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Valor (R$)</label>
+          <input class="field-input" id="pu-value-edt" type="number" step="0.01" value="${p.value || 0}" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Data</label>
+          <input class="field-input" id="pu-date-edt" type="date" value="${(p.date || p.createdAt || '').slice(0, 10)}" />
+        </div>
+        <div class="form-group form-field-full">
+          <label class="field-label">Observação</label>
+          <input class="field-input" id="pu-note-edt" value="${p.note || ''}" />
+        </div>
+      </div>`, {
+      confirmLabel: 'Salvar Alterações',
+      onConfirm: () => {
+        const product = document.getElementById('pu-product-edt').value.trim();
+        if (!product) { toast('Preencha o produto / kit', 'error'); return; }
+        db.update(p.id, {
+          product,
+          value: parseFloat(document.getElementById('pu-value-edt').value) || 0,
+          date: document.getElementById('pu-date-edt').value,
+          note: document.getElementById('pu-note-edt').value,
+        });
+        renderList(); toast('Compra atualizada! ✏️');
+      }
     });
   }
 
