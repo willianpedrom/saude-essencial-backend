@@ -39,6 +39,12 @@ router.get('/', async (req, res) => {
             paramIndex++;
         }
         
+        if (link && link.trim() !== '') {
+            queryStr += ` AND id IN (SELECT cliente_id FROM anamneses WHERE link_origem_id = $${paramIndex} AND cliente_id IS NOT NULL)`;
+            queryParams.push(link.trim());
+            paramIndex++;
+        }
+        
         // Count total for pagination before applying LIMIT
         const countQueryStr = `SELECT COUNT(*) FROM (${queryStr}) as total`;
         const { rows: countRows } = await pool.query(countQueryStr, queryParams);
