@@ -11,6 +11,7 @@ function ls(key) {
     set(list) { localStorage.setItem(k, JSON.stringify(list)); },
     add(item) { const l = this.get(); l.push({ id: Date.now().toString(), createdAt: new Date().toISOString(), ...item }); this.set(l); return l; },
     update(id, patch) { const l = this.get().map(x => x.id === id ? { ...x, ...patch } : x); this.set(l); return l; },
+    del(id) { const l = this.get().filter(x => x.id !== id); this.set(l); return l; }
   };
 }
 
@@ -445,7 +446,7 @@ export async function renderPurchases(router) {
     container.innerHTML = purchases.length === 0
       ? `<div class="empty-state"><div class="empty-state-icon">🛒</div><h4>Nenhuma compra registrada</h4></div>`
       : `<table class="clients-table">
-          <thead><tr><th>Cliente</th><th>Produto / Kit</th><th>Data</th><th>Valor</th><th>Observação</th></tr></thead>
+          <thead><tr><th>Cliente</th><th>Produto / Kit</th><th>Data</th><th>Valor</th><th>Observação</th><th style="width:60px">Ações</th></tr></thead>
           <tbody>
             ${purchases.map(p => {
         const c = clients.find(cl => cl.id === p.clientId);
@@ -455,10 +456,28 @@ export async function renderPurchases(router) {
                 <td>${formatDate(p.date || p.createdAt)}</td>
                 <td style="font-weight:700;color:var(--green-700)">${formatCurrency(p.value)}</td>
                 <td style="color:var(--text-muted);font-size:0.82rem">${p.note || '—'}</td>
+                <td>
+                  <button class="btn-del-pu" data-id="${p.id}" title="Excluir" style="background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:0.7;padding:5px">🗑️</button>
+                </td>
               </tr>`;
       }).join('')}
           </tbody>
         </table>`;
+
+    // Bind delete events
+    container.querySelectorAll('.btn-del-pu').forEach(btn => {
+      btn.addEventListener('click', () => {
+        modal('Excluir Compra', '<p>Tem certeza que deseja apagar o registro desta venda? Esta ação é irreversível.</p>', {
+          confirmLabel: 'Sim, Apagar',
+          confirmClass: 'btn-danger',
+          onConfirm: () => {
+            db.del(btn.dataset.id);
+            renderList();
+            toast('Venda excluída com sucesso!');
+          }
+        });
+      });
+    });
   }
 
   function showAddModal() {
