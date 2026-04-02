@@ -233,7 +233,8 @@ export async function renderSchedule(router) {
                 ${(e._isFu && e.status !== 'done') ? `<button class="btn btn-sm btn-action" style="background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;font-weight:700" onclick="window.calDoneFu('${e.id}')">✓ Feito</button>` : ''}
                 <a class="btn btn-sm" href="${wa}" target="_blank" style="background:#25D366;color:white;text-decoration:none">📱</a>
                 ${gcal ? `<a class="btn btn-sm" href="${gcal}" target="_blank" style="background:#f3f4f6;color:#374151;text-decoration:none">📆</a>` : ''}
-                <button class="btn btn-sm" style="background:transparent;color:#9ca3af;padding:4px 6px" onclick="window.calDelEvent('${e.id}', ${e._isFu})">🗑️</button>
+                <button class="btn btn-sm" style="background:#f3f4f6;color:#374151;padding:4px 8px" onclick="window.calEditEvent('${e.id}', ${e._isFu})" title="Editar">✏️</button>
+                <button class="btn btn-sm" style="background:transparent;color:#9ca3af;padding:4px 6px" onclick="window.calDelEvent('${e.id}', ${e._isFu})" title="Apagar">🗑️</button>
               </div>
             </div>
           </div>
@@ -267,7 +268,10 @@ export async function renderSchedule(router) {
                 <div style="font-weight:700;color:#991b1b;margin-bottom:2px">👤 ${cName} <span style="opacity:0.6;font-weight:500;margin-left:4px">${label}</span></div>
                 <div style="color:#b91c1c">${f.nota || f.note || ''}</div>
             </div>
-            <button class="btn btn-sm" onclick="window.calDoneFu('${f.id}')" style="background:#fca5a5;color:#7f1d1d;border:none;flex-shrink:0;">✓</button>
+            <div style="display:flex;gap:4px">
+              <button class="btn btn-sm" onclick="window.calEditEvent('${f.id}', true)" style="background:transparent;color:#991b1b;border:1px solid #fca5a5;flex-shrink:0" title="Editar">✏️</button>
+              <button class="btn btn-sm" onclick="window.calDoneFu('${f.id}')" style="background:#fca5a5;color:#7f1d1d;border:none;flex-shrink:0;" title="Concluir">✓</button>
+            </div>
           </div>
           `;
       }).join('');
@@ -275,22 +279,36 @@ export async function renderSchedule(router) {
 
 
   // ── Show Add Modais (Agendamento & Followup) ──────────────────────
-  function showAddAgendamento(prefillDate = '') {
-    const clientOpts = clients.map(c => `<option value="${c.id}">${c.nome || c.name}</option>`).join('');
-    const defaultDate = prefillDate || new Date().toISOString().slice(0, 10);
-    modal('Novo Evento / Reunião', `
+  // ── Show Add/Edit Modais (Agendamento & Followup) ────────────────
+  function showAddAgendamento(prefillDate = '', editData = null) {
+    const isEdit = !!editData;
+    const clientOpts = clients.map(c => `<option value="${c.id}" ${isEdit && editData.cliente_id === c.id ? 'selected' : ''}>${c.nome || c.name}</option>`).join('');
+    
+    // Configura valores padrão para edição
+    const titleVal = isEdit ? (editData.titulo || editData.title || '') : '';
+    const typeVal = isEdit ? (editData.tipo || 'meeting') : 'meeting';
+    const notesVal = isEdit ? (editData.observacoes || editData.notes || '') : '';
+    let defaultDate = prefillDate || new Date().toISOString().slice(0, 10);
+    let defaultTime = '';
+    
+    if (isEdit && editData.data_hora) {
+        defaultDate = editData.data_hora.slice(0, 10);
+        defaultTime = editData.data_hora.slice(11, 16);
+    }
+
+    modal(isEdit ? 'Editar Evento / Reunião' : 'Novo Evento / Reunião', `
       <div class="form-grid">
         <div class="form-group form-field-full">
           <label class="field-label">Título do Evento *</label>
-          <input class="field-input" id="ev-title" placeholder="Ex: Apresentação de Óleos..." />
+          <input class="field-input" id="ev-title" placeholder="Ex: Apresentação de Óleos..." value="${titleVal}" />
         </div>
         <div class="form-group">
           <label class="field-label">Tipo</label>
           <select class="field-select" id="ev-type">
-            <option value="meeting">🤝 Reunião</option>
-            <option value="call">📞 Ligação</option>
-            <option value="delivery">📦 Entrega</option>
-            <option value="other">📌 Outro</option>
+            <option value="meeting" ${typeVal === 'meeting' ? 'selected' : ''}>🤝 Reunião</option>
+            <option value="call" ${typeVal === 'call' ? 'selected' : ''}>📞 Ligação</option>
+            <option value="delivery" ${typeVal === 'delivery' ? 'selected' : ''}>📦 Entrega</option>
+            <option value="other" ${typeVal === 'other' ? 'selected' : ''}>📌 Outro</option>
           </select>
         </div>
         <div class="form-group">
@@ -306,14 +324,14 @@ export async function renderSchedule(router) {
         </div>
         <div class="form-group">
           <label class="field-label">Horário (Opcional)</label>
-          <input class="field-input" id="ev-time" type="time" />
+          <input class="field-input" id="ev-time" type="time" value="${defaultTime}" />
         </div>
         <div class="form-group form-field-full">
           <label class="field-label">Detalhes</label>
-          <textarea class="field-textarea" id="ev-notes" placeholder="Link do zoom, endereço da apresentação..."></textarea>
+          <textarea class="field-textarea" id="ev-notes" placeholder="Link do zoom, endereço da apresentação...">${notesVal}</textarea>
         </div>
       </div>`, {
-      confirmLabel: 'Criar Evento',
+      confirmLabel: isEdit ? 'Salvar Alterações' : 'Criar Evento',
       onConfirm: async () => {
         const titulo = document.getElementById('ev-title').value.trim();
         if (!titulo) { toast('Título obrigatório', 'error'); return; }
@@ -321,12 +339,20 @@ export async function renderSchedule(router) {
         const time = document.getElementById('ev-time').value;
         const data_hora = time ? `${date}T${time}:00` : `${date}T09:00:00`;
         try {
-          await store.addAgendamento({
+          const payload = {
             titulo, tipo: document.getElementById('ev-type').value,
             cliente_id: document.getElementById('ev-client').value || null, data_hora,
             observacoes: document.getElementById('ev-notes').value,
-          });
-          toast('Compromisso adicionado à agenda! 📅');
+          };
+          
+          if (isEdit) {
+              await store.updateAgendamento(editData.id, payload);
+              toast('Compromisso atualizado! 📅');
+          } else {
+              await store.addAgendamento(payload);
+              toast('Compromisso adicionado à agenda! 📅');
+          }
+          
           const [y, m] = date.split('-').map(Number);
           currentYear = y; currentMonth = m - 1; selectedDate = date;
           await refresh();
@@ -335,25 +361,43 @@ export async function renderSchedule(router) {
     });
   }
 
-  async function showAddFollowup(prefillDate = '') {
+  async function showAddFollowup(prefillDate = '', editData = null) {
     await requestNotifPermission();
+    const isEdit = !!editData;
     const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
-    const defaultDate = prefillDate || tomorrow.toISOString().slice(0, 10);
+    
+    let defaultDate = prefillDate || tomorrow.toISOString().slice(0, 10);
+    let defaultTime = '09:00';
+    let defaultClientName = '';
+    let defaultClientId = '';
+    let defaultNote = '';
 
-    modal('Novo Follow-up (Acompanhamento)', `
+    if (isEdit) {
+        defaultNote = editData.nota || editData.note || '';
+        const dtStr = editData.due_date_time || editData.dueDateTime;
+        if (dtStr) {
+            defaultDate = dtStr.slice(0, 10);
+            defaultTime = dtStr.slice(11, 16);
+        }
+        defaultClientId = editData.cliente_id || editData.clientId;
+        const c = clients.find(cl => cl.id === defaultClientId);
+        defaultClientName = c?.nome || c?.name || editData.cliente_nome || '';
+    }
+
+    modal(isEdit ? 'Editar Follow-up' : 'Novo Follow-up (Acompanhamento)', `
       <div style="margin-bottom:12px;font-size:0.85rem;color:var(--text-muted)">Use para criar um "ping" onde o objetivo é apenas lembrar de falar com o lead ou checar como o cliente está usando os óleos.</div>
       <div class="form-grid">
         <div class="form-group form-field-full">
           <label class="field-label">Para qual cliente? *</label>
           <div style="position:relative">
-            <input class="field-input" id="fu-client-search" placeholder="🔍 Buscar pelo nome..." autocomplete="off" />
-            <input type="hidden" id="fu-client" />
+            <input class="field-input" id="fu-client-search" placeholder="🔍 Buscar pelo nome..." autocomplete="off" value="${defaultClientName}" />
+            <input type="hidden" id="fu-client" value="${defaultClientId}" />
             <div id="fu-client-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:999;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.12);max-height:220px;overflow-y:auto;margin-top:4px"></div>
           </div>
         </div>
         <div class="form-group form-field-full">
           <label class="field-label">O que devo fazer? *</label>
-          <input class="field-input" id="fu-note" placeholder="Ex: Perguntar se o lavanda chegou..." />
+          <input class="field-input" id="fu-note" placeholder="Ex: Perguntar se o lavanda chegou..." value="${defaultNote}" />
         </div>
         <div class="form-group">
           <label class="field-label">Quando? *</label>
@@ -361,10 +405,10 @@ export async function renderSchedule(router) {
         </div>
         <div class="form-group">
           <label class="field-label">Avisar às</label>
-          <input class="field-input" id="fu-time" type="time" value="09:00" />
+          <input class="field-input" id="fu-time" type="time" value="${defaultTime}" />
         </div>
       </div>`, {
-      confirmLabel: 'Criar Follow-up',
+      confirmLabel: isEdit ? 'Salvar Follow-up' : 'Criar Follow-up',
       confirmClass: 'btn-secondary',
       onOpen: () => {
         const searchInput = document.getElementById('fu-client-search');
@@ -407,8 +451,14 @@ export async function renderSchedule(router) {
         const date = document.getElementById('fu-date').value;
         const time = document.getElementById('fu-time').value || '09:00';
         try {
-          const novo = await store.addFollowup({ cliente_id: clientId, nota, due_date_time: (date ? `${date}T${time}:00` : null) });
-          toast('Follow-up criado com sucesso! 💬');
+          const payload = { cliente_id: clientId, nota, due_date_time: (date ? `${date}T${time}:00` : null) };
+          if (isEdit) {
+              await store.updateFollowup(editData.id, payload);
+              toast('Follow-up atualizado com sucesso! 💬');
+          } else {
+              await store.addFollowup(payload);
+              toast('Follow-up criado com sucesso! 💬');
+          }
           const [y, m] = date.split('-').map(Number);
           currentYear = y; currentMonth = m - 1; selectedDate = date;
           await refresh();
@@ -428,6 +478,16 @@ export async function renderSchedule(router) {
   };
   window.calAddEvent = (dateStr) => showAddAgendamento(dateStr);
   window.calAddFollowup = (dateStr) => showAddFollowup(dateStr);
+  
+  window.calEditEvent = (id, isFollowup) => {
+      if (isFollowup) {
+          const f = followups.find(x => x.id === id);
+          if (f) showAddFollowup('', f);
+      } else {
+          const e = events.find(x => x.id === id);
+          if (e) showAddAgendamento('', e);
+      }
+  };
   window.calDoneFu = async (id) => {
       try {
           await store.updateFollowupStatus(id, 'done');

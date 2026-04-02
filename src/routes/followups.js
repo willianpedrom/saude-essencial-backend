@@ -49,7 +49,27 @@ router.post('/', async (req, res) => {
         res.status(500).json({ error: 'Erro ao criar follow-up.' });
     }
 });
-
+// PUT /api/followups/:id — atualizar follow-up completo
+router.put('/:id', async (req, res) => {
+    const { cliente_id, nota, due_date_time } = req.body;
+    if (!nota || !nota.trim()) {
+        return res.status(400).json({ error: 'Nota é obrigatória.' });
+    }
+    try {
+        const { rows } = await pool.query(
+            `UPDATE followups
+             SET cliente_id = $1, nota = $2, due_date_time = $3, atualizado_em = NOW()
+             WHERE id = $4 AND consultora_id = $5
+             RETURNING *`,
+            [cliente_id || null, nota.trim(), due_date_time || null, req.params.id, req.consultora.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Follow-up não encontrado.' });
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao atualizar follow-up.' });
+    }
+});
 // PATCH /api/followups/:id/status  — marcar como concluído ou reabrir
 router.patch('/:id/status', async (req, res) => {
     const { status } = req.body;

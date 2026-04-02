@@ -283,6 +283,7 @@ export const store = {
         return Array.isArray(list) ? list : [];
     },
     addFollowup(data) { return api('POST', '/api/followups', data); },
+    updateFollowup(id, data) { return api('PUT', `/api/followups/${id}`, data); },
     updateFollowupStatus(id, status) { return api('PATCH', `/api/followups/${id}/status`, { status }); },
     deleteFollowup(id) { return api('DELETE', `/api/followups/${id}`); },
 
