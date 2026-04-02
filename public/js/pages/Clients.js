@@ -254,7 +254,27 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
     </div>`;
   document.body.appendChild(overlay);
 
+  function syncState() {
+    const body = overlay.querySelector('#pe-body');
+    if (!body) return; // Se ainda não gerou DOM, não tente capturar
+    morningText = overlay.querySelector('#pe-rt-morning')?.value ?? morningText;
+    afternoonText = overlay.querySelector('#pe-rt-afternoon')?.value ?? afternoonText;
+    nightText = overlay.querySelector('#pe-rt-night')?.value ?? nightText;
+    customNotes = overlay.querySelector('#pe-notes')?.value ?? customNotes;
+    customMessage = overlay.querySelector('#pe-message')?.value ?? customMessage;
+    customUnlock = overlay.querySelector('#pe-unlock')?.checked ?? customUnlock;
+
+    overlay.querySelectorAll('textarea.pe-sp-textarea').forEach(ta => {
+      const pIdx = parseInt(ta.dataset.idx, 10);
+      if (editProtocols[pIdx] && editProtocols[pIdx].specificProtocol) {
+        // Only split strings, do not filter empty lines here so we retain formatting until save
+        editProtocols[pIdx].specificProtocol.instructions = ta.value.split('\n');
+      }
+    });
+  }
+
   function render() {
+    syncState();
     const body = overlay.querySelector('#pe-body');
     if (!body) return;
     body.innerHTML = `
@@ -442,20 +462,18 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
   overlay.querySelector('#pe-save').addEventListener('click', async (e) => {
     const btn = e.target;
     btn.disabled = true; btn.textContent = '⏳ Salvando…';
-    customNotes = overlay.querySelector('#pe-notes')?.value || customNotes;
-    customMessage = overlay.querySelector('#pe-message')?.value || customMessage;
-    customUnlock = overlay.querySelector('#pe-unlock')?.checked || false;
+    syncState(); // Sincroniza uma última vez antes de montar o payload
     
     const updatedRoutine = {
-      morning: (overlay.querySelector('#pe-rt-morning')?.value || morningText).split('\n').map(l => l.trim()).filter(Boolean),
-      afternoon: (overlay.querySelector('#pe-rt-afternoon')?.value || afternoonText).split('\n').map(l => l.trim()).filter(Boolean),
-      night: (overlay.querySelector('#pe-rt-night')?.value || nightText).split('\n').map(l => l.trim()).filter(Boolean),
+      morning: morningText.split('\n').map(l => l.trim()).filter(Boolean),
+      afternoon: afternoonText.split('\n').map(l => l.trim()).filter(Boolean),
+      night: nightText.split('\n').map(l => l.trim()).filter(Boolean),
     };
 
-    overlay.querySelectorAll('textarea.pe-sp-textarea').forEach(ta => {
-      const pIdx = parseInt(ta.dataset.idx, 10);
-      if (editProtocols[pIdx] && editProtocols[pIdx].specificProtocol) {
-        editProtocols[pIdx].specificProtocol.instructions = ta.value.split('\n').map(l => l.trim()).filter(Boolean);
+    // Remove empty specific lines properly before saving
+    editProtocols.forEach(p => {
+      if (p.specificProtocol && Array.isArray(p.specificProtocol.instructions)) {
+        p.specificProtocol.instructions = p.specificProtocol.instructions.map(l => l.trim()).filter(Boolean);
       }
     });
 
