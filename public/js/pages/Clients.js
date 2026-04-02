@@ -196,7 +196,7 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
   const existingCustom = anamnese.protocolo_customizado || null;
   let editProtocols = existingCustom?.protocols
     ? JSON.parse(JSON.stringify(existingCustom.protocols)).map(cp => {
-        if (!cp.specificProtocol) {
+        if (cp.specificProtocol === undefined) {
             const baseProto = protocols.find(bp => bp.symptom === cp.symptom);
             if (baseProto && baseProto.specificProtocol) {
                 cp.specificProtocol = JSON.parse(JSON.stringify(baseProto.specificProtocol));
@@ -388,7 +388,7 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
     body.querySelectorAll('.pe-remove-specific').forEach(btn => {
       btn.addEventListener('click', () => {
         if (confirm('Deseja realmente apagar este Passo-a-Passo Específico (suas instruções)?')) {
-          delete editProtocols[+btn.dataset.idx].specificProtocol;
+          editProtocols[+btn.dataset.idx].specificProtocol = null;
           render();
         }
       });
