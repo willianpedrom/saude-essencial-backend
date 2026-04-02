@@ -68,8 +68,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
     { id: 'pipeline', icon: '📈', label: 'Fluxo de Vendas' },
     { id: 'anamnesis', icon: '📋', label: 'Anamneses' },
     { id: 'links', icon: '🔗', label: 'Links de Captação' },
-    { id: 'schedule', icon: '📅', label: 'Agenda' },
-    { id: 'followup', icon: '💬', label: 'Follow-up' },
+    { id: 'schedule', icon: '📅', label: 'Agenda & Follow-ups' },
     { id: 'testimonials', icon: '⭐', label: 'Depoimentos' },
     { id: 'purchases', icon: '🛒', label: 'Compras' },
     { id: 'integrations', icon: '📊', label: 'Integrações' },
@@ -672,7 +671,7 @@ export async function renderDashboard(router) {
       { done: hasProfile, label: 'Complete seu perfil', sub: 'Adicione sua foto e telefone', action: "location.hash='#/profile'", btn: 'Completar →' },
       { done: hasClientBool, label: 'Adicione seu primeiro cliente', sub: 'Cadastre alguém que você já atende', action: "window.dashboardAddClient()", btn: 'Adicionar →' },
       { done: hasAnamnese, label: 'Configure seu link de anamnese', sub: 'Crie um formulário de saúde personalizado', action: "location.hash='#/anamnesis'", btn: 'Criar →' },
-      { done: hasFollowup, label: 'Crie seu primeiro follow-up', sub: 'Registre o acompanhamento de uma cliente', action: "location.hash='#/followup'", btn: 'Criar →' },
+      { done: hasFollowup, label: 'Crie seu primeiro follow-up', sub: 'Registre o acompanhamento de uma cliente', action: "location.hash='#/schedule'", btn: 'Criar →' },
       { done: anamneses.some(a => a.subtipo === 'generico'), label: 'Link de captação genérico', sub: 'Para novos leads sem cliente específico', action: "location.hash='#/links'", btn: 'Criar →' },
     ];
     const doneCount = onboardingSteps.filter(s => s.done).length;

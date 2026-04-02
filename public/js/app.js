@@ -45,7 +45,7 @@ const router = new Router({
         renderLogin(router);
     },
     '/dashboard': guard(async (params) => {
-        const { renderDashboard } = await import('./pages/Dashboard.js');
+        const { renderDashboard } = await import('./pages/Dashboard.js?v=4');
         renderDashboard(router, params);
     }),
     '/clients': guard(async (params) => {
@@ -61,12 +61,11 @@ const router = new Router({
         renderAnamnesisList(router, params);
     }),
     '/schedule': guard(async () => {
-        const { renderSchedule } = await import('./pages/Schedule.js');
+        const { renderSchedule } = await import('./pages/Schedule.js?v=4');
         renderSchedule(router);
     }),
     '/followup': guard(async () => {
-        const { renderFollowup } = await import('./pages/Schedule.js');
-        renderFollowup(router);
+        router.navigate('/schedule');
     }),
     '/testimonials': guard(async () => {
         const { renderTestimonials } = await import('./pages/Extras.js');
