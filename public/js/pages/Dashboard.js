@@ -644,7 +644,8 @@ export async function renderDashboard(router) {
       hasClient = false,
       stageCounts = {},
       recStageCounts = {},
-      metas: summaryMetas = {}
+      metas: summaryMetas = {},
+      totalEstoque = 0
     } = summary || {};
 
 
@@ -670,13 +671,13 @@ export async function renderDashboard(router) {
     // ── Onboarding Checklist ──
     const onboardingDismissed = localStorage.getItem('onboarding_dismissed_' + consultant.id) === '1';
     const hasProfile = !!(consultant?.nome && consultant?.telefone && consultant?.foto_url);
-    const hasClientBool = hasClient; // Variável real vinda do banco (se ela adicionou pessoas)
-    const hasFollowup = followupsArr.length > 0;
+    const hasCaptureLink = anamneses.some(a => a.nome_link !== 'Link da Bio'); // Se tem algum link criado que não seja o automático da tela pública
+    const hasProduct = totalEstoque > 0;
 
     const onboardingSteps = [
-      { done: hasProfile, label: 'Preencha seu perfil corporativo', sub: 'Adicione sua foto e celular para credibilidade', action: "location.hash='#/profile'", btn: 'Completar →' },
-      { done: hasClientBool, label: 'Cadastre seu 1º Cliente ou Prospecto', sub: 'Inicie sua carteira de contatos na plataforma', action: "window.dashboardAddClient()", btn: 'Adicionar →' },
-      { done: hasFollowup, label: 'Agende seu 1º Follow-up', sub: 'Crie um lembrete para falar com alguém essa semana', action: "location.hash='#/schedule'", btn: 'Criar →' }
+      { done: hasProfile, label: 'Complete seu perfil', sub: 'Adicione sua foto e celular para credibilidade', action: "location.hash='#/profile'", btn: 'Completar →' },
+      { done: hasCaptureLink, label: 'Gere seu primeiro link de Captação', sub: 'Crie um link para enviar no WhatsApp', action: "location.hash='#/links'", btn: 'Criar →' },
+      { done: hasProduct, label: 'Cadastre pelo menos 01 produto no seu Estoque', sub: 'Mantenha o controle de seus óleos e vendas a pronta-entrega', action: "location.hash='#/inventory'", btn: 'Cadastrar →' }
     ];
     const doneCount = onboardingSteps.filter(s => s.done).length;
     const pct = Math.round((doneCount / onboardingSteps.length) * 100);

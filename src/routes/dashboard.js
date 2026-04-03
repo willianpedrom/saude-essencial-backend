@@ -105,9 +105,9 @@ router.get('/summary', async (req, res) => {
         COUNT(*) FILTER (WHERE recrutamento_stage = 'cadastrada')                 AS rec_cadastrada,
 
         COUNT(*) FILTER (WHERE criado_em >= $2)                                   AS leads_mes,
-        COUNT(*) FILTER (WHERE pipeline_stage = 'primeira_compra' AND atualizado_em >= $2)  AS vendas_mes,
         COUNT(*) FILTER (WHERE recrutamento_stage = 'cadastrada' AND atualizado_em >= $2)   AS cadastros_mes,
-        (SELECT COUNT(*) FROM prospects WHERE consultora_id = $1)                  AS total_prospects
+        (SELECT COUNT(*) FROM prospects WHERE consultora_id = $1)                  AS total_prospects,
+        (SELECT COUNT(*) FROM estoque WHERE consultora_id = $1)                    AS total_estoque
 
       FROM clientes
       WHERE consultora_id = $1
@@ -147,7 +147,8 @@ router.get('/summary', async (req, res) => {
         vendasMes: parseInt(r.vendas_mes) || 0,
         cadastrosMes: parseInt(r.cadastros_mes) || 0,
       },
-      totalProspects: parseInt(r.total_prospects) || 0
+      totalProspects: parseInt(r.total_prospects) || 0,
+      totalEstoque: parseInt(r.total_estoque) || 0
     });
   } catch (err) {
     console.error('[dashboard/summary]', err);
@@ -188,7 +189,8 @@ router.get('/boot', async (req, res) => {
             COUNT(*) FILTER (WHERE criado_em >= $2)                                   AS leads_mes,
             COUNT(*) FILTER (WHERE pipeline_stage = 'primeira_compra' AND atualizado_em >= $2) AS vendas_mes,
             COUNT(*) FILTER (WHERE recrutamento_stage = 'cadastrada' AND atualizado_em >= $2)  AS cadastros_mes,
-            (SELECT COUNT(*) FROM prospects WHERE consultora_id = $1)                  AS total_prospects
+            (SELECT COUNT(*) FROM prospects WHERE consultora_id = $1)                  AS total_prospects,
+            (SELECT COUNT(*) FROM estoque WHERE consultora_id = $1)                    AS total_estoque
           FROM clientes WHERE consultora_id = $1 AND ativo = TRUE
         `, [cid, firstOfMonth]),
 
@@ -272,7 +274,8 @@ router.get('/boot', async (req, res) => {
         vendasMes: parseInt(r.vendas_mes) || 0,
         cadastrosMes: parseInt(r.cadastros_mes) || 0,
       },
-      totalProspects: parseInt(r.total_prospects) || 0
+      totalProspects: parseInt(r.total_prospects) || 0,
+      totalEstoque: parseInt(r.total_estoque) || 0
     };
 
     // Build aniversariantes with WhatsApp links
