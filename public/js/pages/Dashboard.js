@@ -669,17 +669,14 @@ export async function renderDashboard(router) {
 
     // ── Onboarding Checklist ──
     const onboardingDismissed = localStorage.getItem('onboarding_dismissed_' + consultant.id) === '1';
-    const hasProfile = !!(consultant?.nome && consultant?.telefone);
-    const hasClientBool = hasClient || anamneses.length > 0; // from summary
-    const hasAnamnese = anamneses.length > 0;
+    const hasProfile = !!(consultant?.nome && consultant?.telefone && consultant?.foto_url);
+    const hasClientBool = hasClient; // Variável real vinda do banco (se ela adicionou pessoas)
     const hasFollowup = followupsArr.length > 0;
 
     const onboardingSteps = [
-      { done: hasProfile, label: 'Complete seu perfil', sub: 'Adicione sua foto e telefone', action: "location.hash='#/profile'", btn: 'Completar →' },
-      { done: hasClientBool, label: 'Adicione seu primeiro cliente', sub: 'Cadastre alguém que você já atende', action: "window.dashboardAddClient()", btn: 'Adicionar →' },
-      { done: hasAnamnese, label: 'Configure seu link de anamnese', sub: 'Crie um formulário de saúde personalizado', action: "location.hash='#/anamnesis'", btn: 'Criar →' },
-      { done: hasFollowup, label: 'Crie seu primeiro follow-up', sub: 'Registre o acompanhamento de uma cliente', action: "location.hash='#/schedule'", btn: 'Criar →' },
-      { done: anamneses.some(a => a.subtipo === 'generico'), label: 'Link de captação genérico', sub: 'Para novos leads sem cliente específico', action: "location.hash='#/links'", btn: 'Criar →' },
+      { done: hasProfile, label: 'Preencha seu perfil corporativo', sub: 'Adicione sua foto e celular para credibilidade', action: "location.hash='#/profile'", btn: 'Completar →' },
+      { done: hasClientBool, label: 'Cadastre seu 1º Cliente ou Prospecto', sub: 'Inicie sua carteira de contatos na plataforma', action: "window.dashboardAddClient()", btn: 'Adicionar →' },
+      { done: hasFollowup, label: 'Agende seu 1º Follow-up', sub: 'Crie um lembrete para falar com alguém essa semana', action: "location.hash='#/schedule'", btn: 'Criar →' }
     ];
     const doneCount = onboardingSteps.filter(s => s.done).length;
     const pct = Math.round((doneCount / onboardingSteps.length) * 100);
