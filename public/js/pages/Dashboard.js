@@ -719,12 +719,20 @@ export async function renderDashboard(router) {
     const now = new Date();
     const hojeStr = now.toDateString();
 
-    const hojeFollowups = pendentes.filter(f => f.dueDateTime && new Date(f.dueDateTime).toDateString() === hojeStr);
-    const atrasadosFollowups = pendentes.filter(f => f.dueDateTime && new Date(f.dueDateTime) < now && new Date(f.dueDateTime).toDateString() !== hojeStr);
+    const hojeFollowups = pendentes.filter(f => {
+      const dt = f.due_date_time || f.dueDateTime;
+      return dt && new Date(dt).toDateString() === hojeStr;
+    });
+    
+    const atrasadosFollowups = pendentes.filter(f => {
+      const dt = f.due_date_time || f.dueDateTime;
+      if (!dt) return true; // Followups sem data são considerados atrasados/pendentes como na agenda
+      return new Date(dt) < now && new Date(dt).toDateString() !== hojeStr;
+    });
 
     // Top 5 urgentes
     const urgentFollowups = [...atrasadosFollowups, ...hojeFollowups]
-      .sort((a, b) => new Date(a.dueDateTime) - new Date(b.dueDateTime)).slice(0, 5);
+      .sort((a, b) => new Date(a.due_date_time || a.dueDateTime || 0) - new Date(b.due_date_time || b.dueDateTime || 0)).slice(0, 5);
 
     const totalAnamneses = anamneses.length;
     // stageCounts, recStageCounts, totalClients, activeClients, monthClients
