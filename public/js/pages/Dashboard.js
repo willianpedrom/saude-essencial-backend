@@ -27,6 +27,13 @@ window.dismissBanner = async (id) => {
   }
 };
 
+// ── Helper: Auto Converter URLs em Links ─────────────────────
+function autoLinkify(text) {
+  if (!text) return '';
+  // Converte URLs válidas não protegidas por aspas em links azulados clicáveis
+  return text.replace(/(^|[^"'])(https?:\/\/[^\s<]+)/gi, '$1<a href="$2" target="_blank" style="color:#2563eb;text-decoration:underline">$2</a>');
+}
+
 // ── Helpers de Avisos por Modal ────────────────────────────────
 function processNextAviso(avisos, index) {
   if (index >= avisos.length) return; // Fim da fila
@@ -35,7 +42,7 @@ function processNextAviso(avisos, index) {
   import('../utils.js').then(({ modal }) => {
     modal(
       `${a.tipo === 'danger' ? '🔴' : a.tipo === 'success' ? '🟢' : a.tipo === 'warning' ? '🟡' : '🔵'} ${a.titulo}`,
-      `<p style="font-size:0.95rem;white-space:pre-wrap;color:var(--text-dark)">${a.mensagem}</p>`,
+      `<p style="font-size:0.95rem;white-space:pre-wrap;color:var(--text-dark)">${autoLinkify(a.mensagem)}</p>`,
       {
         confirmLabel: 'Entendi e Li as Informações',
         onConfirm: async () => {
@@ -652,7 +659,7 @@ export async function renderDashboard(router) {
         <span style="font-size:1.4rem">${a.tipo === 'danger' ? '🔴' : a.tipo === 'success' ? '🟢' : a.tipo === 'warning' ? '🟡' : '🔵'}</span>
         <div style="flex:1">
           <b style="color:var(--text-dark);font-size:0.95rem">${a.titulo}</b>
-          <p style="margin:4px 0 0;font-size:0.85rem;color:var(--text-muted);white-space:pre-wrap;">${a.mensagem}</p>
+          <p style="margin:4px 0 0;font-size:0.85rem;color:var(--text-muted);white-space:pre-wrap;">${autoLinkify(a.mensagem)}</p>
         </div>
         <button onclick="window.dismissBanner('${a.id}')" style="background:transparent;border:none;font-size:1.3rem;color:var(--text-muted);cursor:pointer;padding:0 4px;line-height:1;transition:color 0.2s" onmouseover="this.style.color='#000'" onmouseout="this.style.color='var(--text-muted)'" title="Fechar">×</button>
       </div>
