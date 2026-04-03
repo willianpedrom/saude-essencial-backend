@@ -531,34 +531,34 @@ function funnelBar(label, count, total, color, emoji) {
 
 
 // ── Helper: build a single follow-up row ─────────────────────
-function fuRow(f, clients) {
-  const c = clients.find(cl => cl.id === f.clientId);
-  const name = c?.name || c?.nome || 'Cliente';
-  const isOverdue = new Date(f.dueDateTime) < new Date() && new Date(f.dueDateTime).toDateString() !== new Date().toDateString();
-  const phone = (c?.phone || c?.telefone || '').replace(/\D/g, '');
-  const msg = encodeURIComponent('Oi ' + name + ', combinamos que eu entraria em contato hoje com você. Lembra? Podemos conversar agora? 💚');
-  const wa = phone ? 'https://wa.me/55' + phone + '?text=' + msg : 'https://wa.me/?text=' + msg;
+function fuRow(f) {
+  const name = f.cliente_nome || 'Cliente';
+  const phone = (f.cliente_telefone || '').replace(/\D/g, '');
+  const dtStr = f.due_date_time || f.dueDateTime;
+  const isOverdue = dtStr && new Date(dtStr) < new Date() && new Date(dtStr).toDateString() !== new Date().toDateString();
+  const dueDateStr = dtStr ? new Date(dtStr).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+  
+  const msg = encodeURIComponent(`Oi ${name}, combinamos que eu entraria em contato hoje com você. Lembra? Podemos conversar agora? 💚`);
+  const wa = phone ? `https://wa.me/55${phone}?text=${msg}` : `https://wa.me/?text=${msg}`;
 
   const badgeColor = isOverdue ? '#991b1b' : '#b45309';
   const badgeBg = isOverdue ? '#fee2e2' : '#ffedd5';
   const badgeText = isOverdue ? '⚠️ Atrasado' : '🔥 Hoje';
 
-  const dueDateStr = f.dueDateTime ? new Date(f.dueDateTime).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-
-  return '<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding:10px 0">' +
-    '<div style="flex:1;min-width:0">' +
-    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
-    '<span style="font-weight:600;font-size:0.92rem">' + name + '</span>' +
-    '<span style="font-size:0.7rem;padding:2px 8px;border-radius:10px;background:' + badgeBg + ';color:' + badgeColor + ';font-weight:600">' + badgeText + '</span>' +
-    '</div>' +
-    '<div style="font-size:0.82rem;color:var(--text-muted);margin-top:2px">' + (f.note || '') + '</div>' +
-    (dueDateStr ? '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px">📅 ' + dueDateStr + '</div>' : '') +
-    '</div>' +
-    '<div style="display:flex;gap:6px;flex-shrink:0;margin-left:8px">' +
-    '<button class="btn btn-sm" style="background:#f3f4f6;color:#374151;min-width:36px" onclick="window.dashboardDoneFu(&quot;' + f.id + '&quot;)">✅</button>' +
-    '<a href="' + wa + '" target="_blank" class="btn btn-sm" style="background:#25D366;color:white;text-decoration:none;min-width:36px">📱</a>' +
-    '</div>' +
-    '</div>';
+  return `<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding:10px 0">
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-weight:600;font-size:0.92rem">${name}</span>
+        <span style="font-size:0.7rem;padding:2px 8px;border-radius:10px;background:${badgeBg};color:${badgeColor};font-weight:600">${badgeText}</span>
+      </div>
+      <div style="font-size:0.82rem;color:var(--text-muted);margin-top:2px">${f.nota || f.note || ''}</div>
+      ${dueDateStr ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px">📅 ${dueDateStr}</div>` : ''}
+    </div>
+    <div style="display:flex;gap:6px;flex-shrink:0;margin-left:8px">
+      <button class="btn btn-sm" style="background:#f3f4f6;color:#374151;min-width:36px" onclick="window.dashboardDoneFu('${f.id}')">✅</button>
+      <a href="${wa}" target="_blank" class="btn btn-sm" style="background:#25D366;color:white;text-decoration:none;min-width:36px">📱</a>
+    </div>
+  </div>`;
 }
 
 // ── Dashboard ────────────────────────────────────────────────
@@ -1002,7 +1002,7 @@ export async function renderDashboard(router) {
             <button class="btn btn-secondary btn-sm" onclick="location.hash='#/followup'">Resolver Todos</button>
           </div>
           <div class="card-body" style="padding:20px">
-            ${urgentFollowups.map(f => fuRow(f, clients)).join('')}
+            ${urgentFollowups.map(f => fuRow(f)).join('')}
           </div>
         </div>
       </div>` : ''}
