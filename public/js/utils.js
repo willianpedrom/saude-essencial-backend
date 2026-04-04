@@ -706,19 +706,42 @@ export function openClientOffcanvas(client) {
           btnLink.onclick = async () => {
              const origText = btnLink.innerHTML;
              btnLink.innerHTML = '<span>⏳ Gerando...</span>';
+
+             // Safari (iOS) require synchronous definition of clipboard.write using Promises
+             if (navigator.clipboard && window.ClipboardItem) {
+                 try {
+                     const fetchHash = async () => {
+                         const { api } = await import('./store.js');
+                         const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
+                         return window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
+                     };
+                     
+                     const promiseBlob = fetchHash().then(text => new Blob([text], { type: 'text/plain' }));
+                     
+                     await navigator.clipboard.write([
+                         new ClipboardItem({ 'text/plain': promiseBlob })
+                     ]);
+                     
+                     btnLink.innerHTML = '<span style="color:#10b981">✅ Copiado!</span>';
+                     // Não usamos o fallback caso este de cima funcione
+                     setTimeout(() => btnLink.innerHTML = origText, 3000);
+                     if (typeof toast !== 'undefined') toast('Link copiado! 🔗', 'success');
+                     return;
+                 } catch (err) {
+                    console.warn("Async clipboard write failed, using fallback:", err);
+                 }
+             }
+
+             // Fallback default (Android / Chrome PC onde transient activation não morre no await)
              try {
                 const { api } = await import('./store.js');
                 const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
-
                 const magicUrl = window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
                 
-                // Usar a função de cópia global que aciona o fallback antigo para iOS Safari
                 await copyToClipboard(magicUrl);
-                
-                // UI override especial deste botão de Link Mágico
                 btnLink.innerHTML = '<span style="color:#10b981">✅ Copiado!</span>';
              } catch(err) {
-                toast(err.message, 'error');
+                if (typeof toast !== 'undefined') toast(err.message, 'error');
                 btnLink.innerHTML = '<span style="color:#ef4444">❌ Erro</span>';
              }
              setTimeout(() => btnLink.innerHTML = origText, 3000);
