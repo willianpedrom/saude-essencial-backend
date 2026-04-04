@@ -702,7 +702,7 @@ export function openClientOffcanvas(client) {
           const btnLink = document.createElement('button');
           btnLink.className = 'btn';
           btnLink.style.cssText = `flex:1;background:transparent;color:#0ea5e9;border:none;border-radius:0;font-size:0.75rem;padding:8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px`;
-          btnLink.innerHTML = `<span>🔗 Mágico Cliente </span>`;
+          btnLink.innerHTML = `<span>🔗 Copiar Link do Protocolo</span>`;
           btnLink.onclick = async () => {
              const origText = btnLink.innerHTML;
              btnLink.innerHTML = '<span>⏳ Gerando...</span>';
