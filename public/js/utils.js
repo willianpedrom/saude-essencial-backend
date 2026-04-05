@@ -501,6 +501,12 @@ export function openClientOffcanvas(client) {
 
           <!-- PANE: FOLLOW-UP -->
           <div class="oc-pane" id="pane-followup">
+             <div style="margin-bottom:16px;">
+                 <button class="btn btn-primary" id="btn-oc-add-fu" style="width:100%; display:flex; justify-content:center; gap:8px;">
+                     <span style="font-size:1.1rem">💬</span> Novo Follow-up (Ping)
+                 </button>
+             </div>
+
              ${client.motivo_perda ? `
                <div style="background:#fef2f2;border:1px solid #fecaca;padding:12px;border-radius:6px;margin-bottom:16px">
                  <div style="color:#ef4444;font-size:0.75rem;font-weight:700;margin-bottom:4px">MOTIVO DE PERDA</div>
@@ -641,6 +647,50 @@ export function openClientOffcanvas(client) {
         btnAddRecrutamento.textContent = "+ Adicionar a este cliente no Funil de Recrutamento";
       }
     });
+  }
+
+  // Action: Add Follow-up
+  const btnAddFu = overlay.querySelector('#btn-oc-add-fu');
+  if (btnAddFu) {
+      btnAddFu.addEventListener('click', () => {
+          modal('Novo Follow-up (Acompanhamento)', `
+             <div style="margin-bottom:12px;font-size:0.85rem;color:var(--text-muted)">Agende um "ping" para lembrar de falar com <b>${firstName}</b>.</div>
+             <div class="form-group" style="margin-bottom:12px">
+                <label class="field-label">O que você precisa fazer?</label>
+                <input class="field-input" id="oc-fu-note" placeholder="Ex: Perguntar se os óleos chegaram..." />
+             </div>
+             <div style="display:flex;gap:12px;margin-bottom:8px">
+                <div class="form-group" style="flex:1">
+                   <label class="field-label">Data</label>
+                   <input class="field-input" type="date" id="oc-fu-date" value="${new Date().toISOString().slice(0, 10)}" />
+                </div>
+                <div class="form-group" style="flex:1">
+                   <label class="field-label">Avisar às</label>
+                   <input class="field-input" type="time" id="oc-fu-time" value="09:00" />
+                </div>
+             </div>
+          `, {
+             confirmLabel: 'Criar Follow-up',
+             confirmClass: 'btn-secondary',
+             onConfirm: async (m) => {
+                 const nota = m.querySelector('#oc-fu-note').value.trim();
+                 const data = m.querySelector('#oc-fu-date').value;
+                 const hora = m.querySelector('#oc-fu-time').value || '00:00';
+                 if (!nota) throw new Error('Anotação obrigatória.');
+                 if (!data) throw new Error('Data obrigatória.');
+                 
+                 const { store } = await import('./store.js');
+                 await store.addFollowup({
+                     cliente_id: client.id,
+                     nota,
+                     due_date_time: `${data}T${hora}:00`
+                 });
+                 if (typeof toast !== 'undefined') toast('Follow-up criado com sucesso! 💬', 'success');
+                 window.dispatchEvent(new Event('client-updated'));
+                 return true;
+             }
+          });
+      });
   }
 
   // Action: Carregar Dossiês Preenchidos
