@@ -272,15 +272,15 @@ export async function renderTestimonials(router) {
           } catch (e) {
             const msg = e?.message || '';
             if (msg.includes('401') || msg.toLowerCase().includes('expirado') || msg.toLowerCase().includes('inválido')) {
-              window.toast?.('Sua sessão expirou. Recarregue a página e tente novamente.', 'error');
+              toast('Sua sessão expirou. Recarregue a página e tente novamente.', 'error');
             } else {
-              window.toast?.(msg || 'Erro ao aprovar. Tente novamente.', 'error');
+              toast(msg || 'Erro ao aprovar. Tente novamente.', 'error');
             }
           } finally {
             // Garante que a UI SEMPRE seja atualizada, mesmo se toast() falhar
             try { renderView(); } catch { /* silencioso */ }
             if (success) {
-              try { window.toast('Depoimento aprovado com sucesso! ✅'); } catch { /* silencioso */ }
+              try { toast('Depoimento aprovado com sucesso! ✅'); } catch { /* silencioso */ }
             }
           }
         });
@@ -311,8 +311,8 @@ export async function renderTestimonials(router) {
               try {
                 await store.setTestimonialTags(id, checked);
                 t.etiquetas = localTags.filter(tg => checked.includes(tg.id));
-                renderView(); window.toast('Etiquetas salvas!');
-              } catch (e) { window.toast(e.message, 'error'); }
+                renderView(); toast('Etiquetas salvas!');
+              } catch (e) { toast(e.message, 'error'); return false; }
             }
           });
         });
@@ -328,8 +328,8 @@ export async function renderTestimonials(router) {
               try {
                 await store.deleteTestimonial(id);
                 localTestimonials = localTestimonials.filter(x => x.id !== id);
-                renderView(); window.toast('Depoimento apagado.');
-              } catch (e) { window.toast(e.message, 'error'); }
+                renderView(); toast('Depoimento apagado.');
+              } catch (e) { toast(e.message, 'error'); return false; }
             }
           });
         });
@@ -351,12 +351,12 @@ export async function renderTestimonials(router) {
           onConfirm: async () => {
             const nome = document.getElementById('new-tag-name').value.trim();
             const cor = document.getElementById('new-tag-color').value;
-            if (!nome) { window.toast('O nome é obrigatório.', 'error'); return; }
+            if (!nome) { toast('O nome é obrigatório.', 'error'); return false; }
             try {
               const res = await store.addTag({ nome, cor });
               localTags.push(res);
-              renderView(); window.toast('Etiqueta criada! 🏷️');
-            } catch (e) { window.toast(e.message, 'error'); }
+              renderView(); toast('Etiqueta criada! 🏷️');
+            } catch (e) { toast(e.message, 'error'); return false; }
           }
         });
       });
@@ -377,8 +377,8 @@ export async function renderTestimonials(router) {
                   if (t.etiquetas) t.etiquetas = t.etiquetas.filter(e => e.id !== id);
                 });
                 if (activeTagFilter === id) activeTagFilter = null;
-                renderView(); window.toast('Etiqueta removida.');
-              } catch (e) { window.toast(e.message, 'error'); }
+                renderView(); toast('Etiqueta removida.');
+              } catch (e) { toast(e.message, 'error'); return false; }
             }
           });
         });
@@ -406,13 +406,14 @@ export async function renderTestimonials(router) {
             const cliente_nome = document.getElementById('m-nome').value.trim();
             const texto = document.getElementById('m-texto').value.trim();
             const nota = parseInt(document.getElementById('m-nota').value) || 10;
-            if (!cliente_nome || !texto) { window.toast('Preencha os campos obrigatórios', 'error'); return; }
+            if (!cliente_nome || !texto) { toast('Preencha os campos obrigatórios', 'error'); return false; }
 
             try {
               const res = await store.addTestimonial({ cliente_nome, texto, nota, consentimento: true }); // manual implies you got consent
               localTestimonials.unshift(res);
-              renderView(); window.toast('Registrado! ⭐');
-            } catch (e) { window.toast(e.message, 'error'); }
+              renderView(); toast('Registrado! ⭐');
+              return true;
+            } catch (e) { toast(e.message, 'error'); return false; }
           }
         });
       });

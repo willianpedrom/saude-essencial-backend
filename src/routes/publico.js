@@ -128,4 +128,5 @@ router.get('/settings', async (req, res) => {
     }
 });
 
+router.publicCache = cache;
 module.exports = router;

@@ -2,6 +2,7 @@ const express = require('express');
 const pool = require('../db/pool');
 const auth = require('../middleware/auth');
 const checkSub = require('../middleware/checkSubscription');
+const publicoRouter = require('./publico');
 
 const router = express.Router();
 
@@ -182,6 +183,7 @@ router.post('/', async (req, res) => {
              VALUES ($1, $2, $3, $4, $5, $6, TRUE, $7, 'manual') RETURNING *`,
             [req.consultora.id, cliente_nome, cliente_email || null, cliente_telefone || null, texto, Math.min(10, Math.max(0, parseInt(nota) || 10)), !!consentimento]
         );
+        if (publicoRouter.publicCache) publicoRouter.publicCache.flushAll(); // Limpa cache para refletir imediatamente
         res.status(201).json({ ...rows[0], etiquetas: [] });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -205,6 +207,7 @@ router.patch('/:id/aprovar', async (req, res) => {
             console.log(`[DEBUG] Falhou ao atualizar. affectedRows = 0`);
             return res.status(404).json({ error: 'Depoimento não encontrado ou não pertence a você.' });
         }
+        if (publicoRouter.publicCache) publicoRouter.publicCache.flushAll();
         res.json(rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -240,6 +243,7 @@ router.patch('/:id/etiquetas', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         await pool.query('DELETE FROM depoimentos WHERE id=$1 AND consultora_id=$2', [req.params.id, req.consultora.id]);
+        if (publicoRouter.publicCache) publicoRouter.publicCache.flushAll();
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
