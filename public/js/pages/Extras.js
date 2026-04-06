@@ -1,6 +1,6 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
-import { formatDate, formatCurrency, toast, modal } from '../utils.js';
+import { formatDate, formatCurrency, toast, modal, copyToClipboard } from '../utils.js';
 
 // LocalStorage helper for features without backend endpoints
 function ls(key) {
@@ -77,7 +77,7 @@ export async function renderTestimonials(router) {
             <input type="text" readonly value="${publicUrl}"
               style="flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;
                      padding:8px 12px;color:#334155;font-size:0.82rem;outline:none;cursor:text" />
-            <button class="btn btn-primary" onclick="navigator.clipboard.writeText('${publicUrl}');window.toast('Link copiado! 🔗')"
+            <button class="btn btn-primary" id="btn-copy-public-link"
               style="background:#16a34a;border-color:#16a34a;white-space:nowrap;font-weight:600;font-size:0.83rem;padding:8px 14px">
               📋 Copiar
             </button>
@@ -248,6 +248,11 @@ export async function renderTestimonials(router) {
 
 
     function bindEvents() {
+      // Copy Public Link
+      document.getElementById('btn-copy-public-link')?.addEventListener('click', async (e) => {
+        await copyToClipboard(publicUrl, e.currentTarget);
+      });
+
       // Tags Toggle
       document.querySelectorAll('[data-filtertag]').forEach(btn => {
         btn.addEventListener('click', () => {
