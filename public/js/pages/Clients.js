@@ -516,7 +516,7 @@ export async function renderClients(router, params) {
         page: currentPage,
         limit: PAGE_SIZE,
         q: search,
-        ativo: 'all',
+        ativo: filter === 'archived' ? 'false' : (filter === 'all' ? 'all' : 'true'),
         link: linkFilter
       });
       clients = res.data;
@@ -533,11 +533,12 @@ export async function renderClients(router, params) {
   function filtered() {
     // status and tipo are applied locally on the current page of results
     let list = clients.filter(c => {
+      if (filter === 'archived') return c.ativo === false;
       const matchStatus = filter === 'all' || c.status === filter;
       const matchTipo = tipoFilter === 'all' ||
         (tipoFilter === 'lead' && (!c.tipo_cadastro || c.tipo_cadastro === 'lead')) ||
         c.tipo_cadastro === tipoFilter;
-      return matchStatus && matchTipo;
+      return matchStatus && matchTipo && (filter === 'all' ? true : c.ativo !== false);
     });
 
     if (sortOrder === 'recent') {
@@ -580,12 +581,21 @@ export async function renderClients(router, params) {
           <td>${String(c.genero || '').toLowerCase() === 'masculino' ? '♂ Masc.' : String(c.genero || '').toLowerCase() === 'feminino' ? '♀ Fem.' : '—'}</td>
           <td>${formatDate(c.data_nascimento || c.birthdate) || '—'}</td>
           <td>${city}</td>
-          <td><span class="status-badge status-${c.status || 'active'}">${{ active: 'Ativo', inactive: 'Inativo' }[c.status] || 'Ativo'}</span></td>
+          <td>
+            ${c.ativo === false ? '<span class="status-badge" style="background:#f1f5f9;color:#64748b;border-color:#cbd5e1">🗂️ Arquivado</span>' : 
+              `<span class="status-badge status-${c.status || 'active'}">${{ active: 'Ativo', inactive: 'Inativo' }[c.status] || 'Ativo'}</span>`
+            }
+          </td>
           <td>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <button class="btn btn-secondary btn-sm" data-action="anamnese" data-id="${c.id}" title="Ver anamnese">📋</button>
-              <button class="btn btn-secondary btn-sm" data-action="edit" data-id="${c.id}" title="Editar">✏️</button>
-              <button class="btn btn-danger btn-sm" data-action="delete" data-id="${c.id}" title="Excluir">🗑️</button>
+              ${c.ativo === false ? 
+                `<button class="btn btn-primary btn-sm" data-action="restore" data-id="${c.id}" title="Restaurar cliente" style="background:#0ea5e9;border-color:#0ea5e9">🔄 Restaurar</button>` : 
+                `
+                <button class="btn btn-secondary btn-sm" data-action="anamnese" data-id="${c.id}" title="Ver anamnese">📋</button>
+                <button class="btn btn-secondary btn-sm" data-action="edit" data-id="${c.id}" title="Editar">✏️</button>
+                <button class="btn btn-danger btn-sm" data-action="delete" data-id="${c.id}" title="Excluir">🗑️</button>
+                `
+              }
             </div>
           </td>
         </tr>`;
@@ -623,6 +633,17 @@ export async function renderClients(router, params) {
       btn.addEventListener('click', async () => {
         const client = clients.find(c => c.id === btn.dataset.id);
         if (btn.dataset.action === 'edit') showClientModal(client);
+        if (btn.dataset.action === 'restore') {
+          if (confirm(`Deseja restaurar o cadastro de ${client.nome || client.name}?`)) {
+            try {
+              await store.updateClient(client.id, { ...client, ativo: true });
+              toast('Cliente restaurado com sucesso! 🟢', 'success');
+              refresh(false);
+            } catch (e) {
+              toast('Erro ao restaurar: ' + e.message, 'error');
+            }
+          }
+        }
         if (btn.dataset.action === 'delete') {
           const clientName = client?.nome || client?.name || 'este cliente';
           modal('Arquivar Cliente', `
@@ -671,8 +692,8 @@ export async function renderClients(router, params) {
             onConfirm: async () => {
               try {
                 await store.deleteClient(client.id);
-                toast(`${clientName} arquivado. Você pode reativá-lo a qualquer momento.`, 'warning');
-                await refresh();
+                toast(`${clientName} arquivado. Você pode reativá-lo a qualquer momento na aba 'Arquivados'.`, 'warning');
+                await refresh(false);
               } catch (e) {
                 toast('Erro ao arquivar: ' + e.message, 'error');
               }
@@ -715,9 +736,9 @@ export async function renderClients(router, params) {
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <div class="tab-bar" style="margin:0">
-              ${['all', 'active', 'inactive'].map(s => `
+              ${['all', 'active', 'inactive', 'archived'].map(s => `
                 <button class="tab-btn ${filter === s ? 'active' : ''}" data-filter="${s}">
-                  ${s === 'all' ? 'Todos 👥' : s === 'active' ? 'Ativos 🟢' : 'Inativos 🔴'}
+                  ${s === 'all' ? 'Todos 👥' : s === 'active' ? 'Ativos 🟢' : s === 'inactive' ? 'Inativos 🔴' : 'Arquivados 🗂️'}
                 </button>`).join('')}
             </div>
             
@@ -766,7 +787,7 @@ export async function renderClients(router, params) {
       btn.addEventListener('click', () => {
         filter = btn.dataset.filter;
         pc.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
-        renderTable();
+        refresh(); // Refresh from server to get correct counts and records
       });
     });
 
@@ -854,6 +875,14 @@ export async function renderClients(router, params) {
             <option value="inactive" ${client?.status === 'inactive' ? 'selected' : ''}>Inativo 🔴</option>
           </select>
         </div>
+        ${client && client.ativo === false ? `
+        <div class="form-group">
+          <label class="field-label">Arquivo</label>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px;background:#fff7ed;border-radius:8px;border:1px solid #ffedd5">
+             <input type="checkbox" id="m-ativo" checked style="width:18px;height:18px;accent-color:#ea580c" />
+             <span style="font-size:0.82rem;color:#9a3412;font-weight:600">Manter arquivado</span>
+          </div>
+        </div>` : ''}
         <div class="form-group form-field-full">
           <label class="field-label">Observações Internas</label>
           <textarea class="field-textarea" id="m-notes">${client?.notes || ''}</textarea>
@@ -877,6 +906,7 @@ export async function renderClients(router, params) {
           genero: document.getElementById('m-genero').value,
           status: document.getElementById('m-status').value,
           notes: document.getElementById('m-notes').value.trim(),
+          ativo: document.getElementById('m-ativo') ? document.getElementById('m-ativo').checked === false : true
         };
         if (!data.name) { toast('Nome é obrigatório', 'error'); return; }
         try {

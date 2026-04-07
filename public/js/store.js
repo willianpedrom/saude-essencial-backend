@@ -90,6 +90,7 @@ export function clientToApi(data) {
     if ('pipeline_stage' in data) apiObj.pipeline_stage = data.pipeline_stage;
     if ('tipo_cadastro' in data) apiObj.tipo_cadastro = data.tipo_cadastro;
     if ('indicado_por_id' in data) apiObj.indicado_por_id = data.indicado_por_id;
+    if ('ativo' in data) apiObj.ativo = !!data.ativo;
 
     return apiObj;
 }

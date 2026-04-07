@@ -141,16 +141,17 @@ router.post('/', async (req, res) => {
 
 // PUT /api/clientes/:id
 router.put('/:id', async (req, res) => {
-    const { nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status, tipo_cadastro } = req.body;
+    const { nome, email, telefone, cpf, data_nascimento, genero, cidade, notas, status, tipo_cadastro, ativo } = req.body;
     try {
         const { rows } = await pool.query(
             `UPDATE clientes
        SET nome=$1, email=$2, telefone=$3, cpf=$4, data_nascimento=$5,
-           genero=$6, cidade=$7, notas=$8, status=$9, tipo_cadastro=$10, atualizado_em=NOW()
-       WHERE id=$11 AND consultora_id=$12
+           genero=$6, cidade=$7, notas=$8, status=$9, tipo_cadastro=$10,
+           ativo=COALESCE($11, ativo), atualizado_em=NOW()
+       WHERE id=$12 AND consultora_id=$13
        RETURNING *`,
             [nome, email, telefone, cpf, data_nascimento || null, genero, cidade, notas,
-                status || 'active', tipo_cadastro || null, req.params.id, req.consultora.id]
+                status || 'active', tipo_cadastro || null, ativo === undefined ? null : !!ativo, req.params.id, req.consultora.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Cliente não encontrado.' });
         res.json(rows[0]);
