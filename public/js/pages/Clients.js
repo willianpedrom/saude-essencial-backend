@@ -149,7 +149,7 @@ export async function showAnamneseModal(client, router) {
         <button id="btn-edit-protocol" style="background:#f0fdf4;color:#166534;border:1.5px solid #86efac;border-radius:8px;padding:8px 16px;font-size:0.85rem;font-weight:700;cursor:pointer">✏️ Editar Protocolo</button>
       </div>
     </div>`, {
-    confirmLabel: '🌿 Ver Protocolo',
+    confirmLabel: '🔗 Copiar Link do Protocolo',
     onOpen: () => {
       document.getElementById('btn-edit-protocol')?.addEventListener('click', () => {
         let protocols = [];
@@ -161,24 +161,48 @@ export async function showAnamneseModal(client, router) {
       });
     },
     onConfirm: async () => {
-      // Busca a anamnese mais recente do banco para garantir que o protocolo_customizado salvo há 1 segundo esteja lá
-      const freshAnamneses = await store.getClientAnamneses(client.id).catch(() => []);
-      const freshA = freshAnamneses[0] || a;
-      
-      const consultant = auth.current;
-      const rawPayload = JSON.stringify({
-        answers: dados,
-        protocolo_customizado: freshA.protocolo_customizado,
-        consultant: { name: consultant?.nome || consultant?.name, slug: consultant?.slug, phone: consultant?.telefone || consultant?.phone, genero: consultant?.genero },
-        clientName: client.name,
-        clientMessage: client.protocolo_mensagem,
-        clientId: client.id
-      });
-      
-      // Usa localStorage temporário para garantir leitura na nova aba sem depender de sessionStorage
-      localStorage.setItem('tempAnamnesisPayload', rawPayload);
-      window.open(window.location.origin + '/#/protocolo', '_blank');
-      return true; // Fechar a modal original após abrir a nova aba
+      const btnLink = document.querySelector('.modal-actions .btn-primary');
+      const origText = btnLink.innerHTML;
+      btnLink.innerHTML = 'Gerando...';
+
+      // Lógica idêntica ao utils.js para garantir funcionamento no iOS Safari
+      if (navigator.clipboard && window.ClipboardItem) {
+        try {
+          const fetchHash = async () => {
+            const { api } = await import('./store.js');
+            const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
+            return window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
+          };
+          
+          const promiseBlob = fetchHash().then(text => new Blob([text], { type: 'text/plain' }));
+          
+          await navigator.clipboard.write([
+              new ClipboardItem({ 'text/plain': promiseBlob })
+          ]);
+          
+          btnLink.innerHTML = '<span style="color:#fff">✅ Copiado!</span>';
+          setTimeout(() => btnLink.innerHTML = origText, 3000);
+          toast('Link copiado! 🔗', 'success');
+          return false; // Mantém a modal aberta
+        } catch (err) {
+           console.warn("Async clipboard write failed, using fallback:", err);
+        }
+      }
+
+      // Fallback
+      try {
+        const { api } = await import('./store.js');
+        const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
+        const magicUrl = window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
+        
+        await copyToClipboard(magicUrl);
+        btnLink.innerHTML = '<span style="color:#fff">✅ Copiado!</span>';
+      } catch(err) {
+        toast(err.message, 'error');
+        btnLink.innerHTML = '<span style="color:#ef4444">❌ Erro</span>';
+      }
+      setTimeout(() => btnLink.innerHTML = origText, 3000);
+      return false; // Mantém modal aberta após copiar
     }
   });
 }
