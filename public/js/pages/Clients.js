@@ -534,7 +534,8 @@ export async function renderClients(router, params) {
     // status and tipo are applied locally on the current page of results
     let list = clients.filter(c => {
       if (filter === 'archived') return c.ativo === false;
-      const matchStatus = filter === 'all' || c.status === filter;
+      const matchStatus = filter === 'all' || 
+                        (filter === 'active' ? (c.status === 'active' || c.status === 'lead') : c.status === filter);
       const matchTipo = tipoFilter === 'all' ||
         (tipoFilter === 'lead' && (!c.tipo_cadastro || c.tipo_cadastro === 'lead')) ||
         c.tipo_cadastro === tipoFilter;
@@ -583,7 +584,7 @@ export async function renderClients(router, params) {
           <td>${city}</td>
           <td>
             ${c.ativo === false ? '<span class="status-badge" style="background:#f1f5f9;color:#64748b;border-color:#cbd5e1">🗂️ Arquivado</span>' : 
-              `<span class="status-badge status-${c.status || 'active'}">${{ active: 'Ativo', inactive: 'Inativo' }[c.status] || 'Ativo'}</span>`
+              `<span class="status-badge status-${c.status || 'active'}">${{ active: 'Ativo', inactive: 'Inativo', lead: 'Prospecto' }[c.status] || 'Ativo'}</span>`
             }
           </td>
           <td>
