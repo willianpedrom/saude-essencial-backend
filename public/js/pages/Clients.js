@@ -169,7 +169,7 @@ export async function showAnamneseModal(client, router) {
       if (navigator.clipboard && window.ClipboardItem) {
         try {
           const fetchHash = async () => {
-            const { api } = await import('./store.js');
+            const { api } = await import('../store.js');
             const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
             return window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
           };
@@ -191,7 +191,7 @@ export async function showAnamneseModal(client, router) {
 
       // Fallback
       try {
-        const { api } = await import('./store.js');
+        const { api } = await import('../store.js');
         const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
         const magicUrl = window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
         
