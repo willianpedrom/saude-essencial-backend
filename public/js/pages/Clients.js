@@ -175,9 +175,10 @@ export async function showAnamneseModal(client, router) {
         clientId: client.id
       });
       
-      // Usa sessionStorage para não estourar o limite de URL e garantir leitura única e limpa pelo Report.js
-      sessionStorage.setItem('tempAnamnesisPayload', rawPayload);
-      router.navigate('/protocolo');
+      // Usa localStorage temporário para garantir leitura na nova aba sem depender de sessionStorage
+      localStorage.setItem('tempAnamnesisPayload', rawPayload);
+      window.open(window.location.origin + '/#/protocolo', '_blank');
+      return true; // Fechar a modal original após abrir a nova aba
     }
   });
 }

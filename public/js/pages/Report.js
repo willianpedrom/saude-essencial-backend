@@ -50,7 +50,12 @@ export async function renderReport(router, dataParam, hash = null) {
      }
   } else {
      try {
-       const storedData = sessionStorage.getItem('tempAnamnesisPayload');
+       let storedData = sessionStorage.getItem('tempAnamnesisPayload');
+       if (!storedData) {
+         storedData = localStorage.getItem('tempAnamnesisPayload');
+         if (storedData) localStorage.removeItem('tempAnamnesisPayload'); // consume it
+       }
+       
        if (storedData) {
          payload = JSON.parse(storedData);
          sessionStorage.removeItem('tempAnamnesisPayload');
