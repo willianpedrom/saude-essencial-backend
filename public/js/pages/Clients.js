@@ -161,9 +161,9 @@ export async function showAnamneseModal(client, router) {
       });
     },
     onConfirm: async () => {
-      const btnLink = document.querySelector('.modal-actions .btn-primary');
-      const origText = btnLink.innerHTML;
-      btnLink.innerHTML = 'Gerando...';
+      const btnLink = document.querySelector('.modal-footer [data-confirm]');
+      const origText = btnLink ? btnLink.innerHTML : '🔗 Copiar Link do Protocolo';
+      if(btnLink) btnLink.innerHTML = 'Gerando...';
 
       // Lógica idêntica ao utils.js para garantir funcionamento no iOS Safari
       if (navigator.clipboard && window.ClipboardItem) {
@@ -180,8 +180,8 @@ export async function showAnamneseModal(client, router) {
               new ClipboardItem({ 'text/plain': promiseBlob })
           ]);
           
-          btnLink.innerHTML = '<span style="color:#fff">✅ Copiado!</span>';
-          setTimeout(() => btnLink.innerHTML = origText, 3000);
+          if(btnLink) btnLink.innerHTML = '<span style="color:#fff">✅ Copiado!</span>';
+          setTimeout(() => { if(btnLink) btnLink.innerHTML = origText; }, 3000);
           toast('Link copiado! 🔗', 'success');
           return false; // Mantém a modal aberta
         } catch (err) {
@@ -196,12 +196,12 @@ export async function showAnamneseModal(client, router) {
         const magicUrl = window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
         
         await copyToClipboard(magicUrl);
-        btnLink.innerHTML = '<span style="color:#fff">✅ Copiado!</span>';
+        if(btnLink) btnLink.innerHTML = '<span style="color:#fff">✅ Copiado!</span>';
       } catch(err) {
         toast(err.message, 'error');
-        btnLink.innerHTML = '<span style="color:#ef4444">❌ Erro</span>';
+        if(btnLink) btnLink.innerHTML = '<span style="color:#ef4444">❌ Erro</span>';
       }
-      setTimeout(() => btnLink.innerHTML = origText, 3000);
+      setTimeout(() => { if(btnLink) btnLink.innerHTML = origText; }, 3000);
       return false; // Mantém modal aberta após copiar
     }
   });
