@@ -64,7 +64,7 @@ export async function showAnamneseModal(client, router) {
     return arr.map(t => `<span class="report-tag" style="font-size:0.75rem;background:${bg};color:${color}">${t}</span>`).join('');
   };
 
-  const { el } = modal('📋 Anamnese Compléta — ' + client.name, `
+  const { el } = modal('📋 Anamnese Completa — ' + client.name, `
     <div style="max-height:65vh;overflow-y:auto;padding-right:10px;">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;background:#f8fafc;padding:12px;border-radius:12px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.02)">
         <div style="font-size:0.85rem"><strong>E-mail:</strong><br>${client.email || '—'}</div>
