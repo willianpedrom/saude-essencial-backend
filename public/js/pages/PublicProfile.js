@@ -161,6 +161,73 @@ export async function renderPublicProfile(router, slug) {
 
       @keyframes fadeUp { from { opacity:0;transform:translateY(24px) } to { opacity:1;transform:none } }
       .pp-fade { animation: fadeUp .5s ease both; }
+
+      /* ── CTA Flutuante Mobile ─────────────────── */
+      .pp-mobile-cta {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 990;
+        padding: 12px 16px 20px;
+        background: linear-gradient(to top, rgba(10,40,24,0.98) 0%, rgba(10,40,24,0.88) 100%);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-top: 1px solid rgba(255,255,255,0.1);
+        transform: translateY(100%);
+        transition: transform 0.35s cubic-bezier(.4,0,.2,1), opacity 0.35s ease;
+        opacity: 0;
+      }
+      .pp-mobile-cta.visible {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      .pp-mobile-cta-inner {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+      .pp-mobile-cta-main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px 20px;
+        background: var(--theme-color);
+        color: white;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-decoration: none;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        transition: filter 0.2s;
+      }
+      .pp-mobile-cta-main:hover { filter: brightness(1.1); }
+      .pp-mobile-cta-wa {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        background: #25d366;
+        color: white;
+        border-radius: 50%;
+        text-decoration: none;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(37,211,102,0.4);
+        transition: transform 0.2s;
+      }
+      .pp-mobile-cta-wa:hover { transform: scale(1.08); }
+      @media (max-width: 639px) {
+        .pp-mobile-cta { display: block; }
+        body { padding-bottom: 90px; }
+        /* Oculta o FAB do WhatsApp no mobile para não duplicar */
+        .pp-fab-whatsapp { display: none !important; }
+      }
     </style>
 
     <!-- ═══════════════ HERO ═══════════════ -->
@@ -312,10 +379,53 @@ export async function renderPublicProfile(router, slug) {
       <p style="color:rgba(255,255,255,0.3);font-size:0.78rem">Powered by <strong style="color:rgba(255,255,255,0.5)">Gota App</strong> · Gestão de Relacionamento</p>
     </footer>
 
-    <!-- Botão Flutuante do WhatsApp -->
+    <!-- Botão Flutuante do WhatsApp (Desktop) -->
     ${whatsLink ? `
     <a href="${whatsLink}" target="_blank" class="pp-fab-whatsapp" title="Falar no WhatsApp">
       <svg fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.5 2C6.305 2 2 6.305 2 11.5c0 1.736.478 3.362 1.31 4.762L2 22l5.865-1.294A9.46 9.46 0 0011.5 21c5.195 0 9.5-4.305 9.5-9.5S16.695 2 11.5 2zm0 17.5c-1.587 0-3.065-.458-4.317-1.248l-.309-.183-3.485.769.801-3.395-.202-.319A7.482 7.482 0 014 11.5C4 7.41 7.41 4 11.5 4S19 7.41 19 11.5 15.59 19.5 11.5 19.5z"/></svg>
     </a>` : ''}
+
+    <!-- CTA Flutuante Mobile (aparece ao rolar) -->
+    <div class="pp-mobile-cta" id="pp-mobile-cta" aria-label="Chamada para ação">
+      <div class="pp-mobile-cta-inner">
+        ${anamneseLink
+          ? `<a href="${anamneseLink}" class="pp-mobile-cta-main">
+              📋 Fazer Avaliação Gratuita
+            </a>`
+          : whatsLink
+            ? `<a href="${whatsLink}" target="_blank" class="pp-mobile-cta-main">
+                💬 Falar com ${nome.split(' ')[0]}
+              </a>`
+            : ''
+        }
+        ${(anamneseLink && whatsLink) ? `
+        <a href="${whatsLink}" target="_blank" class="pp-mobile-cta-wa" title="WhatsApp">
+          <svg width="26" height="26" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.5 2C6.305 2 2 6.305 2 11.5c0 1.736.478 3.362 1.31 4.762L2 22l5.865-1.294A9.46 9.46 0 0011.5 21c5.195 0 9.5-4.305 9.5-9.5S16.695 2 11.5 2zm0 17.5c-1.587 0-3.065-.458-4.317-1.248l-.309-.183-3.485.769.801-3.395-.202-.319A7.482 7.482 0 014 11.5C4 7.41 7.41 4 11.5 4S19 7.41 19 11.5 15.59 19.5 11.5 19.5z"/></svg>
+        </a>` : ''}
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        const cta = document.getElementById('pp-mobile-cta');
+        if (!cta) return;
+        const SCROLL_THRESHOLD = 320; // rola ~1 tela antes de aparecer
+        let ticking = false;
+        function onScroll() {
+          if (!ticking) {
+            requestAnimationFrame(function() {
+              if (window.scrollY > SCROLL_THRESHOLD) {
+                cta.classList.add('visible');
+              } else {
+                cta.classList.remove('visible');
+              }
+              ticking = false;
+            });
+            ticking = true;
+          }
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+      })();
+    </script>
     `;
 }
