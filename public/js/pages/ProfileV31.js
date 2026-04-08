@@ -107,7 +107,7 @@ export async function renderProfile(router) {
                   <label class="field-label">🏅 Graduação doTerra</label>
                   <select class="field-select" id="p-doterra-nivel">
                     <option value="">— Selecionar —</option>
-                    ${['Wellness Advocate', 'Consultor', 'Manager', 'Director', 'Executive', 'Premier', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Blue Diamond', 'Presidential Diamond']
+                    ${['Wellness Advocate', 'Manager', 'Director', 'Executive', 'Elite', 'Premier', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Blue Diamond', 'Presidential Diamond', 'Double Diamond', 'Double Blue Diamond', 'Double Presidential Diamond']
         .map(n => `<option value="${n}" ${profile.doterra_nivel === n ? 'selected' : ''}>${n}</option>`).join('')}
                   </select>
                   <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">Exibido como badge na sua página pública</div>

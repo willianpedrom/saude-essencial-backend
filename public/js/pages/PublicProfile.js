@@ -3,10 +3,10 @@ import { injectTrackingScripts, ARCHETYPE_THEMES } from '../utils.js';
 
 const DOTERRA_BADGE_COLORS = {
   'Wellness Advocate': { bg: '#e0f2fe', color: '#0369a1' },
-  'Consultor': { bg: '#f0fdf4', color: '#166534' },
   'Manager': { bg: '#fff7ed', color: '#9a3412' },
   'Director': { bg: '#fdf2f8', color: '#9d174d' },
   'Executive': { bg: '#f0f9ff', color: '#075985' },
+  'Elite': { bg: '#fef3c7', color: '#92400e' },
   'Premier': { bg: '#ecfdf5', color: '#065f46' },
   'Silver': { bg: '#f1f5f9', color: '#475569' },
   'Gold': { bg: '#fefce8', color: '#854d0e' },
@@ -14,19 +14,26 @@ const DOTERRA_BADGE_COLORS = {
   'Diamond': { bg: '#eff6ff', color: '#1d4ed8' },
   'Blue Diamond': { bg: '#e0f7fa', color: '#006064' },
   'Presidential Diamond': { bg: 'linear-gradient(135deg,#1a1a2e,#16213e)', color: '#e2c97e' },
+  'Double Diamond': { bg: '#e8eaf6', color: '#283593' },
+  'Double Blue Diamond': { bg: '#e0f2f1', color: '#004d40' },
+  'Double Presidential Diamond': { bg: 'linear-gradient(135deg,#0d0d0d,#1a1a2e)', color: '#ffd700' },
 };
 
 function badge(nivel) {
   if (!nivel) return '';
   const c = DOTERRA_BADGE_COLORS[nivel] || { bg: '#f0fdf4', color: '#166534' };
-  const isGrad = nivel === 'Presidential Diamond';
+  const isDouble = nivel.startsWith('Double');
+  const isPresidential = nivel.includes('Presidential Diamond');
+  const bgVal = isPresidential ? (isDouble ? '#0d0d0d' : '#1a1a2e') : c.bg;
+  const borderVal = isPresidential ? `border:1px solid ${c.color};` : (isDouble ? `border:1px solid ${c.color};` : '');
+  const emoji = nivel === 'Double Presidential Diamond' ? '👑👑' : nivel === 'Presidential Diamond' ? '👑' : nivel.includes('Blue Diamond') ? '💠' : nivel.includes('Diamond') ? '💎' : nivel === 'Gold' ? '🥇' : nivel === 'Platinum' ? '🔮' : nivel === 'Silver' ? '🥈' : nivel === 'Elite' ? '⭐' : nivel === 'Premier' ? '✨' : '🌿';
   return `<span style="
         display:inline-flex;align-items:center;gap:6px;
-        background:${isGrad ? '#1a1a2e' : c.bg};
+        background:${bgVal};
         color:${c.color};padding:5px 14px;border-radius:20px;
         font-size:0.78rem;font-weight:600;letter-spacing:.4px;
-        ${isGrad ? 'border:1px solid #e2c97e' : ''}">
-        ${nivel === 'Presidential Diamond' ? '👑' : nivel === 'Diamond' || nivel === 'Blue Diamond' ? '💠' : nivel === 'Gold' ? '🥇' : nivel === 'Platinum' ? '💎' : nivel === 'Silver' ? '🥈' : nivel === 'Premier' ? '✨' : '🌿'} ${nivel}
+        ${borderVal}">
+        ${emoji} ${nivel}
     </span>`;
 }
 
