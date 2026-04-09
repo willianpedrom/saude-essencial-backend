@@ -173,9 +173,9 @@ export async function renderAdmin(router) {
 
       <!-- Abas -->
       <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--border-light);overflow-x:auto">
-        ${['membros', 'planos', 'avisos', 'gateway'].map(tab => `
+        ${['membros', 'funil', 'planos', 'avisos', 'gateway'].map(tab => `
           <button id="tab-${tab}" class="btn ${activeTab === tab ? 'btn-primary' : 'btn-secondary'}" style="border-radius:8px 8px 0 0;border-bottom:none;padding:8px 18px;font-size:0.85rem;white-space:nowrap" data-tab="${tab}">
-            ${{ membros: '👥 Membros', planos: '📦 Planos', avisos: '🔔 Avisos', gateway: '💳 Gateway' }[tab]}
+            ${{ membros: '👥 Membros', funil: '🚀 Funil Trial', planos: '📦 Planos', avisos: '🔔 Avisos', gateway: '💳 Gateway' }[tab]}
           </button>`).join('')}
       </div>
 
@@ -204,9 +204,138 @@ export async function renderAdmin(router) {
 
     const tabContent = pc.querySelector('#tab-content');
     if (activeTab === 'membros') renderMembros(tabContent);
+    else if (activeTab === 'funil') renderFunil(tabContent);
     else if (activeTab === 'planos') renderPlanosSection(tabContent);
     else if (activeTab === 'avisos') renderAvisosSection(tabContent);
     else if (activeTab === 'gateway') renderGatewaySection(tabContent);
+  }
+
+  // ── Aba Funil (Kanban) ─────────────────────────────────────────
+  function renderFunil(container) {
+    const groups = {
+      lead: [], trial: [], engajado: [],
+      expirado: [], assinante: [], perdido: []
+    };
+
+    const now = new Date();
+    users.forEach(u => {
+      if (u.plano_status === 'active') { groups.assinante.push(u); return; }
+      if (u.plano_status === 'cancelled' || u.plano_status === 'overdue') { groups.perdido.push(u); return; }
+
+      const isExpired = u.trial_fim ? new Date(u.trial_fim) < now : true;
+      const createdAt = new Date(u.criado_em);
+      const daysSinceCreation = (now - createdAt) / 86400000;
+      const hasActivity = (u.total_clientes > 0 || u.total_anamneses_mes > 0);
+
+      // Status 'expired' mapped directly or caught by trial_fim
+      if (u.plano_status === 'expired' || isExpired) {
+        if (isExpired && u.trial_fim && (now - new Date(u.trial_fim))/86400000 > 15) {
+          groups.perdido.push(u);
+        } else {
+          groups.expirado.push(u);
+        }
+        return;
+      }
+
+      // Default Trial processing
+      if (hasActivity) groups.engajado.push(u);
+      else if (daysSinceCreation <= 2) groups.lead.push(u);
+      else groups.trial.push(u);
+    });
+
+    const renderCard = (u) => {
+      const phone = u.telefone ? u.telefone.replace(/\\D/g, '') : '';
+      const waLink = phone.length >= 10 ? \`https://wa.me/55\${phone}?text=Ol%C3%A1%2C%20%2A\${encodeURIComponent((u.nome || '').split(' ')[0])}%2A%21\` : '';
+      
+      const initials = (u.nome || '').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase() || '?';
+      return \`
+        <div class="card" style="padding:12px; margin-bottom:10px; cursor:default">
+          <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px">
+            <div class="client-avatar-sm">\${u.foto_url ? \`<img src="\${u.foto_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">\` : initials}</div>
+            <div style="flex:1; min-width:0">
+              <div style="font-weight:700; font-size:0.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">\${u.nome || '—'}</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">\${u.email || '—'}</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; margin-bottom:12px">
+             \${u.total_clientes > 0 ? \`<span style="background:#eff6ff; color:#1d4ed8; font-size:0.7rem; padding:2px 6px; border-radius:4px">\${u.total_clientes} clientes</span>\` : ''}
+             \${u.total_anamneses_mes > 0 ? \`<span style="background:#f3e8ff; color:#7e22ce; font-size:0.7rem; padding:2px 6px; border-radius:4px">\${u.total_anamneses_mes} anamneses</span>\` : ''}
+          </div>
+          <div style="display:grid; grid-template-columns:1fr \${waLink ? '1fr' : ''}; gap:6px">
+             <button class="btn btn-secondary btn-sm" data-cortesia-id="\${u.id}" style="width:100%; padding:6px; font-size:0.75rem">🎁 Dar Trial</button>
+             \${waLink ? \`<button class="btn btn-primary btn-sm" onclick="window.open('\${waLink}', '_blank')" style="background:#25D366; border:none; width:100%; padding:6px; font-size:0.75rem">💬 Chamar</button>\` : ''}
+          </div>
+        </div>\`;
+    };
+
+    container.innerHTML = \`
+      <div style="display:flex; gap:16px; overflow-x:auto; padding-bottom:20px; align-items:flex-start">
+        <!-- Coluna Lead Novo -->
+        <div style="min-width:280px; width:280px; background:#f8fafc; border-radius:12px; padding:12px; border:1px solid #e2e8f0; flex-shrink:0">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+             <h4 style="margin:0; font-size:0.9rem; color:#0f172a; display:flex; align-items:center; gap:6px"><span style="color:#10b981">🟢</span> Novos Leads</h4>
+             <span style="background:#e2e8f0; color:#475569; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">\${groups.lead.length}</span>
+          </div>
+          \${groups.lead.map(renderCard).join('') || '<div style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:20px 0">Sem leads hoje</div>'}
+        </div>
+
+        <!-- Coluna Trial Ativo -->
+        <div style="min-width:280px; width:280px; background:#f8fafc; border-radius:12px; padding:12px; border:1px solid #e2e8f0; flex-shrink:0">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+             <h4 style="margin:0; font-size:0.9rem; color:#0f172a; display:flex; align-items:center; gap:6px"><span style="color:#3b82f6">⏳</span> Trial Ativo</h4>
+             <span style="background:#e2e8f0; color:#475569; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">\${groups.trial.length}</span>
+          </div>
+          \${groups.trial.map(renderCard).join('') || '<div style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:20px 0">Zero</div>'}
+        </div>
+
+        <!-- Coluna Engajados -->
+        <div style="min-width:280px; width:280px; background:#fffbeb; border-radius:12px; padding:12px; border:1px solid #fcd34d; flex-shrink:0">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+             <h4 style="margin:0; font-size:0.9rem; color:#92400e; display:flex; align-items:center; gap:6px"><span style="color:#f59e0b">🔥</span> Engajados (Hot)</h4>
+             <span style="background:#fde68a; color:#b45309; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">\${groups.engajado.length}</span>
+          </div>
+          <p style="font-size:0.75rem; color:#92400e; margin-top:-6px; margin-bottom:12px">Usaram clientes/anamneses. Chame no WhatsApp!</p>
+          \${groups.engajado.map(renderCard).join('') || '<div style="text-align:center;color:#b45309;font-size:0.8rem;padding:20px 0">Nenhum no momento</div>'}
+        </div>
+
+        <!-- Coluna Trial Expirado -->
+        <div style="min-width:280px; width:280px; background:#fef2f2; border-radius:12px; padding:12px; border:1px solid #fca5a5; flex-shrink:0">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+             <h4 style="margin:0; font-size:0.9rem; color:#991b1b; display:flex; align-items:center; gap:6px"><span style="color:#ef4444">⏰</span> Trial Expirado</h4>
+             <span style="background:#fecaca; color:#b91c1c; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">\${groups.expirado.length}</span>
+          </div>
+          <p style="font-size:0.75rem; color:#991b1b; margin-top:-6px; margin-bottom:12px">Estenda o trial p/ recapturar.</p>
+          \${groups.expirado.map(renderCard).join('') || '<div style="text-align:center;color:#b91c1c;font-size:0.8rem;padding:20px 0">Limpo!</div>'}
+        </div>
+
+        <!-- Coluna Assinantes -->
+        <div style="min-width:280px; width:280px; background:#f0fdf4; border-radius:12px; padding:12px; border:1px solid #86efac; flex-shrink:0">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+             <h4 style="margin:0; font-size:0.9rem; color:#166534; display:flex; align-items:center; gap:6px"><span style="color:#10b981">💎</span> Assinantes</h4>
+             <span style="background:#bbf7d0; color:#15803d; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">\${groups.assinante.length}</span>
+          </div>
+          \${groups.assinante.map(renderCard).join('') || '<div style="text-align:center;color:#15803d;font-size:0.8rem;padding:20px 0">Ainda não</div>'}
+        </div>
+
+        <!-- Coluna Inativo/Perdido -->
+        <div style="min-width:280px; width:280px; background:#f1f5f9; border-radius:12px; padding:12px; border:1px solid #cbd5e1; flex-shrink:0; opacity:0.8">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+             <h4 style="margin:0; font-size:0.9rem; color:#334155; display:flex; align-items:center; gap:6px"><span style="color:#64748b">❌</span> Perdidos (15d+)</h4>
+             <span style="background:#e2e8f0; color:#475569; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">\${groups.perdido.length}</span>
+          </div>
+          \${groups.perdido.map(renderCard).join('') || '<div style="text-align:center;color:#475569;font-size:0.8rem;padding:20px 0">Zero</div>'}
+        </div>
+      </div>
+    \`;
+
+    // Bind events for "Dar Cortesia" bubbles
+    container.querySelectorAll('[data-cortesia-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const u = users.find(x => x.id === btn.dataset.cortesiaId);
+        if (!u) return;
+        showCortesiaModal(u);
+      });
+    });
   }
 
   // ── Aba Membros ────────────────────────────────────────────────
