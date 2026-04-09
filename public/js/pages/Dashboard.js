@@ -895,7 +895,21 @@ export async function renderDashboard(router) {
         </div>
       </div>
 
-    <!-- 4. METAS (Largura Total no Decktop) -->
+    <!-- 3. FOLLOW-UPS URGENTES (Movido para cima a pedido) -->
+    ${urgentFollowups.length > 0 ? `
+    <div class="dash-item followups full-width">
+        <div class="card" style="border-left:4px solid var(--orange-500)">
+          <div class="card-header" style="background:var(--orange-50); padding: 16px 20px">
+            <h3 style="color:var(--orange-700)">🔥 Follow-ups Urgentes</h3>
+            <button class="btn btn-secondary btn-sm" onclick="location.hash='#/followup'">Resolver Todos</button>
+          </div>
+          <div class="card-body" style="padding:20px">
+            ${urgentFollowups.map(f => fuRow(f)).join('')}
+          </div>
+        </div>
+      </div>` : ''}
+
+    <!-- 4. METAS (Largura Total no Desktop) -->
     <div class="dash-item metas full-width">
         ${metasHtml}
       </div>
@@ -990,20 +1004,6 @@ export async function renderDashboard(router) {
           </div>
         </div>
       </div>
-
-    <!-- 7. FOLLOW-UPS URGENTES (Opcional, só se existirem) -->
-    ${urgentFollowups.length > 0 ? `
-    <div class="dash-item followups full-width">
-        <div class="card" style="border-left:4px solid var(--orange-500)">
-          <div class="card-header" style="background:var(--orange-50); padding: 16px 20px">
-            <h3 style="color:var(--orange-700)">🔥 Follow-ups Urgentes</h3>
-            <button class="btn btn-secondary btn-sm" onclick="location.hash='#/followup'">Resolver Todos</button>
-          </div>
-          <div class="card-body" style="padding:20px">
-            ${urgentFollowups.map(f => fuRow(f)).join('')}
-          </div>
-        </div>
-      </div>` : ''}
 
   </div>`;
     // Update page-content with real data (no full re-render to avoid losing sidebar)
