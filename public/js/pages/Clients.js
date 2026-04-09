@@ -325,17 +325,29 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
     body.innerHTML = `
       <p style="color:#475569;font-size:0.85rem;margin-bottom:16px">Adicione ou remova produtos para personalizar o protocolo de <strong>${client.name}</strong>.</p>
       ${editProtocols.length === 0 ? '<p style="color:#94a3b8;font-size:0.85rem">Nenhum protocolo gerado automaticamente. <br>Adicione um produto manualmente usando o formulário abaixo.</p>' : ''}
-      ${editProtocols.map((p, pIdx) => `
+      ${editProtocols.map((p, pIdx) => {
+        let blockMem = 0;
+        (p.oils || []).forEach(oil => {
+           const dbSizes = OILS_DATABASE && OILS_DATABASE[oil.name] ? OILS_DATABASE[oil.name].sizes : null;
+           if (dbSizes && dbSizes.length > 0) {
+              const sel = dbSizes.find(s => s.size === oil.sizeChoice) || dbSizes[0];
+              blockMem += sel.member;
+           }
+        });
+        const blockPriceHtml = blockMem > 0 ? `<span style="font-size:0.75rem;color:#166534;background:#dcfce7;padding:3px 8px;border-radius:12px;margin-left:8px;font-weight:700">R$ ${blockMem.toFixed(2)}</span>` : '';
+        
+        return `
         <div style="margin-bottom:12px;background:#f8fafc;border-radius:10px;padding:12px;border:1px solid #e2e8f0">
           <div style="font-weight:700;font-size:0.88rem;color:#1e293b;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-             <span>${p.icon} ${p.symptom}</span>
+             <span>${p.icon} ${p.symptom} ${blockPriceHtml}</span>
              <button class="pe-remove-protocol" data-idx="${pIdx}" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.85rem" title="Excluir queixa inteira (e seus óleos)">❌ Remover</button>
           </div>
           <div style="display:flex;flex-wrap:wrap">
             ${(p.oils || []).map((oil, oIdx) => oilChip(oil, pIdx, oIdx)).join('')}
             ${!p.oils?.length ? '<span style="font-size:0.78rem;color:#94a3b8">Sem óleos. Adicione abaixo ↓</span>' : ''}
           </div>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
       <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-top:6px">
         <div style="font-weight:700;font-size:0.85rem;color:#1e293b;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
           <span>➕ Adicionar Produto (Óleo)</span>
@@ -432,8 +444,11 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
     const budgetDiv = body.querySelector('#pe-budget-summary');
     if (budgetDiv) {
       let bReg = 0, bMem = 0, bPv = 0;
+      const seenOils = new Set();
       editProtocols.forEach(p => {
         (p.oils || []).forEach(oil => {
+          if (seenOils.has(oil.name)) return;
+          seenOils.add(oil.name);
           const dbSizes = OILS_DATABASE && OILS_DATABASE[oil.name] ? OILS_DATABASE[oil.name].sizes : null;
           if (dbSizes && dbSizes.length > 0) {
              const selected = dbSizes.find(s => s.size === oil.sizeChoice) || dbSizes[0];
@@ -466,7 +481,15 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
     // Bind size dropdowns
     body.querySelectorAll('.pe-oil-size-select').forEach(sel => {
        sel.addEventListener('change', e => {
-         editProtocols[+e.target.dataset.p].oils[+e.target.dataset.o].sizeChoice = e.target.value;
+         const pIdx = +e.target.dataset.p;
+         const oIdx = +e.target.dataset.o;
+         const oilName = editProtocols[pIdx].oils[oIdx].name;
+         const newSize = e.target.value;
+         editProtocols.forEach(p => {
+           (p.oils || []).forEach(o => {
+             if (o.name === oilName) o.sizeChoice = newSize;
+           });
+         });
          render();
        });
     });

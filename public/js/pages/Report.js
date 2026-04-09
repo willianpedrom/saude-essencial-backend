@@ -151,8 +151,12 @@ export async function renderReport(router, dataParam, hash = null) {
   let bReg = 0, bMem = 0, bPv = 0;
   let budgetListHtml = '';
   if (budgetInclude) {
+    const seenBudgetOils = new Set();
     protocols.forEach(p => {
       (p.oils || []).forEach(oil => {
+         if (seenBudgetOils.has(oil.name)) return;
+         seenBudgetOils.add(oil.name);
+         
          const dbSizes = OILS_DATABASE && OILS_DATABASE[oil.name] ? OILS_DATABASE[oil.name].sizes : null;
          if (dbSizes && dbSizes.length > 0) {
             const selected = dbSizes.find(s => s.size === oil.sizeChoice) || dbSizes[0];
