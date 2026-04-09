@@ -160,11 +160,12 @@ export async function renderReport(router, dataParam, hash = null) {
          const dbSizes = OILS_DATABASE && OILS_DATABASE[oil.name] ? OILS_DATABASE[oil.name].sizes : null;
          if (dbSizes && dbSizes.length > 0) {
             const selected = dbSizes.find(s => s.size === oil.sizeChoice) || dbSizes[0];
-            bReg += selected.regular; bMem += selected.member; bPv += selected.pv || 0;
+            const qty = Number(oil.qtyChoice) || 1;
+            bReg += selected.regular * qty; bMem += selected.member * qty; bPv += (selected.pv || 0) * qty;
             budgetListHtml += `
               <div style="display:flex;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding:6px 0;font-size:0.85rem">
-                <span style="color:#475569">🌿 ${oil.name} <span style="opacity:0.6;font-size:0.75rem">(${selected.size})</span></span>
-                <span style="color:#166534;font-weight:600">R$ ${selected.member.toFixed(2)}</span>
+                <span style="color:#475569">${qty > 1 ? `<span style="font-weight:700;color:#15803d">${qty}x</span> ` : ''}🌿 ${oil.name} <span style="opacity:0.6;font-size:0.75rem">(${selected.size})</span></span>
+                <span style="color:#166534;font-weight:600">R$ ${(selected.member * qty).toFixed(2)}</span>
               </div>
             `;
          }

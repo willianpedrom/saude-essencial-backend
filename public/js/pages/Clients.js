@@ -263,8 +263,14 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
     let sizeSelector = '';
     
     if (dbSizeOptions && dbSizeOptions.length > 0) {
-      if (!oil.sizeChoice) oil.sizeChoice = dbSizeOptions[0].size;
-      sizeSelector = `<select class="pe-oil-size-select" data-p="${pIdx}" data-o="${oIdx}" style="border:1px solid #86efac;border-radius:6px;font-size:0.7rem;background:#f0fdf4;color:#166534;margin-left:4px;padding:2px 4px;outline:none;cursor:pointer">`;
+      if (!oil.qtyChoice) oil.qtyChoice = 1;
+      let qtySelector = `<select class="pe-oil-qty-select" data-p="${pIdx}" data-o="${oIdx}" style="border:1px solid #86efac;border-right:none;border-radius:6px 0 0 6px;font-size:0.7rem;background:#f0fdf4;color:#166534;margin-left:4px;padding:2px;outline:none;cursor:pointer">`;
+      [1, 2, 3, 4, 5].forEach(q => {
+         qtySelector += `<option value="${q}" ${Number(oil.qtyChoice) === q ? 'selected' : ''}>${q}x</option>`;
+      });
+      qtySelector += `</select>`;
+
+      sizeSelector = `${qtySelector}<select class="pe-oil-size-select" data-p="${pIdx}" data-o="${oIdx}" style="border:1px solid #86efac;border-left:1px solid #dcfce7;border-radius:0 6px 6px 0;font-size:0.7rem;background:#f0fdf4;color:#166534;padding:2px 4px;outline:none;cursor:pointer">`;
       dbSizeOptions.forEach(opt => {
          sizeSelector += `<option value="${opt.size}" ${oil.sizeChoice === opt.size ? 'selected' : ''}>${opt.size}</option>`;
       });
@@ -331,7 +337,7 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
            const dbSizes = OILS_DATABASE && OILS_DATABASE[oil.name] ? OILS_DATABASE[oil.name].sizes : null;
            if (dbSizes && dbSizes.length > 0) {
               const sel = dbSizes.find(s => s.size === oil.sizeChoice) || dbSizes[0];
-              blockMem += sel.member;
+              blockMem += sel.member * (Number(oil.qtyChoice) || 1);
            }
         });
         const blockPriceHtml = blockMem > 0 ? `<span style="font-size:0.75rem;color:#166534;background:#dcfce7;padding:3px 8px;border-radius:12px;margin-left:8px;font-weight:700">R$ ${blockMem.toFixed(2)}</span>` : '';
@@ -452,7 +458,8 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
           const dbSizes = OILS_DATABASE && OILS_DATABASE[oil.name] ? OILS_DATABASE[oil.name].sizes : null;
           if (dbSizes && dbSizes.length > 0) {
              const selected = dbSizes.find(s => s.size === oil.sizeChoice) || dbSizes[0];
-             bReg += selected.regular; bMem += selected.member; bPv += selected.pv || 0;
+             const qty = Number(oil.qtyChoice) || 1;
+             bReg += selected.regular * qty; bMem += selected.member * qty; bPv += (selected.pv || 0) * qty;
           }
         });
       });
@@ -496,6 +503,21 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
          editProtocols.forEach(p => {
            (p.oils || []).forEach(o => {
              if (o.name === oilName) o.sizeChoice = newSize;
+           });
+         });
+         render();
+       });
+    });
+    // Bind qty dropdowns
+    body.querySelectorAll('.pe-oil-qty-select').forEach(sel => {
+       sel.addEventListener('change', e => {
+         const pIdx = +e.target.dataset.p;
+         const oIdx = +e.target.dataset.o;
+         const oilName = editProtocols[pIdx].oils[oIdx].name;
+         const newQty = Number(e.target.value);
+         editProtocols.forEach(p => {
+           (p.oils || []).forEach(o => {
+             if (o.name === oilName) o.qtyChoice = newQty;
            });
          });
          render();
