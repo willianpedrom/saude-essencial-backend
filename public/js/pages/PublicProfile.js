@@ -125,13 +125,13 @@ export async function renderPublicProfile(router, slug) {
 
   function getEmbedUrl(url) {
     if (!url) return null;
-    let match = url.match(/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=)|youtu\\.be\\/)([^"&?\\/\\s]{11})/);
+    let match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
     if (match && match[1]) {
-      return \`https://www.youtube.com/embed/\${match[1]}?modestbranding=1&rel=0\`;
+      return `https://www.youtube.com/embed/${match[1]}?modestbranding=1&rel=0`;
     }
-    match = url.match(/vimeo\\.com\\/(?:.*#|.*\\/videos\\/)?([0-9]+)/);
+    match = url.match(/vimeo\.com\/(?:.*#|.*\/videos\/)?([0-9]+)/);
     if (match && match[1]) {
-      return \`https://player.vimeo.com/video/\${match[1]}?title=0&byline=0&portrait=0\`;
+      return `https://player.vimeo.com/video/${match[1]}?title=0&byline=0&portrait=0`;
     }
     return null;
   }
