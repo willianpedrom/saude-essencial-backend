@@ -255,10 +255,29 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
   let afternoonText = customRoutine.afternoon.join('\n');
   let nightText = customRoutine.night.join('\n');
 
+  let budgetInclude = existingCustom?.budgetInclude || false;
+  let budgetShipping = existingCustom?.budgetShipping || '';
+  let budgetPhone = existingCustom?.budgetPhone || '+55';
+
   function oilChip(oil, pIdx, oIdx) {
+    const dbSizeOptions = OILS_DATABASE && OILS_DATABASE[oil.name] ? OILS_DATABASE[oil.name].sizes : null;
+    let sizeSelector = '';
+    
+    if (dbSizeOptions && dbSizeOptions.length > 0) {
+      if (!oil.sizeChoice) oil.sizeChoice = dbSizeOptions[0].size;
+      sizeSelector = `<select class="pe-oil-size-select" data-p="${pIdx}" data-o="${oIdx}" style="border:1px solid #86efac;border-radius:6px;font-size:0.7rem;background:#f0fdf4;color:#166534;margin-left:4px;padding:2px 4px;outline:none;cursor:pointer">`;
+      dbSizeOptions.forEach(opt => {
+         sizeSelector += `<option value="${opt.size}" ${oil.sizeChoice === opt.size ? 'selected' : ''}>${opt.size}</option>`;
+      });
+      sizeSelector += `</select>`;
+    } else {
+      sizeSelector = `<span style="font-size:0.65rem;opacity:0.7;margin-left:4px">(Tamanho único)</span>`;
+    }
+
     return `<span style="display:inline-flex;align-items:center;gap:4px;background:#dcfce7;color:#166534;border-radius:20px;padding:4px 10px;font-size:0.78rem;font-weight:600;margin:3px">
       🌿 ${oil.name}${oil.fn ? ` <span style="opacity:0.65;font-size:0.7rem">— ${oil.fn}</span>` : ''}
-      <button data-rp="${pIdx}" data-ro="${oIdx}" style="background:none;border:none;cursor:pointer;color:#dc2626;font-weight:700;padding:0 0 0 6px;font-size:0.9rem;line-height:1">✕</button>
+      ${sizeSelector}
+      <button class="pe-remove-oil" data-rp="${pIdx}" data-ro="${oIdx}" style="background:none;border:none;cursor:pointer;color:#dc2626;font-weight:700;padding:0 0 0 6px;font-size:0.9rem;line-height:1">✕</button>
     </span>`;
   }
 
@@ -288,6 +307,9 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
     customNotes = overlay.querySelector('#pe-notes')?.value ?? customNotes;
     customMessage = overlay.querySelector('#pe-message')?.value ?? customMessage;
     customUnlock = overlay.querySelector('#pe-unlock')?.checked ?? customUnlock;
+    budgetInclude = overlay.querySelector('#pe-budget-include')?.checked ?? budgetInclude;
+    budgetShipping = overlay.querySelector('#pe-budget-shipping')?.value ?? budgetShipping;
+    budgetPhone = overlay.querySelector('#pe-budget-phone')?.value ?? budgetPhone;
 
     overlay.querySelectorAll('textarea.pe-sp-textarea').forEach(ta => {
       const pIdx = parseInt(ta.dataset.idx, 10);
@@ -381,15 +403,84 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
           <label style="font-weight:600;font-size:0.85rem;color:#1e293b;display:block;margin-bottom:6px">📝 Texto do Resultado Esperado (visível apenas para você):</label>
           <textarea id="pe-notes" rows="3" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.84rem;resize:vertical;box-sizing:border-box">${customNotes || ''}</textarea>
           
-          <!-- CHECKBOX LIBERAR -->
           <label style="display:flex;align-items:center;margin-top:10px;font-size:0.85rem;color:#333;cursor:pointer">
             <input type="checkbox" id="pe-unlock" style="margin-right:8px;accent-color:#166534;width:16px;height:16px" ${customUnlock ? 'checked' : ''}>
             🔓 <b>Liberar Resultado Esperado para o cliente</b> (remover o cadeado no PDF final)
           </label>
-          <!-- FIM CHECKBOX LIBERAR -->
+        </div>
+
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-top:8px">
+          <label style="display:flex;align-items:center;font-size:0.95rem;color:#0f172a;font-weight:700;cursor:pointer">
+            <input type="checkbox" id="pe-budget-include" style="margin-right:10px;accent-color:#166534;width:18px;height:18px" ${budgetInclude ? 'checked' : ''}>
+            💰 Incluir Orçamento Automático no Protocolo
+          </label>
           
+          <div style="margin-top:16px;display:${budgetInclude ? 'block' : 'none'}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+              <div>
+                <label style="font-size:0.8rem;font-weight:600;color:#475569">Taxa de Adesão / Frete (R$):</label>
+                <input type="number" id="pe-budget-shipping" value="${budgetShipping}" placeholder="Ex: 90.00" style="width:100%;padding:8px;border-radius:6px;border:1px solid #cbd5e1;margin-top:4px;font-size:0.85rem">
+              </div>
+              <div>
+                <label style="font-size:0.8rem;font-weight:600;color:#475569">Seu WhatsApp (Botão Venda):</label>
+                <input type="text" id="pe-budget-phone" value="${budgetPhone}" placeholder="+55..." style="width:100%;padding:8px;border-radius:6px;border:1px solid #cbd5e1;margin-top:4px;font-size:0.85rem">
+              </div>
+            </div>
+            
+            <div id="pe-budget-summary">
+               <!-- Auto calculated block -->
+            </div>
+          </div>
         </div>
       </div>`;
+
+    // Calculate budget
+    const budgetDiv = body.querySelector('#pe-budget-summary');
+    if (budgetDiv) {
+      let bReg = 0, bMem = 0, bPv = 0;
+      editProtocols.forEach(p => {
+        (p.oils || []).forEach(oil => {
+          const dbSizes = OILS_DATABASE && OILS_DATABASE[oil.name] ? OILS_DATABASE[oil.name].sizes : null;
+          if (dbSizes && dbSizes.length > 0) {
+             const selected = dbSizes.find(s => s.size === oil.sizeChoice) || dbSizes[0];
+             bReg += selected.regular; bMem += selected.member; bPv += selected.pv || 0;
+          }
+        });
+      });
+      const freight = parseFloat((budgetShipping || '0').replace(',', '.')) || 0;
+      const tReg = bReg + freight;
+      const tMem = bMem + freight;
+      const diff = tReg - tMem;
+      
+      budgetDiv.innerHTML = `
+        <div style="background:white;padding:12px;border-radius:8px;border:1px dashed #94a3b8;font-size:0.85rem">
+          <div style="display:flex;justify-content:space-Between;margin-bottom:4px">
+            <span style="color:#64748b">Valor Total Varejo:</span>
+            <span style="font-weight:600;color:#475569">R$ ${tReg.toFixed(2)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-Between;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #e2e8f0">
+            <span style="color:#166534;font-weight:600">Valor Membro Atacado (<span style="font-size:0.75rem">${bPv} PV</span>):</span>
+            <span style="font-weight:700;color:#15803d;font-size:1rem">R$ ${tMem.toFixed(2)}</span>
+          </div>
+          <div style="text-align:right;color:#0ea5e9;font-weight:700">
+             Economia de R$ ${diff.toFixed(2)}!
+          </div>
+        </div>
+      `;
+    }
+
+    // Bind size dropdowns
+    body.querySelectorAll('.pe-oil-size-select').forEach(sel => {
+       sel.addEventListener('change', e => {
+         editProtocols[+e.target.dataset.p].oils[+e.target.dataset.o].sizeChoice = e.target.value;
+         render();
+       });
+    });
+
+    body.querySelector('#pe-budget-include')?.addEventListener('change', e => {
+       budgetInclude = e.target.checked;
+       render(); // Re-render to show/hide the fields
+    });
 
     // Remove oil
     body.querySelectorAll('[data-rp]').forEach(btn => {
@@ -503,10 +594,10 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
     });
 
     try {
-      await store.saveCustomProtocol(anamnese.id, { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock });
+      await store.saveCustomProtocol(anamnese.id, { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock, budgetInclude, budgetShipping, budgetPhone });
       toast('✅ Protocolo personalizado salvo!', 'success');
       // Store in anamnese object so re-opening the editor shows the saved state
-      anamnese.protocolo_customizado = { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock };
+      anamnese.protocolo_customizado = { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock, budgetInclude, budgetShipping, budgetPhone };
       close();
     } catch (err) {
       toast('Erro ao salvar: ' + err.message, 'error');

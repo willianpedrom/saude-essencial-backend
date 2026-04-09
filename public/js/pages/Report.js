@@ -145,6 +145,35 @@ export async function renderReport(router, dataParam, hash = null) {
   // Expected results combined
   const expectedResults = [...new Set(protocols.map(p => p.expectedResults).filter(Boolean))].join(' ');
 
+  let budgetInclude = payload.protocolo_customizado?.budgetInclude || false;
+  let budgetShipping = parseFloat((payload.protocolo_customizado?.budgetShipping || '0').replace(',', '.')) || 0;
+  let budgetPhoneRaw = payload.protocolo_customizado?.budgetPhone || consultant.phone || '';
+  let budgetPhoneWa = budgetPhoneRaw.replace(/\D/g, '');
+  if (!budgetPhoneWa.startsWith('55') && budgetPhoneWa.length > 0) budgetPhoneWa = '55' + budgetPhoneWa;
+
+  let bReg = 0, bMem = 0, bPv = 0;
+  let budgetListHtml = '';
+  if (budgetInclude) {
+    protocols.forEach(p => {
+      (p.oils || []).forEach(oil => {
+         const dbSizes = OILS_DATABASE && OILS_DATABASE[oil.name] ? OILS_DATABASE[oil.name].sizes : null;
+         if (dbSizes && dbSizes.length > 0) {
+            const selected = dbSizes.find(s => s.size === oil.sizeChoice) || dbSizes[0];
+            bReg += selected.regular; bMem += selected.member; bPv += selected.pv || 0;
+            budgetListHtml += `
+              <div style="display:flex;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding:6px 0;font-size:0.85rem">
+                <span style="color:#475569">🌿 ${oil.name} <span style="opacity:0.6;font-size:0.75rem">(${selected.size})</span></span>
+                <span style="color:#166534;font-weight:600">R$ ${selected.member.toFixed(2)}</span>
+              </div>
+            `;
+         }
+      });
+    });
+  }
+  const tReg = bReg + budgetShipping;
+  const tMem = bMem + budgetShipping;
+  const tDiff = tReg - tMem;
+  
   app.innerHTML = `
   <div class="report-page">
     <div class="report-card" style="max-width:750px">
@@ -315,28 +344,58 @@ export async function renderReport(router, dataParam, hash = null) {
           ` : ''}
         </div>
 
-        <!-- Emotional CTA -->
-        <div style="background:linear-gradient(135deg,#f0fff4,#fffbeb);border:1px solid #d4e8c2;border-radius:12px;padding:24px;margin:24px 0;text-align:center">
-          <h3 style="color:#2d5016;font-size:1.1rem;margin-bottom:8px">
-            Como iniciar meu tratamento hoje? 📦
-          </h3>
-          <p style="color:#666;font-size:0.88rem;max-width:480px;margin:0 auto 16px">
-            Seu corpo precisa das ferramentas certas para iniciar o processo. Adquira os óleos puros diretamente da fábrica (doTERRA) com desconto de atacado (25%), garantindo o acompanhamento VIP de <strong>${consultant.name?.split(' ')[0] || cTitle}</strong>.
-          </p>
-          <div style="background:white;padding:12px;border-radius:8px;border:1px dashed #25d366;display:inline-block;margin-bottom:16px">
-            <span style="color:#25d366;font-weight:bold;font-size:0.9rem">⏳ BÔNUS POR TEMPO LIMITADO</span><br>
-            <span style="font-size:0.8rem;color:#555">Envie uma mensagem para ${consultant.name?.split(' ')[0] || cTitle} agora e verifique se você se qualifica para Frete Grátis ou um Óleo de Brinde.</span>
-          </div>
-
-          <!-- WhatsApp CTA -->
-          <a class="report-cta" href="https://wa.me/${waPhone}?text=${whatsappMsg}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 20px;background:linear-gradient(135deg,#25d366,#128c7e);color:white;border-radius:12px;text-decoration:none;margin-bottom:16px;box-shadow:0 8px 20px rgba(37,211,102,0.3);transition:transform 0.2s">
-            <div style="font-size:1.5rem">💬</div>
-            <div style="text-align:left">
-              <strong style="display:block;font-size:0.95rem">RECEBA AS INSTRUÇÕES COMPLETAS PELO WHATSAPP</strong>
-              <div style="font-size:0.75rem;opacity:0.9">Fale com ${consultant.name?.split(' ')[0] || cTitle} no WhatsApp</div>
+          <!-- BUDGET / ORÇAMENTO -->
+          ${budgetInclude ? `
+          <div style="background:white;border:2px dashed #166534;border-radius:12px;padding:20px;margin-bottom:24px;box-shadow:0 10px 25px rgba(0,0,0,0.05)">
+            <h3 style="color:#2d5016;font-size:1.1rem;margin-bottom:16px;text-align:center;font-weight:700">🛒 Seu Orçamento Personalizado</h3>
+            <div style="background:#f8fafc;padding:12px;border-radius:8px;margin-bottom:16px">
+               ${budgetListHtml}
+               ${budgetShipping > 0 ? `
+               <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.85rem">
+                 <span style="color:#475569">🚚 Frete / Taxa de Adesão</span>
+                 <span style="color:#166534;font-weight:600">R$ ${budgetShipping.toFixed(2)}</span>
+               </div>
+               ` : ''}
             </div>
-          </a>
-        </div>
+            
+            <div style="display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid #e2e8f0">
+              <div style="display:flex;justify-content:space-between;color:#64748b;font-size:0.9rem">
+                <span>Total Comprando Avulso:</span>
+                <span style="text-decoration:line-through">R$ ${tReg.toFixed(2)}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;color:#166534;font-size:1.1rem;font-weight:700;align-items:center">
+                <span>Total de Membro (<span style="font-size:0.8rem">${bPv} PV</span>):</span>
+                <span>R$ ${tMem.toFixed(2)}</span>
+              </div>
+              <div style="text-align:center;color:#0ea5e9;font-weight:700;font-size:0.9rem;margin-top:4px;background:#e0f2fe;padding:6px;border-radius:6px">
+                🎉 Você economiza R$ ${tDiff.toFixed(2)} sendo membro!
+              </div>
+            </div>
+          </div>
+          ` : ''}
+
+          <!-- Emotional CTA -->
+          <div style="background:linear-gradient(135deg,#f0fff4,#fffbeb);border:1px solid #d4e8c2;border-radius:12px;padding:24px;margin:24px 0;text-align:center">
+            <h3 style="color:#2d5016;font-size:1.1rem;margin-bottom:8px">
+              Como iniciar meu tratamento hoje? 📦
+            </h3>
+            <p style="color:#666;font-size:0.88rem;max-width:480px;margin:0 auto 16px">
+              Seu corpo precisa das ferramentas certas para iniciar o processo. Adquira os óleos puros diretamente da fábrica (doTERRA) com desconto de atacado (25%), garantindo o acompanhamento VIP de <strong>${consultant.name?.split(' ')[0] || cTitle}</strong>.
+            </p>
+            <div style="background:white;padding:12px;border-radius:8px;border:1px dashed #25d366;display:inline-block;margin-bottom:16px">
+              <span style="color:#25d366;font-weight:bold;font-size:0.9rem">⏳ BÔNUS POR TEMPO LIMITADO</span><br>
+              <span style="font-size:0.8rem;color:#555">Envie uma mensagem para ${consultant.name?.split(' ')[0] || cTitle} agora e verifique se você se qualifica para Frete Grátis ou um Óleo de Brinde.</span>
+            </div>
+
+            <!-- WhatsApp CTA -->
+            <a class="report-cta" href="https://wa.me/${budgetPhoneWa || waPhone}?text=${whatsappMsg}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 20px;background:linear-gradient(135deg,#25d366,#128c7e);color:white;border-radius:12px;text-decoration:none;margin-bottom:16px;box-shadow:0 8px 20px rgba(37,211,102,0.3);transition:transform 0.2s">
+              <div style="font-size:1.5rem">💬</div>
+              <div style="text-align:left">
+                <strong style="display:block;font-size:0.95rem">RECEBA AS INSTRUÇÕES COMPLETAS PELO WHATSAPP</strong>
+                <div style="font-size:0.75rem;opacity:0.9">Fale com ${consultant.name?.split(' ')[0] || cTitle} no WhatsApp</div>
+              </div>
+            </a>
+          </div>
         
       </div>
 
