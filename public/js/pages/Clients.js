@@ -257,7 +257,6 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
 
   let budgetInclude = existingCustom?.budgetInclude || false;
   let budgetShipping = existingCustom?.budgetShipping || '';
-  let budgetPhone = existingCustom?.budgetPhone || '+55';
 
   function oilChip(oil, pIdx, oIdx) {
     const dbSizeOptions = OILS_DATABASE && OILS_DATABASE[oil.name] ? OILS_DATABASE[oil.name].sizes : null;
@@ -309,7 +308,6 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
     customUnlock = overlay.querySelector('#pe-unlock')?.checked ?? customUnlock;
     budgetInclude = overlay.querySelector('#pe-budget-include')?.checked ?? budgetInclude;
     budgetShipping = overlay.querySelector('#pe-budget-shipping')?.value ?? budgetShipping;
-    budgetPhone = overlay.querySelector('#pe-budget-phone')?.value ?? budgetPhone;
 
     overlay.querySelectorAll('textarea.pe-sp-textarea').forEach(ta => {
       const pIdx = parseInt(ta.dataset.idx, 10);
@@ -416,14 +414,10 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
           </label>
           
           <div style="margin-top:16px;display:${budgetInclude ? 'block' : 'none'}">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div style="margin-bottom:12px">
               <div>
                 <label style="font-size:0.8rem;font-weight:600;color:#475569">Taxa de Adesão / Frete (R$):</label>
                 <input type="number" id="pe-budget-shipping" value="${budgetShipping}" placeholder="Ex: 90.00" style="width:100%;padding:8px;border-radius:6px;border:1px solid #cbd5e1;margin-top:4px;font-size:0.85rem">
-              </div>
-              <div>
-                <label style="font-size:0.8rem;font-weight:600;color:#475569">Seu WhatsApp (Botão Venda):</label>
-                <input type="text" id="pe-budget-phone" value="${budgetPhone}" placeholder="+55..." style="width:100%;padding:8px;border-radius:6px;border:1px solid #cbd5e1;margin-top:4px;font-size:0.85rem">
               </div>
             </div>
             
@@ -594,10 +588,10 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
     });
 
     try {
-      await store.saveCustomProtocol(anamnese.id, { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock, budgetInclude, budgetShipping, budgetPhone });
+      await store.saveCustomProtocol(anamnese.id, { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock, budgetInclude, budgetShipping });
       toast('✅ Protocolo personalizado salvo!', 'success');
       // Store in anamnese object so re-opening the editor shows the saved state
-      anamnese.protocolo_customizado = { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock, budgetInclude, budgetShipping, budgetPhone };
+      anamnese.protocolo_customizado = { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock, budgetInclude, budgetShipping };
       close();
     } catch (err) {
       toast('Erro ao salvar: ' + err.message, 'error');

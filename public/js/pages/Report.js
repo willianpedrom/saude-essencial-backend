@@ -147,9 +147,6 @@ export async function renderReport(router, dataParam, hash = null) {
 
   let budgetInclude = payload.protocolo_customizado?.budgetInclude || false;
   let budgetShipping = parseFloat((payload.protocolo_customizado?.budgetShipping || '0').replace(',', '.')) || 0;
-  let budgetPhoneRaw = payload.protocolo_customizado?.budgetPhone || consultant.phone || '';
-  let budgetPhoneWa = budgetPhoneRaw.replace(/\D/g, '');
-  if (!budgetPhoneWa.startsWith('55') && budgetPhoneWa.length > 0) budgetPhoneWa = '55' + budgetPhoneWa;
 
   let bReg = 0, bMem = 0, bPv = 0;
   let budgetListHtml = '';
@@ -388,7 +385,7 @@ export async function renderReport(router, dataParam, hash = null) {
             </div>
 
             <!-- WhatsApp CTA -->
-            <a class="report-cta" href="https://wa.me/${budgetPhoneWa || waPhone}?text=${whatsappMsg}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 20px;background:linear-gradient(135deg,#25d366,#128c7e);color:white;border-radius:12px;text-decoration:none;margin-bottom:16px;box-shadow:0 8px 20px rgba(37,211,102,0.3);transition:transform 0.2s">
+            <a class="report-cta" href="https://wa.me/${waPhone}?text=${whatsappMsg}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:12px;padding:16px 20px;background:linear-gradient(135deg,#25d366,#128c7e);color:white;border-radius:12px;text-decoration:none;margin-bottom:16px;box-shadow:0 8px 20px rgba(37,211,102,0.3);transition:transform 0.2s">
               <div style="font-size:1.5rem">💬</div>
               <div style="text-align:left">
                 <strong style="display:block;font-size:0.95rem">RECEBA AS INSTRUÇÕES COMPLETAS PELO WHATSAPP</strong>
