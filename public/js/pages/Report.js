@@ -364,12 +364,16 @@ export async function renderReport(router, dataParam, hash = null) {
                 <span>Total Comprando Avulso:</span>
                 <span style="text-decoration:line-through">R$ ${tReg.toFixed(2)}</span>
               </div>
-              <div style="display:flex;justify-content:space-between;color:#166534;font-size:1.1rem;font-weight:700;align-items:center">
+              <div style="display:flex;justify-content:space-between;color:#166534;font-size:1.1rem;font-weight:700;align-items:flex-start">
                 <span>Total de Membro (<span style="font-size:0.8rem">${bPv} PV</span>):</span>
-                <span>R$ ${tMem.toFixed(2)}</span>
+                <div style="text-align:right">
+                  <div>R$ ${tMem.toFixed(2)}</div>
+                  ${tMem >= 600 ? `<div style="font-size:0.85rem;color:#15803d;font-weight:600;margin-top:2px">ou 6x de R$ ${(tMem / 6).toFixed(2)} sem juros</div>` : 
+                    tMem >= 300 ? `<div style="font-size:0.85rem;color:#15803d;font-weight:600;margin-top:2px">ou 3x de R$ ${(tMem / 3).toFixed(2)} sem juros</div>` : ''}
+                </div>
               </div>
-              <div style="text-align:center;color:#0ea5e9;font-weight:700;font-size:0.9rem;margin-top:4px;background:#e0f2fe;padding:6px;border-radius:6px">
-                🎉 Você economiza R$ ${tDiff.toFixed(2)} sendo membro!
+              <div style="text-align:right;color:#0ea5e9;font-weight:800;font-size:1.05rem;margin-top:4px">
+                 Sua Economia: R$ ${tDiff.toFixed(2)}!
               </div>
             </div>
           </div>

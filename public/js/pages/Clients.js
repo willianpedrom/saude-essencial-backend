@@ -461,15 +461,25 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
       const tMem = bMem + freight;
       const diff = tReg - tMem;
       
+      let installmentsHtml = '';
+      if (tMem >= 600) {
+        installmentsHtml = `<div style="font-size:0.75rem;color:#15803d;margin-top:2px;font-weight:600">(ou 6x de R$ ${(tMem / 6).toFixed(2)} sem juros)</div>`;
+      } else if (tMem >= 300) {
+        installmentsHtml = `<div style="font-size:0.75rem;color:#15803d;margin-top:2px;font-weight:600">(ou 3x de R$ ${(tMem / 3).toFixed(2)} sem juros)</div>`;
+      }
+
       budgetDiv.innerHTML = `
         <div style="background:white;padding:12px;border-radius:8px;border:1px dashed #94a3b8;font-size:0.85rem">
-          <div style="display:flex;justify-content:space-Between;margin-bottom:4px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
             <span style="color:#64748b">Valor Total Varejo:</span>
             <span style="font-weight:600;color:#475569">R$ ${tReg.toFixed(2)}</span>
           </div>
-          <div style="display:flex;justify-content:space-Between;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #e2e8f0">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #e2e8f0;align-items:center">
             <span style="color:#166534;font-weight:600">Valor Membro Atacado (<span style="font-size:0.75rem">${bPv} PV</span>):</span>
-            <span style="font-weight:700;color:#15803d;font-size:1rem">R$ ${tMem.toFixed(2)}</span>
+            <div style="text-align:right">
+               <div style="font-weight:700;color:#15803d;font-size:1rem">R$ ${tMem.toFixed(2)}</div>
+               ${installmentsHtml}
+            </div>
           </div>
           <div style="text-align:right;color:#0ea5e9;font-weight:700">
              Economia de R$ ${diff.toFixed(2)}!
