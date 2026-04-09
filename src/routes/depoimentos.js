@@ -16,7 +16,8 @@ router.get('/public-fix-db', async (req, res) => {
         // 1. ADD MISSING COLUMN (THE CORE FIX!)
         await pool.query('ALTER TABLE depoimentos ADD COLUMN IF NOT EXISTS atualizado_em TIMESTAMPTZ DEFAULT NOW();');
         await pool.query('ALTER TABLE depoimentos ADD COLUMN IF NOT EXISTS tipo VARCHAR(50) DEFAULT \'cliente\';');
-        logs.push('Colunas atualizado_em e tipo adicionadas na tabela depoimentos');
+        await pool.query('ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS video_apresentacao TEXT;');
+        logs.push('Colunas atualizado_em, tipo e video_apresentacao adicionadas com sucesso.');
         
         // 2. FIX DUPLICATE SLUGS
         const { rows } = await pool.query(`SELECT slug, COUNT(*) FROM consultoras GROUP BY slug HAVING COUNT(*) > 1`);

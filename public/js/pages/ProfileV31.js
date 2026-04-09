@@ -138,6 +138,18 @@ export async function renderProfile(router) {
                     </div>
                 </div>
             </div>
+          <!-- Vídeo Pitch -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--border-light)">
+              <h3 style="margin:0;font-size:1rem">🎥 Vídeo de Apresentação (Pitch)</h3>
+            </div>
+            <div style="padding:20px">
+              <div class="form-group form-field-full" style="margin:0">
+                <label class="field-label">Link do YouTube / Vimeo</label>
+                <input class="field-input" id="p-video-apresentacao" value="${profile.video_apresentacao || ''}" placeholder="https://www.youtube.com/watch?v=..." />
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;line-height:1.4;">Cole aqui o link do seu vídeo de apresentação. Ele será embutido belissimamente em sua página pública e aumentará conversão!</div>
+              </div>
+            </div>
           </div>
 
           <!-- Redes Sociais -->
@@ -598,6 +610,7 @@ export async function renderProfile(router) {
         linkedin: pc.querySelector('#p-linkedin')?.value?.trim(),
         tema_cor: pc.querySelector('#p-tema-cor')?.value || '#16a34a',
         link_afiliada: pc.querySelector('#p-link-afiliada')?.value?.trim(),
+        video_apresentacao: pc.querySelector('#p-video-apresentacao')?.value?.trim(),
       };
 
       if (!data.nome) {

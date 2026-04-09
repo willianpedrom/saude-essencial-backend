@@ -116,12 +116,26 @@ export async function renderPublicProfile(router, slug) {
   }
 
   const { consultor, depoimentos, anamnese_token } = data;
-  const { nome, foto_url, bio, telefone, instagram, youtube, facebook, linkedin, doterra_nivel, genero, tema_cor } = consultor;
+  const { nome, foto_url, bio, telefone, instagram, youtube, facebook, linkedin, doterra_nivel, genero, tema_cor, video_apresentacao } = consultor;
   const themeData = ARCHETYPE_THEMES[tema_cor] || ARCHETYPE_THEMES['curadora'];
   const title = genero === 'masculino' ? 'Consultor' : 'Consultora';
   const pageUrl = window.location.href;
   const whatsLink = telefone ? `https://wa.me/55${telefone.replace(/\D/g, '')}?text=Olá%20${encodeURIComponent(nome)}!%20Conheci%20seu%20perfil%20e%20gostaria%20de%20saber%20mais.` : null;
   const anamneseLink = anamnese_token ? `${window.location.origin}/convite/${anamnese_token}` : null;
+
+  function getEmbedUrl(url) {
+    if (!url) return null;
+    let match = url.match(/(?:youtube\\.com\\/(?:[^\\/]+\\/.+\\/|(?:v|e(?:mbed)?)\\/|.*[?&]v=)|youtu\\.be\\/)([^"&?\\/\\s]{11})/);
+    if (match && match[1]) {
+      return \`https://www.youtube.com/embed/\${match[1]}?modestbranding=1&rel=0\`;
+    }
+    match = url.match(/vimeo\\.com\\/(?:.*#|.*\\/videos\\/)?([0-9]+)/);
+    if (match && match[1]) {
+      return \`https://player.vimeo.com/video/\${match[1]}?title=0&byline=0&portrait=0\`;
+    }
+    return null;
+  }
+  const embedUrl = getEmbedUrl(video_apresentacao);
 
   // Inject tracking
   injectTrackingScripts(consultor.rastreamento);
@@ -304,6 +318,20 @@ export async function renderPublicProfile(router, slug) {
       </div>
     </section>
     ` : ''}
+
+    <!-- ═══════════════ VÍDEO PITCH ═══════════════ -->
+    ${embedUrl ? `
+    <section class="pp-section pp-fade" style="background:#fff;padding-top:60px;padding-bottom:20px">
+      <div class="pp-container" style="max-width:720px">
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="display:inline-block;background:#fefce8;color:#a16207;font-size:0.8rem;font-weight:700;padding:5px 16px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;border:1px solid #fef08a">🔥 Mensagem Especial</div>
+          <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.5rem,4vw,2rem);color:#0a2818;margin-bottom:10px">Conheça o meu trabalho</h2>
+        </div>
+        <div style="position:relative;width:100%;padding-bottom:56.25%;background:#000;border-radius:20px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.15);border:1px solid rgba(0,0,0,0.05)">
+          <iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen loading="lazy" title="Vídeo de Apresentação"></iframe>
+        </div>
+      </div>
+    </section>` : ''}
 
     <!-- ═══════════════ SOBRE ═══════════════ -->
     ${bio ? `
