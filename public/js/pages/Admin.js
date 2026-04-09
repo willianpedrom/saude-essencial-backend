@@ -271,7 +271,7 @@ export async function renderAdmin(router) {
     container.innerHTML = `
       <div style="display:flex; gap:16px; overflow-x:auto; padding-bottom:20px; align-items:flex-start">
         <!-- Coluna Lead Novo -->
-        <div style="min-width:280px; width:280px; background:#f8fafc; border-radius:12px; padding:12px; border:1px solid #e2e8f0; flex-shrink:0">
+        <div style="min-width:280px; width:280px; background:#f8fafc; border-radius:12px; padding:12px; border:1px solid #e2e8f0; flex-shrink:0; max-height:calc(100vh - 250px); overflow-y:auto; display:flex; flex-direction:column">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
              <h4 style="margin:0; font-size:0.9rem; color:#0f172a; display:flex; align-items:center; gap:6px"><span style="color:#10b981">🟢</span> Novos Leads</h4>
              <span style="background:#e2e8f0; color:#475569; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.lead.length}</span>
@@ -280,7 +280,7 @@ export async function renderAdmin(router) {
         </div>
 
         <!-- Coluna Trial Ativo -->
-        <div style="min-width:280px; width:280px; background:#f8fafc; border-radius:12px; padding:12px; border:1px solid #e2e8f0; flex-shrink:0">
+        <div style="min-width:280px; width:280px; background:#f8fafc; border-radius:12px; padding:12px; border:1px solid #e2e8f0; flex-shrink:0; max-height:calc(100vh - 250px); overflow-y:auto; display:flex; flex-direction:column">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
              <h4 style="margin:0; font-size:0.9rem; color:#0f172a; display:flex; align-items:center; gap:6px"><span style="color:#3b82f6">⏳</span> Trial Ativo</h4>
              <span style="background:#e2e8f0; color:#475569; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.trial.length}</span>
@@ -289,7 +289,7 @@ export async function renderAdmin(router) {
         </div>
 
         <!-- Coluna Engajados -->
-        <div style="min-width:280px; width:280px; background:#fffbeb; border-radius:12px; padding:12px; border:1px solid #fcd34d; flex-shrink:0">
+        <div style="min-width:280px; width:280px; background:#fffbeb; border-radius:12px; padding:12px; border:1px solid #fcd34d; flex-shrink:0; max-height:calc(100vh - 250px); overflow-y:auto; display:flex; flex-direction:column">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
              <h4 style="margin:0; font-size:0.9rem; color:#92400e; display:flex; align-items:center; gap:6px"><span style="color:#f59e0b">🔥</span> Engajados (Hot)</h4>
              <span style="background:#fde68a; color:#b45309; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.engajado.length}</span>
@@ -299,7 +299,7 @@ export async function renderAdmin(router) {
         </div>
 
         <!-- Coluna Trial Expirado -->
-        <div style="min-width:280px; width:280px; background:#fef2f2; border-radius:12px; padding:12px; border:1px solid #fca5a5; flex-shrink:0">
+        <div style="min-width:280px; width:280px; background:#fef2f2; border-radius:12px; padding:12px; border:1px solid #fca5a5; flex-shrink:0; max-height:calc(100vh - 250px); overflow-y:auto; display:flex; flex-direction:column">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
              <h4 style="margin:0; font-size:0.9rem; color:#991b1b; display:flex; align-items:center; gap:6px"><span style="color:#ef4444">⏰</span> Trial Expirado</h4>
              <span style="background:#fecaca; color:#b91c1c; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.expirado.length}</span>
@@ -309,7 +309,7 @@ export async function renderAdmin(router) {
         </div>
 
         <!-- Coluna Assinantes -->
-        <div style="min-width:280px; width:280px; background:#f0fdf4; border-radius:12px; padding:12px; border:1px solid #86efac; flex-shrink:0">
+        <div style="min-width:280px; width:280px; background:#f0fdf4; border-radius:12px; padding:12px; border:1px solid #86efac; flex-shrink:0; max-height:calc(100vh - 250px); overflow-y:auto; display:flex; flex-direction:column">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
              <h4 style="margin:0; font-size:0.9rem; color:#166534; display:flex; align-items:center; gap:6px"><span style="color:#10b981">💎</span> Assinantes</h4>
              <span style="background:#bbf7d0; color:#15803d; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.assinante.length}</span>
