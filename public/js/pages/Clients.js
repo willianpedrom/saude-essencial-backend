@@ -457,6 +457,7 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
     if (budgetDiv) {
       let bReg = 0, bMem = 0, bPv = 0;
       const seenOils = new Set();
+      let itemListHtml = '';
       editProtocols.forEach(p => {
         (p.oils || []).forEach(oil => {
           if (seenOils.has(oil.name)) return;
@@ -466,6 +467,13 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
              const selected = dbSizes.find(s => s.size === oil.sizeChoice) || dbSizes[0];
              const qty = Number(oil.qtyChoice) || 1;
              bReg += selected.regular * qty; bMem += selected.member * qty; bPv += (selected.pv || 0) * qty;
+             
+             itemListHtml += `
+              <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f1f5f9;font-size:0.8rem">
+                <span style="color:#475569">${qty > 1 ? `<span style="font-weight:700;color:#15803d">${qty}x</span> ` : ''}🌿 ${oil.name} <span style="opacity:0.6;font-size:0.75rem">(${selected.size})</span></span>
+                <span style="color:#166534;font-weight:600">R$ ${(selected.member * qty).toFixed(2)}</span>
+              </div>
+             `;
           }
         });
       });
@@ -484,6 +492,10 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
 
       budgetDiv.innerHTML = `
         <div style="background:white;padding:12px;border-radius:8px;border:1px dashed #94a3b8;font-size:0.85rem">
+          <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:2px dashed #e2e8f0">
+            <div style="font-weight:700;margin-bottom:6px;color:#1e293b;font-size:0.85rem">🛒 Lista de Itens (${seenOils.size} produtos)</div>
+            ${itemListHtml}
+          </div>
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
             <span style="color:#64748b">Valor Total Varejo:</span>
             <span style="font-weight:600;color:#475569">R$ ${tReg.toFixed(2)}</span>
