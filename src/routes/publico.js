@@ -30,7 +30,7 @@ router.get('/perfil/:slug', async (req, res) => {
 
         // 2. Fetch approved testimonials (max 12, most recent)
         const { rows: depoimentos } = await pool.query(
-            `SELECT cliente_nome, texto, nota, criado_em
+            `SELECT cliente_nome, texto, nota, criado_em, tipo
              FROM depoimentos
              WHERE consultora_id = $1 AND aprovado = TRUE
              ORDER BY criado_em DESC LIMIT 12`,

@@ -225,8 +225,14 @@ export async function renderTestimonials(router) {
                               </button>`
                 : `<span style="font-size:0.77rem;color:#16a34a;font-weight:700;
                                           display:flex;align-items:center;gap:3px">
-                                ✅ Aprovado
+                                ✅ Aprov.
                               </span>`}
+                          
+                          <select class="btn btn-sm type-selector" data-id="${t.id}" style="background:#f8fafc;border:1px solid #cbd5e1;padding:4px 8px;font-size:0.7rem;border-radius:6px;outline:none;cursor:pointer">
+                            <option value="cliente" ${!t.tipo || t.tipo === 'cliente' ? 'selected' : ''}>Público: Clientes</option>
+                            <option value="lideranca" ${t.tipo === 'lideranca' ? 'selected' : ''}>Público: Equipe</option>
+                          </select>
+
                           <button class="btn btn-danger btn-sm" data-delete="${t.id}"
                             style="padding:5px 8px;font-size:0.8rem" title="Apagar">🗑️</button>
                         </div>
@@ -259,6 +265,25 @@ export async function renderTestimonials(router) {
           const val = btn.dataset.filtertag;
           activeTagFilter = val === "null" ? null : val;
           renderView();
+        });
+      });
+
+      // Type Selector
+      document.querySelectorAll('.type-selector').forEach(sel => {
+        sel.addEventListener('change', async (e) => {
+          const id = e.target.dataset.id;
+          const novoTipo = e.target.value;
+          e.target.disabled = true;
+          try {
+            await store.setTestimonialType(id, novoTipo);
+            localTestimonials = localTestimonials.map(t => String(t.id) === String(id) ? { ...t, tipo: novoTipo } : t);
+            toast('Categoria alterada com sucesso! ✅');
+          } catch (err) {
+            toast(err.message, 'error');
+            e.target.value = novoTipo === 'cliente' ? 'lideranca' : 'cliente'; // revert
+          } finally {
+            e.target.disabled = false;
+          }
         });
       });
 

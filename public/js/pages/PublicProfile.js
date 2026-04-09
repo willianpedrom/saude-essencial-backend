@@ -126,9 +126,13 @@ export async function renderPublicProfile(router, slug) {
   // Inject tracking
   injectTrackingScripts(consultor.rastreamento);
 
-  // Calculate average NPS
-  const avgNps = depoimentos.length > 0
-    ? Math.round(depoimentos.reduce((s, d) => s + (d.nota || 10), 0) / depoimentos.length)
+  // Separar categorias de depoimentos
+  const depClientes = depoimentos.filter(d => !d.tipo || d.tipo === 'cliente');
+  const depLideranca = depoimentos.filter(d => d.tipo === 'lideranca');
+
+  // Calculate average NPS (apenas de clientes para não misturar métricas de funil na vitrine)
+  const avgNps = depClientes.length > 0
+    ? Math.round(depClientes.reduce((s, d) => s + (d.nota || 10), 0) / depClientes.length)
     : null;
 
   app.innerHTML = `
@@ -313,17 +317,36 @@ export async function renderPublicProfile(router, slug) {
       </div>
     </section>` : ''}
 
-    <!-- ═══════════════ DEPOIMENTOS ═══════════════ -->
-    ${depoimentos.length > 0 ? `
+    <!-- ═══════════════ DEPOIMENTOS (CLIENTES) ═══════════════ -->
+    ${depClientes.length > 0 ? `
     <section class="pp-section" style="background:${(data.links && data.links.length > 0 && !bio) || (!data.links?.length && bio) ? '#f9fafb' : 'white'}">
       <div class="pp-container">
         <div style="text-align:center;margin-bottom:8px">
-          <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.2rem);color:#0a2818">O que dizem os clientes</h2>
-          <p style="color:#6b7280;margin-top:8px">${depoimentos.length} depoimento${depoimentos.length > 1 ? 's' : ''} verificado${depoimentos.length > 1 ? 's' : ''}</p>
+          <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.2rem);color:#0a2818">Veja o que dizem as pessoas que eu já ajudei</h2>
+          <p style="color:#6b7280;margin-top:8px">${depClientes.length} depoimento${depClientes.length > 1 ? 's' : ''} verificado${depClientes.length > 1 ? 's' : ''}</p>
         </div>
         <div class="pp-depo-grid">
-          ${depoimentos.map(d => `
+          ${depClientes.map(d => `
           <div class="pp-depo-card pp-fade">
+            <div style="color:#fbbf24;font-size:1.1rem;margin-bottom:12px">${stars(d.nota)}</div>
+            <p style="color:#374151;line-height:1.65;font-size:0.92rem;margin-bottom:16px">"${d.texto}"</p>
+            <div style="font-weight:600;color:#1a4527;font-size:0.85rem">— ${d.cliente_nome}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </section>` : ''}
+
+    <!-- ═══════════════ DEPOIMENTOS (LIDERANÇA) ═══════════════ -->
+    ${depLideranca.length > 0 ? `
+    <section class="pp-section" style="background:${depClientes.length > 0 ? ((data.links && data.links.length > 0 && !bio) || (!data.links?.length && bio) ? 'white' : '#f9fafb') : ((data.links && data.links.length > 0 && !bio) || (!data.links?.length && bio) ? '#f9fafb' : 'white')}">
+      <div class="pp-container">
+        <div style="text-align:center;margin-bottom:8px">
+          <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.2rem);color:#0a2818">O que a minha equipe fala sobre mim</h2>
+          <p style="color:#6b7280;margin-top:8px">${depLideranca.length} depoimento${depLideranca.length > 1 ? 's' : ''} verificado${depLideranca.length > 1 ? 's' : ''}</p>
+        </div>
+        <div class="pp-depo-grid">
+          ${depLideranca.map(d => `
+          <div class="pp-depo-card pp-fade" style="border:1px solid #f1f5f9;box-shadow:0 4px 20px rgba(0,0,0,0.03)">
             <div style="color:#fbbf24;font-size:1.1rem;margin-bottom:12px">${stars(d.nota)}</div>
             <p style="color:#374151;line-height:1.65;font-size:0.92rem;margin-bottom:16px">"${d.texto}"</p>
             <div style="font-weight:600;color:#1a4527;font-size:0.85rem">— ${d.cliente_nome}</div>

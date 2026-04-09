@@ -275,6 +275,7 @@ export const store = {
     getTestimonialLink() { return api('GET', '/api/depoimentos/link'); },
     addTestimonial(data) { return api('POST', '/api/depoimentos', data); },
     approveTestimonial(id, aprovado) { return api('PATCH', `/api/depoimentos/${id}/aprovar`, { aprovado }); },
+    setTestimonialType(id, tipo) { return api('PATCH', `/api/depoimentos/${id}/tipo`, { tipo }); },
     setTestimonialTags(id, etiqueta_ids) { return api('PATCH', `/api/depoimentos/${id}/etiquetas`, { etiqueta_ids }); },
     deleteTestimonial(id) { return api('DELETE', `/api/depoimentos/${id}`); },
 

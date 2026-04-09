@@ -15,7 +15,8 @@ router.get('/public-fix-db', async (req, res) => {
         
         // 1. ADD MISSING COLUMN (THE CORE FIX!)
         await pool.query('ALTER TABLE depoimentos ADD COLUMN IF NOT EXISTS atualizado_em TIMESTAMPTZ DEFAULT NOW();');
-        logs.push('Coluna atualizado_em adicionada na tabela depoimentos');
+        await pool.query('ALTER TABLE depoimentos ADD COLUMN IF NOT EXISTS tipo VARCHAR(50) DEFAULT \'cliente\';');
+        logs.push('Colunas atualizado_em e tipo adicionadas na tabela depoimentos');
         
         // 2. FIX DUPLICATE SLUGS
         const { rows } = await pool.query(`SELECT slug, COUNT(*) FROM consultoras GROUP BY slug HAVING COUNT(*) > 1`);
@@ -108,8 +109,8 @@ router.post('/public/:slug', async (req, res) => {
         if (consultoras.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });
         const { id: consultora_id, rastreamento } = consultoras[0];
         const { rows } = await pool.query(
-            `INSERT INTO depoimentos (consultora_id, cliente_nome, cliente_email, cliente_telefone, texto, nota, aprovado, consentimento, origem)
-             VALUES ($1, $2, $3, $4, $5, $6, FALSE, $7, 'link') RETURNING id`,
+            `INSERT INTO depoimentos (consultora_id, cliente_nome, cliente_email, cliente_telefone, texto, nota, aprovado, consentimento, origem, tipo)
+             VALUES ($1, $2, $3, $4, $5, $6, FALSE, $7, 'link', 'cliente') RETURNING id`,
             [consultora_id, cliente_nome, cliente_email, cliente_telefone, texto, Math.min(10, Math.max(0, parseInt(nota) || 10)), !!consentimento]
         );
 
@@ -144,6 +145,7 @@ router.get('/', async (req, res) => {
     try {
         const { rows } = await pool.query(
             `SELECT d.*, 
+                    d.tipo,
                     COALESCE(
                         json_agg(json_build_object('id', e.id, 'nome', e.nome, 'cor', e.cor))
                         FILTER (WHERE e.id IS NOT NULL), '[]'
@@ -179,8 +181,8 @@ router.post('/', async (req, res) => {
     if (!cliente_nome || !texto) return res.status(400).json({ error: 'Nome e depoimento são obrigatórios.' });
     try {
         const { rows } = await pool.query(
-            `INSERT INTO depoimentos (consultora_id, cliente_nome, cliente_email, cliente_telefone, texto, nota, aprovado, consentimento, origem)
-             VALUES ($1, $2, $3, $4, $5, $6, TRUE, $7, 'manual') RETURNING *`,
+            `INSERT INTO depoimentos (consultora_id, cliente_nome, cliente_email, cliente_telefone, texto, nota, aprovado, consentimento, origem, tipo)
+             VALUES ($1, $2, $3, $4, $5, $6, TRUE, $7, 'manual', 'cliente') RETURNING *`,
             [req.consultora.id, cliente_nome, cliente_email || null, cliente_telefone || null, texto, Math.min(10, Math.max(0, parseInt(nota) || 10)), !!consentimento]
         );
         if (publicoRouter.publicCache) publicoRouter.publicCache.flushAll(); // Limpa cache para refletir imediatamente
@@ -214,7 +216,23 @@ router.patch('/:id/aprovar', async (req, res) => {
     }
 });
 
-// PATCH /api/depoimentos/:id/etiquetas — set tags for a testimonial
+// PATCH /api/depoimentos/:id/tipo — change category
+router.patch('/:id/tipo', async (req, res) => {
+    const { tipo } = req.body;
+    if (!['cliente', 'lideranca'].includes(tipo)) return res.status(400).json({ error: 'Tipo inválido.' });
+    
+    try {
+        const { rows } = await pool.query(
+            `UPDATE depoimentos SET tipo=$1 WHERE id=$2 AND consultora_id=$3 RETURNING id, tipo`,
+            [tipo, req.params.id, req.consultora.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Depoimento não encontrado.' });
+        if (publicoRouter.publicCache) publicoRouter.publicCache.flushAll();
+        res.json(rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 router.patch('/:id/etiquetas', async (req, res) => {
     const { etiqueta_ids = [] } = req.body;
     try {
