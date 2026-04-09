@@ -276,7 +276,13 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
       });
       sizeSelector += `</select>`;
     } else {
-      sizeSelector = `<span style="font-size:0.65rem;opacity:0.7;margin-left:4px">(Tamanho único)</span>`;
+      if (!oil.qtyChoice) oil.qtyChoice = 1;
+      let qtySelector = `<select class="pe-oil-qty-select" data-p="${pIdx}" data-o="${oIdx}" style="border:1px solid #86efac;border-radius:6px 0 0 6px;font-size:0.7rem;background:#f0fdf4;color:#166534;margin-left:4px;padding:2px;outline:none;cursor:pointer;border-right:none">`;
+      [1, 2, 3, 4, 5].forEach(q => {
+         qtySelector += `<option value="${q}" ${Number(oil.qtyChoice) === q ? 'selected' : ''}>${q}x</option>`;
+      });
+      qtySelector += `</select>`;
+      sizeSelector = `${qtySelector}<span style="font-size:0.65rem;opacity:0.7;background:#f8fafc;padding:3.5px 6px;border-radius:0 6px 6px 0;border:1px solid #e2e8f0;border-left:none">(Cadastrar Preço)</span>`;
     }
 
     return `<span style="display:inline-flex;align-items:center;gap:4px;background:#dcfce7;color:#166534;border-radius:20px;padding:4px 10px;font-size:0.78rem;font-weight:600;margin:3px">
