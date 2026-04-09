@@ -458,14 +458,13 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
       });
       const freight = parseFloat((budgetShipping || '0').replace(',', '.')) || 0;
       const tReg = bReg + freight;
-      const tMem = bMem + freight;
-      const diff = tReg - tMem;
-      
       let installmentsHtml = '';
       if (tMem >= 600) {
-        installmentsHtml = `<div style="font-size:0.75rem;color:#15803d;margin-top:2px;font-weight:600">(ou 6x de R$ ${(tMem / 6).toFixed(2)} sem juros)</div>`;
+        installmentsHtml = `<div style="font-weight:800;color:#15803d;font-size:1.2rem">6x de R$ ${(tMem / 6).toFixed(2)}</div><div style="font-size:0.7rem;color:#64748b;font-weight:700">sem juros (ou R$ ${tMem.toFixed(2)} à vista)</div>`;
       } else if (tMem >= 300) {
-        installmentsHtml = `<div style="font-size:0.75rem;color:#15803d;margin-top:2px;font-weight:600">(ou 3x de R$ ${(tMem / 3).toFixed(2)} sem juros)</div>`;
+        installmentsHtml = `<div style="font-weight:800;color:#15803d;font-size:1.2rem">3x de R$ ${(tMem / 3).toFixed(2)}</div><div style="font-size:0.7rem;color:#64748b;font-weight:700">sem juros (ou R$ ${tMem.toFixed(2)} à vista)</div>`;
+      } else {
+        installmentsHtml = `<div style="font-weight:800;color:#15803d;font-size:1.1rem">R$ ${tMem.toFixed(2)}</div>`;
       }
 
       budgetDiv.innerHTML = `
@@ -474,10 +473,9 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
             <span style="color:#64748b">Valor Total Varejo:</span>
             <span style="font-weight:600;color:#475569">R$ ${tReg.toFixed(2)}</span>
           </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #e2e8f0;align-items:center">
-            <span style="color:#166534;font-weight:600">Valor Membro Atacado (<span style="font-size:0.75rem">${bPv} PV</span>):</span>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #e2e8f0;align-items:flex-start">
+            <span style="color:#166534;font-weight:700">Valor Membro (<span style="font-size:0.75rem">${bPv} PV</span>):</span>
             <div style="text-align:right">
-               <div style="font-weight:700;color:#15803d;font-size:1rem">R$ ${tMem.toFixed(2)}</div>
                ${installmentsHtml}
             </div>
           </div>
