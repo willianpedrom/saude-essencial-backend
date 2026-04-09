@@ -465,6 +465,8 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
       });
       const freight = parseFloat((budgetShipping || '0').replace(',', '.')) || 0;
       const tReg = bReg + freight;
+      const tMem = bMem + freight;
+      const diff = tReg - tMem;
       let installmentsHtml = '';
       if (tMem >= 600) {
         installmentsHtml = `<div style="font-weight:800;color:#15803d;font-size:1.2rem">6x de R$ ${(tMem / 6).toFixed(2)} sem juros</div><div style="font-size:0.7rem;color:#64748b;font-weight:700">(ou R$ ${tMem.toFixed(2)} à vista)</div>`;
