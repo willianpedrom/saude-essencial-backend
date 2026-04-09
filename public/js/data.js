@@ -269,11 +269,11 @@ export const OILS_DATABASE = {
     'Citrus Bloom': { nameEn: 'Citrus Bloom', cat: 'blend', fn: 'Frescor, feminilidade, energia', uses: 'Bem-estar feminino, frescor, mood positivo', topical: 'Pulsos, pescoço (Touch)', aromatic: 'Difusor' },
 
     // ── Suplementos ────────────────────────────────────────────────
-    'Beauty Power': { nameEn: 'Beauty Power Collagen Elixir', cat: 'supplement', fn: 'Colágeno VERISOL®, Coenzima Q10, Ácido Hialurônico', uses: 'Cabelo, pele, unhas, celulite, anti-aging interno', topical: 'Não aplicável — uso oral', aromatic: 'Não aplicável' },
-    'VM Complex': { nameEn: 'Microplex VMz', cat: 'supplement', fn: 'Multivitamínico e minerais essenciais', uses: 'Nutrição celular, energia, sistema imunológico', topical: 'Uso oral (cápsulas)', aromatic: 'Não aplicável' },
-    'xEO Mega': { nameEn: 'xEO Mega', cat: 'supplement', fn: 'Complexo de Ômegas e Óleos Essenciais', uses: 'Saúde cardiovascular, cerebral, articular', topical: 'Uso oral (cápsulas)', aromatic: 'Não aplicável' },
-    'MetaPWR Advantage': { nameEn: 'MetaPWR Advantage', cat: 'supplement', fn: 'Colágeno + NMN', uses: 'Longevidade celular, metabolismo, anti-aging', topical: 'Uso oral (sachê)', aromatic: 'Não aplicável' },
-    'MetaPWR FiberUP': { nameEn: 'MetaPWR FiberUP', cat: 'supplement', fn: 'Mix de Fibras Solúveis', uses: 'Saúde intestinal, saciedade, metabolismo', topical: 'Uso oral (sachê)', aromatic: 'Não aplicável' },
+    'Beauty Power': { nameEn: 'Beauty Power Collagen Elixir', cat: 'supplement', fn: 'Colágeno VERISOL®, Coenzima Q10, Ácido Hialurônico', uses: 'Cabelo, pele, unhas, celulite, anti-aging interno', topical: 'Não aplicável — uso oral', aromatic: 'Não aplicável', sizes: [{"size": "Caixa c/ 30", "regular": 353.0, "member": 265.0, "pv": 35}] },
+    'VM Complex': { nameEn: 'Microplex VMz', cat: 'supplement', fn: 'Multivitamínico e minerais essenciais', uses: 'Nutrição celular, energia, sistema imunológico', topical: 'Uso oral (cápsulas)', aromatic: 'Não aplicável', sizes: [{"size": "Pote", "regular": 260.0, "member": 195.0, "pv": 30}] },
+    'xEO Mega': { nameEn: 'xEO Mega', cat: 'supplement', fn: 'Complexo de Ômegas e Óleos Essenciais', uses: 'Saúde cardiovascular, cerebral, articular', topical: 'Uso oral (cápsulas)', aromatic: 'Não aplicável', sizes: [{"size": "Pote", "regular": 300.0, "member": 225.0, "pv": 35}] },
+    'MetaPWR Advantage': { nameEn: 'MetaPWR Advantage', cat: 'supplement', fn: 'Colágeno + NMN', uses: 'Longevidade celular, metabolismo, anti-aging', topical: 'Uso oral (sachê)', aromatic: 'Não aplicável', sizes: [{"size": "Caixa c/ 30", "regular": 450.0, "member": 337.0, "pv": 45}] },
+    'MetaPWR FiberUP': { nameEn: 'MetaPWR FiberUP', cat: 'supplement', fn: 'Mix de Fibras Solúveis', uses: 'Saúde intestinal, saciedade, metabolismo', topical: 'Uso oral (sachê)', aromatic: 'Não aplicável', sizes: [{"size": "Caixa", "regular": 180.0, "member": 135.0, "pv": 20}] },
     'TrimShake Vanilla': { nameEn: 'TrimShake Vanilla', cat: 'supplement', fn: 'Shake Nutricional Baunilha', uses: 'Gestão de peso, substituidor de refeição', topical: 'Uso oral', aromatic: 'Não aplicável' },
     'TrimShake Chocolate': { nameEn: 'TrimShake Chocolate', cat: 'supplement', fn: 'Shake Nutricional Chocolate', uses: 'Gestão de peso, substituidor de refeição', topical: 'Uso oral', aromatic: 'Não aplicável' },
 
