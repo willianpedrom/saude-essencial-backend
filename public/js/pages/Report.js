@@ -367,8 +367,8 @@ export async function renderReport(router, dataParam, hash = null) {
               <div style="display:flex;justify-content:space-between;color:#166534;align-items:flex-start;margin-top:8px">
                 <span style="font-size:1.05rem;font-weight:700">Total de Membro (<span style="font-size:0.8rem">${bPv} PV</span>):</span>
                 <div style="text-align:right">
-                  ${tMem >= 600 ? `<div style="font-size:1.4rem;color:#15803d;font-weight:800">ou 6x de R$ ${(tMem / 6).toFixed(2)}</div><div style="font-size:0.8rem;color:#64748b;font-weight:600;margin-bottom:2px">sem juros (ou R$ ${tMem.toFixed(2)} à vista)</div>` : 
-                    tMem >= 300 ? `<div style="font-size:1.4rem;color:#15803d;font-weight:800">ou 3x de R$ ${(tMem / 3).toFixed(2)}</div><div style="font-size:0.8rem;color:#64748b;font-weight:600;margin-bottom:2px">sem juros (ou R$ ${tMem.toFixed(2)} à vista)</div>` : `<div style="font-size:1.4rem;color:#15803d;font-weight:800">R$ ${tMem.toFixed(2)}</div>`}
+                  ${tMem >= 600 ? `<div style="font-size:1.4rem;color:#15803d;font-weight:800">ou 6x de R$ ${(tMem / 6).toFixed(2)} sem juros</div><div style="font-size:0.8rem;color:#64748b;font-weight:600;margin-bottom:2px">(ou R$ ${tMem.toFixed(2)} à vista)</div>` : 
+                    tMem >= 300 ? `<div style="font-size:1.4rem;color:#15803d;font-weight:800">ou 3x de R$ ${(tMem / 3).toFixed(2)} sem juros</div><div style="font-size:0.8rem;color:#64748b;font-weight:600;margin-bottom:2px">(ou R$ ${tMem.toFixed(2)} à vista)</div>` : `<div style="font-size:1.4rem;color:#15803d;font-weight:800">R$ ${tMem.toFixed(2)}</div>`}
                 </div>
               </div>
               <div style="text-align:right;color:#0ea5e9;font-weight:800;font-size:1.05rem;margin-top:4px">

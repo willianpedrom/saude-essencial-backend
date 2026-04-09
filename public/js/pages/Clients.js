@@ -460,9 +460,9 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
       const tReg = bReg + freight;
       let installmentsHtml = '';
       if (tMem >= 600) {
-        installmentsHtml = `<div style="font-weight:800;color:#15803d;font-size:1.2rem">6x de R$ ${(tMem / 6).toFixed(2)}</div><div style="font-size:0.7rem;color:#64748b;font-weight:700">sem juros (ou R$ ${tMem.toFixed(2)} à vista)</div>`;
+        installmentsHtml = `<div style="font-weight:800;color:#15803d;font-size:1.2rem">6x de R$ ${(tMem / 6).toFixed(2)} sem juros</div><div style="font-size:0.7rem;color:#64748b;font-weight:700">(ou R$ ${tMem.toFixed(2)} à vista)</div>`;
       } else if (tMem >= 300) {
-        installmentsHtml = `<div style="font-weight:800;color:#15803d;font-size:1.2rem">3x de R$ ${(tMem / 3).toFixed(2)}</div><div style="font-size:0.7rem;color:#64748b;font-weight:700">sem juros (ou R$ ${tMem.toFixed(2)} à vista)</div>`;
+        installmentsHtml = `<div style="font-weight:800;color:#15803d;font-size:1.2rem">3x de R$ ${(tMem / 3).toFixed(2)} sem juros</div><div style="font-size:0.7rem;color:#64748b;font-weight:700">(ou R$ ${tMem.toFixed(2)} à vista)</div>`;
       } else {
         installmentsHtml = `<div style="font-weight:800;color:#15803d;font-size:1.1rem">R$ ${tMem.toFixed(2)}</div>`;
       }
