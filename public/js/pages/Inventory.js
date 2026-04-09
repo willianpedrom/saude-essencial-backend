@@ -215,8 +215,8 @@ export async function renderInventory(router) {
             </select>
         </div>
 
-        <!-- Tabela -->
-        <div class="card" style="padding:0; overflow:hidden;">
+        <!-- Tabela Desktop -->
+        <div class="card inv-desktop-view" style="padding:0; overflow:hidden;">
             <table style="width:100%; border-collapse:collapse;" id="inv-table">
                 <thead style="background:var(--green-50);">
                     <tr>
@@ -234,6 +234,127 @@ export async function renderInventory(router) {
                 </tbody>
             </table>
         </div>
+
+        <!-- Cards Mobile -->
+        <div id="inv-cards" class="inv-mobile-view" style="display:flex;flex-direction:column;gap:10px;"></div>
+
+        <style>
+          @media (min-width: 640px) {
+            .inv-mobile-view { display: none !important; }
+            .inv-desktop-view { display: block !important; }
+          }
+          @media (max-width: 639px) {
+            .inv-desktop-view { display: none !important; }
+            .inv-mobile-view { display: flex !important; }
+          }
+          .inv-card {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+            padding: 14px 16px;
+            transition: box-shadow 0.15s;
+          }
+          .inv-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+          }
+          .inv-card-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            line-height: 1.3;
+          }
+          .inv-card-cat {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+          }
+          .inv-card-qty-badge {
+            flex-shrink: 0;
+            min-width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.05rem;
+          }
+          .inv-card-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 12px;
+          }
+          .inv-card-meta-item {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+          }
+          .inv-card-meta-label {
+            color: var(--text-muted);
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 2px;
+          }
+          .inv-card-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 52px 52px;
+            gap: 8px;
+            align-items: center;
+          }
+          .inv-card-qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            grid-column: 1 / 3;
+            background: #f1f5f9;
+            border-radius: 10px;
+            overflow: hidden;
+          }
+          .inv-card-qty-btn {
+            flex: 1;
+            height: 42px;
+            border: none;
+            background: transparent;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text-dark);
+            transition: background 0.15s;
+            -webkit-tap-highlight-color: transparent;
+          }
+          .inv-card-qty-btn:active { background: #e2e8f0; }
+          .inv-card-qty-btn:disabled { opacity: 0.3; cursor: default; }
+          .inv-card-qty-num {
+            min-width: 36px;
+            text-align: center;
+            font-weight: 800;
+            font-size: 1rem;
+          }
+          .inv-card-btn {
+            height: 42px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+            transition: filter 0.15s;
+          }
+          .inv-card-btn:active { filter: brightness(0.9); }
+          .inv-card-btn-edit { background: #eff6ff; color: #2563eb; }
+          .inv-card-btn-del  { background: #fef2f2; color: #dc2626; }
+        </style>
 
         <!-- Modal Adicionar / Editar -->
         <div id="inv-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; padding:16px;">
@@ -494,7 +615,71 @@ export async function renderInventory(router) {
                 </td>
             </tr>`;
         }).join('');
-    };
+
+        // ── Cards Mobile ─────────────────────────────────────────
+        const cardsEl = document.getElementById('inv-cards');
+        if (!cardsEl) return;
+
+        if (!visible.length) {
+            cardsEl.innerHTML = `<div style="text-align:center;padding:48px 16px;color:var(--text-muted);background:white;border-radius:14px;">
+                ${db.length ? '❌ Nenhum produto encontrado com esses filtros.' : '📭 Estoque vazio — toque em "+ Adicionar Produto" para começar'}
+            </div>`;
+            return;
+        }
+
+        cardsEl.innerHTML = visible.map(it => {
+            const daysLeft2 = days_until(it.validade);
+            let validText = '—';
+            let validStyle = 'color:var(--text-muted)';
+            if (it.validade) {
+                if (daysLeft2 < 0) { validText = '⚠️ Vencido'; validStyle = 'color:#991b1b;font-weight:700'; }
+                else if (daysLeft2 <= 30) { validText = `⏰ ${daysLeft2} dias`; validStyle = 'color:#92400e;font-weight:700'; }
+                else { validText = fmt_date(it.validade); }
+            }
+            const qtyBg = it.quantidade === 0 ? 'background:#fee2e2;color:#991b1b'
+                : it.quantidade === 1 ? 'background:#fef3c7;color:#92400e'
+                : 'background:#dcfce7;color:#166534';
+
+            return `<div class="inv-card">
+              <div class="inv-card-header">
+                <div>
+                  <div class="inv-card-title">${esc(it.nome_produto)}</div>
+                  <div class="inv-card-cat">${esc(it.categoria || '')} ${it.ml_tamanho ? '· ' + esc(it.ml_tamanho) : ''}</div>
+                </div>
+                <div class="inv-card-qty-badge" style="${qtyBg}">${it.quantidade}</div>
+              </div>
+              <div class="inv-card-meta">
+                <div class="inv-card-meta-item">
+                  <div class="inv-card-meta-label">Validade</div>
+                  <div style="${validStyle};font-size:0.82rem">${validText}</div>
+                </div>
+                <div class="inv-card-meta-item">
+                  <div class="inv-card-meta-label">Uso</div>
+                  <div style="font-size:0.82rem">${it.uso_tipo === 'pessoal' ? '🏠 Pessoal' : '🛒 Venda'}</div>
+                </div>
+                ${it.preco_custo ? `
+                <div class="inv-card-meta-item">
+                  <div class="inv-card-meta-label">Custo/un.</div>
+                  <div style="font-size:0.82rem;color:#059669;font-weight:600">${fmt_brl(it.preco_custo)}</div>
+                </div>` : ''}
+                ${it.notas ? `
+                <div class="inv-card-meta-item" style="grid-column:${it.preco_custo ? 'auto' : '1 / 3'}">
+                  <div class="inv-card-meta-label">Notas</div>
+                  <div style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(it.notas)}</div>
+                </div>` : ''}
+              </div>
+              <div class="inv-card-actions">
+                <div class="inv-card-qty-controls">
+                  <button class="inv-card-qty-btn" data-id="${it.id}" data-act="dec" ${it.quantidade <= 0 ? 'disabled' : ''}>−</button>
+                  <div class="inv-card-qty-num">${it.quantidade}</div>
+                  <button class="inv-card-qty-btn" data-id="${it.id}" data-act="inc">+</button>
+                </div>
+                <button class="inv-card-btn inv-card-btn-edit" data-id="${it.id}" data-act="edit" title="Editar">✏️</button>
+                <button class="inv-card-btn inv-card-btn-del" data-id="${it.id}" data-act="del" title="Excluir">🗑️</button>
+              </div>
+            </div>`;
+        }).join('');
+    }; // fim render()
 
     // ── Load data ─────────────────────────────────────────────
     const load = async () => {
@@ -552,6 +737,32 @@ export async function renderInventory(router) {
         if (act === 'del') {
             if (!confirm(`Apagar "${item.nome_produto}" do estoque?`)) return;
             try { await store.deleteEstoque(id); toast('Removido.'); load(); } 
+            catch { toast('Erro ao apagar', 'error'); }
+            return;
+        }
+
+        btn.disabled = true;
+        try {
+            const newQtd = act === 'inc' ? item.quantidade + 1 : Math.max(0, item.quantidade - 1);
+            await store.updateEstoque(id, { quantidade: newQtd });
+            item.quantidade = newQtd;
+            render();
+        } catch { toast('Erro na operação', 'error'); }
+        finally { btn.disabled = false; }
+    });
+
+    // Cards Mobile — mesma lógica via event delegation
+    document.getElementById('inv-cards')?.addEventListener('click', async e => {
+        const btn = e.target.closest('[data-act]');
+        if (!btn) return;
+        const { id, act } = btn.dataset;
+        const item = db.find(x => x.id === id);
+        if (!item) return;
+
+        if (act === 'edit') { openModal(item); return; }
+        if (act === 'del') {
+            if (!confirm(`Apagar "${item.nome_produto}" do estoque?`)) return;
+            try { await store.deleteEstoque(id); toast('Removido.'); load(); }
             catch { toast('Erro ao apagar', 'error'); }
             return;
         }
