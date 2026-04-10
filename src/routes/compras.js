@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db/pool');
-const { authMiddleware } = require('../middleware/auth');
+const authMiddleware = require('../middleware/auth');
 
 // GET /api/compras — listar todas as vendas da consultora
 router.get('/', authMiddleware, async (req, res, next) => {
