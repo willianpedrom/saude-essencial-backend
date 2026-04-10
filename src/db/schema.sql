@@ -365,3 +365,30 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_push_consultora ON push_subscriptions(consultora_id);
+
+-- ==========================================
+-- VENDAS / HISTÓRICO DE COMPRAS
+-- ==========================================
+CREATE TABLE IF NOT EXISTS vendas (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  consultora_id UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+  cliente_id    UUID REFERENCES clientes(id) ON DELETE SET NULL,
+  produto       VARCHAR(200) NOT NULL,
+  valor         NUMERIC(10,2) DEFAULT 0,
+  data          DATE DEFAULT CURRENT_DATE,
+  observacao    TEXT,
+  criado_em     TIMESTAMPTZ DEFAULT NOW(),
+  atualizado_em TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_vendas_consultora ON vendas(consultora_id);
+CREATE INDEX IF NOT EXISTS idx_vendas_cliente    ON vendas(cliente_id);
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'vendas') THEN
+    EXECUTE 'DROP TRIGGER IF EXISTS trg_atualizado_em ON vendas; '
+         || 'CREATE TRIGGER trg_atualizado_em BEFORE UPDATE ON vendas '
+         || 'FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();';
+  END IF;
+END $$;

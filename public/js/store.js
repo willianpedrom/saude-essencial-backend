@@ -279,6 +279,13 @@ export const store = {
     setTestimonialTags(id, etiqueta_ids) { return api('PATCH', `/api/depoimentos/${id}/etiquetas`, { etiqueta_ids }); },
     deleteTestimonial(id) { return api('DELETE', `/api/depoimentos/${id}`); },
 
+    /* ---- COMPRAS (banco de dados) ---- */
+    getCompras() { return api('GET', '/api/compras'); },
+    getComprasByCliente(clienteId) { return api('GET', `/api/compras/cliente/${clienteId}`); },
+    addCompra(data) { return api('POST', '/api/compras', data); },
+    updateCompra(id, data) { return api('PUT', `/api/compras/${id}`, data); },
+    deleteCompra(id) { return api('DELETE', `/api/compras/${id}`); },
+
     /* ---- FOLLOW-UPS (banco de dados) ---- */
     async getFollowups() {
         const list = await api('GET', '/api/followups');

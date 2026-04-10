@@ -463,103 +463,107 @@ export async function renderPurchases(router) {
     `<div style="display:flex;align-items:center;justify-content:center;height:200px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando...</div>`,
     'purchases');
 
-  const clients = await store.getClients().catch(() => []);
-  const db = ls('purchases');
+  const [clients, purchases] = await Promise.all([
+    store.getClients().catch(() => []),
+    store.getCompras().catch(() => [])
+  ]);
+
+  let localPurchases = [...purchases];
 
   function renderList() {
-    const purchases = db.get().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    const total = purchases.reduce((s, p) => s + (Number(p.value) || 0), 0);
+    const sorted = [...localPurchases].sort((a, b) => new Date(b.data || b.criado_em) - new Date(a.data || a.criado_em));
+    const total = sorted.reduce((s, p) => s + (Number(p.valor) || 0), 0);
+
     const container = document.getElementById('purchases-list');
     if (!container) return;
     const totalEl = document.getElementById('total-revenue');
     if (totalEl) totalEl.textContent = formatCurrency(total);
 
-    container.innerHTML = purchases.length === 0
+    container.innerHTML = sorted.length === 0
       ? `<div class="empty-state"><div class="empty-state-icon">🛒</div><h4>Nenhuma compra registrada</h4></div>`
       : `<table class="clients-table">
-          <thead><tr><th>Cliente</th><th>Produto / Kit</th><th>Data</th><th>Valor</th><th>Observação</th><th style="width:60px">Ações</th></tr></thead>
+          <thead><tr><th>Cliente</th><th>Produto / Kit</th><th>Data</th><th>Valor</th><th>Observação</th><th style="width:80px">Ações</th></tr></thead>
           <tbody>
-            ${purchases.map(p => {
-        const c = clients.find(cl => cl.id === p.clientId);
-        return `<tr>
-                <td>${c?.name || c?.nome || '—'}</td>
-                <td>${p.product || '—'}</td>
-                <td>${formatDate(p.date || p.createdAt)}</td>
-                <td style="font-weight:700;color:var(--green-700)">${formatCurrency(p.value)}</td>
-                <td style="color:var(--text-muted);font-size:0.82rem">${p.note || '—'}</td>
+            ${sorted.map(p => `<tr>
+                <td>${p.cliente_nome || '—'}</td>
+                <td>${p.produto || '—'}</td>
+                <td>${formatDate(p.data || p.criado_em)}</td>
+                <td style="font-weight:700;color:var(--green-700)">${formatCurrency(p.valor)}</td>
+                <td style="color:var(--text-muted);font-size:0.82rem">${p.observacao || '—'}</td>
                 <td>
                   <div style="display:flex;gap:4px">
                     <button class="btn-edit-pu" data-id="${p.id}" title="Editar" style="background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:0.7;padding:5px">✏️</button>
                     <button class="btn-del-pu" data-id="${p.id}" title="Excluir" style="background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:0.7;padding:5px">🗑️</button>
                   </div>
                 </td>
-              </tr>`;
-      }).join('')}
+              </tr>`).join('')}
           </tbody>
         </table>`;
 
-    // Bind delete events
+    // Delete
     container.querySelectorAll('.btn-del-pu').forEach(btn => {
       btn.addEventListener('click', () => {
         modal('Excluir Compra', '<p>Tem certeza que deseja apagar o registro desta venda? Esta ação é irreversível.</p>', {
-          confirmLabel: 'Sim, Apagar',
-          confirmClass: 'btn-danger',
-          onConfirm: () => {
-            db.del(btn.dataset.id);
-            renderList();
-            toast('Venda excluída com sucesso!');
+          confirmLabel: 'Sim, Apagar', confirmClass: 'btn-danger',
+          onConfirm: async () => {
+            try {
+              await store.deleteCompra(btn.dataset.id);
+              localPurchases = localPurchases.filter(x => x.id !== btn.dataset.id);
+              renderList(); toast('Venda excluída com sucesso!');
+            } catch(e) { toast(e.message, 'error'); return false; }
           }
         });
       });
     });
 
-    // Bind edit events
+    // Edit
     container.querySelectorAll('.btn-edit-pu').forEach(btn => {
       btn.addEventListener('click', () => {
-        const id = btn.dataset.id;
-        const p = purchases.find(x => x.id === id);
+        const p = localPurchases.find(x => x.id === btn.dataset.id);
         if (!p) return;
-        const c = clients.find(cl => cl.id === p.clientId);
-        showEditModal(p, c?.name || c?.nome || 'Cliente Removido');
+        showEditModal(p);
       });
     });
   }
 
-  function showEditModal(p, clientName) {
+  function showEditModal(p) {
     modal('Editar Compra', `
       <div class="form-grid">
         <div class="form-group form-field-full">
           <label class="field-label">Cliente (Leitura)</label>
-          <input class="field-input" value="${clientName}" disabled style="background:#f1f5f9;cursor:not-allowed;" />
+          <input class="field-input" value="${p.cliente_nome || '—'}" disabled style="background:#f1f5f9;cursor:not-allowed;" />
         </div>
         <div class="form-group form-field-full">
           <label class="field-label">Produto / Kit *</label>
-          <input class="field-input" id="pu-product-edt" value="${p.product || ''}" />
+          <input class="field-input" id="pu-product-edt" value="${p.produto || ''}" />
         </div>
         <div class="form-group">
           <label class="field-label">Valor (R$)</label>
-          <input class="field-input" id="pu-value-edt" type="number" step="0.01" value="${p.value || 0}" />
+          <input class="field-input" id="pu-value-edt" type="number" step="0.01" value="${p.valor || 0}" />
         </div>
         <div class="form-group">
           <label class="field-label">Data</label>
-          <input class="field-input" id="pu-date-edt" type="date" value="${(p.date || p.createdAt || '').slice(0, 10)}" />
+          <input class="field-input" id="pu-date-edt" type="date" value="${(p.data || p.criado_em || '').slice(0, 10)}" />
         </div>
         <div class="form-group form-field-full">
           <label class="field-label">Observação</label>
-          <input class="field-input" id="pu-note-edt" value="${p.note || ''}" />
+          <input class="field-input" id="pu-note-edt" value="${p.observacao || ''}" />
         </div>
       </div>`, {
       confirmLabel: 'Salvar Alterações',
-      onConfirm: () => {
-        const product = document.getElementById('pu-product-edt').value.trim();
-        if (!product) { toast('Preencha o produto / kit', 'error'); return; }
-        db.update(p.id, {
-          product,
-          value: parseFloat(document.getElementById('pu-value-edt').value) || 0,
-          date: document.getElementById('pu-date-edt').value,
-          note: document.getElementById('pu-note-edt').value,
-        });
-        renderList(); toast('Compra atualizada! ✏️');
+      onConfirm: async () => {
+        const produto = document.getElementById('pu-product-edt').value.trim();
+        if (!produto) { toast('Preencha o produto / kit', 'error'); return false; }
+        try {
+          const updated = await store.updateCompra(p.id, {
+            produto,
+            valor: parseFloat(document.getElementById('pu-value-edt').value) || 0,
+            data: document.getElementById('pu-date-edt').value,
+            observacao: document.getElementById('pu-note-edt').value,
+          });
+          localPurchases = localPurchases.map(x => x.id === p.id ? { ...x, ...updated } : x);
+          renderList(); toast('Compra atualizada! ✏️');
+        } catch(e) { toast(e.message, 'error'); return false; }
       }
     });
   }
@@ -570,20 +574,11 @@ export async function renderPurchases(router) {
         <div class="form-group form-field-full">
           <label class="field-label">Cliente *</label>
           <div style="position:relative">
-            <input
-              class="field-input"
-              id="pu-client-search"
-              placeholder="🔍 Buscar cliente pelo nome..."
-              autocomplete="off"
-              style="padding-right:36px"
-            />
+            <input class="field-input" id="pu-client-search" placeholder="🔍 Buscar cliente pelo nome..." autocomplete="off" style="padding-right:36px" />
             <input type="hidden" id="pu-client" />
-            <div
-              id="pu-client-dropdown"
-              style="display:none;position:absolute;top:100%;left:0;right:0;z-index:999;
+            <div id="pu-client-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:999;
                      background:#fff;border:1px solid var(--border);border-radius:10px;
-                     box-shadow:0 8px 24px rgba(0,0,0,0.12);max-height:220px;overflow-y:auto;margin-top:4px"
-            ></div>
+                     box-shadow:0 8px 24px rgba(0,0,0,0.12);max-height:220px;overflow-y:auto;margin-top:4px"></div>
           </div>
         </div>
         <div class="form-group form-field-full">
@@ -600,7 +595,7 @@ export async function renderPurchases(router) {
         </div>
         <div class="form-group form-field-full">
           <label class="field-label">Observação</label>
-          <input class="field-input" id="pu-note" placeholder="Ex: pagamento PIX..." />
+          <input class="field-input" id="pu-note" placeholder="Ex: Pagamento PIX..." />
         </div>
       </div>`, {
       confirmLabel: 'Registrar',
@@ -611,25 +606,19 @@ export async function renderPurchases(router) {
 
         function renderDropdown(query) {
           const q = query.toLowerCase().trim();
-          const matches = q
-            ? clients.filter(c => (c.name || c.nome || '').toLowerCase().includes(q))
-            : clients;
-
+          const matches = q ? clients.filter(c => (c.nome || '').toLowerCase().includes(q)) : clients;
           if (!matches.length) {
             dropdown.innerHTML = `<div style="padding:12px 16px;color:var(--text-muted);font-size:0.9rem">Nenhuma cliente encontrada</div>`;
           } else {
             dropdown.innerHTML = matches.map(c => {
-              const name = c.name || c.nome || '';
+              const name = c.nome || '';
               const highlighted = name.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
                 '<strong style="color:var(--green-700)">$1</strong>');
-              return `<div
-                data-id="${c.id}"
-                data-name="${name}"
+              return `<div data-id="${c.id}" data-name="${name}"
                 style="padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;
                        border-bottom:1px solid var(--border);transition:background 0.15s"
                 onmouseover="this.style.background='var(--green-50)'"
-                onmouseout="this.style.background=''"
-              >
+                onmouseout="this.style.background=''">
                 <div style="width:32px;height:32px;border-radius:50%;background:var(--green-100);
                             color:var(--green-700);font-weight:700;display:flex;align-items:center;
                             justify-content:center;flex-shrink:0;font-size:0.85rem">
@@ -642,15 +631,8 @@ export async function renderPurchases(router) {
           dropdown.style.display = 'block';
         }
 
-        searchInput.addEventListener('input', () => {
-          hiddenInput.value = '';
-          renderDropdown(searchInput.value);
-        });
-
-        searchInput.addEventListener('focus', () => {
-          renderDropdown(searchInput.value);
-        });
-
+        searchInput.addEventListener('input', () => { hiddenInput.value = ''; renderDropdown(searchInput.value); });
+        searchInput.addEventListener('focus', () => renderDropdown(searchInput.value));
         dropdown.addEventListener('mousedown', (e) => {
           const item = e.target.closest('[data-id]');
           if (!item) return;
@@ -658,25 +640,28 @@ export async function renderPurchases(router) {
           searchInput.value = item.dataset.name;
           dropdown.style.display = 'none';
         });
-
         document.addEventListener('click', (e) => {
-          if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.style.display = 'none';
-          }
+          if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) dropdown.style.display = 'none';
         }, { once: false, capture: true });
       },
-      onConfirm: () => {
-        const clientId = document.getElementById('pu-client').value;
-        const product = document.getElementById('pu-product').value.trim();
-        if (!clientId) { toast('Selecione uma cliente na lista de sugestões', 'error'); return; }
-        if (!product) { toast('Preencha o produto / kit', 'error'); return; }
-        db.add({
-          clientId, product,
-          value: parseFloat(document.getElementById('pu-value').value) || 0,
-          date: document.getElementById('pu-date').value,
-          note: document.getElementById('pu-note').value,
-        });
-        renderList(); toast('Compra registrada! 🛒');
+      onConfirm: async () => {
+        const cliente_id = document.getElementById('pu-client').value;
+        const produto = document.getElementById('pu-product').value.trim();
+        if (!cliente_id) { toast('Selecione uma cliente na lista de sugestões', 'error'); return false; }
+        if (!produto) { toast('Preencha o produto / kit', 'error'); return false; }
+        try {
+          const nova = await store.addCompra({
+            cliente_id,
+            produto,
+            valor: parseFloat(document.getElementById('pu-value').value) || 0,
+            data: document.getElementById('pu-date').value,
+            observacao: document.getElementById('pu-note').value,
+          });
+          // Enriquecer com nome do cliente para a UI
+          nova.cliente_nome = clients.find(c => c.id === cliente_id)?.nome || null;
+          localPurchases.unshift(nova);
+          renderList(); toast('Compra registrada! 🛒');
+        } catch(e) { toast(e.message, 'error'); return false; }
       }
     });
   }

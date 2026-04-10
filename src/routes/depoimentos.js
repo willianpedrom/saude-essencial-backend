@@ -19,7 +19,22 @@ router.get('/public-fix-db', async (req, res) => {
         await pool.query('ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS video_apresentacao TEXT;');
         await pool.query('ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS video_cta_texto VARCHAR(100);');
         await pool.query('ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS video_cta_link TEXT;');
-        logs.push('Colunas iterativas do video adicionadas com sucesso.');
+        await pool.query(`
+          CREATE TABLE IF NOT EXISTS vendas (
+            id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            consultora_id UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+            cliente_id    UUID REFERENCES clientes(id) ON DELETE SET NULL,
+            produto       VARCHAR(200) NOT NULL,
+            valor         NUMERIC(10,2) DEFAULT 0,
+            data          DATE DEFAULT CURRENT_DATE,
+            observacao    TEXT,
+            criado_em     TIMESTAMPTZ DEFAULT NOW(),
+            atualizado_em TIMESTAMPTZ DEFAULT NOW()
+          )
+        `);
+        await pool.query('CREATE INDEX IF NOT EXISTS idx_vendas_consultora ON vendas(consultora_id)');
+        await pool.query('CREATE INDEX IF NOT EXISTS idx_vendas_cliente ON vendas(cliente_id)');
+        logs.push('Tabela vendas e campos CTA criados com sucesso.');
         
         // 2. FIX DUPLICATE SLUGS
         const { rows } = await pool.query(`SELECT slug, COUNT(*) FROM consultoras GROUP BY slug HAVING COUNT(*) > 1`);

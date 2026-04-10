@@ -179,6 +179,7 @@ app.use('/api/followups', require('./routes/followups'));
 app.use('/api/prospects', require('./routes/prospects'));
 app.use('/api/estoque', require('./routes/estoque'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/compras', require('./routes/compras'));
 
 // Rota pública raiz para SEO / Open Graph (Prévias de Link)
 app.use('/convite', require('./routes/share'));
