@@ -1,6 +1,6 @@
 // Minimal Service Worker — required for PWA install prompt
-// v3: 2026-03 — bust cache to pick up new routes (estoque)
-const CACHE_NAME = 'gota-app-v4';
+// v5: 2026-04 — bust cache to pick up database compras migration
+const CACHE_NAME = 'gota-app-v5';
 const PRECACHE = ['/', '/css/index.css', '/logo.png'];
 
 self.addEventListener('install', e => {
