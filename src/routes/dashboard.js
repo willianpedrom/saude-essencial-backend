@@ -164,7 +164,7 @@ router.get('/boot', async (req, res) => {
   const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
   try {
-    const [summaryR, anamnesesR, agendamentosR, aniversariantesR, avisosBannerR, avisosModaisR, followupsR] =
+    const [summaryR, anamnesesR, agendamentosR, aniversariantesR, avisosBannerR, avisosModaisR, followupsR, leadsAbandonadosR] =
       await Promise.allSettled([
         // 1. Summary
         pool.query(`
@@ -242,6 +242,19 @@ router.get('/boot', async (req, res) => {
           WHERE f.consultora_id = $1
           ORDER BY CASE f.status WHEN 'pending' THEN 0 ELSE 1 END, f.due_date_time ASC NULLS LAST
         `, [cid]),
+
+        // 8. Leads Abandonados (Incompletos nas ultimas 48 horas)
+        pool.query(`
+          SELECT c.id, c.nome, c.telefone, c.criado_em 
+          FROM clientes c
+          LEFT JOIN anamneses a ON a.cliente_id = c.id
+          WHERE c.consultora_id = $1
+            AND a.id IS NULL
+            AND c.status = 'lead'
+            AND c.pipeline_stage = 'lead_captado'
+            AND c.criado_em >= NOW() - INTERVAL '48 hours'
+          ORDER BY c.criado_em DESC
+        `, [cid]),
       ]);
 
     // Parse summary into structured format
@@ -295,6 +308,22 @@ router.get('/boot', async (req, res) => {
       return { ...cliente, whatsapp_link };
     });
 
+    // Build leads_abandonados with WhatsApp links
+    const abandonedRows = leadsAbandonadosR.status === 'fulfilled' ? leadsAbandonadosR.value.rows : [];
+    const leads_abandonados = abandonedRows.map(cliente => {
+      let whatsapp_link = null;
+      if (cliente.telefone) {
+        let num = cliente.telefone.replace(/\D/g, '');
+        if (num.length === 10 || num.length === 11) num = '55' + num;
+        if (num.length >= 12) {
+          const nomePre = cliente.nome ? cliente.nome.split(' ')[0] : 'tudo bem';
+          const msg = `Oi ${nomePre}, vi que você começou a preencher a análise de saúde mas parou. Aconteceu algum probleminha? Quer me contar por aqui mesmo o que você busca melhorar?`;
+          whatsapp_link = `https://api.whatsapp.com/send?phone=${num}&text=${encodeURIComponent(msg)}`;
+        }
+      }
+      return { ...cliente, whatsapp_link };
+    });
+
     res.json({
       summary,
       anamneses: anamnesesR.status === 'fulfilled' ? anamnesesR.value.rows : [],
@@ -303,6 +332,7 @@ router.get('/boot', async (req, res) => {
       avisosBanner: avisosBannerR.status === 'fulfilled' ? avisosBannerR.value.rows : [],
       avisosModais: avisosModaisR.status === 'fulfilled' ? avisosModaisR.value.rows : [],
       followups: followupsR.status === 'fulfilled' ? followupsR.value.rows : [],
+      leads_abandonados,
     });
   } catch (err) {
     console.error('[dashboard/boot]', err);

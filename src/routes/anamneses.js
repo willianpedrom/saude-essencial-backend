@@ -97,18 +97,45 @@ router.post('/public/:token/partial', async (req, res) => {
             LIMIT 1
         `, params);
 
+        let clienteIdRetorno = null;
+
         if (existing.length > 0) {
             // Update existing slightly if needed or just do nothing, client exists
             await pool.query('UPDATE clientes SET nome=COALESCE($1, nome) WHERE id=$2', [nome, existing[0].id]);
+            clienteIdRetorno = existing[0].id;
         } else {
             // New Lead Capture
             if (totalAtivos >= clientesMax) return res.json({ ok: false, limit: true });
             
-            await pool.query(
+            const insertResult = await pool.query(
                 `INSERT INTO clientes (consultora_id, nome, telefone, pipeline_stage, status)
-                 VALUES ($1, $2, $3, 'lead_captado', 'lead')`,
+                 VALUES ($1, $2, $3, 'lead_captado', 'lead') RETURNING id`,
                 [consultora_id, nome, telefone]
             );
+            clienteIdRetorno = insertResult.rows[0].id;
+        }
+
+        // --- GATILHO DE ABANDONO (10 MINUTOS) ---
+        if (clienteIdRetorno) {
+            setTimeout(async () => {
+                try {
+                    // Verifica se o lead finalizou a anamnese e vinculou o ID nestes 10 minutos
+                    const { rows: check } = await pool.query('SELECT id FROM anamneses WHERE cliente_id = $1 LIMIT 1', [clienteIdRetorno]);
+                    
+                    if (check.length === 0) {
+                        // Não finalizou! Abandono confirmado.
+                        const { sendPushNotification } = require('../lib/push');
+                        sendPushNotification(consultora_id, {
+                            title: `🛒 Análise Incompleta!`,
+                            body: `🔥 Lead Quente! ${nome.split(' ')[0]} iniciou a Avaliação mas parou na metade. Clique para chamar agora no Zap!`,
+                            icon: '/icon-512.png',
+                            data: { url: `/#/` }
+                        });
+                    }
+                } catch (timeoutErr) {
+                    console.error('Erro na verificação de abandono:', timeoutErr);
+                }
+            }, 10 * 60 * 1000); // 10 Minutos
         }
         res.json({ ok: true });
     } catch (e) {

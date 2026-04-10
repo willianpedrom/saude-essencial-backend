@@ -633,7 +633,7 @@ export async function renderDashboard(router) {
     // Single API call replaces 7 parallel fetches — much faster on mobile/3G
     const boot = await store.getDashboardBoot();
 
-    const { summary = {}, anamneses = [], agendamentos = [], aniversariantes = [], avisosBanner: avisosBanners = [], avisosModais = [], followups: followupsArr = [] } = boot;
+    const { summary = {}, anamneses = [], agendamentos = [], aniversariantes = [], avisosBanner: avisosBanners = [], avisosModais = [], followups: followupsArr = [], leads_abandonados = [] } = boot;
 
     // Destructure pre-computed summary fields (no full client list needed)
     const {
@@ -822,9 +822,40 @@ export async function renderDashboard(router) {
     if (urgentFollowups.length > 0) metaText = `Você tem <strong>${urgentFollowups.length} clientes</strong> precisando do seu contato urgente agora! 🔥`;
     else if (anamnesesPendentes.length > 0) metaText = `Você recebeu novas anamneses! Há <strong>${anamnesesPendentes.length} pendentes</strong> esperando sua revisão. 📋`;
 
+    const abandonedHtml = leads_abandonados && leads_abandonados.length > 0 ? `
+      <div class="dash-item full-width" style="margin-bottom: 20px;">
+        <div class="card" style="border: 2px solid #ef4444; background: linear-gradient(to right, #fef2f2, #ffffff); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);">
+          <div class="card-header" style="padding: 16px 20px; border-bottom: 1px solid #fecaca; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-size: 1.1rem; color: #dc2626; display:flex; align-items:center; gap:8px;">
+              <span style="animation: pulse 1.5s infinite">🚨</span> Análises Incompletas (Últimas 48h)
+            </h3>
+            <span style="background:#ef4444; color:white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold">${leads_abandonados.length} Abandonos</span>
+          </div>
+          <div class="card-body" style="padding:20px;">
+            <p style="font-size: 0.9rem; color: #7f1d1d; margin-bottom: 16px;"><strong>Leads Quentes!</strong> Estas pessoas começaram o teste, mas pararam antes de finalizar e revelar as queixas de saúde. Não deixe esfriar:</p>
+            ${leads_abandonados.map(lead => `
+              <div style="display:flex; align-items:center; justify-content:space-between; padding: 12px; background: white; border: 1px solid #fca5a5; border-radius: 8px; margin-bottom: 10px;">
+                <div>
+                  <div style="font-weight: bold; color: #991b1b; font-size: 0.95rem;">🔥 ${lead.nome || 'Lead (Sem Nome)'}</div>
+                  <div style="font-size: 0.8rem; color: #b91c1c;">Iniciou em ${new Date(lead.criado_em).toLocaleString('pt-BR')}</div>
+                </div>
+                ${lead.whatsapp_link ? `
+                  <a href="${lead.whatsapp_link}" target="_blank" class="btn btn-sm" style="background:#25D366; color:white; font-weight: bold; text-decoration:none; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 5px rgba(37,211,102,0.3);">
+                    Chamar no Zap 🟢
+                  </a>
+                ` : `<span style="font-size: 0.8rem; color: #dc2626;">Sem Zap</span>`}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    ` : '';
+
     const contentHtml = `
   ${bannersHtml}
   ${onboardingHtml}
+  
+  ${abandonedHtml}
 
   <div class="dashboard-grid">
 
