@@ -116,7 +116,7 @@ export async function renderPublicProfile(router, slug) {
   }
 
   const { consultor, depoimentos, anamnese_token } = data;
-  const { nome, foto_url, bio, telefone, instagram, youtube, facebook, linkedin, doterra_nivel, genero, tema_cor, video_apresentacao } = consultor;
+  const { nome, foto_url, bio, telefone, instagram, youtube, facebook, linkedin, doterra_nivel, genero, tema_cor, video_apresentacao, video_cta_texto, video_cta_link } = consultor;
   const themeData = ARCHETYPE_THEMES[tema_cor] || ARCHETYPE_THEMES['curadora'];
   const title = genero === 'masculino' ? 'Consultor' : 'Consultora';
   const pageUrl = window.location.href;
@@ -321,7 +321,7 @@ export async function renderPublicProfile(router, slug) {
 
     <!-- ═══════════════ VÍDEO PITCH ═══════════════ -->
     ${embedUrl ? `
-    <section class="pp-section pp-fade" style="background:#fff;padding-top:60px;padding-bottom:20px">
+    <section class="pp-section pp-fade" style="background:#fff;padding-top:60px;padding-bottom:60px">
       <div class="pp-container" style="max-width:720px">
         <div style="text-align:center;margin-bottom:20px">
           <div style="display:inline-block;background:#fefce8;color:#a16207;font-size:0.8rem;font-weight:700;padding:5px 16px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;border:1px solid #fef08a">🔥 Mensagem Especial</div>
@@ -330,6 +330,16 @@ export async function renderPublicProfile(router, slug) {
         <div style="position:relative;width:100%;padding-bottom:56.25%;background:#000;border-radius:20px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.15);border:1px solid rgba(0,0,0,0.05)">
           <iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen loading="lazy" title="Vídeo de Apresentação"></iframe>
         </div>
+        ${video_cta_link ? `
+        <div style="text-align:center;margin-top:28px">
+          <a href="${video_cta_link}" target="_blank" rel="noopener noreferrer"
+             style="display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;font-weight:700;font-size:1rem;padding:16px 36px;border-radius:50px;text-decoration:none;box-shadow:0 8px 24px rgba(22,163,74,0.35);transition:transform 0.2s,box-shadow 0.2s;"
+             onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 32px rgba(22,163,74,0.45)'"
+             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 8px 24px rgba(22,163,74,0.35)'">
+            <span>${video_cta_texto || 'Saiba Mais'}</span>
+            <span style="font-size:1.2rem">→</span>
+          </a>
+        </div>` : ''}
       </div>
     </section>` : ''}
 

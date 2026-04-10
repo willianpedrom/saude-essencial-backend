@@ -144,10 +144,22 @@ export async function renderProfile(router) {
               <h3 style="margin:0;font-size:1rem">🎥 Vídeo de Apresentação (Pitch)</h3>
             </div>
             <div style="padding:20px">
-              <div class="form-group form-field-full" style="margin:0">
+              <div class="form-group form-field-full" style="margin-bottom:16px">
                 <label class="field-label">Link do YouTube / Vimeo</label>
                 <input class="field-input" id="p-video-apresentacao" value="${profile.video_apresentacao || ''}" placeholder="https://www.youtube.com/watch?v=..." />
-                <div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;line-height:1.4;">Cole aqui o link do seu vídeo de apresentação. Ele será embutido belissimamente em sua página pública e aumentará conversão!</div>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;line-height:1.4;">Cole aqui o link do seu vídeo de apresentação. Ele será embutido belissimamente em sua página pública!</div>
+              </div>
+              <hr style="border:none;border-top:1px solid var(--border-light);margin:0 0 16px 0">
+              <div style="font-size:0.85rem;font-weight:600;color:var(--text-muted);margin-bottom:10px">🔗 Botão CTA abaixo do vídeo (opcional)</div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="field-label">Texto do Botão</label>
+                  <input class="field-input" id="p-video-cta-texto" value="${profile.video_cta_texto || ''}" placeholder="Ex: Quero uma Análise Gratuita" maxlength="80" />
+                </div>
+                <div class="form-group">
+                  <label class="field-label">Link do Botão</label>
+                  <input class="field-input" type="url" id="p-video-cta-link" value="${profile.video_cta_link || ''}" placeholder="https://wa.me/55..." />
+                </div>
               </div>
             </div>
           </div>
@@ -611,6 +623,8 @@ export async function renderProfile(router) {
         tema_cor: pc.querySelector('#p-tema-cor')?.value || '#16a34a',
         link_afiliada: pc.querySelector('#p-link-afiliada')?.value?.trim(),
         video_apresentacao: pc.querySelector('#p-video-apresentacao')?.value?.trim(),
+        video_cta_texto: pc.querySelector('#p-video-cta-texto')?.value?.trim(),
+        video_cta_link: pc.querySelector('#p-video-cta-link')?.value?.trim(),
       };
 
       if (!data.nome) {
