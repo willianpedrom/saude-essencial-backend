@@ -150,8 +150,12 @@ export async function renderProfile(router) {
                 <div style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;line-height:1.4;">Cole aqui o link do seu vídeo de apresentação. Ele será embutido belissimamente em sua página pública!</div>
               </div>
               <hr style="border:none;border-top:1px solid var(--border-light);margin:0 0 16px 0">
-              <div style="font-size:0.85rem;font-weight:600;color:var(--text-muted);margin-bottom:10px">🔗 Botão CTA abaixo do vídeo (opcional)</div>
+              <div style="font-size:0.85rem;font-weight:600;color:var(--text-muted);margin-bottom:10px">✨ Textos & Botão CTA (opcionais)</div>
               <div class="form-grid">
+                <div class="form-group form-field-full">
+                  <label class="field-label">Título acima do vídeo</label>
+                  <input class="field-input" id="p-video-headline" value="${profile.video_headline || ''}" placeholder="Ex: Conheça o meu trabalho" maxlength="150" />
+                </div>
                 <div class="form-group">
                   <label class="field-label">Texto do Botão</label>
                   <input class="field-input" id="p-video-cta-texto" value="${profile.video_cta_texto || ''}" placeholder="Ex: Quero uma Análise Gratuita" maxlength="80" />
@@ -623,6 +627,7 @@ export async function renderProfile(router) {
         tema_cor: pc.querySelector('#p-tema-cor')?.value || '#16a34a',
         link_afiliada: pc.querySelector('#p-link-afiliada')?.value?.trim(),
         video_apresentacao: pc.querySelector('#p-video-apresentacao')?.value?.trim(),
+        video_headline: pc.querySelector('#p-video-headline')?.value?.trim(),
         video_cta_texto: pc.querySelector('#p-video-cta-texto')?.value?.trim(),
         video_cta_link: pc.querySelector('#p-video-cta-link')?.value?.trim(),
       };

@@ -17,6 +17,7 @@ router.get('/public-fix-db', async (req, res) => {
         await pool.query('ALTER TABLE depoimentos ADD COLUMN IF NOT EXISTS atualizado_em TIMESTAMPTZ DEFAULT NOW();');
         await pool.query('ALTER TABLE depoimentos ADD COLUMN IF NOT EXISTS tipo VARCHAR(50) DEFAULT \'cliente\';');
         await pool.query('ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS video_apresentacao TEXT;');
+        await pool.query('ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS video_headline VARCHAR(200);');
         await pool.query('ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS video_cta_texto VARCHAR(100);');
         await pool.query('ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS video_cta_link TEXT;');
         await pool.query(`
