@@ -72,6 +72,8 @@ app.use(helmet({
             frameSrc: [
                 "'self'",
                 "https://www.googletagmanager.com",
+                "https://www.youtube.com",
+                "https://player.vimeo.com",
             ],
         },
     },
