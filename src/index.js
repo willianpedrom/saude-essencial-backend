@@ -231,6 +231,8 @@ async function runMigration() {
         // Column migrations (idempotent - ADD COLUMN IF NOT EXISTS)
         await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS rastreamento JSONB DEFAULT NULL`);
         await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS doterra_nivel VARCHAR(60) DEFAULT NULL`);
+        await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS subheadline_1 VARCHAR(255) DEFAULT NULL`);
+        await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS subheadline_2 VARCHAR(255) DEFAULT NULL`);
         await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS termos_aceitos BOOLEAN DEFAULT FALSE`);
         await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS termos_aceitos_em TIMESTAMPTZ`);
         
