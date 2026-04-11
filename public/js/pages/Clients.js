@@ -38,8 +38,7 @@ export async function showAnamneseModal(client, router) {
   
   let analysisResultados = 'Não foi possível gerar prognóstico automático para este perfil.';
   try {
-    // Se já vier com rawDados.goals, usa ele (novo formato), caso contrário usa o falso aninhado
-    const anamnesisAnalysis = analyzeAnamnesis(rawDados.goals ? rawDados : nestedForAnalysis);
+    const anamnesisAnalysis = analyzeAnamnesis(dados);
     const uniqueResults = [...new Set(anamnesisAnalysis.protocols.map(p => p.expectedResults).filter(Boolean))];
     if (uniqueResults.length > 0) analysisResultados = uniqueResults.join(' ');
   } catch (e) {
@@ -154,7 +153,7 @@ export async function showAnamneseModal(client, router) {
       document.getElementById('btn-edit-protocol')?.addEventListener('click', () => {
         let protocols = [];
         try {
-          const ana = analyzeAnamnesis(rawDados.goals ? rawDados : nestedForAnalysis);
+          const ana = analyzeAnamnesis(dados);
           protocols = ana.protocols || [];
         } catch (e) { /* ignore */ }
         openProtocolEditor(client, a, protocols, analysisResultados);
@@ -220,9 +219,9 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
   // Working copy – prefer saved custom, else use auto-generated
   const existingCustom = anamnese.protocolo_customizado || null;
   let editProtocols = existingCustom?.protocols
-    ? JSON.parse(JSON.stringify(existingCustom.protocols)).map(cp => {
-        if (cp.specificProtocol === undefined) {
-            const baseProto = protocols.find(bp => bp.symptom === cp.symptom);
+    ? JSON.parse(JSON.stringify(existingCustom.protocols)).map((cp, i) => {
+        if (!cp.specificProtocol && cp.specificProtocol !== null) {
+            const baseProto = protocols.find(bp => bp.symptom === cp.symptom) || protocols[i];
             if (baseProto && baseProto.specificProtocol) {
                 cp.specificProtocol = JSON.parse(JSON.stringify(baseProto.specificProtocol));
             }
