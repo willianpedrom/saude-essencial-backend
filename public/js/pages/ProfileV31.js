@@ -263,6 +263,23 @@ export async function renderProfile(router) {
               <div style="margin-bottom:20px;margin-top:24px;border-top:1px dashed #bbf7d0;padding-top:20px">
                 <label style="font-size:1rem;font-weight:700;color:#166534;display:block;margin-bottom:4px">🎨 Arquétipos & Temáticas</label>
                 <p style="font-size:0.8rem;color:#166534;opacity:0.8;margin-bottom:16px">A página será inteiramente customizada (fundo e botões) de acordo com o arquétipo escolhido.</p>
+                
+                <!-- Frases Personalizadas -->
+                <div style="margin-bottom:24px; background:rgba(255,255,255,0.5); padding:16px; border-radius:12px; border:1px solid #bbf7d0">
+                  <div style="font-weight:700; font-size:0.85rem; color:#166534; margin-bottom:12px; display:flex; align-items:center; gap:6px">
+                    ✍️ Frases Curtas Abaixo do Nome
+                  </div>
+                  <div class="form-group" style="margin-bottom:12px">
+                    <label class="field-label" style="font-size:0.75rem">Linha 1 (Promessa Principal)</label>
+                    <input class="field-input" id="p-subheadline-1" value="${profile.subheadline_1 || ''}" placeholder="Ex: Transformando sua saúde 100% natural" maxlength="100" style="padding:8px 12px; font-size:0.85rem" />
+                  </div>
+                  <div class="form-group">
+                    <label class="field-label" style="font-size:0.75rem">Linha 2 (Cargo/Título)</label>
+                    <input class="field-input" id="p-subheadline-2" value="${profile.subheadline_2 || ''}" placeholder="Ex: Especialista em Aromaterapia" maxlength="100" style="padding:8px 12px; font-size:0.85rem" />
+                  </div>
+                  <div style="font-size:0.7rem; color:#166534; margin-top:8px; opacity:0.8 italic">Deixe em branco para usar as frases padrão do sistema.</div>
+                </div>
+
                 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px">
                   ${Object.values(ARCHETYPE_THEMES).map(t => {
                     const isSelected = (profile.tema_cor || 'curadora') === t.id;
@@ -630,6 +647,8 @@ export async function renderProfile(router) {
         video_headline: pc.querySelector('#p-video-headline')?.value?.trim(),
         video_cta_texto: pc.querySelector('#p-video-cta-texto')?.value?.trim(),
         video_cta_link: pc.querySelector('#p-video-cta-link')?.value?.trim(),
+        subheadline_1: pc.querySelector('#p-subheadline-1')?.value?.trim(),
+        subheadline_2: pc.querySelector('#p-subheadline-2')?.value?.trim(),
       };
 
       if (!data.nome) {

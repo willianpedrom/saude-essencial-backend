@@ -264,8 +264,8 @@ export async function renderPublicProfile(router, slug) {
 
         <!-- Name & Promise -->
         <h1 style="font-family:'Playfair Display',serif;color:white;font-size:clamp(1.8rem,5vw,2.8rem);font-weight:700;margin-bottom:8px">${nome}</h1>
-        <p style="color:rgba(255,255,255,0.9);font-size:1.1rem;margin-bottom:6px;font-weight:500">Transformando sua saúde de forma 100% natural</p>
-        <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;margin-bottom:24px">${title} Oficial do Bem-Estar</p>
+        <p style="color:rgba(255,255,255,0.9);font-size:1.1rem;margin-bottom:6px;font-weight:500">${consultor.subheadline_1 || 'Transformando sua saúde de forma 100% natural'}</p>
+        <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;margin-bottom:24px">${consultor.subheadline_2 || (title + ' Oficial do Bem-Estar')}</p>
 
         <!-- Social Links -->
         <div style="display:flex;justify-content:center;gap:10px;margin-bottom:32px">
