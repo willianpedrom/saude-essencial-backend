@@ -77,7 +77,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
     { id: 'links', icon: '🔗', label: 'Links de Captação' },
     { id: 'schedule', icon: '📅', label: 'Agenda & Follow-ups' },
     { id: 'testimonials', icon: '⭐', label: 'Depoimentos' },
-    { id: 'purchases', icon: '🛒', label: 'Compras' },
+    { id: 'purchases', icon: '🛒', label: 'Minhas Vendas' },
     { id: 'integrations', icon: '📊', label: 'Integrações' },
     { id: 'profile', icon: '👤', label: 'Meu Perfil' },
     { id: 'prospecting', icon: '🛰️', label: 'Radar de Leads' },

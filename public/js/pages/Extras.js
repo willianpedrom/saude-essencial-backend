@@ -459,7 +459,7 @@ export async function renderTestimonials(router) {
 
 // ═══════════════ COMPRAS ═══════════════
 export async function renderPurchases(router) {
-  renderLayout(router, 'Histórico de Compras',
+  renderLayout(router, 'Histórico de Vendas',
     `<div style="display:flex;align-items:center;justify-content:center;height:200px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando...</div>`,
     'purchases');
 
@@ -503,7 +503,7 @@ export async function renderPurchases(router) {
     // Delete
     container.querySelectorAll('.btn-del-pu').forEach(btn => {
       btn.addEventListener('click', () => {
-        modal('Excluir Compra', '<p>Tem certeza que deseja apagar o registro desta venda? Esta ação é irreversível.</p>', {
+        modal('Excluir Venda', '<p>Tem certeza que deseja apagar o registro desta venda? Esta ação é irreversível.</p>', {
           confirmLabel: 'Sim, Apagar', confirmClass: 'btn-danger',
           onConfirm: async () => {
             try {
@@ -527,7 +527,7 @@ export async function renderPurchases(router) {
   }
 
   function showEditModal(p) {
-    modal('Editar Compra', `
+    modal('Editar Venda', `
       <div class="form-grid">
         <div class="form-group form-field-full">
           <label class="field-label">Cliente (Leitura)</label>
@@ -569,7 +569,7 @@ export async function renderPurchases(router) {
   }
 
   function showAddModal() {
-    modal('Registrar Compra', `
+    modal('Registrar Venda', `
       <div class="form-grid">
         <div class="form-group form-field-full">
           <label class="field-label">Cliente *</label>
@@ -673,7 +673,7 @@ export async function renderPurchases(router) {
         <div class="stat-label">Receita Total</div>
         <div class="stat-value" id="total-revenue">R$ 0,00</div>
       </div>
-      <button class="btn btn-primary" id="btn-add-pu">+ Registrar Compra</button>
+      <button class="btn btn-primary" id="btn-add-pu">+ Registrar Venda</button>
     </div>
     <div class="card"><div style="overflow-x:auto" id="purchases-list"></div></div>`;
   document.getElementById('btn-add-pu')?.addEventListener('click', showAddModal);
