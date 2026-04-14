@@ -1166,46 +1166,66 @@ export async function renderAdmin(router) {
   }
 
   function showPlanModal(u) {
-    modal('💳 Alterar Plano — ' + u.nome, `
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="field-label">Plano</label>
-          <select class="field-select" id="ap-plano">
-            <option value="starter" ${(u.plano === 'starter' || !u.plano) ? 'selected' : ''}>Starter</option>
-            <option value="pro" ${u.plano === 'pro' ? 'selected' : ''}>Pro</option>
-            <option value="enterprise" ${u.plano === 'enterprise' ? 'selected' : ''}>Enterprise</option>
-          </select>
+    // Usa a lista de planos já carregada do banco (variável `planos`)
+    // Se ainda não carregou, carrega agora
+    const buildModal = (planosDisponiveis) => {
+      const optionsHtml = planosDisponiveis.length > 0
+        ? planosDisponiveis.map(p =>
+            `<option value="${p.slug}" ${(u.plano === p.slug || (!u.plano && p.slug === 'starter')) ? 'selected' : ''}>${p.nome} — R$ ${parseFloat(p.preco_mensal || 0).toFixed(2).replace('.', ',')}/mês</option>`
+          ).join('')
+        : `<option value="starter" ${(!u.plano || u.plano === 'starter') ? 'selected' : ''}>Starter</option>
+           <option value="pro" ${u.plano === 'pro' ? 'selected' : ''}>Pro</option>
+           <option value="enterprise" ${u.plano === 'enterprise' ? 'selected' : ''}>Enterprise</option>`;
+
+      modal('💳 Alterar Plano — ' + u.nome, `
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="field-label">Plano</label>
+            <select class="field-select" id="ap-plano">
+              ${optionsHtml}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="field-label">Status</label>
+            <select class="field-select" id="ap-status">
+              <option value="trial" ${(u.plano_status === 'trial' || !u.plano_status) ? 'selected' : ''}>⏳ Trial</option>
+              <option value="active" ${u.plano_status === 'active' ? 'selected' : ''}>✅ Ativo</option>
+              <option value="canceled" ${u.plano_status === 'canceled' ? 'selected' : ''}>❌ Cancelado</option>
+              <option value="expired" ${u.plano_status === 'expired' ? 'selected' : ''}>🔴 Expirado</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label class="field-label">Vencimento Manual (Opcional)</label>
+            <input type="date" class="field-input" id="ap-vencimento" value="${u.periodo_fim ? u.periodo_fim.split('T')[0] : ''}">
+            <small style="color:var(--text-muted)">Se deixado em branco, não alterará a data atual.</small>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="field-label">Status</label>
-          <select class="field-select" id="ap-status">
-            <option value="trial" ${(u.plano_status === 'trial' || !u.plano_status) ? 'selected' : ''}>⏳ Trial</option>
-            <option value="active" ${u.plano_status === 'active' ? 'selected' : ''}>✅ Ativo</option>
-            <option value="canceled" ${u.plano_status === 'canceled' ? 'selected' : ''}>❌ Cancelado</option>
-            <option value="expired" ${u.plano_status === 'expired' ? 'selected' : ''}>🔴 Expirado</option>
-          </select>
-        </div>
-        <div class="form-group" style="grid-column: 1 / -1;">
-          <label class="field-label">Vencimento Manual (Opcional)</label>
-          <input type="date" class="field-input" id="ap-vencimento" value="${u.periodo_fim ? u.periodo_fim.split('T')[0] : ''}">
-          <small style="color:var(--text-muted)">Se deixado em branco, não alterará a data atual.</small>
-        </div>
-      </div>
-      <div style="margin-top:12px;padding:12px;background:#f0fdf4;border-radius:8px;font-size:0.85rem">
-        💡 Definindo como <strong>Ativo</strong> libera acesso completo ao sistema imediatamente.
-      </div>`, {
-      confirmLabel: '💳 Atualizar Plano',
-      onConfirm: async () => {
-        const plano = document.getElementById('ap-plano')?.value;
-        const status = document.getElementById('ap-status')?.value;
-        const periodo_fim = document.getElementById('ap-vencimento')?.value || null;
-        try {
-          await adminApi.updatePlan(u.id, { plano, status, periodo_fim });
-          toast('Plano atualizado! ✅');
-          await load();
-        } catch (err) { toast('Erro: ' + err.message, 'error'); }
-      }
-    });
+        <div style="margin-top:12px;padding:12px;background:#f0fdf4;border-radius:8px;font-size:0.85rem">
+          💡 Definindo como <strong>Ativo</strong> libera acesso completo ao sistema imediatamente.
+        </div>`, {
+        confirmLabel: '💳 Atualizar Plano',
+        onConfirm: async () => {
+          const plano = document.getElementById('ap-plano')?.value;
+          const status = document.getElementById('ap-status')?.value;
+          const periodo_fim = document.getElementById('ap-vencimento')?.value || null;
+          try {
+            await adminApi.updatePlan(u.id, { plano, status, periodo_fim });
+            toast('Plano atualizado! ✅');
+            await load();
+          } catch (err) { toast('Erro: ' + err.message, 'error'); }
+        }
+      });
+    };
+
+    if (planos && planos.length > 0) {
+      buildModal(planos);
+    } else {
+      // Carrega os planos do servidor caso ainda não estejam na memória
+      adminApi.getPlanos().then(lista => {
+        planos = lista || [];
+        buildModal(planos);
+      }).catch(() => buildModal([]));
+    }
   }
 
   function showPasswordModal(u) {
