@@ -159,6 +159,74 @@ const DOTERRA_PRODUCTS = [
     { nome: "Estojo de Viagem Para Óleos", cat: "Acessório" },
 ];
 
+// ── Tabela de Preços Oficiais doTERRA (por produto + tamanho) ──────────────
+// Formato: { 'Nome Produto': { '15ml': { regular, member }, '5ml': { regular, member } } }
+const DOTERRA_PRICES = {
+    'Lavanda (Lavender)':          { '15ml': { r: 197, m: 148 }, '5ml': { r: 83, m: 62 }, '10ml Touch': { r: 125, m: 94 } },
+    'Hortelã-Pimenta (Peppermint)':{ '15ml': { r: 140, m: 105 }, '5ml': { r: 59, m: 45 } },
+    'Olíbano (Frankincense)':      { '15ml': { r: 459, m: 344 }, '5ml': { r: 196, m: 147 }, '10ml Touch': { r: 218, m: 164 } },
+    'Melaleuca (Tea Tree)':        { '15ml': { r: 177, m: 133 }, '5ml': { r: 75, m: 56 } },
+    'Laranja Doce (Wild Orange)':  { '15ml': { r: 111, m: 83 }, '5ml': { r: 47, m: 35 } },
+    'Limão Siciliano (Lemon)':     { '15ml': { r: 111, m: 83 }, '5ml': { r: 47, m: 35 } },
+    'Copaíba':                     { '15ml': { r: 281, m: 211 }, '5ml': { r: 119, m: 89 } },
+    'Orégano':                     { '15ml': { r: 234, m: 176 }, '5ml': { r: 99, m: 74 } },
+    'Gengibre (Ginger)':           { '15ml': { r: 213, m: 160 }, '5ml': { r: 91, m: 68 } },
+    'Alecrim (Rosemary)':          { '15ml': { r: 147, m: 110 }, '5ml': { r: 63, m: 47 } },
+    'Bergamota':                   { '15ml': { r: 207, m: 155 }, '5ml': { r: 88, m: 66 } },
+    'Eucalipto':                   { '15ml': { r: 155, m: 116 }, '5ml': { r: 65, m: 49 } },
+    'Gerânio':                     { '15ml': { r: 230, m: 173 }, '5ml': { r: 98, m: 74 } },
+    'Helicriso (Helichrysum)':     { '15ml': { r: 599, m: 449 }, '5ml': { r: 254, m: 191 } },
+    'Canela (Cinnamon Bark)':      { '15ml': { r: 237, m: 178 }, '5ml': { r: 101, m: 76 } },
+    'Rosa (Rose)':                 { '5ml': { r: 722, m: 542 }, '10ml Touch': { r: 307, m: 231 } },
+    'Melissa':                     { '5ml': { r: 599, m: 449 } },
+    'Mirra (Myrrh)':               { '15ml': { r: 385, m: 289 }, '5ml': { r: 164, m: 123 } },
+    'Cedro (Cedarwood)':           { '15ml': { r: 116, m: 87 }, '5ml': { r: 49, m: 37 } },
+    'Ylang Ylang':                 { '15ml': { r: 215, m: 161 }, '5ml': { r: 91, m: 68 } },
+    'Vetiver':                     { '15ml': { r: 409, m: 307 }, '5ml': { r: 173, m: 130 } },
+    'Toranja (Grapefruit)':        { '15ml': { r: 133, m: 100 }, '5ml': { r: 56, m: 42 } },
+    'Capim-Limão (Lemongrass)':    { '15ml': { r: 138, m: 104 }, '5ml': { r: 58, m: 44 } },
+    'Patchouli':                   { '15ml': { r: 200, m: 150 }, '5ml': { r: 85, m: 64 } },
+    'Cipreste (Cypress)':          { '15ml': { r: 205, m: 154 }, '5ml': { r: 87, m: 65 } },
+    'On Guard (Mix Protetor)':     { '15ml': { r: 279, m: 209 }, '5ml': { r: 118, m: 89 } },
+    'Breathe / Clarify (Mix Respiratório)': { '15ml': { r: 220, m: 165 }, '5ml': { r: 93, m: 70 } },
+    'Deep Blue (Mix Suavizante)':  { '15ml': { r: 250, m: 188 }, '5ml': { r: 106, m: 80 } },
+    'ZenGest / DigestZen (Mix Digestivo)': { '15ml': { r: 234, m: 176 }, '5ml': { r: 99, m: 74 } },
+    'Serenity (Mix Repousante)':   { '15ml': { r: 197, m: 148 }, '5ml': { r: 83, m: 62 } },
+    'Balance (Mix Aterrador)':     { '15ml': { r: 167, m: 125 }, '5ml': { r: 71, m: 53 } },
+    'InTune (Mix Foco)':           { '15ml': { r: 310, m: 233 }, '10ml Touch': { r: 179, m: 134 } },
+    'Elevation (Mix Alegre)':      { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'AromaTouch':                  { '15ml': { r: 220, m: 165 } },
+    'PastTense (Mix Tensão)':      { '10ml Touch': { r: 152, m: 114 } },
+    'ClaryCalm (Mix Mensal Mulher)': { '10ml Touch': { r: 158, m: 119 } },
+    'Adaptiv':                     { '15ml': { r: 234, m: 176 }, '10ml Touch': { r: 134, m: 101 } },
+    'MetaPWR Blend':               { '15ml': { r: 281, m: 211 } },
+    'Lifelong Vitality Pack (LLV)':{ 'Unidade / Kit': { r: 629, m: 472 } },
+    'Microplex VMz':               { 'Cápsulas': { r: 249, m: 187 } },
+    'xEO Mega':                    { 'Cápsulas': { r: 273, m: 205 } },
+    'Alpha CRS+':                  { 'Cápsulas': { r: 267, m: 200 } },
+    'PB Assist+ (Probiótico)':     { 'Cápsulas': { r: 215, m: 161 } },
+    'TerraZyme':                   { 'Cápsulas': { r: 207, m: 155 } },
+    'MetaPWR Advantage (Colágeno)':{ 'Unidade / Kit': { r: 289, m: 217 } },
+    'Deep Blue Rub':               { 'Unidade / Kit': { r: 215, m: 161 } },
+    'Pomada Deep Blue Rub':        { 'Unidade / Kit': { r: 215, m: 161 } },
+    'Pasta de Dente On Guard':     { 'Unidade / Kit': { r: 62, m: 47 } },
+    'Óleo de Coco Fracionado (115ml)': { 'Unidade / Kit': { r: 99, m: 74 } },
+    'Lavanda Touch':               { '10ml Touch': { r: 125, m: 94 } },
+    'Peppermint Touch':            { '10ml Touch': { r: 88, m: 66 } },
+    'Frankincense Touch':          { '10ml Touch': { r: 218, m: 164 } },
+    'Rose Touch':                  { '10ml Touch': { r: 307, m: 231 } },
+    'On Guard Touch':              { '10ml Touch': { r: 152, m: 114 } },
+};
+
+/** Retorna preços doTERRA para produto+tamanho: { r, m } ou null */
+function getDotPrices(nomeProduto, tamanho) {
+    if (!nomeProduto) return null;
+    const entry = DOTERRA_PRICES[nomeProduto];
+    if (!entry) return null;
+    // Tenta match exato no tamanho, depois pega o primeiro tamanho disponível
+    return entry[tamanho] || Object.values(entry)[0] || null;
+}
+
 export async function renderInventory(router) {
     const pageContent = `
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
@@ -412,6 +480,8 @@ export async function renderInventory(router) {
                                 style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; box-sizing:border-box;">
                         </div>
                     </div>
+                    <!-- Painel de preços doTERRA (preenchido dinamicamente via JS) -->
+                    <div id="inv-price-preview" style="display:none; background:#f8fafc; border:1px solid #bbf7d0; border-radius:10px; padding:12px;"></div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
                         <div>
                             <label style="display:block; font-size:0.83rem; font-weight:600; margin-bottom:5px; color:var(--text-dark);">Data de Validade</label>
@@ -459,13 +529,48 @@ export async function renderInventory(router) {
     const searchEl  = document.getElementById('inv-search');
     const filterCat = document.getElementById('inv-filter-cat');
     const filterUso = document.getElementById('inv-filter-uso');
+    const pricePreview = document.getElementById('inv-price-preview');
 
     let db = [];
+
+    /** Atualiza o painel de preços e lucro estimado no modal */
+    function updatePricePreview() {
+        const nome = nameEl.value.trim();
+        const size = sizeEl.value;
+        const custo = parseFloat(custoEl.value) || 0;
+        const prices = getDotPrices(nome, size);
+        if (!pricePreview) return;
+        if (!prices) {
+            pricePreview.style.display = 'none';
+            return;
+        }
+        const lucroReg = prices.r - custo;
+        const lucroMem = prices.m - custo;
+        const pctReg = custo > 0 ? ((lucroReg / custo) * 100).toFixed(0) : null;
+        const pctMem = custo > 0 ? ((lucroMem / custo) * 100).toFixed(0) : null;
+        pricePreview.style.display = 'block';
+        pricePreview.innerHTML = `
+          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#059669;margin-bottom:8px">💰 Preços Oficiais doTERRA (${esc(size)})</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:#f0fdf4;border-radius:8px;padding:10px">
+              <div style="font-size:0.68rem;color:var(--text-muted);font-weight:700;text-transform:uppercase">Preço Regular</div>
+              <div style="font-size:1.1rem;font-weight:800;color:#15803d">${fmt_brl(prices.r)}</div>
+              ${custo > 0 ? `<div style="font-size:0.72rem;color:${lucroReg >= 0 ? '#059669' : '#dc2626'};font-weight:600">Lucro: ${fmt_brl(lucroReg)} ${pctReg !== null ? `(${pctReg}%)` : ''}</div>` : ''}
+            </div>
+            <div style="background:#eff6ff;border-radius:8px;padding:10px">
+              <div style="font-size:0.68rem;color:var(--text-muted);font-weight:700;text-transform:uppercase">Preço Membro</div>
+              <div style="font-size:1.1rem;font-weight:800;color:#1d4ed8">${fmt_brl(prices.m)}</div>
+              ${custo > 0 ? `<div style="font-size:0.72rem;color:${lucroMem >= 0 ? '#059669' : '#dc2626'};font-weight:600">Lucro: ${fmt_brl(lucroMem)} ${pctMem !== null ? `(${pctMem}%)` : ''}</div>` : ''}
+            </div>
+          </div>
+        `;
+    }
 
     // ── Modal helpers ─────────────────────────────────────────
     const openModal = (item = null) => {
         form.reset();
         editIdEl.value = '';
+        if (pricePreview) pricePreview.style.display = 'none';
         document.getElementById('inv-modal-title').textContent = item ? '✏️ Editar Produto' : 'Registrar Produto';
         if (item) {
             editIdEl.value  = item.id;
@@ -477,6 +582,7 @@ export async function renderInventory(router) {
             validEl.value   = item.validade ? item.validade.split('T')[0] : '';
             usoEl.value     = item.uso_tipo || 'venda';
             notesEl.value   = item.notas || '';
+            updatePricePreview();
         } else {
             qtyEl.value = 1;
         }
@@ -518,7 +624,14 @@ export async function renderInventory(router) {
             : ['Suplemento'].includes(c) ? 'Cápsulas'
             : '15ml';
         acEl.style.display = 'none';
+        // Atualiza preview de preços após selecionar do autocomplete
+        updatePricePreview();
     });
+
+    // Também atualiza preview ao trocar tamanho ou digitar custo
+    sizeEl.addEventListener('change', updatePricePreview);
+    custoEl.addEventListener('input', updatePricePreview);
+    nameEl.addEventListener('change', updatePricePreview);
 
     document.addEventListener('click', e => {
         if (!nameEl.contains(e.target) && !acEl.contains(e.target)) acEl.style.display = 'none';
@@ -662,6 +775,24 @@ export async function renderInventory(router) {
                   <div class="inv-card-meta-label">Custo/un.</div>
                   <div style="font-size:0.82rem;color:#059669;font-weight:600">${fmt_brl(it.preco_custo)}</div>
                 </div>` : ''}
+                ${(() => {
+                    const dp = getDotPrices(it.nome_produto, it.ml_tamanho);
+                    if (!dp) return '';
+                    const lucroReg = dp.r - (it.preco_custo || 0);
+                    return `
+                    <div class="inv-card-meta-item">
+                      <div class="inv-card-meta-label">venda regular</div>
+                      <div style="font-size:0.82rem;color:#15803d;font-weight:700">${fmt_brl(dp.r)}</div>
+                    </div>
+                    <div class="inv-card-meta-item">
+                      <div class="inv-card-meta-label">venda membro</div>
+                      <div style="font-size:0.82rem;color:#1d4ed8;font-weight:700">${fmt_brl(dp.m)}</div>
+                    </div>
+                    ${it.preco_custo ? `<div class="inv-card-meta-item" style="grid-column:1 / 3;background:#fef9c3;">
+                      <div class="inv-card-meta-label">💰 Lucro Estimado (regular)</div>
+                      <div style="font-size:0.85rem;font-weight:800;color:${lucroReg >= 0 ? '#16a34a' : '#dc2626'}">${fmt_brl(lucroReg)} (${it.preco_custo > 0 ? ((lucroReg / it.preco_custo)*100).toFixed(0) + '%' : 'n/a'})</div>
+                    </div>` : ''}`;
+                })()}
                 ${it.notas ? `
                 <div class="inv-card-meta-item" style="grid-column:${it.preco_custo ? 'auto' : '1 / 3'}">
                   <div class="inv-card-meta-label">Notas</div>
