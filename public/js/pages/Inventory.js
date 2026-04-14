@@ -332,6 +332,14 @@ const DOTERRA_PRICES = {
     'Deep Blue Touch':             { '10ml Touch': { r: 134, m: 101 } },
     'ZenGest Touch':               { '10ml Touch': { r: 120, m: 90 } },
     'Melaleuca Touch':             { '10ml Touch': { r: 95, m: 71 } },
+    'Immortelle':                  { '15ml': { r: 485, m: 364 } },
+    'Neroli Touch':                { '10ml Touch': { r: 152, m: 114 } },
+    'Magnolia Touch':              { '10ml Touch': { r: 125, m: 94 } },
+    'Jasmine Touch':               { '10ml Touch': { r: 219, m: 164 } },
+    'Breathe Touch':               { '10ml Touch': { r: 120, m: 90 } },
+    'Deep Blue Touch':             { '10ml Touch': { r: 134, m: 101 } },
+    'ZenGest Touch':               { '10ml Touch': { r: 120, m: 90 } },
+    'Melaleuca Touch':             { '10ml Touch': { r: 95, m: 71 } },
     'Thinker (Kids)':              { '10ml Touch': { r: 105, m: 79 } },
     'Calmer (Kids)':               { '10ml Touch': { r: 105, m: 79 } },
     'Stronger (Kids)':             { '10ml Touch': { r: 105, m: 79 } },
@@ -339,29 +347,183 @@ const DOTERRA_PRICES = {
     'Steady (Kids)':               { '10ml Touch': { r: 105, m: 79 } },
     'Brave (Kids)':                { '10ml Touch': { r: 105, m: 79 } },
     'Tamer (Kids)':                { '10ml Touch': { r: 105, m: 79 } },
+    // Blends emocionais e especiais doTERRA
+    'Citrus Bliss (Mix Revigorante)': { '15ml': { r: 192, m: 144 }, '5ml': { r: 81, m: 61 } },
+    'Citrus Bliss':                { '15ml': { r: 192, m: 144 }, '5ml': { r: 81, m: 61 } },
+    'Purify (Mix Purificador)':    { '15ml': { r: 177, m: 133 }, '5ml': { r: 75, m: 56 } },
+    'Purify':                      { '15ml': { r: 177, m: 133 }, '5ml': { r: 75, m: 56 } },
+    'Cheer (Mix Animador)':        { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Cheer':                       { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Motivate (Mix Encorajador)':  { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Motivate':                    { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Motive (Mix Motivador)':      { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Peace (Mix Tranquilizador)':  { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Peace':                       { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Forgive (Mix Renovador)':     { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Forgive':                     { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Console (Mix Consolador)':    { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Console':                     { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Passion (Mix Inspirador)':    { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Passion':                     { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Whisper (Mix para Mulheres)': { '15ml': { r: 250, m: 188 } },
+    'Whisper':                     { '15ml': { r: 250, m: 188 } },
+    'TerraShield (Mix Repelente)': { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'TerraShield':                 { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Zendocrine (Mix Desintoxicante)': { '15ml': { r: 192, m: 144 }, '5ml': { r: 81, m: 61 } },
+    'Zendocrine':                  { '15ml': { r: 192, m: 144 }, '5ml': { r: 81, m: 61 } },
+    'Anchor (Yoga)':               { '15ml': { r: 177, m: 133 } },
+    'Anchor':                      { '15ml': { r: 177, m: 133 } },
+    'Align (Yoga)':                { '15ml': { r: 177, m: 133 } },
+    'Align':                       { '15ml': { r: 177, m: 133 } },
+    'Arise (Yoga)':                { '15ml': { r: 177, m: 133 } },
+    'Arise':                       { '15ml': { r: 177, m: 133 } },
+    'Island Mint':                 { '15ml': { r: 177, m: 133 }, '5ml': { r: 75, m: 56 } },
+    'Holiday Peace':               { '15ml': { r: 192, m: 144 } },
+    'Holiday Joy':                 { '15ml': { r: 192, m: 144 } },
+    'Hygge':                       { '15ml': { r: 192, m: 144 }, '5ml': { r: 81, m: 61 } },
+    'Hope':                        { '15ml': { r: 196, m: 147 } },
+    'Salubelle':                   { '15ml': { r: 485, m: 364 }, '10ml Touch': { r: 267, m: 200 } },
+    'Citrus Bloom':                { '15ml': { r: 192, m: 144 } },
+    'Air-X':                       { '15ml': { r: 196, m: 147 } },
+    'Forest Bathing':              { '15ml': { r: 196, m: 147 } },
+    'HD Clear':                    { '15ml': { r: 225, m: 169 }, '10ml Touch': { r: 134, m: 101 } },
+    'DDR Prime':                   { '15ml': { r: 311, m: 233 }, 'Cápsulas': { r: 238, m: 179 } },
+    'Slim & Sassy (Mix Metabólico)':{ '15ml': { r: 196, m: 147 }, 'Cápsulas': { r: 159, m: 119 } },
+    'Slim & Sassy':                { '15ml': { r: 196, m: 147 }, 'Cápsulas': { r: 159, m: 119 } },
+    'Slim Sassy':                  { '15ml': { r: 196, m: 147 } },
+    'Guaiacwood':                  { '15ml': { r: 281, m: 211 }, '5ml': { r: 119, m: 89 } },
+    'Wintergreen':                 { '15ml': { r: 209, m: 157 }, '5ml': { r: 89, m: 67 } },
+    'Spearmint':                   { '15ml': { r: 147, m: 110 }, '5ml': { r: 63, m: 47 } },
+    'Douglas Fir':                 { '15ml': { r: 196, m: 147 }, '5ml': { r: 83, m: 62 } },
+    'Spikenard':                   { '5ml': { r: 349, m: 262 } },
+    'Petitgrain':                  { '15ml': { r: 177, m: 133 } },
+    'Pimenta Rosa (Pink Pepper)':  { '5ml': { r: 196, m: 147 } },
+    'Pimenta Rosa':                { '5ml': { r: 196, m: 147 } },
+    'Breu Branco':                 { '15ml': { r: 209, m: 157 } },
+    'Green Mandarin':              { '15ml': { r: 177, m: 133 }, '5ml': { r: 75, m: 56 } },
+    'Lemon Eucalyptus':            { '15ml': { r: 155, m: 116 } },
+    'Madagascar Vanilla':          { '15ml': { r: 311, m: 233 } },
+    'Cilantro':                    { '15ml': { r: 196, m: 147 } },
+    'Citronela':                   { '15ml': { r: 147, m: 110 } },
+    'Blue Tansy':                  { '5ml': { r: 395, m: 296 } },
+    'Yarrow Pom':                  { '15ml': { r: 485, m: 364 } },
+    'Yarrow|Pom':                  { '15ml': { r: 485, m: 364 } },
+    'Erva Baleeira':               { '15ml': { r: 209, m: 157 } },
+};
+
+// Mapa de typos comuns e aliases de nome que não casam via fuzzy
+const DOTERRA_ALIASES = {
+    'barsil': 'Basil',
+    'basil': 'Basil (Manjericão)',
+    'manjericao': 'Basil (Manjericão)',
+    'olibano': 'Olíbano (Frankincense)',
+    'frankincense': 'Olíbano (Frankincense)',
+    'melaleuca': 'Melaleuca (Tea Tree)',
+    'teatree': 'Melaleuca (Tea Tree)',
+    'tea tree': 'Melaleuca (Tea Tree)',
+    'wild orange': 'Laranja Doce (Wild Orange)',
+    'laranja': 'Laranja Doce (Wild Orange)',
+    'hortelha': 'Hortelã-Pimenta (Peppermint)',
+    'peppermint': 'Hortelã-Pimenta (Peppermint)',
+    'geranio': 'Gerânio',
+    'gerânio': 'Gerânio',
+    'curcuma': 'Cúrcuma (Turmeric)',
+    'cúrcuma': 'Cúrcuma (Turmeric)',
+    'cassia': 'Cássia',
+    'cássia': 'Cássia',
+    'lemon': 'Limão Siciliano (Lemon)',
+    'limao': 'Limão Siciliano (Lemon)',
+    'lime': 'Limão Tahiti (Lime)',
+    'copaiba': 'Copaíba',
+    'copaíba': 'Copaíba',
+    'rosemary': 'Alecrim (Rosemary)',
+    'alecrim': 'Alecrim (Rosemary)',
+    'ginger': 'Gengibre (Ginger)',
+    'gengibre': 'Gengibre (Ginger)',
+    'bergamot': 'Bergamota',
+    'eucalipto': 'Eucalipto',
+    'eucalyptus': 'Eucalipto Radiata (Eucalyptus)',
+    'myrrh': 'Mirra (Myrrh)',
+    'mirra': 'Mirra (Myrrh)',
+    'helichrysum': 'Helicriso (Helichrysum)',
+    'helicriso': 'Helicriso (Helichrysum)',
+    'sandalo': 'Sândalo',
+    'cedarwood': 'Cedro (Cedarwood)',
+    'cedro': 'Cedro (Cedarwood)',
+    'forgive': 'Forgive (Mix Renovador)',
+    'console': 'Console (Mix Consolador)',
+    'cheer': 'Cheer (Mix Animador)',
+    'motivate': 'Motivate (Mix Encorajador)',
+    'peace': 'Peace (Mix Tranquilizador)',
+    'passion': 'Passion (Mix Inspirador)',
+    'whisper': 'Whisper (Mix para Mulheres)',
+    'purify': 'Purify (Mix Purificador)',
+    'terrashield': 'TerraShield (Mix Repelente)',
+    'zendocrine': 'Zendocrine (Mix Desintoxicante)',
+    'citrus bliss': 'Citrus Bliss (Mix Revigorante)',
+    'onguard': 'On Guard (Mix Protetor)',
+    'on guard': 'On Guard (Mix Protetor)',
+    'breathe': 'Breathe / Clarify (Mix Respiratório)',
+    'clarify': 'Breathe / Clarify (Mix Respiratório)',
+    'deepblue': 'Deep Blue (Mix Suavizante)',
+    'deep blue': 'Deep Blue (Mix Suavizante)',
+    'zengest': 'ZenGest / DigestZen (Mix Digestivo)',
+    'digestzen': 'ZenGest / DigestZen (Mix Digestivo)',
+    'serenity': 'Serenity (Mix Repousante)',
+    'balance': 'Balance (Mix Aterrador)',
+    'intune': 'InTune (Mix Foco)',
+    'in tune': 'InTune (Mix Foco)',
+    'aromatouch': 'AromaTouch',
+    'aroma touch': 'AromaTouch',
+    'pastense': 'PastTense (Mix Tensão)',
+    'past tense': 'PastTense (Mix Tensão)',
+    'clarycalm': 'ClaryCalm (Mix Mensal Mulher)',
+    'clary calm': 'ClaryCalm (Mix Mensal Mulher)',
+    'elevation': 'Elevation (Mix Alegre)',
+    'ddr prime': 'DDR Prime',
+    'ddprime': 'DDR Prime',
+    'slim sassy': 'Slim & Sassy (Mix Metabólico)',
+    'slim&sassy': 'Slim & Sassy (Mix Metabólico)',
+    'metapwr': 'MetaPWR Blend',
+    'immortelle': 'Immortelle',
+    'guaiacwood': 'Guaiacwood',
+    'anchor': 'Anchor (Yoga)',
+    'align': 'Align (Yoga)',
+    'arise': 'Arise (Yoga)',
 };
 
 /** Retorna preços doTERRA para produto+tamanho: { r, m } ou null */
 function getDotPrices(nomeProduto, tamanho) {
     if (!nomeProduto) return null;
+    const orig = nomeProduto.trim();
+    const lower = orig.toLowerCase();
+
+    // 0. Alias direto (typos e nomes curtos mapeados explicitamente)
+    const aliasKey = DOTERRA_ALIASES[lower];
+    if (aliasKey && DOTERRA_PRICES[aliasKey]) {
+        const e = DOTERRA_PRICES[aliasKey];
+        return e[tamanho] || Object.values(e)[0] || null;
+    }
 
     // 1. Match exato
-    let entry = DOTERRA_PRICES[nomeProduto];
+    let entry = DOTERRA_PRICES[orig];
 
     // 2. Case-insensitive exact
     if (!entry) {
-        const lower = nomeProduto.toLowerCase().trim();
         for (const key of Object.keys(DOTERRA_PRICES)) {
             if (key.toLowerCase() === lower) { entry = DOTERRA_PRICES[key]; break; }
         }
     }
 
-    // 3. Fuzzy: a chave contém o nome do produto ou vice-versa
+    // 3. Fuzzy parcial: chave começa com o nome ou vice-versa, ou um contém o outro
     if (!entry) {
-        const lower = nomeProduto.toLowerCase().trim();
+        // Remove parenteses e sufixos tipo "(Mix Algo)" antes de tentar parcial
+        const stripped = lower.replace(/\s*\(.*?\)\s*/g, '').trim();
         for (const key of Object.keys(DOTERRA_PRICES)) {
-            const kl = key.toLowerCase();
-            if (kl.startsWith(lower) || lower.startsWith(kl) || kl.includes(lower) || lower.includes(kl)) {
+            const kl = key.toLowerCase().replace(/\s*\(.*?\)\s*/g, '').trim();
+            if (kl === stripped || kl.startsWith(lower) || lower.startsWith(kl) ||
+                kl.includes(lower) || lower.includes(kl) ||
+                (stripped.length > 3 && (kl.startsWith(stripped) || stripped.startsWith(kl)))) {
                 entry = DOTERRA_PRICES[key];
                 break;
             }
@@ -369,7 +531,6 @@ function getDotPrices(nomeProduto, tamanho) {
     }
 
     if (!entry) return null;
-    // Tenta match exato no tamanho, depois o primeiro tamanho disponível
     return entry[tamanho] || Object.values(entry)[0] || null;
 }
 
