@@ -216,14 +216,94 @@ const DOTERRA_PRICES = {
     'Frankincense Touch':          { '10ml Touch': { r: 218, m: 164 } },
     'Rose Touch':                  { '10ml Touch': { r: 307, m: 231 } },
     'On Guard Touch':              { '10ml Touch': { r: 152, m: 114 } },
+    // Óleos adicionais doTERRA Brasil
+    'Abeto Azul (Blue Spruce)':    { '15ml': { r: 248, m: 186 }, '5ml': { r: 105, m: 79 } },
+    'Black Spruce':                { '15ml': { r: 248, m: 186 }, '5ml': { r: 105, m: 79 } },
+    'Cássia':                      { '15ml': { r: 191, m: 143 }, '5ml': { r: 81, m: 61 } },
+    'Cássia (Cassia)':             { '15ml': { r: 191, m: 143 }, '5ml': { r: 81, m: 61 } },
+    'Sándalo Havaiano':            { '5ml': { r: 385, m: 289 } },
+    'Sândalo':                     { '5ml': { r: 385, m: 289 } },
+    'Cardamomo':                   { '5ml': { r: 178, m: 134 } },
+    'Noz-Moscada (Nutmeg)':        { '15ml': { r: 176, m: 132 }, '5ml': { r: 75, m: 56 } },
+    'Noz-moscada':                 { '15ml': { r: 176, m: 132 }, '5ml': { r: 75, m: 56 } },
+    'Melão Amargo':                { '15ml': { r: 176, m: 132 } },
+    'Abeto Siberiano':             { '15ml': { r: 135, m: 101 }, '5ml': { r: 57, m: 43 } },
+    'Siberian Fir':                { '15ml': { r: 135, m: 101 }, '5ml': { r: 57, m: 43 } },
+    'Pinho Siberiano':             { '15ml': { r: 135, m: 101 }, '5ml': { r: 57, m: 43 } },
+    'Zimbro (Juniper Berry)':      { '15ml': { r: 205, m: 154 }, '5ml': { r: 87, m: 65 } },
+    'Zimbro':                      { '15ml': { r: 205, m: 154 }, '5ml': { r: 87, m: 65 } },
+    'Arborvitae':                  { '15ml': { r: 276, m: 207 }, '5ml': { r: 117, m: 88 } },
+    'Coentro (Coriander)':         { '15ml': { r: 156, m: 117 }, '5ml': { r: 66, m: 50 } },
+    'Coentro':                     { '15ml': { r: 156, m: 117 }, '5ml': { r: 66, m: 50 } },
+    'Camomila Romana':             { '5ml': { r: 357, m: 268 } },
+    'Camomila (Roman Chamomile)':  { '5ml': { r: 357, m: 268 } },
+    'Sálvia (Clary Sage)':         { '15ml': { r: 207, m: 155 }, '5ml': { r: 88, m: 66 } },
+    'Sálvia Esclareia':            { '15ml': { r: 207, m: 155 }, '5ml': { r: 88, m: 66 } },
+    'Pimenta Preta':               { '5ml': { r: 125, m: 94 } },
+    'Pimenta Preta (Black Pepper)':{ '5ml': { r: 125, m: 94 } },
+    'Erva Doce (Fennel)':          { '15ml': { r: 147, m: 110 }, '5ml': { r: 63, m: 47 } },
+    'Erva Doce':                   { '15ml': { r: 147, m: 110 }, '5ml': { r: 63, m: 47 } },
+    'Manjerona (Marjoram)':        { '15ml': { r: 191, m: 143 }, '5ml': { r: 81, m: 61 } },
+    'Manjerona':                   { '15ml': { r: 191, m: 143 }, '5ml': { r: 81, m: 61 } },
+    'Tomilho (Thyme)':             { '15ml': { r: 211, m: 158 }, '5ml': { r: 89, m: 67 } },
+    'Tomilho':                     { '15ml': { r: 211, m: 158 }, '5ml': { r: 89, m: 67 } },
+    'Lifeshōt':                    { 'Unidade / Kit': { r: 179, m: 134 } },
+    'Mito2Max':                    { 'Cápsulas': { r: 159, m: 119 } },
+    'Beauty Power (Colágeno)':     { 'Unidade / Kit': { r: 249, m: 187 } },
+    'Beauty Power':                { 'Unidade / Kit': { r: 249, m: 187 } },
+    'MetaPWR Assist':              { 'Cápsulas': { r: 198, m: 149 } },
+    'Peppermint Softgels':         { 'Cápsulas': { r: 115, m: 86 } },
+    'ZenGest Softgels':            { 'Cápsulas': { r: 122, m: 92 } },
+    'On Guard Softgels':           { 'Cápsulas': { r: 122, m: 92 } },
+    'Copaíba Softgels':            { 'Cápsulas': { r: 145, m: 109 } },
+    'Deep Blue Polyphenol':        { 'Cápsulas': { r: 189, m: 142 } },
+    'xEO Mega Omega':              { 'Cápsulas': { r: 273, m: 205 } },
+    'Immortelle':                  { '15ml': { r: 485, m: 364 } },
+    'Neroli Touch':                { '10ml Touch': { r: 152, m: 114 } },
+    'Magnolia Touch':              { '10ml Touch': { r: 125, m: 94 } },
+    'Jasmine Touch':               { '10ml Touch': { r: 219, m: 164 } },
+    'Breathe Touch':               { '10ml Touch': { r: 120, m: 90 } },
+    'Deep Blue Touch':             { '10ml Touch': { r: 134, m: 101 } },
+    'ZenGest Touch':               { '10ml Touch': { r: 120, m: 90 } },
+    'Melaleuca Touch':             { '10ml Touch': { r: 95, m: 71 } },
+    'Thinker (Kids)':              { '10ml Touch': { r: 105, m: 79 } },
+    'Calmer (Kids)':               { '10ml Touch': { r: 105, m: 79 } },
+    'Stronger (Kids)':             { '10ml Touch': { r: 105, m: 79 } },
+    'Rescuer (Kids)':              { '10ml Touch': { r: 105, m: 79 } },
+    'Steady (Kids)':               { '10ml Touch': { r: 105, m: 79 } },
+    'Brave (Kids)':                { '10ml Touch': { r: 105, m: 79 } },
+    'Tamer (Kids)':                { '10ml Touch': { r: 105, m: 79 } },
 };
 
 /** Retorna preços doTERRA para produto+tamanho: { r, m } ou null */
 function getDotPrices(nomeProduto, tamanho) {
     if (!nomeProduto) return null;
-    const entry = DOTERRA_PRICES[nomeProduto];
+
+    // 1. Match exato
+    let entry = DOTERRA_PRICES[nomeProduto];
+
+    // 2. Case-insensitive exact
+    if (!entry) {
+        const lower = nomeProduto.toLowerCase().trim();
+        for (const key of Object.keys(DOTERRA_PRICES)) {
+            if (key.toLowerCase() === lower) { entry = DOTERRA_PRICES[key]; break; }
+        }
+    }
+
+    // 3. Fuzzy: a chave contém o nome do produto ou vice-versa
+    if (!entry) {
+        const lower = nomeProduto.toLowerCase().trim();
+        for (const key of Object.keys(DOTERRA_PRICES)) {
+            const kl = key.toLowerCase();
+            if (kl.startsWith(lower) || lower.startsWith(kl) || kl.includes(lower) || lower.includes(kl)) {
+                entry = DOTERRA_PRICES[key];
+                break;
+            }
+        }
+    }
+
     if (!entry) return null;
-    // Tenta match exato no tamanho, depois pega o primeiro tamanho disponível
+    // Tenta match exato no tamanho, depois o primeiro tamanho disponível
     return entry[tamanho] || Object.values(entry)[0] || null;
 }
 
