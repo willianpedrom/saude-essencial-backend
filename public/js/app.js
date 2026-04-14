@@ -45,7 +45,7 @@ const router = new Router({
         renderLogin(router);
     },
     '/dashboard': guard(async (params) => {
-        const { renderDashboard } = await import('./pages/Dashboard.js?v=4');
+        const { renderDashboard } = await import('./pages/Dashboard.js?v=5');
         renderDashboard(router, params);
     }),
     '/clients': guard(async (params) => {
@@ -158,7 +158,9 @@ const router = new Router({
 });
 
 (async () => {
-    if (auth.isLoggedIn && typeof auth.current.genero === 'undefined') {
+    if (auth.isLoggedIn) {
+        // Sempre atualiza a sessao para garantir que as flags do plano (tem_radar, tem_agenda, etc)
+        // estejam sempre atualizadas, mesmo que o admin tenha mudado o plano sem novo login.
         try { await auth.refresh(); } catch (e) { console.warn('Auth refresh bypassed', e); }
     }
 
