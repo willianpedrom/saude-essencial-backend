@@ -173,6 +173,37 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
         window.open(`https://wa.me/5521988964012?text=${msg}`, '_blank');
         return;
       }
+      
+      const lockedRoutes = {
+        'insights': { flag: 'tem_raiox', name: 'Raio-X de Vendas' },
+        'pipeline': { flag: 'tem_pipeline', name: 'Fluxo de Vendas (CRM)' },
+        'anamnesis': { flag: 'tem_anamneses', name: 'Sistema de Laudos e Anamneses' },
+        'links': { flag: 'tem_links', name: 'Links de Captação' },
+        'schedule': { flag: 'tem_agenda', name: 'Agenda Inteligente e Follow-up' },
+        'purchases': { flag: 'tem_minhas_vendas', name: 'Histórico de Vendas' },
+        'integrations': { flag: 'tem_integracoes', name: 'Integrações Pro (Pixel/GA)' },
+        'prospecting': { flag: 'tem_radar', name: 'Radar de Leads' }
+      };
+      
+      const req = lockedRoutes[btn.dataset.nav];
+      if (req && consultant?.assinatura && consultant.assinatura[req.flag] === false) {
+        import('../utils.js').then(({ modal }) => {
+          const m = modal('🔒 Recurso Premium', `
+            <div style="text-align:center;padding:20px 10px">
+              <div style="font-size:3rem;margin-bottom:15px">💎</div>
+              <h3 style="margin:0 0 10px;color:var(--text-main)">Eleve seus Resultados</h3>
+              <p style="color:var(--text-muted);line-height:1.6;margin-bottom:25px">O recurso <strong>${req.name}</strong> é poderoso e exclusivo dos planos avançados. Faça o upgrade da sua assinatura para explodir suas captações e profissionalizar o seu negócio de vez!</p>
+              <button class="btn btn-primary" id="btn-upsell-upgrade" style="width:100%">Fazer Upgrade de Plano</button>
+            </div>
+          `);
+          m.el.querySelector('#btn-upsell-upgrade').addEventListener('click', () => {
+             m.close();
+             router.navigate('/profile');
+          });
+        });
+        return;
+      }
+
       router.navigate('/' + btn.dataset.nav);
     });
   });

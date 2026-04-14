@@ -1071,9 +1071,12 @@ export async function renderAdmin(router) {
             <input class="field-input" id="pp-hotmart" value="${p.hotmart_offer_id || ''}" placeholder="Ex: OFR-XXXXXX" />
           </div>
           <div class="form-group form-field-full" style="display:flex;gap:16px;flex-wrap:wrap">
-            ${[['tem_integracoes', 'Integrações (Pixel/GA)'], ['tem_pipeline', 'Pipeline/Fluxo'], ['tem_multiusuario', 'Multi-usuário'], ['tem_relatorios', 'Relatórios']].map(([k, l]) =>
-        `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem">
-                <input type="checkbox" id="pp-${k}" ${p[k] ? 'checked' : ''} style="width:16px;height:16px"> ${l}
+            ${[['tem_integracoes', 'Integrações (Pixel/GA)'], ['tem_pipeline', 'Pipeline/Fluxo'], ['tem_multiusuario', 'Multi-usuário'], ['tem_relatorios', 'Relatórios'],
+                ['tem_pagina_pessoal', 'Página Pessoal (Vitrine)'], ['tem_raiox', 'Raio-X (Anamnese B2B)'], ['tem_minhas_vendas', 'Minhas Vendas'], ['tem_radar', 'Radar de Leads'],
+                ['tem_agenda', 'Agenda/Follow-up'], ['tem_links', 'Links de Captação'], ['tem_anamneses', 'Laudos/Anamneses'], ['tem_clientes', 'Gestão de Clientes']
+              ].map(([k, l]) =>
+        `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem;padding:4px;width:calc(50% - 8px)">
+                <input type="checkbox" id="pp-${k}" ${p[k] !== false ? 'checked' : ''} style="width:16px;height:16px"> ${l}
               </label>`).join('')}
           </div>
         </div>`, {
@@ -1093,6 +1096,14 @@ export async function renderAdmin(router) {
             tem_pipeline: document.getElementById('pp-tem_pipeline')?.checked,
             tem_multiusuario: document.getElementById('pp-tem_multiusuario')?.checked,
             tem_relatorios: document.getElementById('pp-tem_relatorios')?.checked,
+            tem_pagina_pessoal: document.getElementById('pp-tem_pagina_pessoal')?.checked,
+            tem_raiox: document.getElementById('pp-tem_raiox')?.checked,
+            tem_minhas_vendas: document.getElementById('pp-tem_minhas_vendas')?.checked,
+            tem_radar: document.getElementById('pp-tem_radar')?.checked,
+            tem_agenda: document.getElementById('pp-tem_agenda')?.checked,
+            tem_links: document.getElementById('pp-tem_links')?.checked,
+            tem_anamneses: document.getElementById('pp-tem_anamneses')?.checked,
+            tem_clientes: document.getElementById('pp-tem_clientes')?.checked,
             ativo: true,
           };
           if (!data.slug || !data.nome) { toast('Slug e Nome são obrigatórios.', 'error'); return false; }

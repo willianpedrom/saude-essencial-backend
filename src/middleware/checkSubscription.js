@@ -15,6 +15,8 @@ module.exports = async function checkSubscription(req, res, next) {
                 tem_integracoes: true,
                 tem_pipeline: true,
                 tem_multiusuario: true,
+                tem_pagina_pessoal: true, tem_raiox: true, tem_minhas_vendas: true,
+                tem_radar: true, tem_agenda: true, tem_links: true, tem_anamneses: true, tem_clientes: true
             };
             return next();
         }
@@ -28,6 +30,8 @@ module.exports = async function checkSubscription(req, res, next) {
             req.consultora.limites = {
                 clientes_max: null, anamneses_mes_max: null,
                 tem_integracoes: true, tem_pipeline: true, tem_multiusuario: true,
+                tem_pagina_pessoal: true, tem_raiox: true, tem_minhas_vendas: true,
+                tem_radar: true, tem_agenda: true, tem_links: true, tem_anamneses: true, tem_clientes: true
             };
             return next();
         }
@@ -36,7 +40,8 @@ module.exports = async function checkSubscription(req, res, next) {
         const { rows } = await pool.query(
             `SELECT a.status, a.periodo_fim, a.trial_fim, a.plano,
                     p.clientes_max, p.anamneses_mes_max,
-                    p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario
+                    p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario,
+                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes
              FROM assinaturas a
              LEFT JOIN planos p ON p.slug = a.plano AND p.ativo = TRUE
              WHERE a.consultora_id = $1
@@ -58,6 +63,14 @@ module.exports = async function checkSubscription(req, res, next) {
             tem_integracoes: sub.tem_integracoes ?? false,
             tem_pipeline: sub.tem_pipeline ?? true,
             tem_multiusuario: sub.tem_multiusuario ?? false,
+            tem_pagina_pessoal: sub.tem_pagina_pessoal ?? true,
+            tem_raiox: sub.tem_raiox ?? true,
+            tem_minhas_vendas: sub.tem_minhas_vendas ?? true,
+            tem_radar: sub.tem_radar ?? true,
+            tem_agenda: sub.tem_agenda ?? true,
+            tem_links: sub.tem_links ?? true,
+            tem_anamneses: sub.tem_anamneses ?? true,
+            tem_clientes: sub.tem_clientes ?? true
         };
 
         // Trial: allow if within trial window

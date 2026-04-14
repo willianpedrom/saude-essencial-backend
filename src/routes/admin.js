@@ -297,19 +297,23 @@ router.get('/planos', async (req, res) => {
 // POST /api/admin/planos
 router.post('/planos', async (req, res) => {
     const { slug, nome, preco_mensal, preco_semestral, preco_anual, dias_trial, clientes_max, anamneses_mes_max,
-        tem_integracoes, tem_pipeline, tem_multiusuario, tem_relatorios, hotmart_offer_id } = req.body;
+        tem_integracoes, tem_pipeline, tem_multiusuario, tem_relatorios, hotmart_offer_id,
+        tem_pagina_pessoal, tem_raiox, tem_minhas_vendas, tem_radar, tem_agenda, tem_links, tem_anamneses, tem_clientes } = req.body;
     if (!slug || !nome) return res.status(400).json({ error: 'slug e nome são obrigatórios.' });
     try {
         const { rows } = await pool.query(
             `INSERT INTO planos (slug, nome, preco_mensal, preco_semestral, preco_anual, dias_trial, clientes_max, anamneses_mes_max,
-               tem_integracoes, tem_pipeline, tem_multiusuario, tem_relatorios, hotmart_offer_id)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
+               tem_integracoes, tem_pipeline, tem_multiusuario, tem_relatorios, hotmart_offer_id,
+               tem_pagina_pessoal, tem_raiox, tem_minhas_vendas, tem_radar, tem_agenda, tem_links, tem_anamneses, tem_clientes)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21) RETURNING *`,
             [slug, nome, preco_mensal || 0,
                 preco_semestral || null, preco_anual || null, dias_trial || 0,
                 clientes_max || null, anamneses_mes_max || null,
                 !!tem_integracoes, tem_pipeline !== false,
                 !!tem_multiusuario, tem_relatorios !== false,
-                hotmart_offer_id || null]
+                hotmart_offer_id || null,
+                tem_pagina_pessoal !== false, tem_raiox !== false, tem_minhas_vendas !== false, tem_radar !== false,
+                tem_agenda !== false, tem_links !== false, tem_anamneses !== false, tem_clientes !== false]
         );
         res.status(201).json(rows[0]);
     } catch (err) {
@@ -323,20 +327,25 @@ router.post('/planos', async (req, res) => {
 router.put('/planos/:id', async (req, res) => {
     const { nome, preco_mensal, preco_semestral, preco_anual, dias_trial, clientes_max, anamneses_mes_max,
         tem_integracoes, tem_pipeline, tem_multiusuario, tem_relatorios,
+        tem_pagina_pessoal, tem_raiox, tem_minhas_vendas, tem_radar, tem_agenda, tem_links, tem_anamneses, tem_clientes,
         hotmart_offer_id, ativo } = req.body;
     try {
         const { rows } = await pool.query(
             `UPDATE planos SET
                nome=$1, preco_mensal=$2, preco_semestral=$3, preco_anual=$4, dias_trial=$5, clientes_max=$6, anamneses_mes_max=$7,
                tem_integracoes=$8, tem_pipeline=$9, tem_multiusuario=$10, tem_relatorios=$11,
-               hotmart_offer_id=$12, ativo=$13, atualizado_em=NOW()
-             WHERE id=$14 RETURNING *`,
+               hotmart_offer_id=$12, ativo=$13,
+               tem_pagina_pessoal=$14, tem_raiox=$15, tem_minhas_vendas=$16, tem_radar=$17, tem_agenda=$18, tem_links=$19, tem_anamneses=$20, tem_clientes=$21,
+               atualizado_em=NOW()
+             WHERE id=$22 RETURNING *`,
             [nome, preco_mensal || 0,
                 preco_semestral || null, preco_anual || null, dias_trial || 0,
                 clientes_max || null, anamneses_mes_max || null,
                 !!tem_integracoes, tem_pipeline !== false,
                 !!tem_multiusuario, tem_relatorios !== false,
                 hotmart_offer_id || null, ativo !== false,
+                tem_pagina_pessoal !== false, tem_raiox !== false, tem_minhas_vendas !== false, tem_radar !== false,
+                tem_agenda !== false, tem_links !== false, tem_anamneses !== false, tem_clientes !== false,
                 req.params.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Plano não encontrado.' });

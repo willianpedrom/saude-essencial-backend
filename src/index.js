@@ -253,6 +253,14 @@ async function runMigration() {
         await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS preco_semestral DECIMAL(10,2) DEFAULT NULL`);
         await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS preco_anual DECIMAL(10,2) DEFAULT NULL`);
         await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS dias_trial INTEGER DEFAULT 0`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_pagina_pessoal BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_raiox BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_minhas_vendas BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_radar BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_agenda BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_links BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_anamneses BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_clientes BOOLEAN DEFAULT TRUE`);
 
         // System settings table (key-value store for admin-configurable settings)
         await pool.query(`CREATE TABLE IF NOT EXISTS configuracoes (

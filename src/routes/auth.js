@@ -100,9 +100,12 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
         }
 
         const subResult = await pool.query(
-            `SELECT plano, status, trial_fim, periodo_fim
-       FROM assinaturas WHERE consultora_id = $1
-       ORDER BY criado_em DESC LIMIT 1`,
+            `SELECT a.plano, a.status, a.trial_fim, a.periodo_fim,
+                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes, p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario, p.tem_relatorios
+             FROM assinaturas a
+             LEFT JOIN planos p ON a.plano = p.slug
+             WHERE a.consultora_id = $1
+             ORDER BY a.criado_em DESC LIMIT 1`,
             [consultora.id]
         );
         const sub = subResult.rows[0] || { plano: 'none', status: 'none' };
@@ -153,9 +156,12 @@ router.get('/me', authMiddleware, async (req, res, next) => {
         if (rows.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });
 
         const subResult = await pool.query(
-            `SELECT plano, status, trial_fim, periodo_fim
-       FROM assinaturas WHERE consultora_id = $1
-       ORDER BY criado_em DESC LIMIT 1`,
+            `SELECT a.plano, a.status, a.trial_fim, a.periodo_fim,
+                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes, p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario, p.tem_relatorios
+             FROM assinaturas a
+             LEFT JOIN planos p ON a.plano = p.slug
+             WHERE a.consultora_id = $1
+             ORDER BY a.criado_em DESC LIMIT 1`,
             [req.consultora.id]
         );
 
@@ -463,7 +469,12 @@ router.post('/accept-terms', async (req, res, next) => {
 
         // Recalcula subscrição para montar a resposta completa
         const subResult = await pool.query(
-            `SELECT plano, status, trial_fim, periodo_fim FROM assinaturas WHERE consultora_id = $1 ORDER BY criado_em DESC LIMIT 1`,
+            `SELECT a.plano, a.status, a.trial_fim, a.periodo_fim,
+                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes, p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario, p.tem_relatorios
+             FROM assinaturas a
+             LEFT JOIN planos p ON a.plano = p.slug
+             WHERE a.consultora_id = $1
+             ORDER BY a.criado_em DESC LIMIT 1`,
             [consultora.id]
         );
         const sub = subResult.rows[0] || { plano: 'none', status: 'none' };
