@@ -62,6 +62,7 @@ const DOTERRA_PRODUCTS = [
     { nome: "Cipreste (Cypress)", cat: "Óleo Essencial" },
     { nome: "Zimbro (Juniper Berry)", cat: "Óleo Essencial" },
     { nome: "Arborvitae", cat: "Óleo Essencial" },
+    { nome: "Basil (Manjericão)", cat: "Óleo Essencial" },
     { nome: "Pinho Siberiano (Siberian Fir)", cat: "Óleo Essencial" },
     { nome: "Coentro (Coriander)", cat: "Óleo Essencial" },
     { nome: "Camomila Romana (Roman Chamomile)", cat: "Óleo Essencial" },
@@ -219,6 +220,9 @@ const DOTERRA_PRICES = {
     // Óleos adicionais doTERRA Brasil
     'Abeto Azul (Blue Spruce)':    { '15ml': { r: 248, m: 186 }, '5ml': { r: 105, m: 79 } },
     'Black Spruce':                { '15ml': { r: 248, m: 186 }, '5ml': { r: 105, m: 79 } },
+    'Basil (Manjericão)':          { '15ml': { r: 176, m: 132 }, '5ml': { r: 75, m: 56 } },
+    'Basil':                       { '15ml': { r: 176, m: 132 }, '5ml': { r: 75, m: 56 } },
+    'Manjericão':                  { '15ml': { r: 176, m: 132 }, '5ml': { r: 75, m: 56 } },
     'Cássia':                      { '15ml': { r: 191, m: 143 }, '5ml': { r: 81, m: 61 } },
     'Cássia (Cassia)':             { '15ml': { r: 191, m: 143 }, '5ml': { r: 81, m: 61 } },
     'Sándalo Havaiano':            { '5ml': { r: 385, m: 289 } },
