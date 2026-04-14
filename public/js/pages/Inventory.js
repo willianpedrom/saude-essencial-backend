@@ -435,8 +435,8 @@ export async function renderInventory(router) {
                 <thead style="background:var(--green-50);">
                     <tr>
                         <th style="padding:11px 16px; text-align:left; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Produto</th>
-                        <th style="padding:11px 8px; text-align:left; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Tamanho</th>
-                        <th style="padding:11px 8px; text-align:left; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Notas / Origem</th>
+                        <th style="padding:11px 8px; text-align:left; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Tam.</th>
+                        <th style="padding:11px 8px; text-align:left; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Preços (Custo / Regular / Membro / Lucro)</th>
                         <th style="padding:11px 8px; text-align:left; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Validade</th>
                         <th style="padding:11px 8px; text-align:left; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Uso</th>
                         <th style="padding:11px 8px; text-align:center; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Qtd.</th>
@@ -845,16 +845,33 @@ export async function renderInventory(router) {
                 ? `<span style="background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:0.72rem;">🏠 Pessoal</span>`
                 : `<span style="background:#f0fdf4;color:#166534;padding:2px 8px;border-radius:10px;font-size:0.72rem;">🛒 Venda</span>`;
 
+            // Célula de preços com custo, regular, membro e lucro estimado
+            const dp = getDotPrices(it.nome_produto, it.ml_tamanho);
+            const custo = it.preco_custo || null;
+            const priceCell = (() => {
+                const parts = [];
+                if (custo) parts.push(`<span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:6px;font-size:0.72rem;font-weight:600;white-space:nowrap;">💵 ${fmt_brl(custo)}</span>`);
+                if (dp) {
+                    parts.push(`<span style="background:#f0fdf4;color:#15803d;padding:2px 7px;border-radius:6px;font-size:0.72rem;font-weight:700;white-space:nowrap;" title="Preço Regular doTERRA">🟢 ${fmt_brl(dp.r)}</span>`);
+                    parts.push(`<span style="background:#eff6ff;color:#1d4ed8;padding:2px 7px;border-radius:6px;font-size:0.72rem;font-weight:700;white-space:nowrap;" title="Preço Membro doTERRA">🔵 ${fmt_brl(dp.m)}</span>`);
+                    if (custo) {
+                        const lucro = dp.r - custo;
+                        const pct = ((lucro / custo) * 100).toFixed(0);
+                        parts.push(`<span style="background:${lucro >= 0 ? '#fef9c3' : '#fee2e2'};color:${lucro >= 0 ? '#854d0e' : '#991b1b'};padding:2px 7px;border-radius:6px;font-size:0.72rem;font-weight:700;white-space:nowrap;" title="Lucro estimado (venda regular)">💰 ${fmt_brl(lucro)} (${pct}%)</span>`);
+                    }
+                }
+                if (!parts.length) return `<span style="color:var(--text-muted);font-size:0.8rem;">—</span>`;
+                return `<div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;">${parts.join('')}</div>`;
+            })();
+
             return `<tr style="border-bottom:1px solid var(--border); transition:background .1s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background=''">
                 <td style="padding:11px 16px;">
                     <div style="font-weight:600; font-size:0.9rem;">${esc(it.nome_produto)}</div>
                     <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${esc(it.categoria || '')}</div>
+                    ${it.notas ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;" title="${esc(it.notas)}">${esc(it.notas)}</div>` : ''}
                 </td>
                 <td style="padding:11px 8px; color:var(--text-muted); font-size:0.85rem; white-space:nowrap;">${esc(it.ml_tamanho || '—')}</td>
-                <td style="padding:11px 8px; font-size:0.8rem; color:var(--text-muted); max-width:150px;">
-                    <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(it.notas || '')}">${esc(it.notas || '—')}</div>
-                    ${it.preco_custo ? `<div style="font-size:0.72rem;color:#059669;font-weight:600;margin-top:2px;">${fmt_brl(it.preco_custo)}/un.</div>` : ''}
-                </td>
+                <td style="padding:11px 8px;">${priceCell}</td>
                 <td style="padding:11px 8px; white-space:nowrap;">${validBadge || '<span style="color:var(--text-muted);font-size:0.8rem;">—</span>'}</td>
                 <td style="padding:11px 8px;">${usoBadge}</td>
                 <td style="padding:11px 8px; text-align:center;">
