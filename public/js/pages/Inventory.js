@@ -409,6 +409,24 @@ const DOTERRA_PRICES = {
     'Yarrow Pom':                  { '15ml': { r: 485, m: 364 } },
     'Yarrow|Pom':                  { '15ml': { r: 485, m: 364 } },
     'Erva Baleeira':               { '15ml': { r: 209, m: 157 } },
+    // Óleos confirmados pelos usuários como faltando
+    'Cúrcuma (Turmeric)':          { '15ml': { r: 209, m: 157 }, '5ml': { r: 89, m: 67 } },
+    'Cúrcuma':                     { '15ml': { r: 209, m: 157 }, '5ml': { r: 89, m: 67 } },
+    'Curcuma':                     { '15ml': { r: 209, m: 157 }, '5ml': { r: 89, m: 67 } },
+    'Turmeric':                    { '15ml': { r: 209, m: 157 }, '5ml': { r: 89, m: 67 } },
+    'Tangerina':                   { '15ml': { r: 159, m: 119 }, '5ml': { r: 67, m: 50 } },
+    'Tangerine':                   { '15ml': { r: 159, m: 119 }, '5ml': { r: 67, m: 50 } },
+    'Limão Tahiti (Lime)':         { '15ml': { r: 135, m: 101 }, '5ml': { r: 57, m: 43 } },
+    'Limão Tahiti':                { '15ml': { r: 135, m: 101 }, '5ml': { r: 57, m: 43 } },
+    'Lime':                        { '15ml': { r: 135, m: 101 }, '5ml': { r: 57, m: 43 } },
+    'Eucalipto Radiata (Eucalyptus)': { '15ml': { r: 155, m: 116 }, '5ml': { r: 65, m: 49 } },
+    'Eucalipto Radiata':           { '15ml': { r: 155, m: 116 }, '5ml': { r: 65, m: 49 } },
+    'Orégano (Oregano)':           { '15ml': { r: 234, m: 176 }, '5ml': { r: 99, m: 74 } },
+    'Orégano':                     { '15ml': { r: 234, m: 176 }, '5ml': { r: 99, m: 74 } },
+    'Gerânio (Geranium)':          { '15ml': { r: 230, m: 173 }, '5ml': { r: 98, m: 74 } },
+    'Gerânio':                     { '15ml': { r: 230, m: 173 }, '5ml': { r: 98, m: 74 } },
+    'Copaíba (Copaiba)':           { '15ml': { r: 281, m: 211 }, '5ml': { r: 119, m: 89 } },
+    'Cúrcuma Cápsulas':            { 'Cápsulas': { r: 209, m: 157 } },
 };
 
 // Mapa de typos comuns e aliases de nome que não casam via fuzzy
