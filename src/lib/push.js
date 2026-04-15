@@ -54,10 +54,11 @@ async function broadcastPushNotification(payload, broadcastId = null) {
                 [target.id]
             );
 
-            // Personalização: substitui {nome} pelo primeiro nome do consultor
-            const firstName = target.nome.split(' ')[0];
+            // Personalização: substitui {nome} pelo primeiro nome do consultor no título e no corpo
+            const firstName = (target.nome || 'Consultor').split(' ')[0];
             const personalizedPayload = {
                 ...payload,
+                title: payload.title.replace(/{nome}/g, firstName),
                 body: payload.body.replace(/{nome}/g, firstName),
                 data: {
                     ...payload.data,

@@ -136,6 +136,11 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
         const { senha_hash, ...consultoraData } = consultora;
         const csrfToken = generateCsrfToken();
         
+        // Auto-promote if matches ADMIN_EMAIL
+        if (process.env.ADMIN_EMAIL && consultoraData.email === process.env.ADMIN_EMAIL) {
+            consultoraData.role = 'admin';
+        }
+        
         logger.info({ event: 'login_success', consultora_id: consultora.id, email: consultora.email, ip: req.ip });
         return res.json({ token, csrfToken, consultora: { ...consultoraData, assinatura: sub } });
     } catch (err) {
@@ -165,7 +170,12 @@ router.get('/me', authMiddleware, async (req, res, next) => {
             [req.consultora.id]
         );
 
-        return res.json({ ...rows[0], assinatura: subResult.rows[0] || null });
+        const consultoraData = rows[0];
+        if (process.env.ADMIN_EMAIL && consultoraData.email === process.env.ADMIN_EMAIL) {
+            consultoraData.role = 'admin';
+        }
+
+        return res.json({ ...consultoraData, assinatura: subResult.rows[0] || null });
     } catch (err) {
         console.error('Erro no /me:', err.message);
         return next(err);

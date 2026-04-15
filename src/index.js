@@ -372,6 +372,20 @@ async function runMigration() {
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_notif_broadcast_admin ON notification_broadcasts(admin_id)`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_notif_clicks_broadcast ON notification_clicks(broadcast_id)`);
 
+        // Seed initial pool if empty
+        const { rows: poolCount } = await pool.query('SELECT COUNT(*) FROM admin_incentive_pool');
+        if (parseInt(poolCount[0].count) === 0) {
+            await pool.query(`
+                INSERT INTO admin_incentive_pool (titulo, mensagem) VALUES 
+                ('Bom dia {nome}! ☀️', 'Que tal começar o dia revisando suas anamneses pendentes? Um bom acompanhamento é a chave do sucesso.'),
+                ('Dica do Dia 💧', 'Olá {nome}, você já conferiu os novos protocolos de óleos essenciais? Conhecimento ajuda a vender mais!'),
+                ('Sua Página Pessoal 🚀', 'Oi {nome}, já configurou seu link de divulgação hoje? Sua vitrine digital é seu melhor cartão de visitas.'),
+                ('Acompanhamento 📝', 'Olá {nome}, lembrou de fazer o follow-up com seus clientes de ontem? A atenção aos detalhes fideliza!'),
+                ('Meta de Hoje ✅', 'Vamos pra cima, {nome}! Qual é a sua meta de atendimentos para hoje? O sistema está pronto para te ajudar.')
+            `);
+            console.log('[Migration] Pool de incentivos populado com frases iniciais.');
+        }
+
         console.log('[Migration] Tabelas de notificação verificadas!');
 
         console.log('✅ Schema OK');
