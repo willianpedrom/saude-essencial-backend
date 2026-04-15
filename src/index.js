@@ -155,10 +155,28 @@ app.use('/api/assinatura/webhook',
 // Body parser
 app.use(express.json({ limit: '2mb' }));
 
-// ─── CSRF Protection ────────────────────────────────────────────────────────
-// Validates X-CSRF-Token header on all mutating requests (POST/PUT/PATCH/DELETE).
-// Skips GET/HEAD/OPTIONS and unauthenticated (public) routes automatically.
+// ─── CSRF Protection ───
+const jwt = require('jsonwebtoken'); // Para o parser de segurança
 const { csrfCheck } = require('./middleware/csrf');
+
+// Parser leve de JWT apenas para propósitos de segurança (CSRF/Limites)
+// O middleware 'auth' completo nos routers fará a validação de banco de dados
+app.use('/api', (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        try {
+            req.consultora = jwt.verify(token, process.env.JWT_SECRET, { 
+                issuer: 'gota-app', audience: 'gota-app-api' 
+            });
+        } catch (e) {
+            // Se o token for inválido, req.consultora continuará undefined
+            // O middleware auth detalhado lidará com isso mais tarde
+        }
+    }
+    next();
+});
+
 app.use('/api', csrfCheck);
 
 // Routes
@@ -321,7 +339,7 @@ async function runMigration() {
         // ── Admin Notifications Tables ──
         await pool.query(`CREATE TABLE IF NOT EXISTS admin_incentive_pool (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            titulo VARCHAR(100),
+            titulo VARCHAR(255) DEFAULT 'Incentivo',
             mensagem TEXT NOT NULL,
             ativo BOOLEAN DEFAULT TRUE,
             criado_em TIMESTAMPTZ DEFAULT NOW(),
@@ -340,15 +358,16 @@ async function runMigration() {
         )`);
 
         await pool.query(`CREATE TABLE IF NOT EXISTS notification_clicks (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             broadcast_id UUID NOT NULL REFERENCES notification_broadcasts(id) ON DELETE CASCADE,
             consultora_id UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
             clicado_em TIMESTAMPTZ DEFAULT NOW(),
-            UNIQUE(broadcast_id, consultora_id)
+            PRIMARY KEY (broadcast_id, consultora_id)
         )`);
 
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_notif_broadcast_admin ON notification_broadcasts(admin_id)`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_notif_clicks_broadcast ON notification_clicks(broadcast_id)`);
+
+        console.log('[Migration] Tabelas de notificação verificadas!');
 
         console.log('✅ Schema OK');
     } catch (err) {

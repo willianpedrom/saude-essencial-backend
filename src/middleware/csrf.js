@@ -39,6 +39,7 @@ function csrfCheck(req, res, next) {
 
     const csrfToken = req.headers['x-csrf-token'];
     if (!csrfToken) {
+        console.warn(`[CSRF] Bloqueado: Token ausente (${req.method} ${req.originalUrl})`);
         return res.status(403).json({
             error: 'Token CSRF ausente. Faça login novamente.',
             code: 'CSRF_MISSING',
@@ -47,6 +48,7 @@ function csrfCheck(req, res, next) {
 
     // Validate: token must be a 64-char hex string (32 bytes)
     if (!/^[a-f0-9]{64}$/i.test(csrfToken)) {
+        console.warn(`[CSRF] Bloqueado: Token inválido (${req.method} ${req.originalUrl})`);
         return res.status(403).json({
             error: 'Token CSRF inválido.',
             code: 'CSRF_INVALID',
