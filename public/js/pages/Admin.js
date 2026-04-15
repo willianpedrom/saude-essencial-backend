@@ -28,6 +28,13 @@ const adminApi = {
   createAviso: (data) => api('POST', '/api/admin/avisos', data),
   updateAviso: (id, data) => api('PUT', `/api/admin/avisos/${id}`, data),
   deleteAviso: (id) => api('DELETE', `/api/admin/avisos/${id}`),
+  // Notificações Broadcast
+  getNotifHistory: () => api('GET', '/api/admin-notifications/history'),
+  broadcastNotif: (data) => api('POST', '/api/admin-notifications/broadcast', data),
+  getNotifPool: () => api('GET', '/api/admin-notifications/pool'),
+  addToNotifPool: (data) => api('POST', '/api/admin-notifications/pool', data),
+  deleteFromNotifPool: (id) => api('DELETE', `/api/admin-notifications/pool/${id}`),
+  triggerNotifAutomation: () => api('POST', '/api/admin-notifications/trigger-automation', {}),
 };
 
 const PLAN_LABELS = {
@@ -173,9 +180,9 @@ export async function renderAdmin(router) {
 
       <!-- Abas -->
       <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--border-light);overflow-x:auto">
-        ${['membros', 'funil', 'planos', 'avisos', 'gateway'].map(tab => `
+        ${['membros', 'funil', 'planos', 'avisos', 'notificacoes', 'gateway'].map(tab => `
           <button id="tab-${tab}" class="btn ${activeTab === tab ? 'btn-primary' : 'btn-secondary'}" style="border-radius:8px 8px 0 0;border-bottom:none;padding:8px 18px;font-size:0.85rem;white-space:nowrap" data-tab="${tab}">
-            ${{ membros: '👥 Membros', funil: '🚀 Funil Trial', planos: '📦 Planos', avisos: '🔔 Avisos', gateway: '💳 Gateway' }[tab]}
+            ${{ membros: '👥 Membros', funil: '🚀 Funil Trial', planos: '📦 Planos', avisos: '🔔 Avisos', notificacoes: '📲 Notificações', gateway: '💳 Gateway' }[tab]}
           </button>`).join('')}
       </div>
 
@@ -207,6 +214,7 @@ export async function renderAdmin(router) {
     else if (activeTab === 'funil') renderFunil(tabContent);
     else if (activeTab === 'planos') renderPlanosSection(tabContent);
     else if (activeTab === 'avisos') renderAvisosSection(tabContent);
+    else if (activeTab === 'notificacoes') renderNotificacoesSection(tabContent);
     else if (activeTab === 'gateway') renderGatewaySection(tabContent);
   }
 
@@ -1424,3 +1432,178 @@ export async function renderAdmin(router) {
 
   await load();
 }
+
+  // ── Aba Notificações ───────────────────────────────────────────
+  async function renderNotificacoesSection(container) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">⏳ Carregando notificações...</div>`;
+    
+    let history = [];
+    let pool = [];
+    
+    async function loadData() {
+        try {
+            [history, pool] = await Promise.all([
+                adminApi.getNotifHistory().catch(() => []),
+                adminApi.getNotifPool().catch(() => [])
+            ]);
+        } catch (e) { toast('Erro ao carregar dados', 'error'); }
+    }
+
+    await loadData();
+
+    const render = () => {
+        container.innerHTML = `
+            <div class="form-grid">
+                <!-- Envio Imediato -->
+                <div class="card" style="grid-column: 1 / -1">
+                    <div style="padding:14px 18px;border-bottom:1px solid var(--border-light)">
+                        <h3 style="margin:0;font-size:0.95rem">📲 Enviar Notificação Imediata (Broadcast)</h3>
+                    </div>
+                    <div style="padding:20px">
+                        <div class="form-grid">
+                            <div class="form-group form-field-full">
+                                <label class="field-label">Título da Notificação</label>
+                                <input class="field-input" id="bn-titulo" placeholder="Ex: 👋 Olá {nome}, temos novidades!" />
+                                <small style="color:var(--text-muted)">Use {nome} para personalizar com o primeiro nome do consultor.</small>
+                            </div>
+                            <div class="form-group form-field-full">
+                                <label class="field-label">Mensagem (Corpo)</label>
+                                <textarea class="field-textarea" id="bn-mensagem" rows="2" placeholder="Descreva o incentivo ou comunicado..."></textarea>
+                            </div>
+                        </div>
+                        <div style="margin-top:16px; display:flex; justify-content:flex-end">
+                            <button class="btn btn-primary" id="btn-send-broadcast">🚀 Disparar para Todos</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pool de Incentivos -->
+                <div class="card">
+                    <div style="padding:14px 18px;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;align-items:center">
+                        <h3 style="margin:0;font-size:0.95rem">🔄 Pool de Automação Diária</h3>
+                        <button class="btn btn-secondary btn-sm" id="btn-add-pool">+ Adicionar</button>
+                    </div>
+                    <div style="padding:10px; max-height:400px; overflow-y:auto">
+                        ${pool.length === 0 ? '<div style="text-align:center;padding:20px;color:var(--text-muted)">Nenhuma frase cadastrada no pool.</div>' : pool.map(m => `
+                            <div style="padding:10px; border:1px solid var(--border-light); border-radius:8px; margin-bottom:8px; display:flex; gap:10px; align-items:flex-start; background:white">
+                                <div style="flex:1">
+                                    <div style="font-weight:700; font-size:0.85rem">${m.titulo}</div>
+                                    <div style="font-size:0.8rem; color:var(--text-muted)">${m.mensagem}</div>
+                                </div>
+                                <button class="btn btn-danger btn-sm" data-del-pool-id="${m.id}" style="padding:4px 8px">🗑️</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="padding:14px; border-top:1px solid var(--border-light); background:#f8fafc; border-radius:0 0 12px 12px">
+                        <button class="btn btn-secondary btn-sm" style="width:100%" id="btn-test-automation">⚡ Testar Sorteio Agora</button>
+                        <p style="font-size:0.7rem; color:var(--text-muted); text-align:center; margin-top:8px">Isso disparará uma frase aleatória do pool para todos os consultores.</p>
+                    </div>
+                </div>
+
+                <!-- Histórico de Envios -->
+                <div class="card">
+                    <div style="padding:14px 18px;border-bottom:1px solid var(--border-light)">
+                        <h3 style="margin:0;font-size:0.95rem">📜 Histórico e Métricas</h3>
+                    </div>
+                    <div style="overflow-x:auto">
+                        <table class="clients-table" style="font-size:0.8rem">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Título</th>
+                                    <th>Enviadas</th>
+                                    <th>Cliques (Leitura)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${history.length === 0 ? '<tr><td colspan="4" style="text-align:center;padding:20px">Nenhum envio registrado.</td></tr>' : history.map(h => {
+                                    const rate = h.destinatarios_qtd > 0 ? Math.round((h.cliques_qtd / h.destinatarios_qtd) * 100) : 0;
+                                    return `
+                                    <tr>
+                                        <td>${new Date(h.criado_em).toLocaleDateString('pt-BR')}</td>
+                                        <td>
+                                            <div style="font-weight:600">${h.titulo}</div>
+                                            <div style="font-size:0.7rem; color:var(--text-muted); max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${h.mensagem}</div>
+                                        </td>
+                                        <td style="text-align:center">${h.destinatarios_qtd}</td>
+                                        <td style="text-align:center">
+                                            <div style="font-weight:700; color:var(--primary)">${h.cliques_qtd}</div>
+                                            <div style="font-size:0.65rem; color:var(--text-muted)">${rate}% de abertura</div>
+                                        </td>
+                                    </tr>
+                                `}).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Eventos
+        container.querySelector('#btn-send-broadcast')?.addEventListener('click', async () => {
+            const titulo = document.getElementById('bn-titulo')?.value?.trim();
+            const mensagem = document.getElementById('bn-mensagem')?.value?.trim();
+            if (!titulo || !mensagem) return toast('Preencha título e mensagem', 'error');
+
+            if (!confirm(`Confirmar envio em massa para TODOS os consultores?`)) return;
+
+            try {
+                const res = await adminApi.broadcastNotif({ titulo, mensagem });
+                toast(`Sucesso! Notificação enviada para ${res.sentCount} dispositivos.`);
+                await loadData();
+                render();
+            } catch (e) { toast('Erro no envio', 'error'); }
+        });
+
+        container.querySelector('#btn-add-pool')?.addEventListener('click', () => {
+            modal('➕ Adicionar ao Pool de Incentivos', `
+                <div class="form-group" style="margin-bottom:12px">
+                    <label class="field-label">Título</label>
+                    <input class="field-input" id="pool-titulo" placeholder="Ex: Dica do Dia" />
+                </div>
+                <div class="form-group">
+                    <label class="field-label">Mensagem</label>
+                    <textarea class="field-textarea" id="pool-mensagem" rows="3" placeholder="Olá {nome}, ..."></textarea>
+                </div>
+            `, {
+                confirmLabel: 'Salvar',
+                onConfirm: async () => {
+                    const titulo = document.getElementById('pool-titulo')?.value;
+                    const mensagem = document.getElementById('pool-mensagem')?.value;
+                    if(!mensagem) return false;
+                    try {
+                        await adminApi.addToNotifPool({ titulo, mensagem });
+                        toast('Mensagem adicionada ao pool!');
+                        await loadData();
+                        render();
+                    } catch(e) { toast('Erro ao salvar', 'error'); }
+                }
+            });
+        });
+
+        container.querySelectorAll('[data-del-pool-id]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.dataset.delPoolId;
+                if(!confirm('Remover esta frase do pool?')) return;
+                try {
+                    await adminApi.deleteFromNotifPool(id);
+                    toast('Removido');
+                    await loadData();
+                    render();
+                } catch(e) { toast('Erro ao remover', 'error'); }
+            });
+        });
+
+        container.querySelector('#btn-test-automation')?.addEventListener('click', async () => {
+            if(!confirm('Deseja sortear e disparar uma notificação do pool agora?')) return;
+            try {
+                const res = await adminApi.triggerNotifAutomation();
+                toast(`Automação disparada! Mensagem: ${res.message.substring(0, 30)}...`);
+                await loadData();
+                render();
+            } catch(e) { toast('Erro na automação', 'error'); }
+        });
+    };
+
+    render();
+  }

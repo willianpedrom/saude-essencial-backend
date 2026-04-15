@@ -25,31 +25,79 @@ async function sendPushNotification(consultoraId, payload) {
         );
 
         if (subs.length === 0) return;
-
-        const pushPayload = JSON.stringify(payload);
-
-        const promises = subs.map(sub => {
-            const pushSubscription = {
-                endpoint: sub.endpoint,
-                keys: sub.keys
-            };
-
-            return webpush.sendNotification(pushSubscription, pushPayload)
-                .catch(async (err) => {
-                    if (err.statusCode === 404 || err.statusCode === 410) {
-                        // Subscrição expirada ou inválida, remover do banco
-                        console.log(`[Push] Removendo subscrição inválida: ${sub.id}`);
-                        await pool.query('DELETE FROM push_subscriptions WHERE id = $1', [sub.id]);
-                    } else {
-                        console.error('[Push] Erro ao enviar:', err);
-                    }
-                });
-        });
-
-        await Promise.all(promises);
+        return _sendToSubscriptions(subs, payload);
     } catch (err) {
         console.error('[Push] Erro sistêmico:', err);
     }
 }
 
-module.exports = { sendPushNotification, vapidPublicKey };
+/**
+ * Envia uma notificação para TODOS os consultores ativos (Broadcast).
+ * @param {object} payload { title, body, icon, data }
+ * @param {string} broadcastId ID do broadcast para rastreamento de cliques
+ */
+async function broadcastPushNotification(payload, broadcastId = null) {
+    try {
+        // Busca todos os consultores que possuem ao menos uma subscrição
+        const { rows: consultants } = await pool.query(`
+            SELECT DISTINCT c.id, c.nome 
+            FROM consultoras c
+            JOIN push_subscriptions ps ON ps.consultora_id = c.id
+        `);
+
+        console.log(`[Push] Iniciando broadcast para ${consultants.length} consultores.`);
+        
+        let totalSent = 0;
+        for (const target of consultants) {
+            const { rows: subs } = await pool.query(
+                'SELECT * FROM push_subscriptions WHERE consultora_id = $1',
+                [target.id]
+            );
+
+            // Personalização: substitui {nome} pelo primeiro nome do consultor
+            const firstName = target.nome.split(' ')[0];
+            const personalizedPayload = {
+                ...payload,
+                body: payload.body.replace(/{nome}/g, firstName),
+                data: {
+                    ...payload.data,
+                    broadcastId: broadcastId,
+                    consultoraId: target.id
+                }
+            };
+
+            await _sendToSubscriptions(subs, personalizedPayload);
+            totalSent++;
+        }
+
+        return totalSent;
+    } catch (err) {
+        console.error('[Push] Erro no broadcast:', err);
+        return 0;
+    }
+}
+
+/**
+ * Helper interno para disparar para uma lista de subscrições
+ */
+async function _sendToSubscriptions(subs, payload) {
+    const pushPayload = JSON.stringify(payload);
+    const promises = subs.map(sub => {
+        const pushSubscription = {
+            endpoint: sub.endpoint,
+            keys: typeof sub.keys === 'string' ? JSON.parse(sub.keys) : sub.keys
+        };
+
+        return webpush.sendNotification(pushSubscription, pushPayload)
+            .catch(async (err) => {
+                if (err.statusCode === 404 || err.statusCode === 410) {
+                    await pool.query('DELETE FROM push_subscriptions WHERE id = $1', [sub.id]);
+                } else {
+                    console.error('[Push] Erro ao enviar subscrição:', err.message);
+                }
+            });
+    });
+    return Promise.all(promises);
+}
+
+module.exports = { sendPushNotification, broadcastPushNotification, vapidPublicKey };

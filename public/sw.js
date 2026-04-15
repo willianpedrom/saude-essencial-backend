@@ -53,7 +53,23 @@ self.addEventListener('push', e => {
 
 self.addEventListener('notificationclick', e => {
     e.notification.close();
-    const urlToOpen = e.notification.data?.url || '/';
+    const data = e.notification.data || {};
+    const urlToOpen = data.url || '/';
+
+    // Rastreamento de Cliques (Métricas de Admin)
+    if (data.broadcastId && data.consultoraId) {
+        e.waitUntil(
+            fetch('/api/admin-notifications/track-click', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    broadcastId: data.broadcastId,
+                    consultoraId: data.consultoraId
+                })
+            }).catch(err => console.error('[SW] Track click error:', err))
+        );
+    }
+
     e.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
             for (let client of windowClients) {
