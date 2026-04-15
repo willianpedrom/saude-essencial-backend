@@ -315,14 +315,40 @@ async function runMigration() {
         )`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_push_consultora ON push_subscriptions(consultora_id)`);
 
-        // Promote ADMIN_EMAIL to role='admin' (safe to run every startup — idempotent)
-        if (process.env.ADMIN_EMAIL) {
-            await pool.query(
-                `UPDATE consultoras SET role = 'admin' WHERE LOWER(TRIM(email)) = LOWER(TRIM($1)) AND role != 'admin'`,
-                [process.env.ADMIN_EMAIL]
-            );
             console.log(`👑 Admin: ${process.env.ADMIN_EMAIL}`);
         }
+
+        // ── Admin Notifications Tables ──
+        await pool.query(`CREATE TABLE IF NOT EXISTS admin_incentive_pool (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            titulo VARCHAR(100),
+            mensagem TEXT NOT NULL,
+            ativo BOOLEAN DEFAULT TRUE,
+            criado_em TIMESTAMPTZ DEFAULT NOW(),
+            atualizado_em TIMESTAMPTZ DEFAULT NOW()
+        )`);
+
+        await pool.query(`CREATE TABLE IF NOT EXISTS notification_broadcasts (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            admin_id UUID REFERENCES consultoras(id) ON DELETE SET NULL,
+            titulo VARCHAR(255) NOT NULL,
+            mensagem TEXT NOT NULL,
+            tipo VARCHAR(50) DEFAULT 'manual',
+            destinatarios_qtd INT DEFAULT 0,
+            cliques_qtd INT DEFAULT 0,
+            criado_em TIMESTAMPTZ DEFAULT NOW()
+        )`);
+
+        await pool.query(`CREATE TABLE IF NOT EXISTS notification_clicks (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            broadcast_id UUID NOT NULL REFERENCES notification_broadcasts(id) ON DELETE CASCADE,
+            consultora_id UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+            clicado_em TIMESTAMPTZ DEFAULT NOW(),
+            UNIQUE(broadcast_id, consultora_id)
+        )`);
+
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_notif_broadcast_admin ON notification_broadcasts(admin_id)`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_notif_clicks_broadcast ON notification_clicks(broadcast_id)`);
 
         console.log('✅ Schema OK');
     } catch (err) {
