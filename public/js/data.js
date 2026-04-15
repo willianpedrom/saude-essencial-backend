@@ -986,6 +986,117 @@ export const PROTOCOLS = {
         expectedResults: 'Redução do inchaço, pernas mais leves.',
         affirmation: 'Seu corpo pode drenar o que não precisa mais.',
     },
+
+    // --- PROTOCOLOS ESPECÍFICOS EBOOKS ---
+
+    'Enjoos na gravidez': {
+        focus: 'Gestação Mamãe', icon: '🤢',
+        therapeuticObjective: 'Alívio natural de náuseas e enjoos matinais.',
+        oils: [
+            { name: 'Gengibre', fn: 'Digestivo e anti-enjoo' },
+            { name: 'Lemon', fn: 'Refrescante e purificante' },
+            { name: 'Bergamota', fn: 'Equilíbrio emocional e digestivo' },
+            { name: 'Cardamomo', fn: 'Suporte digestivo suave' },
+        ],
+        routine: {
+            morning: ['Inalação direta de Lemon (concha com as mãos)'],
+            afternoon: ['Inalação de Gengibre se houver enjoo'],
+            night: ['Difusor ultrassônico com Bergamota'],
+        },
+        safety: 'Uso aromático e tópico diluído a 2%. Evitar ingestão na gestação.',
+        expectedResults: 'Redução das náuseas e maior conforto digestivo.',
+        affirmation: 'Seu corpo está gerando vida. Cada pausa para respirar traz alívio.',
+    },
+    'Sono na gravidez': {
+        focus: 'Gestação Mamãe', icon: '😴',
+        therapeuticObjective: 'Promoção de sono reparador e redução da ansiedade noturna.',
+        oils: [
+            { name: 'Lavanda', fn: 'Calmante e relaxante' },
+            { name: 'Ylang Ylang', fn: 'Equilíbrio emocional' },
+            { name: 'Wild Orange', fn: 'Redução da ansiedade' },
+            { name: 'Vetiver', fn: 'Aterramento e sono profundo' },
+        ],
+        routine: {
+            morning: ['Wild Orange no difusor'],
+            afternoon: ['Ylang Ylang nos pulsos'],
+            night: ['Lavanda + Vetiver nas solas dos pés (diluído)', 'Lavanda no difusor'],
+        },
+        safety: 'Diluição a 2%. Evitar aplicação no abdômen.',
+        expectedResults: 'Sono mais profundo e despertar com disposição.',
+        affirmation: 'Você e seu bebê merecem um descanso sagrado.',
+    },
+    'Estrias na gravidez': {
+        focus: 'Gestação Mamãe', icon: '✨',
+        therapeuticObjective: 'Eloasticidade da pele e prevenção de marcas.',
+        oils: [
+            { name: 'Lavanda', fn: 'Regeneração tecidual' },
+            { name: 'Frankincense', fn: 'Saúde celular da pele' },
+            { name: 'Helichrysum', fn: 'Cicatrizante potente' },
+        ],
+        routine: {
+            morning: ['Massagem nas áreas de interesse com diluição a 2%'],
+            afternoon: [],
+            night: ['Massagem após o banho com Frankincense e Lavanda'],
+        },
+        safety: 'Sempre diluir em óleo vegetal de boa qualidade (Amêndoas ou Coco).',
+        expectedResults: 'Pele mais hidratada e redução na aparência de marcas.',
+        affirmation: 'Sua pele é resiliente e se transforma com amor.',
+    },
+    'Retenção de líquidos na gravidez': {
+        focus: 'Gestação Mamãe', icon: '🦵',
+        therapeuticObjective: 'Drenagem linfática e alívio do inchaço gestacional.',
+        oils: [
+            { name: 'Wild Orange', fn: 'Drenagem e alegria' },
+            { name: 'Grapefruit', fn: 'Estimulante linfático' },
+            { name: 'Tangerina', fn: 'Dreno e detox' },
+            { name: 'Lemon', fn: 'Purificante' },
+        ],
+        routine: {
+            morning: ['Massagem ascendente nas pernas (diluído)'],
+            afternoon: ['Escalda-pés com 4 gotas de Lemon'],
+            night: ['Massagem relaxante nos pés com Tangerina'],
+        },
+        safety: 'Óleos cítricos: após uso tópico, evitar sol por 12h.',
+        expectedResults: 'Pele mais firme e leveza nas pernas.',
+        affirmation: 'Seu corpo flui em harmonia com a vida.',
+    },
+
+    // --- SINERGIAS ESPECIAIS (ROLL-ONS) ---
+
+    'Equilíbrio Emocional (Sinergia)': {
+        focus: 'Sinergia Terapêutica', icon: '⚖️',
+        therapeuticObjective: 'Estabilizar emoções e reduzir ansiedade crônica.',
+        oils: [
+            { name: 'Lavanda', fn: '8 gotas' },
+            { name: 'Vetiver', fn: '5 gotas' },
+            { name: 'Lemongrass', fn: '5 gotas' },
+        ],
+        routine: {
+            morning: ['Aplicar roll-on nos pulsos'],
+            afternoon: ['Aplicar na nuca em momentos de agitação'],
+            night: ['Inalar profundamente da palma das mãos'],
+        },
+        instructions: 'Misturar em frasco roll-on de 10ml e completar com Óleo de Coco.',
+        expectedResults: 'Sentimento de calma constante e maior resiliência.',
+        affirmation: 'Eu estou no controle da minha paz interior.',
+    },
+    'Foco e Concentração (Sinergia)': {
+        focus: 'Sinergia Terapêutica', icon: '🎯',
+        therapeuticObjective: 'Clareza mental e produtividade prolongada.',
+        oils: [
+            { name: 'Lemongrass', fn: '5 gotas (Clareza mental)' },
+            { name: 'Peppermint', fn: '5 gotas (Alerta)' },
+            { name: 'Vetiver', fn: '3 gotas (Organização)' },
+        ],
+        routine: {
+            morning: ['Aplicar nas têmporas e nuca antes de trabalhar'],
+            afternoon: ['Inalar se sentir cansaço mental'],
+            night: [],
+        },
+        instructions: 'Diluir em 10ml de óleo carreador.',
+        expectedResults: 'Melhor foco em tarefas complexas e menos distração.',
+        affirmation: 'Minha mente é livre e focada no que importa.',
+    },
 };
 
 export function analyzeAnamnesis(answers) {
@@ -1036,25 +1147,45 @@ export function analyzeAnamnesis(answers) {
 
     const specialConditions = answers.special_conditions || [];
     const chronicConditions = answers.chronic_conditions || [];
-    const isSensitive = specialConditions.some(c => c !== 'Nenhuma destas') || chronicConditions.some(c => ['Hipertensão', 'Epilepsia'].includes(c));
     
-    // SAFETY FILTERING
-    if (isSensitive) {
-        const blockedOilsRegex = /Wintergreen|Gaultéria|Peppermint|Hortelã-pimenta|Hortelã pimenta|Sálvia|Clary Sage|Alecrim|Deep Blue|PastTense/i;
+    // SAFETY FILTERING (KNOWLEDGE FROM EBOOKS)
+    const isPregnant = specialConditions.includes('Gestante');
+    const isNursing = specialConditions.includes('Lactante');
+    const isChild = specialConditions.some(c => c.includes('Criança'));
+    const hasHypertension = chronicConditions.includes('Hipertensão') || specialConditions.includes('Hipertensão (Pressão Alta)');
+    const hasEpilepsy = chronicConditions.includes('Epilepsia') || specialConditions.includes('Epilepsia');
+
+    if (isPregnant || isNursing || isChild || hasHypertension || hasEpilepsy) {
+        // List of oils to avoid (compiled from eBooks)
+        let blockedOilsRegex = /Wintergreen|Gaultéria|Clary Sage|Sálvia|Alecrim|Rosemary|Manjericão|Basil|Tomilho|Thyme|Erva Doce|Fennel|Zimbro|Juniper|Cedro|Cedarwood|Cipreste|Cypress|Cravo|Clove|Coentro|Coriander|Jasmim|Jasmine|Manjerona|Marjoram|Mirra|Myrrh|Orégano|Oregano/i;
         
+        if (isPregnant || isNursing) {
+            blockedOilsRegex = new RegExp(blockedOilsRegex.source + '|Peppermint|Hortelã-pimenta|Hortelã pimenta', 'i');
+        }
+        if (isChild) {
+            blockedOilsRegex = new RegExp(blockedOilsRegex.source + '|Eucalyptus|Eucalipto', 'i');
+        }
+
         protocols.forEach(p => {
-            // Remove contra-indicated oils from the selection list
+            // Remove contra-indicated oils
             if (p.oils) {
                 p.oils = p.oils.filter(oil => !blockedOilsRegex.test(oil.name) && !blockedOilsRegex.test(oil.fn));
             }
 
-            // Remove strings in the routine that mention the blocked oils
+            // Clean routine steps
             if (p.routine) {
                 ['morning', 'afternoon', 'night'].forEach(period => {
                     if (p.routine[period]) {
                         p.routine[period] = p.routine[period].filter(step => !blockedOilsRegex.test(step));
                     }
                 });
+            }
+
+            // Safe dilution alerts
+            if (isPregnant) {
+                p.safetyAlert = "Ajustado para gestantes: Diluição a 2% (4 gotas por 10ml). Evite o abdômen.";
+            } else if (isChild) {
+                p.safetyAlert = "Ajustado para crianças: Diluição a 1% (2 gotas por 10ml).";
             }
         });
     }
@@ -1069,6 +1200,9 @@ export function analyzeAnamnesis(answers) {
         energyLevel,
         mainComplaint: answers.main_complaint || '',
         primaryAxis,
+        isPregnant,
+        isNursing,
+        isChild
     };
 }
 
