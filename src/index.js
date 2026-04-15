@@ -337,11 +337,10 @@ async function runMigration() {
         if (process.env.ADMIN_EMAIL) {
             await pool.query("UPDATE consultoras SET role = 'admin' WHERE email = $1", [process.env.ADMIN_EMAIL]);
         }
-        // 2. Fallback: Promote the first user ever registered if no admin exists
+        // 2. Fallback: Promote the first user ever registered (System Owner)
         await pool.query(`
             UPDATE consultoras SET role = 'admin'
             WHERE id = (SELECT id FROM consultoras ORDER BY criado_em ASC LIMIT 1)
-            AND NOT EXISTS (SELECT 1 FROM consultoras WHERE role = 'admin')
         `);
         console.log('[Migration] Verificação de permissões administrativas concluída.');
 
