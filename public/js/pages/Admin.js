@@ -1552,7 +1552,7 @@ export async function renderAdmin(router) {
                 toast(`Sucesso! Notificação enviada para ${res.sentCount} dispositivos.`);
                 await loadData();
                 render();
-            } catch (e) { toast('Erro no envio', 'error'); }
+            } catch (e) { toast('Erro: ' + e.message, 'error'); }
         });
 
         container.querySelector('#btn-add-pool')?.addEventListener('click', () => {
