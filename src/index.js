@@ -332,8 +332,13 @@ async function runMigration() {
             atualizado_em TIMESTAMPTZ DEFAULT NOW()
         )`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_push_consultora ON push_subscriptions(consultora_id)`);
-
-            console.log(`👑 Admin: ${process.env.ADMIN_EMAIL}`);
+        // Promoting admin if ADMIN_EMAIL is set
+        if (process.env.ADMIN_EMAIL) {
+            await pool.query(
+                "UPDATE consultoras SET role = 'admin' WHERE email = $1",
+                [process.env.ADMIN_EMAIL]
+            );
+            console.log(`👑 Admin Promoted: ${process.env.ADMIN_EMAIL}`);
         }
 
         // ── Admin Notifications Tables ──
