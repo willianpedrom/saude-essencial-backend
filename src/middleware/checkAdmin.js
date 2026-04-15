@@ -7,11 +7,18 @@ module.exports = async function checkAdmin(req, res, next) {
         }
 
         const { rows } = await pool.query(
-            'SELECT role FROM consultoras WHERE id = $1',
+            'SELECT email, role FROM consultoras WHERE id = $1',
             [req.consultora.id]
         );
 
-        if (rows.length === 0 || rows[0].role !== 'admin') {
+        if (rows.length === 0) {
+            return res.status(401).json({ error: 'Usuário não encontrado.' });
+        }
+
+        const consultora = rows[0];
+        const isSystemAdmin = process.env.ADMIN_EMAIL && consultora.email === process.env.ADMIN_EMAIL;
+
+        if (consultora.role !== 'admin' && !isSystemAdmin) {
             return res.status(403).json({ error: 'Acesso negado. Requer privilégios de administrador.' });
         }
 
