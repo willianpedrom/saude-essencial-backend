@@ -156,22 +156,22 @@ app.use('/api/assinatura/webhook',
 app.use(express.json({ limit: '2mb' }));
 
 // ─── CSRF Protection ───
-const jwt = require('jsonwebtoken'); // Para o parser de segurança
+// Valida X-CSRF-Token em requisições que modificam dados (POST/PUT/DELETE).
+// Pula automaticamente se não há Authorization header (rota pública)
+// ou se é um método seguro (GET/HEAD/OPTIONS).
 const { csrfCheck } = require('./middleware/csrf');
 
-// Parser leve de JWT apenas para propósitos de segurança (CSRF/Limites)
-// O middleware 'auth' completo nos routers fará a validação de banco de dados
+// Pre-parser leve: decodifica o JWT sem verificar (apenas para o csrfCheck
+// detectar se há usuário autenticado). O middleware auth.js nos routers
+// faz a verificação completa e segura.
+const jwt = require('jsonwebtoken');
 app.use('/api', (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-        const token = authHeader.split(' ')[1];
-        try {
-            req.consultora = jwt.verify(token, process.env.JWT_SECRET, { 
-                issuer: 'gota-app', audience: 'gota-app-api' 
-            });
-        } catch (e) {
-            // Se o token for inválido, req.consultora continuará undefined
-            // O middleware auth detalhado lidará com isso mais tarde
+    if (!req.consultora) {
+        const authHeader = req.headers['authorization'];
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            // decode sem verificar assinatura — apenas para popular req.consultora
+            // para que csrfCheck saiba se a rota é autenticada
+            req.consultora = jwt.decode(authHeader.split(' ')[1]) || undefined;
         }
     }
     next();
