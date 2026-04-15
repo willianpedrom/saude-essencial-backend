@@ -233,8 +233,8 @@ const DOTERRA_PRICES = {
     'Basil (Manjericão)':          { '15ml': { r: 245, m: 184 } },
     'Basil':                       { '15ml': { r: 245, m: 184 } },
     'Manjericão':                  { '15ml': { r: 245, m: 184 } },
-    'Bergamota':                   { '15ml': { r: 239, m: 179 } },
-    'Bergamot':                    { '15ml': { r: 239, m: 179 } },
+    'Bergamota':                   { '15ml': { r: 239, m: 179 }, '5ml': { r: 113, m: 85 } },
+    'Bergamot':                    { '15ml': { r: 239, m: 179 }, '5ml': { r: 113, m: 85 } },
     'Pimenta Preta (Black Pepper)':{ '5ml': { r: 188, m: 141 } },
     'Pimenta Preta':               { '5ml': { r: 188, m: 141 } },
     'Black Spruce':                { '5ml': { r: 132, m: 99 } },
@@ -245,37 +245,37 @@ const DOTERRA_PRICES = {
     'Cardamomo':                   { '5ml': { r: 217, m: 163 } },
     'Cássia (Cassia)':             { '15ml': { r: 148, m: 111 } },
     'Cássia':                      { '15ml': { r: 148, m: 111 } },
-    'Cedro (Cedarwood)':           { '15ml': { r: 109, m: 82 } },
-    'Cedro':                       { '15ml': { r: 109, m: 82 } },
+    'Cedro (Cedarwood)':           { '15ml': { r: 109, m: 82 }, '5ml': { r: 62, m: 47 } },
+    'Cedro':                       { '15ml': { r: 109, m: 82 }, '5ml': { r: 62, m: 47 } },
     'Celery Seed':                 { '15ml': { r: 255, m: 191 } },
     'Cilantro':                    { '15ml': { r: 220, m: 165 } },
     'Citronela':                   { '15ml': { r: 99, m: 74 } },
     'Sálvia (Clary Sage)':         { '15ml': { r: 316, m: 237 } },
     'Sálvia Esclareia':            { '15ml': { r: 316, m: 237 } },
     'Clary Sage':                  { '15ml': { r: 316, m: 237 } },
-    'Cravo (Clove)':               { '15ml': { r: 129, m: 97 } },
-    'Cravo':                       { '15ml': { r: 129, m: 97 } },
-    'Copaíba':                     { '15ml': { r: 287, m: 215 } },
-    'Copaíba (Copaiba)':           { '15ml': { r: 287, m: 215 } },
+    'Cravo (Clove)':               { '15ml': { r: 129, m: 97 }, '5ml': { r: 71, m: 53 } },
+    'Cravo':                       { '15ml': { r: 129, m: 97 }, '5ml': { r: 71, m: 53 } },
+    'Copaíba':                     { '15ml': { r: 287, m: 215 }, '5ml': { r: 121, m: 91 } },
+    'Copaíba (Copaiba)':           { '15ml': { r: 287, m: 215 }, '5ml': { r: 121, m: 91 } },
     'Coentro (Coriander)':         { '15ml': { r: 167, m: 125 } },
     'Coentro':                     { '15ml': { r: 167, m: 125 } },
-    'Cipreste (Cypress)':          { '15ml': { r: 141, m: 106 } },
-    'Cipreste':                    { '15ml': { r: 141, m: 106 } },
+    'Cipreste (Cypress)':          { '15ml': { r: 141, m: 106 }, '5ml': { r: 77, m: 58 } },
+    'Cipreste':                    { '15ml': { r: 141, m: 106 }, '5ml': { r: 77, m: 58 } },
     'Douglas Fir':                 { '5ml': { r: 179, m: 134 } },
     'Erva Baleeira':               { '15ml': { r: 233, m: 179 } },
-    'Eucalipto':                   { '15ml': { r: 153, m: 115 } },
-    'Eucalipto Radiata':           { '15ml': { r: 153, m: 115 } },
-    'Eucalyptus':                  { '15ml': { r: 153, m: 115 } },
-    'Erva Doce (Fennel)':          { '15ml': { r: 109, m: 82 } },
-    'Erva Doce':                   { '15ml': { r: 109, m: 82 } },
-    'Fennel':                      { '15ml': { r: 109, m: 82 } },
+    'Eucalipto':                   { '15ml': { r: 153, m: 115 }, '5ml': { r: 84, m: 63 } },
+    'Eucalipto Radiata':           { '15ml': { r: 153, m: 115 }, '5ml': { r: 84, m: 63 } },
+    'Eucalyptus':                  { '15ml': { r: 153, m: 115 }, '5ml': { r: 84, m: 63 } },
+    'Erva Doce (Fennel)':          { '15ml': { r: 109, m: 82 }, '5ml': { r: 60, m: 45 } },
+    'Erva Doce':                   { '15ml': { r: 109, m: 82 }, '5ml': { r: 60, m: 45 } },
+    'Fennel':                      { '15ml': { r: 109, m: 82 }, '5ml': { r: 60, m: 45 } },
     'Olíbano (Frankincense)':      { '15ml': { r: 539, m: 389 }, '5ml': { r: 204, m: 153 } },
     'Olíbano':                     { '15ml': { r: 539, m: 389 }, '5ml': { r: 204, m: 153 } },
     'Frankincense':                { '15ml': { r: 539, m: 389 }, '5ml': { r: 204, m: 153 } },
-    'Gerânio (Geranium)':          { '15ml': { r: 255, m: 191 } },
-    'Gerânio':                     { '15ml': { r: 255, m: 191 } },
-    'Gengibre (Ginger)':           { '15ml': { r: 287, m: 215 } },
-    'Gengibre':                    { '15ml': { r: 287, m: 215 } },
+    'Gerânio (Geranium)':          { '15ml': { r: 255, m: 191 }, '5ml': { r: 120, m: 90 } },
+    'Gerânio':                     { '15ml': { r: 255, m: 191 }, '5ml': { r: 120, m: 90 } },
+    'Gengibre (Ginger)':           { '15ml': { r: 287, m: 215 }, '5ml': { r: 133, m: 100 } },
+    'Gengibre':                    { '15ml': { r: 287, m: 215 }, '5ml': { r: 133, m: 100 } },
     'Toranja (Grapefruit)':        { '15ml': { r: 155, m: 116 } },
     'Toranja':                     { '15ml': { r: 155, m: 116 } },
     'Green Mandarin':              { '15ml': { r: 219, m: 164 } },
@@ -287,10 +287,10 @@ const DOTERRA_PRICES = {
     'Helicriso':                   { '5ml': { r: 651, m: 488 } },
     'Zimbro (Juniper Berry)':      { '5ml': { r: 157, m: 118 } },
     'Zimbro':                      { '5ml': { r: 157, m: 118 } },
-    'Lavanda (Lavender)':          { '15ml': { r: 197, m: 148 } },
-    'Lavanda':                     { '15ml': { r: 197, m: 148 } },
-    'Limão Siciliano (Lemon)':     { '15ml': { r: 92, m: 69 } },
-    'Limão Siciliano':             { '15ml': { r: 92, m: 69 } },
+    'Lavanda (Lavender)':          { '15ml': { r: 197, m: 148 }, '5ml': { r: 89, m: 67 } },
+    'Lavanda':                     { '15ml': { r: 197, m: 148 }, '5ml': { r: 89, m: 67 } },
+    'Limão Siciliano (Lemon)':     { '15ml': { r: 92, m: 69 }, '5ml': { r: 49, m: 37 } },
+    'Limão Siciliano':             { '15ml': { r: 92, m: 69 }, '5ml': { r: 49, m: 37 } },
     'Lemon Eucalyptus':            { '15ml': { r: 89, m: 67 } },
     'Capim-Limão (Lemongrass)':    { '15ml': { r: 85, m: 64 } },
     'Capim-Limão':                 { '15ml': { r: 85, m: 64 } },
@@ -300,33 +300,33 @@ const DOTERRA_PRICES = {
     'Madagascar Vanilla':          { '5ml': { r: 276, m: 207 } },
     'Manjerona (Marjoram)':        { '15ml': { r: 171, m: 128 } },
     'Manjerona':                   { '15ml': { r: 171, m: 128 } },
-    'Melaleuca (Tea Tree)':        { '15ml': { r: 163, m: 122 } },
-    'Melaleuca':                   { '15ml': { r: 163, m: 122 } },
+    'Melaleuca (Tea Tree)':        { '15ml': { r: 163, m: 122 }, '5ml': { r: 75, m: 56 } },
+    'Melaleuca':                   { '15ml': { r: 163, m: 122 }, '5ml': { r: 75, m: 56 } },
     'Melissa':                     { '5ml': { r: 785, m: 589 } },
     'Mirra (Myrrh)':               { '15ml': { r: 524, m: 393 } },
     'Mirra':                       { '15ml': { r: 524, m: 393 } },
-    'Orégano (Oregano)':           { '15ml': { r: 175, m: 131 } },
-    'Orégano':                     { '15ml': { r: 175, m: 131 } },
+    'Orégano (Oregano)':           { '15ml': { r: 175, m: 131 }, '5ml': { r: 89, m: 67 } },
+    'Orégano':                     { '15ml': { r: 175, m: 131 }, '5ml': { r: 89, m: 67 } },
     'Patchouli':                   { '15ml': { r: 235, m: 176 } },
-    'Hortelã-Pimenta (Peppermint)':{ '15ml': { r: 177, m: 133 } },
-    'Hortelã-Pimenta':             { '15ml': { r: 177, m: 133 } },
+    'Hortelã-Pimenta (Peppermint)':{ '15ml': { r: 177, m: 133 }, '5ml': { r: 82, m: 62 } },
+    'Hortelã-Pimenta':             { '15ml': { r: 177, m: 133 }, '5ml': { r: 82, m: 62 } },
     'Petitgrain':                  { '15ml': { r: 183, m: 137 } },
     'Camomila Romana':             { '5ml': { r: 405, m: 304 } },
     'Camomila (Roman Chamomile)':  { '5ml': { r: 405, m: 304 } },
-    'Alecrim (Rosemary)':          { '15ml': { r: 132, m: 99 } },
-    'Alecrim':                     { '15ml': { r: 132, m: 99 } },
+    'Alecrim (Rosemary)':          { '15ml': { r: 132, m: 99 }, '5ml': { r: 67, m: 50 } },
+    'Alecrim':                     { '15ml': { r: 132, m: 99 }, '5ml': { r: 67, m: 50 } },
     'Siberian Fir':                { '15ml': { r: 136, m: 102 } },
     'Abeto Siberiano':             { '15ml': { r: 136, m: 102 } },
     'Pinho Siberiano':             { '15ml': { r: 136, m: 102 } },
     'Spearmint':                   { '15ml': { r: 211, m: 158 } },
     'Spikenard':                   { '5ml': { r: 447, m: 335 } },
-    'Tangerina':                   { '15ml': { r: 124, m: 93 } },
-    'Tangerine':                   { '15ml': { r: 124, m: 93 } },
+    'Tangerina':                   { '15ml': { r: 124, m: 93 }, '5ml': { r: 60, m: 45 } },
+    'Tangerine':                   { '15ml': { r: 124, m: 93 }, '5ml': { r: 60, m: 45 } },
     'Tomilho (Thyme)':             { '15ml': { r: 233, m: 175 } },
     'Tomilho':                     { '15ml': { r: 233, m: 175 } },
     'Vetiver':                     { '15ml': { r: 409, m: 307 } },
-    'Laranja Doce (Wild Orange)':  { '15ml': { r: 89, m: 67 } },
-    'Laranja Doce':                { '15ml': { r: 89, m: 67 } },
+    'Laranja Doce (Wild Orange)':  { '15ml': { r: 89, m: 67 }, '5ml': { r: 45, m: 34 } },
+    'Laranja Doce':                { '15ml': { r: 89, m: 67 }, '5ml': { r: 45, m: 34 } },
     'Wintergreen':                 { '15ml': { r: 143, m: 107 } },
     'Ylang Ylang':                 { '15ml': { r: 299, m: 224 } },
     'Cúrcuma (Turmeric)':          { '15ml': { r: 233, m: 175 } },
@@ -642,7 +642,7 @@ const DOTERRA_ALIASES = {
     'arise': 'Arise (Yoga)',
 };
 
-/** Retorna preços doTERRA para produto+tamanho: { r, m } ou null */
+/** Retorna preços doTERRA para produto+tamanho: { r, m } ou null se o tamanho não existe para este produto */
 function getDotPrices(nomeProduto, tamanho) {
     if (!nomeProduto) return null;
     const orig = nomeProduto.trim();
@@ -652,7 +652,8 @@ function getDotPrices(nomeProduto, tamanho) {
     const aliasKey = DOTERRA_ALIASES[lower];
     if (aliasKey && DOTERRA_PRICES[aliasKey]) {
         const e = DOTERRA_PRICES[aliasKey];
-        return e[tamanho] || Object.values(e)[0] || null;
+        // Retorna o tamanho exato; se não existe, retorna null (não usa fallback)
+        return e[tamanho] || null;
     }
 
     // 1. Match exato
@@ -681,7 +682,38 @@ function getDotPrices(nomeProduto, tamanho) {
     }
 
     if (!entry) return null;
-    return entry[tamanho] || Object.values(entry)[0] || null;
+    // Retorna o tamanho exato; se não existe, retorna null (não usa fallback)
+    return entry[tamanho] || null;
+}
+
+/** Retorna todos os tamanhos disponíveis para um produto */
+function getDotSizes(nomeProduto) {
+    if (!nomeProduto) return null;
+    const orig = nomeProduto.trim();
+    const lower = orig.toLowerCase();
+
+    const aliasKey = DOTERRA_ALIASES[lower];
+    if (aliasKey && DOTERRA_PRICES[aliasKey]) return DOTERRA_PRICES[aliasKey];
+
+    let entry = DOTERRA_PRICES[orig];
+    if (!entry) {
+        for (const key of Object.keys(DOTERRA_PRICES)) {
+            if (key.toLowerCase() === lower) { entry = DOTERRA_PRICES[key]; break; }
+        }
+    }
+    if (!entry) {
+        const stripped = lower.replace(/\s*\(.*?\)\s*/g, '').trim();
+        for (const key of Object.keys(DOTERRA_PRICES)) {
+            const kl = key.toLowerCase().replace(/\s*\(.*?\)\s*/g, '').trim();
+            if (kl === stripped || kl.startsWith(lower) || lower.startsWith(kl) ||
+                kl.includes(lower) || lower.includes(kl) ||
+                (stripped.length > 3 && (kl.startsWith(stripped) || stripped.startsWith(kl)))) {
+                entry = DOTERRA_PRICES[key];
+                break;
+            }
+        }
+    }
+    return entry || null;
 }
 
 export async function renderInventory(router) {
@@ -996,11 +1028,26 @@ export async function renderInventory(router) {
         const size = sizeEl.value;
         const custo = parseFloat(custoEl.value) || 0;
         const prices = getDotPrices(nome, size);
+        const allSizes = getDotSizes(nome);
         if (!pricePreview) return;
+
         if (!prices) {
-            pricePreview.style.display = 'none';
+            // Se o produto existe na tabela mas o tamanho específico não tem preço, mostra aviso
+            if (allSizes) {
+                const sizesDisponiveis = Object.keys(allSizes).join(', ');
+                pricePreview.style.display = 'block';
+                pricePreview.innerHTML = `
+                  <div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:8px;padding:10px;font-size:0.82rem;color:#92400e">
+                    ⚠️ Preço não cadastrado para <strong>${esc(size)}</strong> de "${esc(nome)}".<br>
+                    Tamanhos disponíveis: <strong>${esc(sizesDisponiveis)}</strong>
+                  </div>
+                `;
+            } else {
+                pricePreview.style.display = 'none';
+            }
             return;
         }
+
         const lucroReg = prices.r - custo;
         const lucroMem = prices.m - custo;
         const pctReg = custo > 0 ? ((lucroReg / custo) * 100).toFixed(0) : null;
