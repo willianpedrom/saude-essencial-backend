@@ -154,7 +154,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
     try {
         const { rows } = await pool.query(
             `SELECT id, nome, email, telefone, slug, foto_url, role,
-              endereco, bio, instagram, youtube, facebook, linkedin, genero, tema_cor, criado_em, video_apresentacao, video_headline, video_cta_texto, video_cta_link, perfil_cta_texto, perfil_cta_link, subheadline_1, subheadline_2
+              endereco, bio, instagram, youtube, facebook, linkedin, genero, doterra_nivel, tema_cor, criado_em, video_apresentacao, video_headline, video_cta_texto, video_cta_link, perfil_cta_texto, perfil_cta_link, subheadline_1, subheadline_2
              FROM consultoras WHERE id = $1`,
             [req.consultora.id]
         );
@@ -187,7 +187,7 @@ router.get('/profile', authMiddleware, async (req, res, next) => {
     try {
         const { rows } = await pool.query(
             `SELECT id, nome, email, telefone, slug, foto_url,
-              endereco, bio, instagram, youtube, facebook, linkedin, genero, tema_cor, rastreamento, link_afiliada, video_apresentacao, video_headline, video_cta_texto, video_cta_link, perfil_cta_texto, perfil_cta_link, subheadline_1, subheadline_2
+              endereco, bio, instagram, youtube, facebook, linkedin, genero, doterra_nivel, tema_cor, rastreamento, link_afiliada, video_apresentacao, video_headline, video_cta_texto, video_cta_link, perfil_cta_texto, perfil_cta_link, subheadline_1, subheadline_2
              FROM consultoras WHERE id = $1`,
             [req.consultora.id]
         );
