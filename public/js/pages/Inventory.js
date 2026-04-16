@@ -435,6 +435,7 @@ const DOTERRA_PRICES = {
 
 // Mapa de typos comuns e aliases de nome que não casam via fuzzy
 const DOTERRA_ALIASES = {
+    'metapwr fiberup': 'MetaPWR Fiber UP',
     'beauty power (colágeno)': 'Beauty Power Collagen Elixir',
     'beauty power': 'Beauty Power Collagen Elixir',
     'metapwr blend': 'MetaPWR Aroma Natural',
@@ -508,9 +509,10 @@ const DOTERRA_ALIASES = {
     'elevation': 'Elevation (Mix Alegre)',
     'ddr prime': 'DDR Prime',
     'ddprime': 'DDR Prime',
-    'slim sassy': 'Slim & Sassy (Mix Metabólico)',
-    'slim&sassy': 'Slim & Sassy (Mix Metabólico)',
-    'metapwr': 'MetaPWR Blend',
+    'slim & sassy (mix metabólico)': 'Smart & Sassy',
+    'slim sassy': 'Smart & Sassy',
+    'slim&sassy': 'Smart & Sassy',
+    'metapwr': 'MetaPWR Aroma Natural',
     'immortelle': 'Immortelle',
     'guaiacwood': 'Guaiacwood',
     'anchor': 'Anchor (Yoga)',
