@@ -1053,5 +1053,3 @@ export const ARCHETYPE_THEMES = {
     icon: '🏝️'
   }
 };
-
-};
