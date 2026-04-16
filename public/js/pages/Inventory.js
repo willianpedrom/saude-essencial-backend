@@ -435,6 +435,10 @@ const DOTERRA_PRICES = {
 
 // Mapa de typos comuns e aliases de nome que não casam via fuzzy
 const DOTERRA_ALIASES = {
+    'beauty power (colágeno)': 'Beauty Power Collagen Elixir',
+    'beauty power': 'Beauty Power Collagen Elixir',
+    'metapwr blend': 'MetaPWR Aroma Natural',
+    'metapwr': 'MetaPWR Aroma Natural',
     'barsil': 'Basil',
     'basil': 'Basil (Manjericão)',
     'manjericao': 'Basil (Manjericão)',
@@ -584,8 +588,19 @@ function getDotPrices(nomeProduto, tamanho) {
     }
 
     if (!entry) return null;
-    // Retorna o tamanho exato; se não existe, retorna null (não usa fallback)
-    return entry[tamanho] || null;
+    
+    let price = entry[tamanho];
+    if (!price) {
+        if (tamanho === 'Gramas' || tamanho === 'Outro') price = entry['Unidade / Kit'] || entry['Cápsulas'];
+        if (tamanho === 'Cápsulas') price = entry['Unidade / Kit'];
+        if (tamanho === 'Unidade / Kit') price = entry['Cápsulas'] || entry['Gramas'];
+        
+        const availableSizes = Object.keys(entry);
+        if (!price && availableSizes.length === 1) {
+            price = entry[availableSizes[0]];
+        }
+    }
+    return price || null;
 }
 
 /** Retorna todos os tamanhos disponíveis para um produto */
