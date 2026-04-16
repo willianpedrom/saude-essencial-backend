@@ -1,6 +1,8 @@
 const express = require('express');
 const pool = require('../db/pool');
 const auth = require('../middleware/auth');
+const { generateCsrfToken } = require('../middleware/csrf');
+
 
 const router = express.Router();
 
@@ -177,8 +179,10 @@ router.post('/users/:id/impersonate', async (req, res) => {
         );
 
         console.log(`[Admin] 🕵️‍♂️ Admin ${req.consultora.email} entrou como ${consultora.email}`);
-        res.json({ success: true, token, consultora });
+        const csrfToken = generateCsrfToken();
+        res.json({ success: true, token, csrfToken, consultora });
     } catch (err) {
+
         console.error('[Admin] impersonate error:', err);
         res.status(500).json({ error: 'Erro ao tentar acessar a conta.' });
     }

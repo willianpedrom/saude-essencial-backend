@@ -563,8 +563,9 @@ export async function renderAdmin(router) {
               toast(`Bem-vindo, acessando como ${u.nome.split(' ')[0]}...`);
               
               sessionStorage.setItem('se_token', res.token);
-              sessionStorage.removeItem('se_csrf'); 
+              if (res.csrfToken) sessionStorage.setItem('se_csrf', res.csrfToken);
               sessionStorage.setItem('se_user', JSON.stringify(res.consultora));
+
               auth._current = res.consultora;
 
               setTimeout(() => {
