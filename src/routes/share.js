@@ -35,7 +35,8 @@ router.get('/:slug', async (req, res) => {
             const row = queryResult.rows[0];
             nome = row.nome;
             if (row.foto_url && row.foto_url.trim() !== '') {
-                foto = row.foto_url;
+                // Garantir que a URL da foto seja absoluta
+                foto = row.foto_url.startsWith('http') ? row.foto_url : `https://gotaessencial.com.br${row.foto_url.startsWith('/') ? '' : '/'}${row.foto_url}`;
                 defaultImage = false;
             }
         }
@@ -55,6 +56,10 @@ router.get('/:slug', async (req, res) => {
     <meta property="og:title" content="${titulo}">
     <meta property="og:description" content="${descricao}">
     <meta property="og:image" content="${foto}">
+    <meta property="og:image:secure_url" content="${foto}">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Foto de ${nome}">
     <meta property="og:url" content="https://gotaessencial.com.br/convite/${slug}">
     <meta property="og:type" content="website">
