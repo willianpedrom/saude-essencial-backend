@@ -398,3 +398,6 @@ BEGIN
          || 'FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();';
   END IF;
 END $$;
+
+ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS perfil_cta_texto VARCHAR(100);
+ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS perfil_cta_link TEXT;

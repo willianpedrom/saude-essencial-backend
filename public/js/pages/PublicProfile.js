@@ -116,12 +116,17 @@ export async function renderPublicProfile(router, slug) {
   }
 
   const { consultor, depoimentos, anamnese_token } = data;
-  const { nome, foto_url, bio, telefone, instagram, youtube, facebook, linkedin, doterra_nivel, genero, tema_cor, video_apresentacao, video_cta_texto, video_cta_link } = consultor;
+  const { nome, foto_url, bio, telefone, instagram, youtube, facebook, linkedin, doterra_nivel, genero, tema_cor, video_apresentacao, video_cta_texto, video_cta_link, perfil_cta_texto, perfil_cta_link } = consultor;
   const themeData = ARCHETYPE_THEMES[tema_cor] || ARCHETYPE_THEMES['curadora'];
   const title = genero === 'masculino' ? 'Consultor' : 'Consultora';
   const pageUrl = window.location.href;
   const whatsLink = telefone ? `https://wa.me/55${telefone.replace(/\D/g, '')}?text=Olá%20${encodeURIComponent(nome)}!%20Conheci%20seu%20perfil%20e%20gostaria%20de%20saber%20mais.` : null;
   const anamneseLink = anamnese_token ? `${window.location.origin}/convite/${anamnese_token}` : null;
+  
+  const mainCtaUrl = perfil_cta_link || anamneseLink;
+  const mainCtaText = perfil_cta_texto || '✨ Gerar seu Protocolo Personalizado Gratuitamente';
+  const finalCtaText = perfil_cta_texto || '📋 Obter Minha Avaliação Gratuita';
+  const mobileCtaText = perfil_cta_texto || '📋 Fazer Avaliação Gratuita';
 
   function getEmbedUrl(url) {
     if (!url) return null;
@@ -323,11 +328,11 @@ export async function renderPublicProfile(router, slug) {
 
         <!-- CTA Buttons Hierarchy -->
         <div style="display:flex;flex-direction:column;align-items:center;gap:14px;max-width:320px;margin:0 auto;position:relative">
-          ${anamneseLink
+          ${mainCtaUrl
       ? `
                <div class="pp-conversion-badge">🔥 mais de 377 pessoas ajudadas</div>
-               <a href="${anamneseLink}" class="pp-btn pp-btn-primary" style="width:100%;display:flex">
-                ✨ Gerar seu Protocolo Personalizado Gratuitamente
+               <a href="${mainCtaUrl}" class="pp-btn pp-btn-primary" style="width:100%;display:flex">
+                ${mainCtaText}
                </a>`
       : ''}
           ${whatsLink
@@ -457,9 +462,9 @@ export async function renderPublicProfile(router, slug) {
         </div>
 
         <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:48px">
-          ${anamneseLink
-      ? `<a href="${anamneseLink}" class="pp-btn pp-btn-primary" style="font-size:1.05rem;padding:18px 36px">
-                📋 Obter Minha Avaliação Gratuita
+          ${mainCtaUrl
+      ? `<a href="${mainCtaUrl}" class="pp-btn pp-btn-primary" style="font-size:1.05rem;padding:18px 36px">
+                ${finalCtaText}
                </a>`
       : ''}
         </div>
@@ -497,9 +502,9 @@ export async function renderPublicProfile(router, slug) {
     <!-- CTA Flutuante Mobile (aparece ao rolar) -->
     <div class="pp-mobile-cta" id="pp-mobile-cta" aria-label="Chamada para ação">
       <div class="pp-mobile-cta-inner">
-        ${anamneseLink
-          ? `<a href="${anamneseLink}" class="pp-mobile-cta-main">
-              📋 Fazer Avaliação Gratuita
+        ${mainCtaUrl
+          ? `<a href="${mainCtaUrl}" class="pp-mobile-cta-main">
+              ${mobileCtaText}
             </a>`
           : whatsLink
             ? `<a href="${whatsLink}" target="_blank" class="pp-mobile-cta-main">
@@ -507,7 +512,7 @@ export async function renderPublicProfile(router, slug) {
               </a>`
             : ''
         }
-        ${(anamneseLink && whatsLink) ? `
+        ${(mainCtaUrl && whatsLink) ? `
         <a href="${whatsLink}" target="_blank" class="pp-mobile-cta-wa" title="WhatsApp">
           <svg width="26" height="26" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.5 2C6.305 2 2 6.305 2 11.5c0 1.736.478 3.362 1.31 4.762L2 22l5.865-1.294A9.46 9.46 0 0011.5 21c5.195 0 9.5-4.305 9.5-9.5S16.695 2 11.5 2zm0 17.5c-1.587 0-3.065-.458-4.317-1.248l-.309-.183-3.485.769.801-3.395-.202-.319A7.482 7.482 0 014 11.5C4 7.41 7.41 4 11.5 4S19 7.41 19 11.5 15.59 19.5 11.5 19.5z"/></svg>
         </a>` : ''}

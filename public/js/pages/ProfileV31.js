@@ -264,10 +264,23 @@ export async function renderProfile(router) {
                 <label style="font-size:1rem;font-weight:700;color:#166534;display:block;margin-bottom:4px">🎨 Arquétipos & Temáticas</label>
                 <p style="font-size:0.8rem;color:#166534;opacity:0.8;margin-bottom:16px">A página será inteiramente customizada (fundo e botões) de acordo com o arquétipo escolhido.</p>
                 
-                <!-- Frases Personalizadas -->
+                <!-- Frases Personalizadas e CTA -->
                 <div style="margin-bottom:24px; background:rgba(255,255,255,0.5); padding:16px; border-radius:12px; border:1px solid #bbf7d0">
                   <div style="font-weight:700; font-size:0.85rem; color:#166534; margin-bottom:12px; display:flex; align-items:center; gap:6px">
-                    ✍️ Frases Curtas Abaixo do Nome
+                    ✍️ Botão Principal (Abaixo do Perfil)
+                  </div>
+                  <div class="form-group" style="margin-bottom:12px">
+                    <label class="field-label" style="font-size:0.75rem">Texto do Botão</label>
+                    <input class="field-input" id="p-perfil-cta-texto" value="${profile.perfil_cta_texto || ''}" placeholder="Ex: ✨ Gerar seu Protocolo Personalizado" maxlength="100" style="padding:8px 12px; font-size:0.85rem" />
+                  </div>
+                  <div class="form-group" style="margin-bottom:20px">
+                    <label class="field-label" style="font-size:0.75rem">Link do Botão</label>
+                    <input class="field-input" type="url" id="p-perfil-cta-link" value="${profile.perfil_cta_link || ''}" placeholder="https://..." style="padding:8px 12px; font-size:0.85rem" />
+                    <div style="font-size:0.7rem; color:#166534; margin-top:4px; opacity:0.8">Deixe em branco para usar o link da sua Anamnese.</div>
+                  </div>
+
+                  <div style="font-weight:700; font-size:0.85rem; color:#166534; margin-bottom:12px; display:flex; align-items:center; border-top:1px dashed #bbf7d0; padding-top:16px;">
+                    ✍️ Frases Curtas (Abaixo do Nome)
                   </div>
                   <div class="form-group" style="margin-bottom:12px">
                     <label class="field-label" style="font-size:0.75rem">Linha 1 (Promessa Principal)</label>
@@ -277,7 +290,7 @@ export async function renderProfile(router) {
                     <label class="field-label" style="font-size:0.75rem">Linha 2 (Cargo/Título)</label>
                     <input class="field-input" id="p-subheadline-2" value="${profile.subheadline_2 || ''}" placeholder="Ex: Especialista em Aromaterapia" maxlength="100" style="padding:8px 12px; font-size:0.85rem" />
                   </div>
-                  <div style="font-size:0.7rem; color:#166534; margin-top:8px; opacity:0.8 italic">Deixe em branco para usar as frases padrão do sistema.</div>
+                  <div style="font-size:0.7rem; color:#166534; margin-top:8px; opacity:0.8; font-style:italic">Deixe em branco para usar as frases padrão do sistema.</div>
                 </div>
 
                 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px">
@@ -647,6 +660,8 @@ export async function renderProfile(router) {
         video_headline: pc.querySelector('#p-video-headline')?.value?.trim(),
         video_cta_texto: pc.querySelector('#p-video-cta-texto')?.value?.trim(),
         video_cta_link: pc.querySelector('#p-video-cta-link')?.value?.trim(),
+        perfil_cta_texto: pc.querySelector('#p-perfil-cta-texto')?.value?.trim(),
+        perfil_cta_link: pc.querySelector('#p-perfil-cta-link')?.value?.trim(),
         subheadline_1: pc.querySelector('#p-subheadline-1')?.value?.trim(),
         subheadline_2: pc.querySelector('#p-subheadline-2')?.value?.trim(),
       };
