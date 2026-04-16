@@ -976,5 +976,33 @@ export const ARCHETYPE_THEMES = {
     bg: 'linear-gradient(135deg, #451a03 0%, #78350f 50%, #92400e 100%)',
     cardBorder: 'rgba(234, 88, 12, 0.4)',
     icon: '✨'
+  },
+  'maes': {
+    id: 'maes',
+    name: 'Amor de Mãe',
+    desc: 'Afeto e Autocuidado',
+    primary: '#fb7185',
+    bg: 'linear-gradient(135deg, #4c0519 0%, #9f1239 50%, #e11d48 100%)',
+    cardBorder: 'rgba(251, 113, 133, 0.4)',
+    icon: '🌸'
+  },
+  'minimalista': {
+    id: 'minimalista',
+    name: 'Pureza Essencial',
+    desc: 'Minimalismo e Foco',
+    primary: '#64748b',
+    bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
+    cardBorder: 'rgba(100, 116, 139, 0.4)',
+    icon: '⚪'
+  },
+  'premium': {
+    id: 'premium',
+    name: 'Ouro & Luxo',
+    desc: 'Exclusividade e Brilho',
+    primary: '#facc15',
+    bg: 'linear-gradient(135deg, #0a0a0a 0%, #171717 50%, #262626 100%)',
+    cardBorder: 'rgba(250, 204, 21, 0.4)',
+    icon: '✨'
   }
+
 };
