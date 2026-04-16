@@ -57,8 +57,8 @@ function socialIcon(name, url) {
     facebook: `<svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>`,
   };
   return `<a href="${normalized}" target="_blank" rel="noopener noreferrer"
-        style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.15);color:white;transition:background .2s;text-decoration:none"
-        onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'"
+        style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--hero-social-bg);color:var(--hero-text);transition:background .2s;text-decoration:none"
+        onmouseover="this.style.background='var(--hero-social-hover)'" onmouseout="this.style.background='var(--hero-social-bg)'"
         title="${name}">
         ${icons[name] || name}
     </a>`;
@@ -154,6 +154,9 @@ export async function renderPublicProfile(router, slug) {
       :root {
         --theme-color: ${themeData.primary};
         --theme-bg: ${themeData.bg};
+        --hero-text: ${themeData.heroText || 'white'};
+        --hero-social-bg: ${themeData.heroText === 'white' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.05)'};
+        --hero-social-hover: ${themeData.heroText === 'white' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)'};
       }
       @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
       * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -167,8 +170,8 @@ export async function renderPublicProfile(router, slug) {
       .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 32px; border-radius: 50px; font-weight: 700; font-size: 1rem; cursor: pointer; border: none; text-decoration: none; transition: transform .15s, box-shadow .15s, filter .2s; text-align: center; }
       .pp-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); filter: brightness(1.1); }
       .pp-btn-primary { background: var(--theme-color); color: white; border: 2px solid transparent; font-size: 1.05rem; }
-      .pp-btn-secondary-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,0.4); transition: background .2s, border-color .2s; }
-      .pp-btn-secondary-outline:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.7); box-shadow: none; }
+      .pp-btn-secondary-outline { background: transparent; color: var(--hero-text); border: 2px solid var(--hero-text); opacity: 0.8; transition: background .2s, border-color .2s, opacity .2s; }
+      .pp-btn-secondary-outline:hover { background: var(--hero-social-bg); border-color: var(--hero-text); opacity: 1; box-shadow: none; }
       .pp-link-card { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; background: white; border-radius: 14px; text-decoration: none; color: #1a4527; font-weight: 600; font-size: 1.05rem; box-shadow: 0 4px 15px rgba(0,0,0,0.04); margin-bottom: 14px; border: 1px solid #e5e7eb; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
       .pp-link-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); border-color: var(--theme-color); }
       .pp-link-icon-wrap { width: 40px; height: 40px; border-radius: 10px; background: rgba(0,0,0,0.05); color: var(--theme-color); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
@@ -263,9 +266,9 @@ export async function renderPublicProfile(router, slug) {
         ${doterra_nivel ? `<div style="margin-bottom:12px">${badge(doterra_nivel)}</div>` : ''}
 
         <!-- Name & Promise -->
-        <h1 style="font-family:'Playfair Display',serif;color:white;font-size:clamp(1.8rem,5vw,2.8rem);font-weight:700;margin-bottom:8px">${nome}</h1>
-        <p style="color:rgba(255,255,255,0.9);font-size:1.1rem;margin-bottom:6px;font-weight:500">${consultor.subheadline_1 || 'Transformando sua saúde de forma 100% natural'}</p>
-        <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;margin-bottom:24px">${consultor.subheadline_2 || (title + ' Oficial do Bem-Estar')}</p>
+        <h1 style="font-family:'Playfair Display',serif;color:var(--hero-text);font-size:clamp(1.8rem,5vw,2.8rem);font-weight:700;margin-bottom:8px">${nome}</h1>
+        <p style="color:var(--hero-text);opacity:0.9;font-size:1.1rem;margin-bottom:6px;font-weight:500">${consultor.subheadline_1 || 'Transformando sua saúde de forma 100% natural'}</p>
+        <p style="color:var(--hero-text);opacity:0.5;font-size:0.9rem;margin-bottom:24px">${consultor.subheadline_2 || (title + ' Oficial do Bem-Estar')}</p>
 
         <!-- Social Links -->
         <div style="display:flex;justify-content:center;gap:10px;margin-bottom:32px">

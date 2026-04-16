@@ -939,6 +939,7 @@ export const ARCHETYPE_THEMES = {
     primary: '#16a34a',
     bg: 'linear-gradient(135deg, #06120b 0%, #0a1711 50%, #12291d 100%)',
     cardBorder: 'rgba(22, 163, 74, 0.4)',
+    heroText: 'white',
     icon: '🌿'
   },
   'visionaria': {
@@ -948,6 +949,7 @@ export const ARCHETYPE_THEMES = {
     primary: '#a855f7',
     bg: 'linear-gradient(135deg, #1e1b4b 0%, #2e1065 50%, #3b0764 100%)',
     cardBorder: 'rgba(168, 85, 247, 0.4)',
+    heroText: 'white',
     icon: '🔮'
   },
   'maternal': {
@@ -957,6 +959,7 @@ export const ARCHETYPE_THEMES = {
     primary: '#ec4899',
     bg: 'linear-gradient(135deg, #4c0519 0%, #831843 50%, #9d174d 100%)',
     cardBorder: 'rgba(236, 72, 153, 0.4)',
+    heroText: 'white',
     icon: '💗'
   },
   'sabia': {
@@ -966,6 +969,7 @@ export const ARCHETYPE_THEMES = {
     primary: '#0ea5e9',
     bg: 'linear-gradient(135deg, #082f49 0%, #0c4a6e 50%, #075985 100%)',
     cardBorder: 'rgba(14, 165, 233, 0.4)',
+    heroText: 'white',
     icon: '🌊'
   },
   'magnetica': {
@@ -975,6 +979,7 @@ export const ARCHETYPE_THEMES = {
     primary: '#ea580c',
     bg: 'linear-gradient(135deg, #451a03 0%, #78350f 50%, #92400e 100%)',
     cardBorder: 'rgba(234, 88, 12, 0.4)',
+    heroText: 'white',
     icon: '✨'
   },
   'maes': {
@@ -984,6 +989,7 @@ export const ARCHETYPE_THEMES = {
     primary: '#fb7185',
     bg: 'linear-gradient(135deg, #4c0519 0%, #9f1239 50%, #e11d48 100%)',
     cardBorder: 'rgba(251, 113, 133, 0.4)',
+    heroText: 'white',
     icon: '🌸'
   },
   'minimalista': {
@@ -993,6 +999,7 @@ export const ARCHETYPE_THEMES = {
     primary: '#64748b',
     bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
     cardBorder: 'rgba(100, 116, 139, 0.4)',
+    heroText: 'white',
     icon: '⚪'
   },
   'premium': {
@@ -1002,7 +1009,49 @@ export const ARCHETYPE_THEMES = {
     primary: '#facc15',
     bg: 'linear-gradient(135deg, #0a0a0a 0%, #171717 50%, #262626 100%)',
     cardBorder: 'rgba(250, 204, 21, 0.4)',
+    heroText: 'white',
     icon: '✨'
+  },
+  'salvia': {
+    id: 'salvia',
+    name: 'Sálvia & Frescor',
+    desc: 'Paz e Equilíbrio',
+    primary: '#16a34a',
+    bg: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+    cardBorder: 'rgba(22, 163, 74, 0.15)',
+    heroText: '#064e3b',
+    icon: '🌿'
+  },
+  'ceu': {
+    id: 'ceu',
+    name: 'Céu Sereno',
+    desc: 'Leveza e Calma',
+    primary: '#0ea5e9',
+    bg: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
+    cardBorder: 'rgba(14, 165, 233, 0.15)',
+    heroText: '#0c4a6e',
+    icon: '🌊'
+  },
+  'lavanda_clean': {
+    id: 'lavanda_clean',
+    name: 'Lavanda Clean',
+    desc: 'Acolhimento e Suavidade',
+    primary: '#a855f7',
+    bg: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
+    cardBorder: 'rgba(168, 85, 247, 0.15)',
+    heroText: '#4c1d95',
+    icon: '🪻'
+  },
+  'areia': {
+    id: 'areia',
+    name: 'Areia do Mar',
+    desc: 'Elegância Natural',
+    primary: '#d97706',
+    bg: 'linear-gradient(135deg, #fffcf0 0%, #fef3c7 100%)',
+    cardBorder: 'rgba(217, 119, 6, 0.15)',
+    heroText: '#78350f',
+    icon: '🏝️'
   }
+};
 
 };
