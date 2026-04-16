@@ -538,20 +538,44 @@ function getDotPrices(nomeProduto, tamanho) {
         }
     }
 
+    // 2.5 Tokens Exact Matching (trata inversões tipo "Nome (Name)" vs "Name (Nome)")
+    if (!entry) {
+        const getTokens = s => {
+            const out = s.replace(/\(.*?\)/g, '').trim().toLowerCase();
+            const match = s.match(/\((.*?)\)/);
+            const ins = match ? match[1].trim().toLowerCase() : '';
+            return [out, ins].filter(Boolean);
+        };
+        const lowerTokens = getTokens(orig);
+        for (const key of Object.keys(DOTERRA_PRICES)) {
+            const keyTokens = getTokens(key);
+            // Se algum token for exatamente igual, é o produto certo
+            if (lowerTokens.some(t => keyTokens.includes(t))) {
+                entry = DOTERRA_PRICES[key];
+                break;
+            }
+        }
+    }
+
     // 3. Fuzzy parcial: chave começa com o nome ou vice-versa, ou um contém o outro
     if (!entry) {
-        // Remove parenteses e sufixos tipo "(Mix Algo)" antes de tentar parcial
         const stripped = lower.replace(/\s*\(.*?\)\s*/g, '').trim();
         let bestKey = null;
         let minLen = Infinity;
         for (const key of Object.keys(DOTERRA_PRICES)) {
             const kl = key.toLowerCase().replace(/\s*\(.*?\)\s*/g, '').trim();
+            
+            // Só cai em includes/startsWith se nenhuma das palavras exatas bateram antes
             if (kl === stripped || kl.startsWith(lower) || lower.startsWith(kl) ||
                 kl.includes(lower) || lower.includes(kl) ||
                 (stripped.length > 3 && (kl.startsWith(stripped) || stripped.startsWith(kl)))) {
                 
-                if (kl.length < minLen) {
-                    minLen = kl.length;
+                // Penaliza muito substrings que não começam no início da palavra para evitar que "Lemon" ganhe de "Lemongrass" só por includes
+                const startsMatch = kl.startsWith(stripped) || stripped.startsWith(kl);
+                const score = kl.length + (startsMatch ? 0 : 100);
+
+                if (score < minLen) {
+                    minLen = score;
                     bestKey = key;
                 }
             }
@@ -579,6 +603,24 @@ function getDotSizes(nomeProduto) {
             if (key.toLowerCase() === lower) { entry = DOTERRA_PRICES[key]; break; }
         }
     }
+    // 2.5 Tokens Exact Matching
+    if (!entry) {
+        const getTokens = s => {
+            const out = s.replace(/\(.*?\)/g, '').trim().toLowerCase();
+            const match = s.match(/\((.*?)\)/);
+            const ins = match ? match[1].trim().toLowerCase() : '';
+            return [out, ins].filter(Boolean);
+        };
+        const lowerTokens = getTokens(orig);
+        for (const key of Object.keys(DOTERRA_PRICES)) {
+            const keyTokens = getTokens(key);
+            if (lowerTokens.some(t => keyTokens.includes(t))) {
+                entry = DOTERRA_PRICES[key];
+                break;
+            }
+        }
+    }
+
     if (!entry) {
         const stripped = lower.replace(/\s*\(.*?\)\s*/g, '').trim();
         let bestKey = null;
@@ -589,8 +631,11 @@ function getDotSizes(nomeProduto) {
                 kl.includes(lower) || lower.includes(kl) ||
                 (stripped.length > 3 && (kl.startsWith(stripped) || stripped.startsWith(kl)))) {
                 
-                if (kl.length < minLen) {
-                    minLen = kl.length;
+                const startsMatch = kl.startsWith(stripped) || stripped.startsWith(kl);
+                const score = kl.length + (startsMatch ? 0 : 100);
+
+                if (score < minLen) {
+                    minLen = score;
                     bestKey = key;
                 }
             }
