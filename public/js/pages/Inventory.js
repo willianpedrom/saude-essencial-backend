@@ -117,6 +117,7 @@ const DOTERRA_PRODUCTS = [
     { nome: "Brave (Kids)", cat: "Linha Kids" },
     { nome: "Tamer (Kids)", cat: "Linha Kids" },
     { nome: "Lifelong Vitality Pack (LLV)", cat: "Suplemento" },
+    { nome: "Lifeshōt", cat: "Suplemento" },
     { nome: "Microplex VMz", cat: "Suplemento" },
     { nome: "xEO Mega", cat: "Suplemento" },
     { nome: "Alpha CRS+", cat: "Suplemento" },
@@ -348,6 +349,7 @@ const DOTERRA_PRICES = {
     'Lavender Fields Body Splash': { 'Unidade / Kit': { r: 169, m: 127 } },
     'Lavender Touch': { '10ml Touch': { r: 125, m: 94 } },
     'Lemon (Limão Siciliano)': { '15ml': { r: 92, m: 69 }, '5ml': { r: 39, m: 29 } },
+    'Lifeshōt': { '1 litro': { r: 203, m: 152 } },
     'Lemon Eucalyptus': { '15ml': { r: 89, m: 67 } },
     'Lemongrass (Capim-Limão)': { '15ml': { r: 85, m: 64 }, '5ml': { r: 35, m: 26 } },
     'Lifelong Vitality Pack (LLV)': { 'Unidade / Kit': { r: 467, m: 350 } },
@@ -459,6 +461,8 @@ const DOTERRA_PRICES = {
 // Mapa de typos comuns e aliases de nome que não casam via fuzzy
 const DOTERRA_ALIASES = {
     'kit início rápido': 'Kit Inicio Rápido',
+    'lifeshot': 'Lifeshōt',
+    'lifeshōt': 'Lifeshōt',
     'culinária essencial sem livro de receitas': 'Culinária Essencial Sem Livro',
     'dawn umidificador aromático': 'Dawn Umidificador',
     'difusor volo - mármore': 'Difusor Volo Mármore',
