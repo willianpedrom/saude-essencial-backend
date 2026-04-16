@@ -173,9 +173,10 @@ export async function renderPublicProfile(router, slug) {
         background: var(--theme-color); 
         color: white; 
         border: 2px solid transparent; 
-        font-size: 1.05rem;
+        font-size: 0.95rem;
         animation: pp-pulse 2.5s infinite ease-in-out;
         box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        line-height: 1.25;
       }
       .pp-btn-primary::after {
         content: "";
@@ -324,9 +325,9 @@ export async function renderPublicProfile(router, slug) {
         <div style="display:flex;flex-direction:column;align-items:center;gap:14px;max-width:320px;margin:0 auto;position:relative">
           ${anamneseLink
       ? `
-               <div class="pp-conversion-badge">🔥 Mais solicitado de hoje</div>
+               <div class="pp-conversion-badge">🔥 mais de 377 pessoas ajudadas</div>
                <a href="${anamneseLink}" class="pp-btn pp-btn-primary" style="width:100%;display:flex">
-                ✨ GERAR PROTOCOLO GRATUITO
+                ✨ Gerar seu Protocolo Personalizado Gratuitamente
                </a>`
       : ''}
           ${whatsLink
