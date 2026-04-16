@@ -40,8 +40,8 @@ router.get('/:slug', async (req, res) => {
             }
         }
 
-        const titulo = `Convite de Saúde Natural - ${nome}`;
-        const descricao = "Preencha a rápida avaliação para receber seu protocolo personalizado!";
+        const titulo = `Saúde, disposição e Foco de forma natural com ${nome}`;
+        const descricao = "Descubra como eu posso te ajudar e resolver seus problemas de saúde. Gere seu protocolo personalizado gratuitamente agora!";
         const finalUrl = isAnamnese ? `/#/anamnese/${slug}` : `/#/p/${slug}`;
 
         const html = `<!DOCTYPE html>
@@ -55,8 +55,10 @@ router.get('/:slug', async (req, res) => {
     <meta property="og:title" content="${titulo}">
     <meta property="og:description" content="${descricao}">
     <meta property="og:image" content="${foto}">
+    <meta property="og:image:alt" content="Foto de ${nome}">
     <meta property="og:url" content="https://gotaessencial.com.br/convite/${slug}">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Gota App">
 
     <!-- Twitter Card Data -->
     <meta name="twitter:card" content="summary_large_image">
