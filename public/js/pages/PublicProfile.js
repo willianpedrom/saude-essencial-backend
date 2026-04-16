@@ -167,9 +167,24 @@ export async function renderPublicProfile(router, slug) {
       @media (min-width: 600px) { .pp-depo-grid { column-count: 2; } }
       @media (min-width: 900px) { .pp-depo-grid { column-count: 3; } }
       .pp-depo-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 20px rgba(0,0,0,0.06); break-inside: avoid; margin-bottom: 20px; }
-      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 32px; border-radius: 50px; font-weight: 700; font-size: 1rem; cursor: pointer; border: none; text-decoration: none; transition: transform .15s, box-shadow .15s, filter .2s; text-align: center; }
+      .pp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 32px; border-radius: 50px; font-weight: 700; font-size: 1rem; cursor: pointer; border: none; text-decoration: none; transition: transform .15s, box-shadow .15s, filter .2s; text-align: center; position: relative; overflow: hidden; }
       .pp-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); filter: brightness(1.1); }
-      .pp-btn-primary { background: var(--theme-color); color: white; border: 2px solid transparent; font-size: 1.05rem; }
+      .pp-btn-primary { 
+        background: var(--theme-color); 
+        color: white; 
+        border: 2px solid transparent; 
+        font-size: 1.05rem;
+        animation: pp-pulse 2.5s infinite ease-in-out;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      }
+      .pp-btn-primary::after {
+        content: "";
+        position: absolute;
+        top: 0; left: -100%; width: 50%; height: 100%;
+        background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent);
+        transform: skewX(-25deg);
+        animation: pp-shimmer 4s infinite;
+      }
       .pp-btn-secondary-outline { background: transparent; color: var(--hero-text); border: 2px solid var(--hero-text); opacity: 0.8; transition: background .2s, border-color .2s, opacity .2s; }
       .pp-btn-secondary-outline:hover { background: var(--hero-social-bg); border-color: var(--hero-text); opacity: 1; box-shadow: none; }
       .pp-link-card { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; background: white; border-radius: 14px; text-decoration: none; color: #1a4527; font-weight: 600; font-size: 1.05rem; box-shadow: 0 4px 15px rgba(0,0,0,0.04); margin-bottom: 14px; border: 1px solid #e5e7eb; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
@@ -181,6 +196,33 @@ export async function renderPublicProfile(router, slug) {
       .pp-fab-whatsapp svg { width: 34px; height: 34px; }
 
       @keyframes fadeUp { from { opacity:0;transform:translateY(24px) } to { opacity:1;transform:none } }
+      @keyframes pp-shimmer {
+        0% { left: -100%; }
+        20% { left: 150%; }
+        100% { left: 150%; }
+      }
+      @keyframes pp-pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.03); }
+        100% { transform: scale(1); }
+      }
+      .pp-conversion-badge {
+        position: absolute;
+        top: -14px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #ef4444;
+        color: white;
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 2px 10px;
+        border-radius: 10px;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        z-index: 2;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
       .pp-fade { animation: fadeUp .5s ease both; }
 
       /* ── CTA Flutuante Mobile ─────────────────── */
@@ -279,10 +321,12 @@ export async function renderPublicProfile(router, slug) {
         </div>
 
         <!-- CTA Buttons Hierarchy -->
-        <div style="display:flex;flex-direction:column;align-items:center;gap:14px;max-width:320px;margin:0 auto">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:14px;max-width:320px;margin:0 auto;position:relative">
           ${anamneseLink
-      ? `<a href="${anamneseLink}" class="pp-btn pp-btn-primary" style="width:100%;display:flex">
-                📋 Obter Avaliação Gratuita
+      ? `
+               <div class="pp-conversion-badge">🔥 Mais solicitado de hoje</div>
+               <a href="${anamneseLink}" class="pp-btn pp-btn-primary" style="width:100%;display:flex">
+                ✨ GERAR PROTOCOLO GRATUITO
                </a>`
       : ''}
           ${whatsLink
