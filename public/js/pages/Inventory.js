@@ -57,6 +57,7 @@ const DOTERRA_PRODUCTS = [
     { nome: "Capim-Limão (Lemongrass)", cat: "Óleo Essencial" },
     { nome: "Erva Doce (Fennel)", cat: "Óleo Essencial" },
     { nome: "Manjerona (Marjoram)", cat: "Óleo Essencial" },
+    { nome: "Mālama", cat: "Blend" },
     { nome: "Patchouli", cat: "Óleo Essencial" },
     { nome: "Tomilho (Thyme)", cat: "Óleo Essencial" },
     { nome: "Cipreste (Cypress)", cat: "Óleo Essencial" },
@@ -334,6 +335,7 @@ const DOTERRA_PRICES = {
     'Lime (Limão Tahiti)': { '15ml': { r: 115, m: 86 }, '5ml': { r: 47, m: 35 } },
     'Livro Culinária Essencial': { 'Unidade / Kit': { r: 120, m: 90 } },
     'Livro Spa Essencial': { 'Unidade / Kit': { r: 120, m: 90 } },
+    'Mālama': { '15ml': { r: 193, m: 145 } },
     'Marjoram (Manjerona)': { '15ml': { r: 171, m: 128 }, '5ml': { r: 71, m: 53 } },
     'Melaleuca (Tea Tree)': { '15ml': { r: 163, m: 122 }, '5ml': { r: 75, m: 56 } },
     'Melaleuca Touch': { '10ml Touch': { r: 105, m: 79 } },
@@ -435,6 +437,8 @@ const DOTERRA_PRICES = {
 
 // Mapa de typos comuns e aliases de nome que não casam via fuzzy
 const DOTERRA_ALIASES = {
+    'malama': 'Mālama',
+    'mālama': 'Mālama',
     'citronela': 'Citronella',
     'metapwr fiberup': 'MetaPWR Fiber UP',
     'beauty power (colágeno)': 'Beauty Power Collagen Elixir',
