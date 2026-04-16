@@ -435,6 +435,7 @@ const DOTERRA_PRICES = {
 
 // Mapa de typos comuns e aliases de nome que não casam via fuzzy
 const DOTERRA_ALIASES = {
+    'citronela': 'Citronella',
     'metapwr fiberup': 'MetaPWR Fiber UP',
     'beauty power (colágeno)': 'Beauty Power Collagen Elixir',
     'beauty power': 'Beauty Power Collagen Elixir',
