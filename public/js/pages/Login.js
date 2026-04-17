@@ -16,7 +16,7 @@ export function renderLogin(router) {
     </div>
     <div class="auth-card">
       <div class="auth-logo" style="margin-bottom:32px; display:flex; justify-content:center;">
-        <img src="/logo_horizontal.png?v=34" alt="Gota App Logo" style="width:100%; max-width:320px; height:auto; object-fit:contain; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));" />
+        <img src="/img/logo_premium.png?v=35" alt="Gota App Logo" style="width:100%; max-width:320px; height:auto; object-fit:contain; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));" />
       </div>
 
       <!-- LOGIN -->
