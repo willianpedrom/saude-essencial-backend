@@ -15,12 +15,8 @@ export function renderLogin(router) {
       <div class="auth-orb" style="width:300px;height:300px;bottom:-80px;right:-80px;opacity:0.3;animation-delay:3s"></div>
     </div>
     <div class="auth-card">
-      <div class="auth-logo" style="margin-bottom:32px; display:flex; flex-direction:row; align-items:center; justify-content:center; gap:16px;">
-        <img src="/icon-512.png" alt="Gota App Logo" style="width:75px; height:auto; object-fit:contain; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));" />
-        <div style="display:flex; flex-direction:column; align-items:flex-start; justify-content:center; margin-top:-4px;">
-          <h1 style="font-family: var(--font-family, 'Inter', sans-serif); font-size: 2.8rem; font-weight: 700; color: #ffffff; letter-spacing: 1px; margin: 0; line-height: 1.1;">GOTA APP</h1>
-          <p style="font-family: var(--font-family, 'Inter', sans-serif); font-size: 0.95rem; font-weight: 500; color: #ffffff; margin: 0; letter-spacing: 0.2px;">Gestão Essencial de Relacionamento</p>
-        </div>
+      <div class="auth-logo" style="margin-bottom:32px; display:flex; justify-content:center; border-radius:12px; overflow:hidden;">
+        <img src="/img/logo_anexada.png?v=1" alt="Gota App Logo" style="width:100%; max-width:320px; height:auto; object-fit:contain; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15)); border-radius:12px;" />
       </div>
 
       <!-- LOGIN -->
