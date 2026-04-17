@@ -21,9 +21,9 @@ export function renderLogin(router) {
 
       <!-- LOGIN -->
       <div id="panel-login" ${resetToken ? 'style="display:none"' : ''}>
-        <div class="auth-tabs">
-          <button class="auth-tab active" data-tab="login">Entrar</button>
-          <button class="auth-tab" data-tab="register">Cadastrar-se</button>
+        <div style="text-align:center;margin-bottom:16px;">
+          <h2 style="margin:0;font-size:1.4rem;font-weight:700;">Bem-vinda (o)</h2>
+          <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;">Faça login para continuar</p>
         </div>
         <form class="auth-form" id="login-form">
           <div class="form-group">
@@ -39,53 +39,13 @@ export function renderLogin(router) {
           </div>
           <div class="auth-error" id="login-error"></div>
           <button class="btn-auth" type="submit" id="login-btn">Acessar minha área ✦</button>
-          <p class="auth-link-area" style="display:flex;justify-content:space-between;font-size:0.82rem">
-            <span class="auth-link" data-tab-link="register">Não tem conta? Cadastre-se grátis</span>
-            <span class="auth-link" id="link-forgot" style="color:var(--text-muted)">Esqueci minha senha</span>
+          <p class="auth-link-area" style="display:flex;flex-direction:column;align-items:center;gap:12px;font-size:0.85rem;margin-top:20px;">
+            <a href="https://www.gotaapp.com.br/doterra" target="_blank" style="color:var(--primary-color);text-decoration:none;font-weight:600;transition:opacity 0.2s" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Ainda não tem o Gota App? Assine agora ✨</a>
+            <span class="auth-link" id="link-forgot" style="color:var(--text-muted);cursor:pointer;">Esqueci minha senha</span>
           </p>
         </form>
 
-        <!-- REGISTER -->
-        <form class="auth-form hidden" id="register-form">
-          <div class="form-group">
-            <label class="form-label">Nome completo</label>
-            <input class="form-input" type="text" id="reg-name" placeholder="Seu nome" required />
-          </div>
-          <div class="form-group">
-            <label class="form-label">E-mail</label>
-            <input class="form-input" type="email" id="reg-email" placeholder="seu@email.com" required />
-          </div>
-          <div class="form-group">
-            <label class="form-label">WhatsApp (com DDD)</label>
-            <input class="form-input" type="tel" id="reg-phone" placeholder="55119..." />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Gênero</label>
-            <select class="form-input" id="reg-genero" required style="padding:12px 14px">
-              <option value="feminino">♀ Feminino</option>
-              <option value="masculino">♂ Masculino</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Senha</label>
-            <div style="position:relative">
-              <input class="form-input" type="password" id="reg-password" placeholder="Mínimo 8 caracteres" required minlength="8" style="padding-right:44px" />
-              <button type="button" class="toggle-pw" data-target="reg-password" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:0.5;padding:4px 6px" title="Mostrar senha">👁️</button>
-            </div>
-            <div id="reg-strength" style="margin-top:6px;font-size:0.78rem"></div>
-          </div>
-          <div class="form-group" style="display:flex;align-items:flex-start;gap:8px;margin-top:12px;margin-bottom:16px">
-            <input type="checkbox" id="reg-termos" required style="margin-top:4px" />
-            <label for="reg-termos" style="font-size:0.85rem;color:var(--text-muted);line-height:1.4">
-              Li e aceito os <a href="/termos.html" target="_blank" style="color:var(--primary-color)">Termos de Uso</a> e Políticas de Privacidade.
-            </label>
-          </div>
-          <div class="auth-error" id="reg-error"></div>
-          <button class="btn-auth" type="submit" id="reg-btn">Criar minha conta ✦</button>
-          <p class="auth-link-area">
-            <span class="auth-link" data-tab-link="login">Já tenho conta</span>
-          </p>
-        </form>
+
       </div>
 
       <!-- TERMS ACCEPTANCE -->
@@ -172,15 +132,7 @@ export function renderLogin(router) {
     });
   });
 
-  // ── Tab switching ───────────────────────────────────────────────────────
-  app.querySelectorAll('.auth-tab, [data-tab-link]').forEach(el => {
-    el.addEventListener('click', () => {
-      const tab = el.dataset.tab || el.dataset.tabLink;
-      app.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-      document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
-      document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
-    });
-  });
+
 
   // ── Forgot password link ────────────────────────────────────────────────
   document.getElementById('link-forgot')?.addEventListener('click', () => {
@@ -231,18 +183,7 @@ export function renderLogin(router) {
     el.innerHTML = `<span style="color:${s.color};font-weight:600">${s.label}</span>`;
   });
 
-  // ── Register password strength indicator ────────────────────────────────
-  document.getElementById('reg-password')?.addEventListener('input', e => {
-    const val = e.target.value;
-    const el = document.getElementById('reg-strength');
-    if (!el) return;
-    if (!val) { el.textContent = ''; return; }
-    const s = val.length >= 12 && /[A-Z]/.test(val) && /[0-9]/.test(val)
-      ? { label: 'Forte 💪', color: '#16a34a' }
-      : val.length >= 8 ? { label: 'Razoável 😐', color: '#d97706' }
-        : { label: 'Fraca ⚠️ (mín 8 chars)', color: '#dc2626' };
-    el.innerHTML = `<span style="color:${s.color};font-weight:600">${s.label}</span>`;
-  });
+
 
   // ── Reset password form ─────────────────────────────────────────────────
   document.getElementById('reset-form')?.addEventListener('submit', async e => {
@@ -300,28 +241,7 @@ export function renderLogin(router) {
     }
   });
 
-  // ── Register form ───────────────────────────────────────────────────────
-  document.getElementById('register-form')?.addEventListener('submit', async e => {
-    e.preventDefault();
-    const nome = document.getElementById('reg-name').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
-    const telefone = document.getElementById('reg-phone').value.trim();
-    const genero = document.getElementById('reg-genero').value;
-    const senha = document.getElementById('reg-password').value;
-    const termos_aceitos = document.getElementById('reg-termos').checked;
-    const errEl = document.getElementById('reg-error');
-    const btn = document.getElementById('reg-btn');
-    btn.disabled = true; btn.textContent = 'Criando conta...';
-    try {
-      await auth.register(nome, email, senha, telefone, genero, termos_aceitos);
-      toast('Conta criada! 14 dias grátis ativados 💧', 'success');
-      router.navigate('/dashboard');
-    } catch (err) {
-      errEl.textContent = err.message || 'Erro ao criar conta.';
-      errEl.classList.add('show');
-      btn.disabled = false; btn.textContent = 'Criar minha conta ✦';
-    }
-  });
+
 
   // ── Accept Terms form ───────────────────────────────────────────────────
   document.getElementById('btn-accept-terms')?.addEventListener('click', async () => {
