@@ -41,7 +41,7 @@ window.addEventListener('subscription:required', () => {
 const router = new Router({
     '/': async (p) => {
         if (auth.isLoggedIn) return router.navigate('/dashboard');
-        const { renderLogin } = await import('./pages/Login.js');
+        const { renderLogin } = await import('./pages/Login.js?v=33');
         renderLogin(router);
     },
     '/dashboard': guard(async (params) => {
@@ -146,13 +146,13 @@ const router = new Router({
         renderLandingPage(router);
     },
     '/reset-password': async () => {
-        const { renderResetPassword } = await import('./pages/Login.js');
+        const { renderResetPassword } = await import('./pages/Login.js?v=33');
         renderResetPassword(router);
     },
 
     '*': async () => {
         if (auth.isLoggedIn) return router.navigate('/dashboard');
-        const { renderLogin } = await import('./pages/Login.js');
+        const { renderLogin } = await import('./pages/Login.js?v=33');
         renderLogin(router);
     },
 });
