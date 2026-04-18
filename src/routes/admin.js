@@ -165,8 +165,8 @@ router.put('/users/:id/plan', async (req, res) => {
         }
         res.json({ success: true });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Erro ao atualizar plano.' });
+        console.error('Erro ao atualizar plano:', err);
+        res.status(500).json({ error: 'Erro ao atualizar plano: ' + err.message });
     }
 });
 
@@ -384,8 +384,8 @@ router.put('/planos/:id', async (req, res) => {
         if (rows.length === 0) return res.status(404).json({ error: 'Plano não encontrado.' });
         res.json(rows[0]);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Erro ao atualizar plano.' });
+        console.error('Erro ao atualizar plano:', err);
+        res.status(500).json({ error: 'Erro ao atualizar plano: ' + err.message });
     }
 });
 
