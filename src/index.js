@@ -242,12 +242,31 @@ async function runMigration() {
         console.warn('⚠️  DATABASE_URL não configurado.');
         return;
     }
+    const pool = require('./db/pool');
     try {
-        const pool = require('./db/pool');
+        // 1. Column migrations first (ensure columns exist before SEEDs in schema.sql run)
+        // These are idempotent (ADD COLUMN IF NOT EXISTS)
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS preco_semestral DECIMAL(10,2) DEFAULT NULL`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS preco_anual DECIMAL(10,2) DEFAULT NULL`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS dias_trial INTEGER DEFAULT 0`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_pagina_pessoal BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_raiox BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_minhas_vendas BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_radar BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_agenda BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_links BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_anamneses BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_clientes BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_multiusuario BOOLEAN DEFAULT FALSE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_relatorios BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_estoque BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_depoimentos BOOLEAN DEFAULT TRUE`);
+
+        // 2. Run main schema (Tables and Seeds)
         const sql = fs.readFileSync(path.join(__dirname, 'db/schema.sql'), 'utf-8');
         await pool.query(sql);
 
-        // Column migrations (idempotent - ADD COLUMN IF NOT EXISTS)
+        // 3. Other migrations
         await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS rastreamento JSONB DEFAULT NULL`);
         await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS doterra_nivel VARCHAR(60) DEFAULT NULL`);
         await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS subheadline_1 VARCHAR(255) DEFAULT NULL`);
@@ -269,23 +288,7 @@ async function runMigration() {
         await pool.query(`ALTER TABLE anamneses ADD COLUMN IF NOT EXISTS protocolo_customizado JSONB`);
         await pool.query(`ALTER TABLE anamneses ADD COLUMN IF NOT EXISTS hash_laudo VARCHAR(20) UNIQUE`);
 
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS preco_semestral DECIMAL(10,2) DEFAULT NULL`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS preco_anual DECIMAL(10,2) DEFAULT NULL`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS dias_trial INTEGER DEFAULT 0`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_pagina_pessoal BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_raiox BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_minhas_vendas BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_radar BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_agenda BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_links BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_anamneses BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_clientes BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_multiusuario BOOLEAN DEFAULT FALSE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_relatorios BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_estoque BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_depoimentos BOOLEAN DEFAULT TRUE`);
-
-        // System settings table (key-value store for admin-configurable settings)
+        // System settings table
         await pool.query(`CREATE TABLE IF NOT EXISTS configuracoes (
             chave VARCHAR(100) PRIMARY KEY,
             valor TEXT,
@@ -312,6 +315,7 @@ async function runMigration() {
         )`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_prospects_consultora ON prospects(consultora_id)`);
         await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS historico JSONB DEFAULT '[]'`);
+        /* ... more columns ... */
         await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS instagram TEXT`);
         await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS facebook TEXT`);
         await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS email TEXT`);
@@ -323,7 +327,7 @@ async function runMigration() {
         await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS lat DECIMAL(10,8)`);
         await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS lng DECIMAL(11,8)`);
 
-        // Push Notifications Subscriptions table
+        // Push Notifications
         await pool.query(`CREATE TABLE IF NOT EXISTS push_subscriptions (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             consultora_id UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
@@ -336,19 +340,17 @@ async function runMigration() {
             atualizado_em TIMESTAMPTZ DEFAULT NOW()
         )`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_push_consultora ON push_subscriptions(consultora_id)`);
-        // ── Admin Promotion (Robust fallback) ──
-        // 1. Promote based on ADMIN_EMAIL env var
+
+        // Admin Promotion
         if (process.env.ADMIN_EMAIL) {
             await pool.query("UPDATE consultoras SET role = 'admin' WHERE email = $1", [process.env.ADMIN_EMAIL]);
         }
-        // 2. Fallback: Promote the first user ever registered (System Owner)
         await pool.query(`
             UPDATE consultoras SET role = 'admin'
             WHERE id = (SELECT id FROM consultoras ORDER BY criado_em ASC LIMIT 1)
         `);
-        console.log('[Migration] Verificação de permissões administrativas concluída.');
 
-        // ── Admin Notifications Tables ──
+        // Admin Notifications
         await pool.query(`CREATE TABLE IF NOT EXISTS admin_incentive_pool (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             titulo VARCHAR(255) DEFAULT 'Incentivo',
@@ -379,7 +381,7 @@ async function runMigration() {
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_notif_broadcast_admin ON notification_broadcasts(admin_id)`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_notif_clicks_broadcast ON notification_clicks(broadcast_id)`);
 
-        // Seed initial pool if empty
+        // Seed pool
         const { rows: poolCount } = await pool.query('SELECT COUNT(*) FROM admin_incentive_pool');
         if (parseInt(poolCount[0].count) === 0) {
             await pool.query(`
@@ -390,14 +392,11 @@ async function runMigration() {
                 ('Acompanhamento 📝', 'Olá {nome}, lembrou de fazer o follow-up com seus clientes de ontem? A atenção aos detalhes fideliza!'),
                 ('Meta de Hoje ✅', 'Vamos pra cima, {nome}! Qual é a sua meta de atendimentos para hoje? O sistema está pronto para te ajudar.')
             `);
-            console.log('[Migration] Pool de incentivos populado com frases iniciais.');
         }
-
-        console.log('[Migration] Tabelas de notificação verificadas!');
 
         console.log('✅ Schema OK');
     } catch (err) {
-        console.error('⚠️  Erro na migração (tabelas podem já existir):', err.message);
+        console.error('⚠️  Erro na migração:', err.message);
     }
 }
 
