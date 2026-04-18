@@ -49,6 +49,8 @@ router.get('/migrate-links', async (req, res) => {
 router.get('/migrate-plan-features', async (req, res) => {
     try {
         const sql = `
+        ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_multiusuario BOOLEAN DEFAULT FALSE;
+        ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_relatorios BOOLEAN DEFAULT TRUE;
         ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_minhas_vendas BOOLEAN DEFAULT TRUE;
         ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_radar BOOLEAN DEFAULT TRUE;
         ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_agenda BOOLEAN DEFAULT TRUE;

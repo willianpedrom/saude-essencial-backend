@@ -280,6 +280,8 @@ async function runMigration() {
         await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_links BOOLEAN DEFAULT TRUE`);
         await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_anamneses BOOLEAN DEFAULT TRUE`);
         await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_clientes BOOLEAN DEFAULT TRUE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_multiusuario BOOLEAN DEFAULT FALSE`);
+        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_relatorios BOOLEAN DEFAULT TRUE`);
         await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_estoque BOOLEAN DEFAULT TRUE`);
         await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_depoimentos BOOLEAN DEFAULT TRUE`);
 
