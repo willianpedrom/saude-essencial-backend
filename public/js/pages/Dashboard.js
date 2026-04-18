@@ -182,7 +182,9 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
         'schedule': { flag: 'tem_agenda', name: 'Agenda Inteligente e Follow-up' },
         'purchases': { flag: 'tem_minhas_vendas', name: 'Histórico de Vendas' },
         'integrations': { flag: 'tem_integracoes', name: 'Integrações Pro (Pixel/GA)' },
-        'prospecting': { flag: 'tem_radar', name: 'Radar de Leads' }
+        'prospecting': { flag: 'tem_radar', name: 'Radar de Leads' },
+        'estoque': { flag: 'tem_estoque', name: 'Meu Estoque / Inventário' },
+        'testimonials': { flag: 'tem_depoimentos', name: 'Gestão de Depoimentos' }
       };
       
       const req = lockedRoutes[btn.dataset.nav];

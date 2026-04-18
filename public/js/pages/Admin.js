@@ -1082,7 +1082,8 @@ export async function renderAdmin(router) {
           <div class="form-group form-field-full" style="display:flex;gap:16px;flex-wrap:wrap">
             ${[['tem_integracoes', 'Integrações (Pixel/GA)'], ['tem_pipeline', 'Pipeline/Fluxo'], ['tem_multiusuario', 'Multi-usuário'], ['tem_relatorios', 'Relatórios'],
                 ['tem_pagina_pessoal', 'Página Pessoal (Vitrine)'], ['tem_raiox', 'Raio-X (Anamnese B2B)'], ['tem_minhas_vendas', 'Minhas Vendas'], ['tem_radar', 'Radar de Leads'],
-                ['tem_agenda', 'Agenda/Follow-up'], ['tem_links', 'Links de Captação'], ['tem_anamneses', 'Laudos/Anamneses'], ['tem_clientes', 'Gestão de Clientes']
+                ['tem_agenda', 'Agenda/Follow-up'], ['tem_links', 'Links de Captação'], ['tem_anamneses', 'Laudos/Anamneses'], ['tem_clientes', 'Gestão de Clientes'],
+                ['tem_estoque', 'Meu Estoque'], ['tem_depoimentos', 'Depoimentos']
               ].map(([k, l]) =>
         `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem;padding:4px;width:calc(50% - 8px)">
                 <input type="checkbox" id="pp-${k}" ${p[k] !== false ? 'checked' : ''} style="width:16px;height:16px"> ${l}
@@ -1113,6 +1114,8 @@ export async function renderAdmin(router) {
             tem_links: document.getElementById('pp-tem_links')?.checked,
             tem_anamneses: document.getElementById('pp-tem_anamneses')?.checked,
             tem_clientes: document.getElementById('pp-tem_clientes')?.checked,
+            tem_estoque: document.getElementById('pp-tem_estoque')?.checked,
+            tem_depoimentos: document.getElementById('pp-tem_depoimentos')?.checked,
             ativo: true,
           };
           if (!data.slug || !data.nome) { toast('Slug e Nome são obrigatórios.', 'error'); return false; }

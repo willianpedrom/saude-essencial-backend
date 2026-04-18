@@ -194,7 +194,14 @@ CREATE TABLE IF NOT EXISTS planos (
   tem_integracoes     BOOLEAN DEFAULT FALSE,         -- Meta Pixel, GA4, Clarity etc.
   tem_pipeline        BOOLEAN DEFAULT TRUE,
   tem_multiusuario    BOOLEAN DEFAULT FALSE,
-  tem_relatorios      BOOLEAN DEFAULT TRUE,
+  tem_minhas_vendas    BOOLEAN DEFAULT TRUE,
+  tem_radar            BOOLEAN DEFAULT TRUE,
+  tem_agenda           BOOLEAN DEFAULT TRUE,
+  tem_links            BOOLEAN DEFAULT TRUE,
+  tem_anamneses        BOOLEAN DEFAULT TRUE,
+  tem_clientes         BOOLEAN DEFAULT TRUE,
+  tem_estoque          BOOLEAN DEFAULT TRUE,
+  tem_depoimentos      BOOLEAN DEFAULT TRUE,
   hotmart_offer_id    TEXT,                          -- ID da oferta na Hotmart
   ativo               BOOLEAN DEFAULT TRUE,
   criado_em           TIMESTAMPTZ DEFAULT NOW(),
@@ -204,11 +211,11 @@ CREATE TABLE IF NOT EXISTS planos (
 CREATE INDEX IF NOT EXISTS idx_planos_slug ON planos(slug);
 
 -- Seed dos planos padrão (idempotente)
-INSERT INTO planos (slug, nome, preco_mensal, clientes_max, anamneses_mes_max, tem_integracoes, tem_pipeline, tem_multiusuario)
+INSERT INTO planos (slug, nome, preco_mensal, clientes_max, anamneses_mes_max, tem_integracoes, tem_pipeline, tem_multiusuario, tem_estoque, tem_depoimentos)
 VALUES
-  ('starter',    'Starter',    49.00,  30,   5,    false, true,  false),
-  ('pro',        'Pro',        97.00,  NULL, NULL, true,  true,  false),
-  ('enterprise', 'Enterprise', 197.00, NULL, NULL, true,  true,  true)
+  ('starter',    'Starter',    49.00,  30,   5,    false, true,  false, true, true),
+  ('pro',        'Pro',        97.00,  NULL, NULL, true,  true,  false, true, true),
+  ('enterprise', 'Enterprise', 197.00, NULL, NULL, true,  true,  true,  true, true)
 ON CONFLICT (slug) DO NOTHING;
 
 -- Migrations novas em assinaturas

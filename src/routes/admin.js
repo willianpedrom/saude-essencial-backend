@@ -45,6 +45,27 @@ router.get('/migrate-links', async (req, res) => {
     }
 });
 
+// Migration Helper for Plan Features (add tem_estoque, tem_depoimentos)
+router.get('/migrate-plan-features', async (req, res) => {
+    try {
+        const sql = `
+        ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_minhas_vendas BOOLEAN DEFAULT TRUE;
+        ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_radar BOOLEAN DEFAULT TRUE;
+        ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_agenda BOOLEAN DEFAULT TRUE;
+        ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_links BOOLEAN DEFAULT TRUE;
+        ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_anamneses BOOLEAN DEFAULT TRUE;
+        ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_clientes BOOLEAN DEFAULT TRUE;
+        ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_estoque BOOLEAN DEFAULT TRUE;
+        ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_depoimentos BOOLEAN DEFAULT TRUE;
+        `;
+        await pool.query(sql);
+        res.json({ success: true, message: 'Colunas de recursos adicionadas com sucesso.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // GET /api/admin/users — list all consultoras with subscription info
 router.get('/users', async (req, res) => {
     try {
@@ -302,14 +323,16 @@ router.get('/planos', async (req, res) => {
 router.post('/planos', async (req, res) => {
     const { slug, nome, preco_mensal, preco_semestral, preco_anual, dias_trial, clientes_max, anamneses_mes_max,
         tem_integracoes, tem_pipeline, tem_multiusuario, tem_relatorios, hotmart_offer_id,
-        tem_pagina_pessoal, tem_raiox, tem_minhas_vendas, tem_radar, tem_agenda, tem_links, tem_anamneses, tem_clientes } = req.body;
+        tem_pagina_pessoal, tem_raiox, tem_minhas_vendas, tem_radar, tem_agenda, tem_links, tem_anamneses, tem_clientes,
+        tem_estoque, tem_depoimentos } = req.body;
     if (!slug || !nome) return res.status(400).json({ error: 'slug e nome são obrigatórios.' });
     try {
         const { rows } = await pool.query(
             `INSERT INTO planos (slug, nome, preco_mensal, preco_semestral, preco_anual, dias_trial, clientes_max, anamneses_mes_max,
                tem_integracoes, tem_pipeline, tem_multiusuario, tem_relatorios, hotmart_offer_id,
-               tem_pagina_pessoal, tem_raiox, tem_minhas_vendas, tem_radar, tem_agenda, tem_links, tem_anamneses, tem_clientes)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21) RETURNING *`,
+               tem_pagina_pessoal, tem_raiox, tem_minhas_vendas, tem_radar, tem_agenda, tem_links, tem_anamneses, tem_clientes,
+               tem_estoque, tem_depoimentos)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *`,
             [slug, nome, preco_mensal || 0,
                 preco_semestral || null, preco_anual || null, dias_trial || 0,
                 clientes_max || null, anamneses_mes_max || null,
@@ -317,7 +340,8 @@ router.post('/planos', async (req, res) => {
                 !!tem_multiusuario, tem_relatorios !== false,
                 hotmart_offer_id || null,
                 tem_pagina_pessoal !== false, tem_raiox !== false, tem_minhas_vendas !== false, tem_radar !== false,
-                tem_agenda !== false, tem_links !== false, tem_anamneses !== false, tem_clientes !== false]
+                tem_agenda !== false, tem_links !== false, tem_anamneses !== false, tem_clientes !== false,
+                tem_estoque !== false, tem_depoimentos !== false]
         );
         res.status(201).json(rows[0]);
     } catch (err) {
@@ -332,6 +356,7 @@ router.put('/planos/:id', async (req, res) => {
     const { nome, preco_mensal, preco_semestral, preco_anual, dias_trial, clientes_max, anamneses_mes_max,
         tem_integracoes, tem_pipeline, tem_multiusuario, tem_relatorios,
         tem_pagina_pessoal, tem_raiox, tem_minhas_vendas, tem_radar, tem_agenda, tem_links, tem_anamneses, tem_clientes,
+        tem_estoque, tem_depoimentos,
         hotmart_offer_id, ativo } = req.body;
     try {
         const { rows } = await pool.query(
@@ -340,8 +365,9 @@ router.put('/planos/:id', async (req, res) => {
                tem_integracoes=$8, tem_pipeline=$9, tem_multiusuario=$10, tem_relatorios=$11,
                hotmart_offer_id=$12, ativo=$13,
                tem_pagina_pessoal=$14, tem_raiox=$15, tem_minhas_vendas=$16, tem_radar=$17, tem_agenda=$18, tem_links=$19, tem_anamneses=$20, tem_clientes=$21,
+               tem_estoque=$22, tem_depoimentos=$23,
                atualizado_em=NOW()
-             WHERE id=$22 RETURNING *`,
+             WHERE id=$24 RETURNING *`,
             [nome, preco_mensal || 0,
                 preco_semestral || null, preco_anual || null, dias_trial || 0,
                 clientes_max || null, anamneses_mes_max || null,
@@ -350,6 +376,7 @@ router.put('/planos/:id', async (req, res) => {
                 hotmart_offer_id || null, ativo !== false,
                 tem_pagina_pessoal !== false, tem_raiox !== false, tem_minhas_vendas !== false, tem_radar !== false,
                 tem_agenda !== false, tem_links !== false, tem_anamneses !== false, tem_clientes !== false,
+                tem_estoque !== false, tem_depoimentos !== false,
                 req.params.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Plano não encontrado.' });

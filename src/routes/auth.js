@@ -101,7 +101,8 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
 
         const subResult = await pool.query(
             `SELECT a.plano, a.status, a.trial_fim, a.periodo_fim,
-                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes, p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario, p.tem_relatorios
+                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes, p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario, p.tem_relatorios,
+                    p.tem_estoque, p.tem_depoimentos
              FROM assinaturas a
              LEFT JOIN planos p ON a.plano = p.slug
              WHERE a.consultora_id = $1
@@ -162,7 +163,8 @@ router.get('/me', authMiddleware, async (req, res, next) => {
 
         const subResult = await pool.query(
             `SELECT a.plano, a.status, a.trial_fim, a.periodo_fim,
-                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes, p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario, p.tem_relatorios
+                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes, p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario, p.tem_relatorios,
+                    p.tem_estoque, p.tem_depoimentos
              FROM assinaturas a
              LEFT JOIN planos p ON a.plano = p.slug
              WHERE a.consultora_id = $1
@@ -480,7 +482,8 @@ router.post('/accept-terms', async (req, res, next) => {
         // Recalcula subscrição para montar a resposta completa
         const subResult = await pool.query(
             `SELECT a.plano, a.status, a.trial_fim, a.periodo_fim,
-                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes, p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario, p.tem_relatorios
+                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes, p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario, p.tem_relatorios,
+                    p.tem_estoque, p.tem_depoimentos
              FROM assinaturas a
              LEFT JOIN planos p ON a.plano = p.slug
              WHERE a.consultora_id = $1
