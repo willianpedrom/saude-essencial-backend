@@ -178,11 +178,8 @@ async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnEr
   .cred-label{font-size:.75rem;color:#16a34a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
   .cred-value{font-size:1rem;font-weight:600;color:#0a2818;font-family:monospace;margin-bottom:12px;word-break:break-all}
   .cred-value:last-child{margin-bottom:0}
-  .btn{display:inline-block;background:linear-gradient(135deg,#0a4a2a,#1a7a45);color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:1rem;margin:8px 0}
+  .btn{display:inline-block;background:linear-gradient(135deg,#0a4a2a,#1a7a45);color:#ffffff !important;text-decoration:none !important;padding:14px 32px;border-radius:10px;font-weight:700;font-size:1rem;margin:8px 0}
   .warning{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:.83rem;color:#92400e;margin:16px 0}
-  .step{display:flex;gap:12px;margin-bottom:16px;align-items:flex-start}
-  .step-num{background:#0a4a2a;color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0}
-  .step-text{color:#4a5568;font-size:.9rem;line-height:1.5}
   .footer{background:#f8fafb;padding:20px 32px;text-align:center;font-size:.77rem;color:#94a3b8;border-top:1px solid #e2e8f0}
 </style>
 </head>
@@ -202,14 +199,59 @@ async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnEr
     <p class="text">Use as credenciais abaixo para acessar:</p>
     ${credBlock}
     <div style="text-align:center;margin:28px 0">
-      <a class="btn" href="${loginUrl}">🚀 Acessar a Plataforma</a>
+      <a class="btn" href="${loginUrl}" style="color:#ffffff !important">🚀 Acessar a Plataforma</a>
     </div>
     <div style="margin:24px 0">
-      <p style="font-weight:700;color:#1a2e1a;margin-bottom:12px">📋 Primeiros passos:</p>
-      <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Faça login</strong> com suas credenciais acima</div></div>
-      <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Complete seu perfil</strong> — ativa sua página pública</div></div>
-      <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Crie seu primeiro link de anamnese</strong></div></div>
-      ${senhaProvisoria ? '<div class="step"><div class="step-num">4</div><div class="step-text"><strong>Troque a senha provisória</strong> em Meu Perfil → Segurança</div></div>' : ''}
+      <p style="font-weight:700;color:#1a2e1a;margin-bottom:16px">📋 Primeiros passos:</p>
+      
+      <!-- Passo 1 -->
+      <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:16px">
+        <tr>
+          <td valign="top" style="padding-right:12px">
+            <div style="background:#0a4a2a;color:#ffffff;width:24px;height:24px;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-weight:700">1</div>
+          </td>
+          <td valign="top" style="color:#4a5568;font-size:14px;line-height:1.5">
+            <strong>Faça login</strong> com suas credenciais acima
+          </td>
+        </tr>
+      </table>
+
+      <!-- Passo 2 -->
+      <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:16px">
+        <tr>
+          <td valign="top" style="padding-right:12px">
+            <div style="background:#0a4a2a;color:#ffffff;width:24px;height:24px;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-weight:700">2</div>
+          </td>
+          <td valign="top" style="color:#4a5568;font-size:14px;line-height:1.5">
+            <strong>Complete seu perfil</strong> — ativa sua página pública
+          </td>
+        </tr>
+      </table>
+
+      <!-- Passo 3 -->
+      <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:16px">
+        <tr>
+          <td valign="top" style="padding-right:12px">
+            <div style="background:#0a4a2a;color:#ffffff;width:24px;height:24px;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-weight:700">3</div>
+          </td>
+          <td valign="top" style="color:#4a5568;font-size:14px;line-height:1.5">
+            <strong>Crie seu primeiro link de anamnese</strong>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Passo 4 -->
+      ${senhaProvisoria ? `
+      <table border="0" cellpadding="0" cellspacing="0" style="margin-bottom:16px">
+        <tr>
+          <td valign="top" style="padding-right:12px">
+            <div style="background:#0a4a2a;color:#ffffff;width:24px;height:24px;border-radius:50%;text-align:center;line-height:24px;font-size:12px;font-weight:700">4</div>
+          </td>
+          <td valign="top" style="color:#4a5568;font-size:14px;line-height:1.5">
+            <strong>Troque a senha provisória</strong> em Meu Perfil → Segurança
+          </td>
+        </tr>
+      </table>` : ''}
     </div>
   </div>
   <div class="footer">Gota App • E-mail automático, não responda.</div>
