@@ -167,7 +167,7 @@ async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnEr
 <style>
   body{margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Arial,sans-serif}
   .container{max-width:580px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08)}
-  .header{background:#0a4a2a;padding:32px;text-align:center}
+  .header{background:#0a4a2a;padding:48px 32px;text-align:center}
   .body{padding:36px 32px}
   .greeting{font-size:1.1rem;color:#1a2e1a;font-weight:600;margin-bottom:16px}
   .text{color:#4a5568;line-height:1.7;margin-bottom:16px;font-size:.95rem}
@@ -183,23 +183,7 @@ async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnEr
 <body>
 <div class="container">
   <div class="header">
-    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center">
-          <table border="0" cellpadding="0" cellspacing="0">
-            <tr>
-              <td valign="middle" style="padding-right:16px">
-                <img src="${loginUrl}/img/logo_premium.png" width="64" height="auto" style="display:block;border:0" alt="">
-              </td>
-              <td valign="middle" style="text-align:left">
-                <div style="color:#ffffff;font-size:32px;font-weight:700;line-height:1;margin-bottom:4px;letter-spacing:1px">GOTA APP</div>
-                <div style="color:rgba(255,255,255,0.9);font-size:13px;font-weight:400;line-height:1.2;letter-spacing:0.5px">Gestão Essencial de Relacionamento</div>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
+    <img src="${loginUrl}/img/logo_premium.png" width="80" style="display:block;margin:0 auto;border:0" alt="Gota App Logo">
   </div>
   <div class="body">
     <div class="greeting">Olá, ${nome}! 🎉</div>
