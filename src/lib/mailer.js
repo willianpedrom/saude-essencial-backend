@@ -186,9 +186,9 @@ async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnEr
 <body>
 <div class="container">
   <div class="header">
-    <div class="logo">💧</div>
+    <img src="${loginUrl}/img/logo_premium.png" width="60" height="60" style="display:block;margin:0 auto 16px;border:0" alt="Gota App Logo">
     <h1>Gota App</h1>
-    <p>Plataforma para Consultoras de Bem-Estar</p>
+    <p>Sistema de Gestão Essencial de Relacionamento</p>
   </div>
   <div class="body">
     <div class="greeting">Olá, ${nome}! 🎉</div>
