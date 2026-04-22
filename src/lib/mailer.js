@@ -183,7 +183,7 @@ async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnEr
 <body>
 <div class="container">
   <div class="header">
-    <img src="${loginUrl}/img/logo_premium.png" width="80" style="display:block;margin:0 auto;border:0" alt="Gota App Logo">
+    <img src="${loginUrl}/img/logo_premium.png" width="300" style="display:block;margin:0 auto;border:0" alt="Gota App Logo">
   </div>
   <div class="body">
     <div class="greeting">Olá, ${nome}! 🎉</div>
