@@ -5,6 +5,7 @@ import { formatDate, toast, modal } from '../utils.js';
 // Admin-only API helper
 const adminApi = {
   getUsers: () => api('GET', '/api/admin/users'),
+  createUser: (data) => api('POST', '/api/admin/users', data),
   updateUser: (id, data) => api('PUT', `/api/admin/users/${id}`, data),
   updatePlan: (id, data) => api('PUT', `/api/admin/users/${id}/plan`, data),
   updatePassword: (id, data) => api('PUT', `/api/admin/users/${id}/password`, data),
@@ -366,6 +367,7 @@ export async function renderAdmin(router) {
             ${planOptions}
           </select>
           <input class="field-input" id="admin-search" placeholder="🔍 Buscar nome/email..." style="width:200px;padding:6px 12px;font-size:0.82rem" />
+          <button class="btn btn-primary btn-sm" id="btn-add-member" style="padding:6px 12px;font-size:0.82rem">+ Novo Membro</button>
         </div>
         <div style="overflow-x:auto">
           <table class="clients-table">
@@ -404,6 +406,7 @@ export async function renderAdmin(router) {
     fs?.addEventListener('change', applyAndRender);
     fp?.addEventListener('change', applyAndRender);
     se?.addEventListener('input', applyAndRender);
+    container.querySelector('#btn-add-member')?.addEventListener('click', showCreateUserModal);
     bindRowEvents();
   }
 
@@ -813,6 +816,79 @@ export async function renderAdmin(router) {
       }
     });
     setTimeout(() => document.getElementById('ae-nome')?.focus(), 100);
+  }
+
+  function showCreateUserModal() {
+    const planOptions = planos.map(p => `<option value="${p.slug}">${p.nome}</option>`).join('');
+    modal('➕ Novo Membro do Sistema', `
+      <div class="form-grid">
+        <div class="form-group form-field-full">
+          <label class="field-label">Nome Completo *</label>
+          <input class="field-input" id="an-nome" placeholder="Ex: Maria Oliveira" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">E-mail de Acesso *</label>
+          <input class="field-input" id="an-email" type="email" placeholder="email@exemplo.com" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Telefone / WhatsApp</label>
+          <input class="field-input" id="an-telefone" placeholder="(00) 00000-0000" />
+        </div>
+        <div class="form-group">
+          <label class="field-label">Plano Inicial</label>
+          <select class="field-select" id="an-plano">
+            ${planOptions}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="field-label">Dias de Trial Gratuito</label>
+          <input class="field-input" id="an-trial" type="number" value="7" min="0" />
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:12px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;font-size:0.82rem;color:#0369a1">
+        💡 O sistema gerará uma <strong>senha aleatória</strong> e enviará para o e-mail informado (se o SMTP estiver configurado).
+      </div>`, {
+      confirmLabel: '🚀 Criar Membro',
+      onConfirm: async () => {
+        const data = {
+          nome: document.getElementById('an-nome')?.value?.trim(),
+          email: document.getElementById('an-email')?.value?.trim(),
+          telefone: document.getElementById('an-telefone')?.value?.trim(),
+          plano: document.getElementById('an-plano')?.value,
+          trial_dias: document.getElementById('an-trial')?.value || 7,
+          role: 'user'
+        };
+
+        if (!data.nome || !data.email) {
+          toast('Nome e e-mail são obrigatórios.', 'error');
+          return false;
+        }
+
+        try {
+          const res = await adminApi.createUser(data);
+          toast(`✅ Membro ${res.consultora.nome} criado com sucesso!`);
+          
+          // Show password in another modal for convenience
+          modal('🔑 Senha de Acesso Gerada', `
+            <div style="text-align:center;padding:10px">
+              <p>O membro foi criado com sucesso. Como medida de segurança, informe a senha abaixo para o usuário:</p>
+              <div style="background:#f1f5f9;padding:15px;border-radius:8px;font-family:monospace;font-size:1.4rem;font-weight:700;margin:20px 0;border:1px dashed #cbd5e1;letter-spacing:1px">
+                ${res.tempPassword}
+              </div>
+              <p style="font-size:0.85rem;color:var(--text-muted)">Uma cópia desta senha foi enviada para o e-mail: <strong>${res.consultora.email}</strong></p>
+              <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${res.tempPassword}').then(() => this.textContent='📋 Copiado!')" style="margin-top:10px">📋 Copiar Senha</button>
+            </div>
+          `, { confirmLabel: 'Entendido' });
+
+          await load();
+          return true;
+        } catch (err) {
+          toast('Erro ao criar: ' + err.message, 'error');
+          return false;
+        }
+      }
+    });
+    setTimeout(() => document.getElementById('an-nome')?.focus(), 100);
   }
 
   function showCortesiaModal(u) {

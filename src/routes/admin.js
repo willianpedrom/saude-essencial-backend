@@ -1,6 +1,7 @@
 const express = require('express');
 const pool = require('../db/pool');
 const auth = require('../middleware/auth');
+const bcrypt = require('bcryptjs');
 const { generateCsrfToken } = require('../middleware/csrf');
 
 
@@ -92,6 +93,81 @@ router.get('/users', async (req, res) => {
     }
 });
 
+// Helper for slugs
+function makeSlug(nome) {
+    return nome
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        + '-' + Date.now().toString(36);
+}
+
+// POST /api/admin/users — create a new consultora manually
+router.post('/users', async (req, res) => {
+    const { nome, email, telefone, role, plano, trial_dias } = req.body;
+
+    if (!nome || !email) {
+        return res.status(400).json({ error: 'Nome e e-mail são obrigatórios.' });
+    }
+
+    try {
+        // Check existing
+        const exists = await pool.query('SELECT id FROM consultoras WHERE email = $1', [email]);
+        if (exists.rows.length > 0) {
+            return res.status(409).json({ error: 'Este e-mail já está cadastrado no sistema.' });
+        }
+
+        // Generate random password
+        const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
+        const tempPassword = Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+        const senhaHash = await bcrypt.hash(tempPassword, 10);
+        const slug = makeSlug(nome);
+
+        // Insert consultora
+        const { rows } = await pool.query(
+            `INSERT INTO consultoras (nome, email, senha_hash, telefone, slug, role, termos_aceitos, termos_aceitos_em)
+             VALUES ($1, $2, $3, $4, $5, $6, TRUE, NOW())
+             RETURNING id, nome, email, slug, role`,
+            [nome, email, senhaHash, telefone || null, slug, role || 'user']
+        );
+        const consultora = rows[0];
+
+        // Create initial subscription
+        const dias = parseInt(trial_dias) || 7;
+        await pool.query(
+            `INSERT INTO assinaturas (consultora_id, plano, status, gateway, trial_fim)
+             VALUES ($1, $2, 'trial', 'manual', NOW() + interval '${dias} days')`,
+            [consultora.id, plano || 'starter']
+        );
+
+        // Send welcome email (optional/background)
+        try {
+            const { sendWelcomeEmail } = require('../lib/mailer');
+            await sendWelcomeEmail({ 
+                nome: consultora.nome, 
+                email: consultora.email, 
+                senhaProvisoria: tempPassword, 
+                plano: plano || 'starter' 
+            });
+        } catch (mailErr) {
+            console.error('[Admin] Erro ao enviar email de boas-vindas:', mailErr.message);
+        }
+
+        console.log(`[Admin] 👤 Membro criado: ${email} por admin ${req.consultora.email}`);
+
+        res.status(201).json({
+            success: true,
+            consultora,
+            tempPassword
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao criar membro: ' + err.message });
+    }
+});
+
 // PUT /api/admin/users/:id — edit consultora data + role
 router.put('/users/:id', async (req, res) => {
     const { nome, email, telefone, role } = req.body;
@@ -121,7 +197,6 @@ router.put('/users/:id/password', async (req, res) => {
         return res.status(400).json({ error: 'A nova senha deve ter pelo menos 6 caracteres.' });
     }
     try {
-        const bcrypt = require('bcryptjs');
         const senhaHash = await bcrypt.hash(password, 10);
 
         const { rows } = await pool.query(
