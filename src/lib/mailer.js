@@ -167,10 +167,7 @@ async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnEr
 <style>
   body{margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Arial,sans-serif}
   .container{max-width:580px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08)}
-  .header{background:linear-gradient(135deg,#0a4a2a,#1a7a45);padding:40px 32px;text-align:center}
-  .header h1{color:#fff;margin:0;font-size:1.5rem}
-  .header p{color:rgba(255,255,255,.8);margin:6px 0 0;font-size:.9rem}
-  .logo{font-size:2rem;margin-bottom:12px}
+  .header{background:#0a4a2a;padding:40px 32px;text-align:center}
   .body{padding:36px 32px}
   .greeting{font-size:1.1rem;color:#1a2e1a;font-weight:600;margin-bottom:16px}
   .text{color:#4a5568;line-height:1.7;margin-bottom:16px;font-size:.95rem}
@@ -186,9 +183,7 @@ async function sendWelcomeEmail({ nome, email, senhaProvisoria, plano, throwOnEr
 <body>
 <div class="container">
   <div class="header">
-    <img src="${loginUrl}/img/logo_premium.png" width="60" height="60" style="display:block;margin:0 auto 16px;border:0" alt="Gota App Logo">
-    <h1>Gota App</h1>
-    <p>Sistema de Gestão Essencial de Relacionamento</p>
+    <img src="${loginUrl}/img/logo_anexada.png" width="300" style="display:block;margin:0 auto;border:0" alt="Gota App">
   </div>
   <div class="body">
     <div class="greeting">Olá, ${nome}! 🎉</div>
