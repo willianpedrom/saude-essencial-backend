@@ -408,3 +408,32 @@ END $$;
 
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS perfil_cta_texto VARCHAR(100);
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS perfil_cta_link TEXT;
+
+-- ==========================================
+-- FUNIL DE VENDAS (PROSPECTOS DA PLATAFORMA)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS prospectos_plataforma (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nome            VARCHAR(200) NOT NULL,
+  email           VARCHAR(200) NOT NULL,
+  telefone        VARCHAR(30),
+  cidade          VARCHAR(100),
+  respostas       JSONB NOT NULL DEFAULT '{}',
+  origem_slug     VARCHAR(100), -- Slug da anamnese de venda que originou
+  status          VARCHAR(30) DEFAULT 'novo', -- novo, em_contato, convertido, descartado
+  notas_admin     TEXT,
+  criado_em       TIMESTAMPTZ DEFAULT NOW(),
+  atualizado_em   TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_prospectos_email ON prospectos_plataforma(email);
+CREATE INDEX IF NOT EXISTS idx_prospectos_status ON prospectos_plataforma(status);
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'prospectos_plataforma') THEN
+    EXECUTE 'DROP TRIGGER IF EXISTS trg_atualizado_em ON prospectos_plataforma; '
+         || 'CREATE TRIGGER trg_atualizado_em BEFORE UPDATE ON prospectos_plataforma '
+         || 'FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();';
+  END IF;
+END $$;

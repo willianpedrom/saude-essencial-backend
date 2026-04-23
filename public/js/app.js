@@ -113,6 +113,10 @@ const router = new Router({
         const { renderPublicAnamnesis } = await import('./pages/PublicAnamnesis.js');
         renderPublicAnamnesis(router, token);
     },
+    '/vendas/capture/:token': async ({ token }) => {
+        const { renderSalesAnamnesis } = await import('./pages/SalesAnamnesis.js');
+        renderSalesAnamnesis(router, token);
+    },
     '/protocolo': async (params) => {
         const { renderReport } = await import('./pages/Report.js');
         renderReport(router, params?.data);

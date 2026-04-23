@@ -38,6 +38,13 @@ const adminApi = {
   triggerNotifAutomation: () => api('POST', '/api/admin-notifications/trigger-automation', {}),
 };
 
+const salesApi = {
+  getTemplate: () => api('GET', '/api/sales/admin/template'),
+  updateTemplate: (dados) => api('PUT', '/api/sales/admin/template', { dados }),
+  getLeads: () => api('GET', '/api/sales/admin/leads'),
+  updateLead: (id, data) => api('PATCH', `/api/sales/admin/leads/${id}`, data),
+};
+
 const PLAN_LABELS = {
   starter: 'Starter',
   pro: 'Pro',
@@ -181,9 +188,9 @@ export async function renderAdmin(router) {
 
       <!-- Abas -->
       <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--border-light);overflow-x:auto">
-        ${['membros', 'funil', 'planos', 'avisos', 'notificacoes', 'gateway'].map(tab => `
+        ${['membros', 'funil', 'leads', 'planos', 'avisos', 'notificacoes', 'gateway'].map(tab => `
           <button id="tab-${tab}" class="btn ${activeTab === tab ? 'btn-primary' : 'btn-secondary'}" style="border-radius:8px 8px 0 0;border-bottom:none;padding:8px 18px;font-size:0.85rem;white-space:nowrap" data-tab="${tab}">
-            ${{ membros: '👥 Membros', funil: '🚀 Funil Trial', planos: '📦 Planos', avisos: '🔔 Avisos', notificacoes: '📲 Notificações', gateway: '💳 Gateway' }[tab]}
+            ${{ membros: '👥 Membros', funil: '🚀 Funil Trial', leads: '📈 Funil de Vendas', planos: '📦 Planos', avisos: '🔔 Avisos', notificacoes: '📲 Notificações', gateway: '💳 Gateway' }[tab]}
           </button>`).join('')}
       </div>
 
@@ -213,10 +220,235 @@ export async function renderAdmin(router) {
     const tabContent = pc.querySelector('#tab-content');
     if (activeTab === 'membros') renderMembros(tabContent);
     else if (activeTab === 'funil') renderFunil(tabContent);
+    else if (activeTab === 'leads') renderLeadsSection(tabContent);
     else if (activeTab === 'planos') renderPlanosSection(tabContent);
     else if (activeTab === 'avisos') renderAvisosSection(tabContent);
     else if (activeTab === 'notificacoes') renderNotificacoesSection(tabContent);
     else if (activeTab === 'gateway') renderGatewaySection(tabContent);
+  }
+
+  // ── Aba Funil de Vendas (Leads da Plataforma) ───────────────────
+  async function renderLeadsSection(container) {
+    container.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted)">⏳ Carregando funil de vendas...</div>`;
+    
+    try {
+      const [leads, template] = await Promise.all([
+        salesApi.getLeads(),
+        salesApi.getTemplate()
+      ]);
+
+      const publicLink = `${window.location.origin}/#/vendas/capture/${template.token_publico}`;
+
+      container.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+          <h4 style="margin:0">📈 Gestão de Leads (Prospectos)</h4>
+          <div style="display:flex;gap:10px">
+             <button class="btn btn-secondary btn-sm" id="btn-config-sales">⚙️ Perguntas do Form</button>
+             <button class="btn btn-primary btn-sm" id="btn-copy-sales-funnel" data-link="${publicLink}">📋 Copiar Link de Captura</button>
+          </div>
+        </div>
+
+        <div class="card" style="padding:0;overflow:hidden;border:1px solid var(--border-light)">
+          <div style="overflow-x:auto">
+            <table class="table" style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr style="background:#f8fafc;border-bottom:1px solid #e2e8f0">
+                  <th style="padding:12px;text-align:left;font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:700">Prospecto</th>
+                  <th style="padding:12px;text-align:left;font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:700">Cidade</th>
+                  <th style="padding:12px;text-align:center;font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:700">Data</th>
+                  <th style="padding:12px;text-align:center;font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:700">Status</th>
+                  <th style="padding:12px;text-align:right;font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:700">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${leads.length === 0 ? '<tr><td colspan="5" style="padding:60px;text-align:center;color:var(--text-muted)">Nenhum prospecto captado ainda. Divulgue seu link!</td></tr>' : 
+                  leads.map(l => `
+                  <tr style="border-bottom:1px solid #f1f5f9">
+                    <td style="padding:12px">
+                      <div style="font-weight:600;color:var(--text-main);font-size:0.9rem">${l.nome}</div>
+                      <div style="font-size:0.75rem;color:var(--text-muted)">${l.email} | ${l.telefone || '-'}</div>
+                    </td>
+                    <td style="padding:12px;font-size:0.85rem">${l.cidade || '-'}</td>
+                    <td style="padding:12px;text-align:center;font-size:0.8rem;color:var(--text-muted)">${formatDate(l.criado_em)}</td>
+                    <td style="padding:12px;text-align:center">
+                      <span class="badge" style="background:${getLeadStatusColor(l.status)};color:white;font-size:0.7rem;padding:3px 8px;border-radius:12px">${l.status.toUpperCase()}</span>
+                    </td>
+                    <td style="padding:12px;text-align:right">
+                      <button class="btn btn-secondary btn-sm btn-view-lead" data-id="${l.id}" style="padding:5px 10px;font-size:0.75rem">👁️ Ver Detalhes</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      // Event listeners
+      container.querySelector('#btn-copy-sales-funnel').addEventListener('click', (e) => {
+        const link = e.currentTarget.dataset.link;
+        navigator.clipboard.writeText(link).then(() => toast('Link de captura copiado!', 'success'));
+      });
+
+      container.querySelector('#btn-config-sales').addEventListener('click', () => showConfigSalesModal(template));
+
+      container.querySelectorAll('.btn-view-lead').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const lead = leads.find(x => x.id === btn.dataset.id);
+          showLeadDetailsModal(lead, template, () => renderLeadsSection(container));
+        });
+      });
+
+    } catch (err) {
+      container.innerHTML = `<div class="empty-state">❌ Erro ao carregar: ${err.message}</div>`;
+    }
+  }
+
+  function getLeadStatusColor(s) {
+    switch(s) {
+      case 'novo': return '#3b82f6';
+      case 'em_contato': return '#f59e0b';
+      case 'convertido': return '#10b981';
+      case 'descartado': return '#ef4444';
+      default: return '#64748b';
+    }
+  }
+
+  function showLeadDetailsModal(lead, template, onUpdate) {
+    const questions = template.dados.perguntas || [];
+    const answers = lead.respostas || {};
+
+    modal.show('Detalhes do Prospecto', `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+        <div>
+          <label style="display:block;font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Dados Pessoais</label>
+          <div style="font-size:1rem;font-weight:600;margin-top:4px">${lead.nome}</div>
+          <div style="color:var(--text-muted);font-size:0.9rem;margin-top:2px">${lead.email}</div>
+          <div style="color:var(--text-muted);font-size:0.9rem">${lead.telefone || 'Sem telefone'}</div>
+          <div style="color:var(--text-muted);font-size:0.9rem">${lead.cidade || 'Cidade não informada'}</div>
+        </div>
+        <div>
+          <label style="display:block;font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Ações</label>
+          <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+            <a href="https://wa.me/55${lead.telefone?.replace(/\D/g, '')}" target="_blank" class="btn btn-secondary btn-sm" style="text-align:center;background:#25d366;color:white;border:none">💬 Chamar no WhatsApp</a>
+            <a href="mailto:${lead.email}" class="btn btn-secondary btn-sm" style="text-align:center">✉️ Enviar E-mail</a>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:24px">
+        <label style="display:block;font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;margin-bottom:12px">Respostas da Anamnese</label>
+        <div style="background:#f8fafc;border-radius:12px;padding:16px;border:1px solid #e2e8f0">
+          ${questions.map(q => `
+            <div style="margin-bottom:12px">
+              <div style="font-size:0.85rem;font-weight:700;color:var(--green-800)">${q.texto}</div>
+              <div style="font-size:0.9rem;color:var(--text-main);margin-top:2px">${answers[q.id] || '<span style="color:#cbd5e1">Não respondido</span>'}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <label class="form-label">Status do Atendimento</label>
+        <select id="lead-status" class="form-input">
+          <option value="novo" ${lead.status === 'novo' ? 'selected' : ''}>🔵 Novo Lead</option>
+          <option value="em_contato" ${lead.status === 'em_contato' ? 'selected' : ''}>🟠 Em Contato</option>
+          <option value="convertido" ${lead.status === 'convertido' ? 'selected' : ''}>🟢 Convertido (Assinou)</option>
+          <option value="descartado" ${lead.status === 'descartado' ? 'selected' : ''}>🔴 Descartado</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:24px">
+        <label class="form-label">Notas Administrativas (Privado)</label>
+        <textarea id="lead-notes" class="form-input" style="height:80px" placeholder="Anotações sobre a negociação...">${lead.notas_admin || ''}</textarea>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:12px">
+        <button class="btn btn-secondary" onclick="modal.close()">Fechar</button>
+        <button class="btn btn-primary" id="btn-save-lead">Salvar Alterações</button>
+      </div>
+    `, 'medium');
+
+    document.getElementById('btn-save-lead').addEventListener('click', async () => {
+      const status = document.getElementById('lead-status').value;
+      const notas_admin = document.getElementById('lead-notes').value;
+      try {
+        await salesApi.updateLead(lead.id, { status, notas_admin });
+        toast('Prospecto atualizado!', 'success');
+        modal.close();
+        onUpdate();
+      } catch (err) {
+        toast('Erro ao salvar: ' + err.message, 'error');
+      }
+    });
+  }
+
+  function showConfigSalesModal(template) {
+    let questions = JSON.parse(JSON.stringify(template.dados.perguntas || []));
+
+    function renderList() {
+      const list = document.getElementById('questions-list');
+      list.innerHTML = questions.map((q, idx) => `
+        <div style="background:#f1f5f9;border-radius:8px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:0.85rem">
+            <strong>Q${idx+1}:</strong> ${q.texto} <span style="color:#64748b;font-size:0.75rem">(${q.tipo})</span>
+          </div>
+          <button class="btn btn-sm btn-secondary" onclick="this.parentElement.remove(); questions.splice(${idx},1); renderList();" style="padding:4px 8px;color:#ef4444">❌</button>
+        </div>
+      `).join('');
+      window.questions = questions; // Leak to global for simple onclick handlers in modal
+    }
+
+    modal.show('Configurar Anamnese de Vendas', `
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:20px">Defina quais perguntas o interessado deve responder ao acessar seu link de captura.</p>
+      
+      <div id="questions-list" style="margin-bottom:20px"></div>
+
+      <div style="background:#fffbeb;border:1px solid #fcd34d;padding:12px;border-radius:8px;margin-bottom:20px">
+        <h5 style="margin:0 0 8px;font-size:0.85rem">➕ Adicionar Pergunta</h5>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="new-q-text" class="form-input" placeholder="Texto da pergunta..." style="flex:1">
+          <select id="new-q-type" class="form-input" style="width:120px">
+            <option value="text">Texto</option>
+            <option value="textarea">Área de Texto</option>
+            <option value="select">Seleção (Sim/Não)</option>
+          </select>
+          <button class="btn btn-primary btn-sm" id="btn-add-q">Add</button>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px">
+        <button class="btn btn-secondary" onclick="modal.close()">Cancelar</button>
+        <button class="btn btn-primary" id="btn-save-tpl">Salvar Questionário</button>
+      </div>
+    `, 'medium');
+
+    renderList();
+
+    document.getElementById('btn-add-q').addEventListener('click', () => {
+      const text = document.getElementById('new-q-text').value;
+      const type = document.getElementById('new-q-type').value;
+      if (!text) return toast('Digite o texto da pergunta', 'warning');
+      
+      questions.push({
+        id: 'q_' + Math.random().toString(36).substr(2, 5),
+        texto: text,
+        tipo: type,
+        opcoes: type === 'select' ? ['Sim', 'Não'] : undefined
+      });
+      document.getElementById('new-q-text').value = '';
+      renderList();
+    });
+
+    document.getElementById('btn-save-tpl').addEventListener('click', async () => {
+      try {
+        await salesApi.updateTemplate({ perguntas: questions });
+        toast('Questionário atualizado!', 'success');
+        modal.close();
+      } catch (err) {
+        toast('Erro ao salvar template: ' + err.message, 'error');
+      }
+    });
   }
 
   // ── Aba Funil (Kanban) ─────────────────────────────────────────
