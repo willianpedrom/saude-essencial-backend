@@ -43,6 +43,7 @@ const salesApi = {
   updateTemplate: (dados) => api('PUT', '/api/sales/admin/template', { dados }),
   getLeads: () => api('GET', '/api/sales/admin/leads'),
   updateLead: (id, data) => api('PATCH', `/api/sales/admin/leads/${id}`, data),
+  deleteLead: (id) => api('DELETE', `/api/sales/admin/leads/${id}`),
 };
 
 const PLAN_LABELS = {
@@ -274,7 +275,10 @@ export async function renderAdmin(router) {
                       <span class="badge" style="background:${getLeadStatusColor(l.status)};color:white;font-size:0.7rem;padding:3px 8px;border-radius:12px">${l.status.toUpperCase()}</span>
                     </td>
                     <td style="padding:12px;text-align:right">
-                      <button class="btn btn-secondary btn-sm btn-view-lead" data-id="${l.id}" style="padding:5px 10px;font-size:0.75rem">👁️ Ver Detalhes</button>
+                      <div style="display:flex;justify-content:flex-end;gap:8px">
+                        <button class="btn btn-secondary btn-sm btn-view-lead" data-id="${l.id}" style="padding:5px 10px;font-size:0.75rem">👁️ Ver Detalhes</button>
+                        <button class="btn btn-sm btn-delete-lead" data-id="${l.id}" style="padding:5px 10px;font-size:0.75rem;background:#fee2e2;color:#dc2626;border:1px solid #fecaca" title="Excluir Lead">🗑️</button>
+                      </div>
                     </td>
                   </tr>
                 `).join('')}
@@ -296,6 +300,19 @@ export async function renderAdmin(router) {
         btn.addEventListener('click', () => {
           const lead = leads.find(x => x.id === btn.dataset.id);
           showLeadDetailsModal(lead, template, () => renderLeadsSection(container));
+        });
+      });
+
+      container.querySelectorAll('.btn-delete-lead').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('Tem certeza que deseja excluir este lead permanentemente?')) return;
+          try {
+            await salesApi.deleteLead(btn.dataset.id);
+            toast('Lead excluído!', 'success');
+            renderLeadsSection(container);
+          } catch (err) {
+            toast('Erro ao excluir: ' + err.message, 'error');
+          }
         });
       });
 
