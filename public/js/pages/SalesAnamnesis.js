@@ -58,6 +58,7 @@ export async function renderSalesAnamnesis(router, token) {
           width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; 
           margin-bottom: 20px; font-size: 1rem; transition: all 0.2s;
           background: #f8fafc;
+          color: #1e293b;
         }
         .form-input:focus { 
           border-color: #10b981; outline: none; background: white;
