@@ -151,7 +151,7 @@ export async function renderSalesAnamnesis(router, token) {
                 Obrigado pelo interesse, <strong>${nome.split(' ')[0]}</strong>! <br>
                 Nossa equipe de consultores premium analisará seu perfil e entrará em contato via WhatsApp em breve.
               </p>
-              <button class="btn-submit" onclick="window.location.href='https://gotaapp.com.br'" style="margin-top:40px">Conhecer mais o Gota App</button>
+              <button class="btn-submit" onclick="window.location.href='https://www.gotaapp.com.br/doterra'" style="margin-top:40px">Conhecer mais o Gota App</button>
             </div>
           </div>
         `;
