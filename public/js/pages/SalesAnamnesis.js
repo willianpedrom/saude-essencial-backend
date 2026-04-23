@@ -167,24 +167,43 @@ export async function renderSalesAnamnesis(router, token) {
           const regUrl = `/#/login?register=true&nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&tel=${encodeURIComponent(telefone)}`;
           
           app.innerHTML = `
-            <div class="sales-page" style="display:flex;align-items:center;justify-content:center">
-              <div class="capture-card" style="text-align:center; padding:60px 32px; border: 2px solid #10b981">
-                <div style="font-size:5rem;margin-bottom:24px">✨</div>
-                <h2 style="color:#059669; font-size:2rem; font-family:'Playfair Display', serif">Parabéns, ${nome.split(' ')[0]}!</h2>
-                <p style="color:#1e293b; font-weight:700; margin-top:10px">Seu perfil foi PRÉ-APROVADO.</p>
-                <p style="color:#475569;margin-top:16px;line-height:1.7;font-size:1rem">
-                  Você acaba de ganhar <strong>7 dias de acesso total</strong> à plataforma para transformar sua gestão de óleos essenciais.
+            <div class="sales-page" style="display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at top right, #f0fdf4, #ffffff)">
+              <div class="capture-card" style="text-align:center; padding:60px 40px; border:none; box-shadow: 0 20px 50px rgba(0,0,0,0.1); max-width:500px; position:relative; overflow:hidden">
+                <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:rgba(16, 185, 129, 0.1); border-radius:50%"></div>
+                
+                <div style="font-size:4rem;margin-bottom:16px;filter:drop-shadow(0 10px 15px rgba(201, 154, 34, 0.3))">🏆</div>
+                
+                <h2 style="color:#064e3b; font-size:2.2rem; font-family:'Playfair Display', serif; margin-bottom:8px">Parabéns, ${nome.split(' ')[0]}!</h2>
+                <div style="display:inline-block; padding:6px 16px; background:#dcfce7; color:#166534; border-radius:100px; font-weight:700; font-size:0.8rem; letter-spacing:1px; margin-bottom:24px">PERFIL PRÉ-APROVADO</div>
+                
+                <p style="color:#475569; margin-bottom:32px; line-height:1.6; font-size:1.1rem">
+                  Você acaba de ganhar um convite exclusivo para <strong>7 dias de acesso total</strong> à plataforma Gota App.
                 </p>
                 
-                <button class="btn-submit" onclick="window.location.href='${regUrl}'" style="margin-top:32px; background: linear-gradient(135deg, #059669, #10b981)">
+                <a href="${regUrl}" class="btn-activate-trial" style="display:block; text-decoration:none; background: linear-gradient(135deg, #059669, #10b981); color:white; padding:20px 30px; border-radius:14px; font-weight:800; font-size:1.1rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); transition: transform 0.2s, box-shadow 0.2s; animation: pulse-btn 2s infinite">
                   ATIVAR MEUS 7 DIAS GRÁTIS 🚀
-                </button>
+                </a>
                 
-                <p style="margin-top:20px; font-size:0.9rem">
-                  <a href="https://www.gotaapp.com.br/doterra" style="color:#64748b; text-decoration:underline">Não quero o trial, apenas conhecer o site</a>
+                <p style="margin-top:24px; font-size:0.9rem">
+                  <a href="https://www.gotaapp.com.br/doterra" style="color:#94a3b8; text-decoration:none; transition:color 0.2s" onmouseover="this.style.color='#64748b'" onmouseout="this.style.color='#94a3b8'">Não quero o trial, apenas ver o site</a>
                 </p>
               </div>
             </div>
+            <style>
+              .btn-activate-trial:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 15px 30px rgba(16, 185, 129, 0.5);
+              }
+              @keyframes pulse-btn {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.03); }
+                100% { transform: scale(1); }
+              }
+              @media (max-width: 480px) {
+                .capture-card { padding: 40px 20px !important; }
+                h2 { font-size: 1.8rem !important; }
+              }
+            </style>
           `;
         }, 3000);
 
