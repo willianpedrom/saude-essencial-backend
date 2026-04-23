@@ -40,15 +40,48 @@ export function renderLogin(router) {
           <div class="auth-error" id="login-error"></div>
           <button class="btn-auth" type="submit" id="login-btn">Acessar minha área ✦</button>
           <p class="auth-link-area" style="display:flex;flex-direction:column;align-items:center;gap:12px;font-size:0.85rem;margin-top:20px;">
-            <a href="https://www.gotaapp.com.br/doterra" target="_blank" style="color:var(--primary-color);text-decoration:none;font-weight:600;transition:opacity 0.2s" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Ainda não tem o Gota App? Assine agora ✨</a>
+            <span class="auth-link" id="link-to-register" style="color:var(--primary-color);font-weight:700;cursor:pointer">Ainda não tem conta? Crie agora ✨</span>
             <span class="auth-link" id="link-forgot" style="color:var(--text-muted);cursor:pointer;">Esqueci minha senha</span>
           </p>
         </form>
+      </div>
 
-
+      <!-- REGISTER -->
+      <div id="panel-register" style="display:none">
+        <div style="text-align:center;margin-bottom:16px;">
+          <h2 style="margin:0;font-size:1.4rem;font-weight:700;">Criar Conta Gratuita</h2>
+          <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;">Comece seu trial de 7 dias agora</p>
+        </div>
+        <form class="auth-form" id="register-form">
+          <div class="form-group">
+            <label class="form-label">Nome Completo</label>
+            <input class="form-input" type="text" id="reg-nome" placeholder="Seu nome" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">E-mail</label>
+            <input class="form-input" type="email" id="reg-email" placeholder="seu@email.com" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">WhatsApp (com DDD)</label>
+            <input class="form-input" type="tel" id="reg-tel" placeholder="(00) 00000-0000" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Senha (min. 8 caracteres)</label>
+            <div style="position:relative">
+              <input class="form-input" type="password" id="reg-password" placeholder="••••••••" required style="padding-right:44px" />
+              <button type="button" class="toggle-pw" data-target="reg-password" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:0.5;padding:4px 6px">👁️</button>
+            </div>
+          </div>
+          <div class="auth-error" id="register-error"></div>
+          <button class="btn-auth" type="submit" id="register-btn">Criar minha conta agora! 🚀</button>
+          <p class="auth-link-area" style="text-align:center;font-size:0.85rem;margin-top:20px;">
+            <span class="auth-link" id="link-back-to-login" style="cursor:pointer">Já tem conta? Faça login</span>
+          </p>
+        </form>
       </div>
 
       <!-- TERMS ACCEPTANCE -->
+  <!-- TERMS ACCEPTANCE -->
       <div id="panel-terms" style="display:none">
         <div style="text-align:center;margin-bottom:20px;padding:20px">
           <div style="font-size:2.5rem">📄</div>
@@ -142,6 +175,16 @@ export function renderLogin(router) {
 
   document.getElementById('link-back-login')?.addEventListener('click', () => {
     document.getElementById('panel-forgot').style.display = 'none';
+    document.getElementById('panel-login').style.display = 'block';
+  });
+
+  document.getElementById('link-to-register')?.addEventListener('click', () => {
+    document.getElementById('panel-login').style.display = 'none';
+    document.getElementById('panel-register').style.display = 'block';
+  });
+
+  document.getElementById('link-back-to-login')?.addEventListener('click', () => {
+    document.getElementById('panel-register').style.display = 'none';
     document.getElementById('panel-login').style.display = 'block';
   });
 
@@ -258,6 +301,53 @@ export function renderLogin(router) {
       btn.disabled = false; btn.textContent = 'Li e Aceito (Entrar no Painel)';
     }
   });
+
+  // ── Register form ───────────────────────────────────────────────────────
+  document.getElementById('register-form')?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const nome = document.getElementById('reg-nome').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const telefone = document.getElementById('reg-tel').value.trim();
+    const senha = document.getElementById('reg-password').value;
+    const errEl = document.getElementById('register-error');
+    const btn = document.getElementById('register-btn');
+
+    if (senha.length < 8) return toast('A senha deve ter pelo menos 8 caracteres.', 'warning');
+
+    btn.disabled = true; btn.textContent = 'Criando conta...';
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, email, telefone, senha })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ao criar conta.');
+      
+      // Auto-login
+      localStorage.setItem('gota_token', data.token);
+      localStorage.setItem('gota_csrf', data.csrfToken);
+      auth.current = data.consultora;
+      auth.isLoggedIn = true;
+
+      toast('Conta criada com sucesso! Aproveite seus 7 dias trial. 🚀', 'success');
+      router.navigate('/dashboard');
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.classList.add('show');
+      btn.disabled = false; btn.textContent = 'Criar minha conta agora! 🚀';
+    }
+  });
+
+  // ── Pre-fill from URL params ───────────────────────────────────────────
+  const urlParams = new URLSearchParams(window.location.hash.split('?')[1]);
+  if (urlParams.get('register') === 'true') {
+    document.getElementById('panel-login').style.display = 'none';
+    document.getElementById('panel-register').style.display = 'block';
+    if (urlParams.get('nome')) document.getElementById('reg-nome').value = decodeURIComponent(urlParams.get('nome'));
+    if (urlParams.get('email')) document.getElementById('reg-email').value = decodeURIComponent(urlParams.get('email'));
+    if (urlParams.get('tel')) document.getElementById('reg-tel').value = decodeURIComponent(urlParams.get('tel'));
+  }
 }
 
 // ── Tela dedicada de redefinição de senha (rota: /#/reset-password?token=...) ──

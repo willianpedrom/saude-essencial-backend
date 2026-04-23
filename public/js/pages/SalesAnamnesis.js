@@ -142,19 +142,52 @@ export async function renderSalesAnamnesis(router, token) {
       try {
         await api('POST', `/api/sales/public/capture/${token}/submit`, { nome, email, telefone, cidade, respostas });
         
+        // Perceived Value Animation
         app.innerHTML = `
           <div class="sales-page" style="display:flex;align-items:center;justify-content:center">
             <div class="capture-card" style="text-align:center; padding:60px 32px">
-              <div style="font-size:5rem;margin-bottom:24px">📬</div>
-              <h2 style="color:#059669; font-size:2rem; font-family:'Playfair Display', serif">Recebemos tudo!</h2>
-              <p style="color:#475569;margin-top:20px;line-height:1.7;font-size:1.1rem">
-                Obrigado pelo interesse, <strong>${nome.split(' ')[0]}</strong>! <br>
-                Nossa equipe de consultores premium analisará seu perfil e entrará em contato via WhatsApp em breve.
-              </p>
-              <button class="btn-submit" onclick="window.location.href='https://www.gotaapp.com.br/doterra'" style="margin-top:40px">Conhecer mais o Gota App</button>
+              <div class="spinner-approval" style="margin: 0 auto 24px;"></div>
+              <h2 style="color:#1e293b; font-size:1.5rem; font-family:'Playfair Display', serif">Analisando seu perfil...</h2>
+              <p style="color:#64748b;margin-top:10px">Verificando disponibilidade de vaga para o programa trial.</p>
             </div>
           </div>
+          <style>
+            .spinner-approval {
+              width: 60px; height: 60px;
+              border: 5px solid #f3f3f3;
+              border-top: 5px solid #10b981;
+              border-radius: 50%;
+              animation: spin 1s linear infinite;
+            }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          </style>
         `;
+
+        setTimeout(() => {
+          const regUrl = `/#/login?register=true&nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&tel=${encodeURIComponent(telefone)}`;
+          
+          app.innerHTML = `
+            <div class="sales-page" style="display:flex;align-items:center;justify-content:center">
+              <div class="capture-card" style="text-align:center; padding:60px 32px; border: 2px solid #10b981">
+                <div style="font-size:5rem;margin-bottom:24px">✨</div>
+                <h2 style="color:#059669; font-size:2rem; font-family:'Playfair Display', serif">Parabéns, ${nome.split(' ')[0]}!</h2>
+                <p style="color:#1e293b; font-weight:700; margin-top:10px">Seu perfil foi PRÉ-APROVADO.</p>
+                <p style="color:#475569;margin-top:16px;line-height:1.7;font-size:1rem">
+                  Você acaba de ganhar <strong>7 dias de acesso total</strong> à plataforma para transformar sua gestão de óleos essenciais.
+                </p>
+                
+                <button class="btn-submit" onclick="window.location.href='${regUrl}'" style="margin-top:32px; background: linear-gradient(135deg, #059669, #10b981)">
+                  ATIVAR MEUS 7 DIAS GRÁTIS 🚀
+                </button>
+                
+                <p style="margin-top:20px; font-size:0.9rem">
+                  <a href="https://www.gotaapp.com.br/doterra" style="color:#64748b; text-decoration:underline">Não quero o trial, apenas conhecer o site</a>
+                </p>
+              </div>
+            </div>
+          `;
+        }, 3000);
+
       } catch (err) {
         btn.disabled = false;
         btn.innerText = 'Quero Garantir Meu Acesso! 🚀';
