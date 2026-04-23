@@ -140,88 +140,55 @@ export async function renderSalesAnamnesis(router, token) {
       btn.innerText = '⏳ Enviando...';
 
       try {
-        await api('POST', `/api/sales/public/capture/${token}/submit`, { nome, email, telefone, cidade, respostas });
+        const response = await api('POST', `/api/sales/public/capture/${token}/submit`, { nome, email, telefone, cidade, respostas });
         
-        // Perceived Value Animation
+        const data = response;
+        const isNewAccount = !!data.account_created;
+        const loginUrl = `${window.location.origin}${window.location.pathname}#/login`;
+        const regUrl = `${window.location.origin}${window.location.pathname}#/login?register=true&nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&tel=${encodeURIComponent(telefone)}`;
+
         app.innerHTML = `
-          <div class="sales-page" style="display:flex;align-items:center;justify-content:center">
-            <div class="capture-card" style="text-align:center; padding:60px 32px">
-              <div class="spinner-approval" style="margin: 0 auto 24px;"></div>
-              <h2 style="color:#1e293b; font-size:1.5rem; font-family:'Playfair Display', serif">Analisando seu perfil...</h2>
-              <p style="color:#64748b;margin-top:10px">Verificando disponibilidade de vaga para o programa trial.</p>
+          <div class="sales-page" style="display:flex;align-items:center;justify-content:center;padding:20px;min-height:100vh;background:radial-gradient(circle at top right, #f0fdf4, #ffffff)">
+            <div class="capture-card" style="text-align:center; padding:60px 40px; border:none; box-shadow: 0 20px 50px rgba(0,0,0,0.1); max-width:500px; position:relative; overflow:hidden; background:white; border-radius:30px">
+              <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:rgba(16, 185, 129, 0.1); border-radius:50%"></div>
+              
+              <div style="font-size:4rem;margin-bottom:16px;filter:drop-shadow(0 10px 15px rgba(201, 154, 34, 0.3))">🏆</div>
+              
+              <h2 style="color:#064e3b; font-size:2.2rem; font-family:'Playfair Display', serif; margin-bottom:8px">Parabéns, ${nome.split(' ')[0]}!</h2>
+              <div style="display:inline-block; padding:6px 16px; background:#dcfce7; color:#166534; border-radius:100px; font-weight:700; font-size:0.8rem; letter-spacing:1px; margin-bottom:24px">PERFIL PRÉ-APROVADO</div>
+              
+              ${isNewAccount ? `
+                <p style="color:#475569; margin-bottom:24px; line-height:1.6; font-size:1.1rem">
+                  Sua conta trial de 7 dias foi <strong>criada automaticamente!</strong>
+                </p>
+                <div style="background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px; padding:20px; margin-bottom:32px; text-align:left">
+                  <p style="color:#1e293b; font-weight:600; font-size:0.95rem; margin-bottom:8px">📧 Verifique seu e-mail</p>
+                  <p style="color:#64748b; font-size:0.85rem; line-height:1.4">
+                    Enviamos seus dados de acesso para <strong>${email}</strong>.<br><br>
+                    <span style="color:#dc2626; font-weight:600">⚠ Verifique também sua caixa de SPAM.</span>
+                  </p>
+                </div>
+                <button onclick="window.location.href='${loginUrl}'" style="display:block; width:100%; border:none; cursor:pointer !important; background: linear-gradient(135deg, #059669, #10b981); color:white; padding:20px 30px; border-radius:14px; font-weight:800; font-size:1.1rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); transition: all 0.2s">
+                  IR PARA O LOGIN 🚀
+                </button>
+              ` : `
+                <p style="color:#475569; margin-bottom:32px; line-height:1.6; font-size:1.1rem">
+                  Você já possui um cadastro ou seu perfil foi identificado. Clique abaixo para ativar seu acesso.
+                </p>
+                <button onclick="window.location.href='${regUrl}'" style="display:block; width:100%; border:none; cursor:pointer !important; background: linear-gradient(135deg, #059669, #10b981); color:white; padding:20px 30px; border-radius:14px; font-weight:800; font-size:1.1rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); transition: all 0.2s">
+                  ATIVAR MEUS 7 DIAS GRÁTIS 🚀
+                </button>
+              `}
+              
+              <p style="margin-top:24px; font-size:0.9rem">
+                <a href="https://www.gotaapp.com.br/doterra" style="color:#94a3b8; text-decoration:none; transition:color 0.2s">Não quero o trial, apenas ver o site</a>
+              </p>
             </div>
           </div>
           <style>
-            .spinner-approval {
-              width: 60px; height: 60px;
-              border: 5px solid #f3f3f3;
-              border-top: 5px solid #10b981;
-              border-radius: 50%;
-              animation: spin 1s linear infinite;
-            }
-            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            button:hover { transform: translateY(-3px) !important; box-shadow: 0 15px 30px rgba(16, 185, 129, 0.5) !important; }
           </style>
         `;
-
-        setTimeout(() => {
-          const loginUrl = `${window.location.origin}${window.location.pathname}#/login`;
-          const regUrl = `${window.location.origin}${window.location.pathname}#/login?register=true&nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&tel=${encodeURIComponent(telefone)}`;
-
-          app.innerHTML = `
-            <div class="sales-page" style="display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at top right, #f0fdf4, #ffffff)">
-              <div class="capture-card" style="text-align:center; padding:60px 40px; border:none; box-shadow: 0 20px 50px rgba(0,0,0,0.1); max-width:500px; position:relative; overflow:hidden">
-                <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:rgba(16, 185, 129, 0.1); border-radius:50%"></div>
-                
-                <div style="font-size:4rem;margin-bottom:16px;filter:drop-shadow(0 10px 15px rgba(201, 154, 34, 0.3))">🏆</div>
-                
-                <h2 style="color:#064e3b; font-size:2.2rem; font-family:'Playfair Display', serif; margin-bottom:8px">Parabéns, ${nome.split(' ')[0]}!</h2>
-                <div style="display:inline-block; padding:6px 16px; background:#dcfce7; color:#166534; border-radius:100px; font-weight:700; font-size:0.8rem; letter-spacing:1px; margin-bottom:24px">PERFIL PRÉ-APROVADO</div>
-                
-                ${data.account_created ? `
-                  <p style="color:#475569; margin-bottom:24px; line-height:1.6; font-size:1.1rem">
-                    Sua conta trial de 7 dias foi <strong>criada automaticamente!</strong>
-                  </p>
-                  <div style="background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px; padding:20px; margin-bottom:32px">
-                    <p style="color:#1e293b; font-weight:600; font-size:0.95rem; margin-bottom:8px">📧 Verifique seu e-mail</p>
-                    <p style="color:#64748b; font-size:0.85rem; line-height:1.4">
-                      Enviamos seus dados de acesso para <strong>${email}</strong>.<br>
-                      <span style="color:#dc2626; font-weight:600">⚠ Verifique também sua caixa de SPAM.</span>
-                    </p>
-                  </div>
-                  <button onclick="window.location.href='${loginUrl}'" style="display:block; width:100%; border:none; cursor:pointer !important; background: linear-gradient(135deg, #059669, #10b981); color:white; padding:20px 30px; border-radius:14px; font-weight:800; font-size:1.1rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); transition: transform 0.2s, box-shadow 0.2s">
-                    IR PARA O LOGIN 🚀
-                  </button>
-                ` : `
-                  <p style="color:#475569; margin-bottom:32px; line-height:1.6; font-size:1.1rem">
-                    Você já possui um cadastro ou seu perfil foi identificado. Clique abaixo para ativar seu acesso.
-                  </p>
-                  <button onclick="window.location.href='${regUrl}'" style="display:block; width:100%; border:none; cursor:pointer !important; background: linear-gradient(135deg, #059669, #10b981); color:white; padding:20px 30px; border-radius:14px; font-weight:800; font-size:1.1rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); transition: transform 0.2s, box-shadow 0.2s; animation: pulse-btn 2s infinite">
-                    ATIVAR MEUS 7 DIAS GRÁTIS 🚀
-                  </button>
-                `}
-                
-                <p style="margin-top:24px; font-size:0.9rem">
-                  <a href="https://www.gotaapp.com.br/doterra" style="color:#94a3b8; text-decoration:none; transition:color 0.2s">Não quero o trial, apenas ver o site</a>
-                </p>
-              </div>
-            </div>
-            <style>
-              button:hover {
-                transform: translateY(-3px) !important;
-                box-shadow: 0 15px 30px rgba(16, 185, 129, 0.5) !important;
-              }
-              @keyframes pulse-btn {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.03); }
-                100% { transform: scale(1); }
-              }
-              @media (max-width: 480px) {
-                .capture-card { padding: 40px 20px !important; }
-                h2 { font-size: 1.8rem !important; }
-              }
-            </style>
-          `;
-        }, 3000);
 
       } catch (err) {
         btn.disabled = false;
