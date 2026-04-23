@@ -168,16 +168,16 @@ export async function renderSalesAnamnesis(router, token) {
                     <span style="color:#dc2626; font-weight:600">⚠ Verifique também sua caixa de SPAM.</span>
                   </p>
                 </div>
-                <button onclick="window.location.href='${loginUrl}'" style="display:block; width:100%; border:none; cursor:pointer !important; background: linear-gradient(135deg, #059669, #10b981); color:white; padding:20px 30px; border-radius:14px; font-weight:800; font-size:1.1rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); transition: all 0.2s">
+                <a href="/" style="display:block; width:100%; text-decoration:none; border:none; cursor:pointer !important; background: linear-gradient(135deg, #059669, #10b981); color:white; padding:20px 30px; border-radius:14px; font-weight:800; font-size:1.1rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); transition: all 0.2s; box-sizing:border-box">
                   IR PARA O LOGIN 🚀
-                </button>
+                </a>
               ` : `
                 <p style="color:#475569; margin-bottom:32px; line-height:1.6; font-size:1.1rem">
                   Você já possui um cadastro ou seu perfil foi identificado. Clique abaixo para ativar seu acesso.
                 </p>
-                <button onclick="window.location.href='${regUrl}'" style="display:block; width:100%; border:none; cursor:pointer !important; background: linear-gradient(135deg, #059669, #10b981); color:white; padding:20px 30px; border-radius:14px; font-weight:800; font-size:1.1rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); transition: all 0.2s">
+                <a href="${regUrl}" style="display:block; width:100%; text-decoration:none; border:none; cursor:pointer !important; background: linear-gradient(135deg, #059669, #10b981); color:white; padding:20px 30px; border-radius:14px; font-weight:800; font-size:1.1rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); transition: all 0.2s; animation: pulse-btn 2s infinite; box-sizing:border-box">
                   ATIVAR MEUS 7 DIAS GRÁTIS 🚀
-                </button>
+                </a>
               `}
               
               <p style="margin-top:24px; font-size:0.9rem">
