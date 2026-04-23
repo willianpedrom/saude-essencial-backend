@@ -1945,6 +1945,20 @@ body {
   transform: scale(1);
 }
 
+.modal-box .form-input {
+  background: #ffffff !important;
+  border: 1.5px solid var(--border) !important;
+  color: var(--text-dark) !important;
+}
+.modal-box .form-input::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.6;
+}
+.modal-box .form-input:focus {
+  border-color: var(--green-400) !important;
+  box-shadow: 0 0 0 3px rgba(55, 152, 90, 0.1) !important;
+}
+
 .modal-header {
   padding: 22px 28px;
   border-bottom: 1px solid var(--border);
