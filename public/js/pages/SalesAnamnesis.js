@@ -164,6 +164,8 @@ export async function renderSalesAnamnesis(router, token) {
         `;
 
         setTimeout(() => {
+          const finalUrl = `${window.location.origin}${window.location.pathname}#/login?register=true&nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&tel=${encodeURIComponent(telefone)}`;
+
           app.innerHTML = `
             <div class="sales-page" style="display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at top right, #f0fdf4, #ffffff)">
               <div class="capture-card" style="text-align:center; padding:60px 40px; border:none; box-shadow: 0 20px 50px rgba(0,0,0,0.1); max-width:500px; position:relative; overflow:hidden">
@@ -178,7 +180,7 @@ export async function renderSalesAnamnesis(router, token) {
                   Você acaba de ganhar um convite exclusivo para <strong>7 dias de acesso total</strong> à plataforma Gota App.
                 </p>
                 
-                <button id="btn-activate-trial" style="width:100%; border:none; cursor:pointer; background: linear-gradient(135deg, #059669, #10b981); color:white; padding:20px 30px; border-radius:14px; font-weight:800; font-size:1.1rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); transition: transform 0.2s, box-shadow 0.2s; animation: pulse-btn 2s infinite">
+                <button onclick="window.location.href='${finalUrl}'" style="display:block; width:100%; border:none; cursor:pointer !important; background: linear-gradient(135deg, #059669, #10b981); color:white; padding:20px 30px; border-radius:14px; font-weight:800; font-size:1.1rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); transition: transform 0.2s, box-shadow 0.2s; animation: pulse-btn 2s infinite">
                   ATIVAR MEUS 7 DIAS GRÁTIS 🚀
                 </button>
                 
@@ -188,9 +190,9 @@ export async function renderSalesAnamnesis(router, token) {
               </div>
             </div>
             <style>
-              #btn-activate-trial:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 15px 30px rgba(16, 185, 129, 0.5);
+              button:hover {
+                transform: translateY(-3px) !important;
+                box-shadow: 0 15px 30px rgba(16, 185, 129, 0.5) !important;
               }
               @keyframes pulse-btn {
                 0% { transform: scale(1); }
@@ -203,15 +205,6 @@ export async function renderSalesAnamnesis(router, token) {
               }
             </style>
           `;
-
-          document.getElementById('btn-activate-trial').addEventListener('click', () => {
-            router.navigate('/login', { 
-              register: 'true', 
-              nome: nome, 
-              email: email, 
-              tel: telefone 
-            });
-          });
         }, 3000);
 
       } catch (err) {
