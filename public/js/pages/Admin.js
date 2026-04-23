@@ -318,7 +318,7 @@ export async function renderAdmin(router) {
     const questions = template.dados.perguntas || [];
     const answers = lead.respostas || {};
 
-    modal.show('Detalhes do Prospecto', `
+    const { close } = modal('Detalhes do Prospecto', `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
         <div>
           <label style="display:block;font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;font-weight:700">Dados Pessoais</label>
@@ -364,10 +364,12 @@ export async function renderAdmin(router) {
       </div>
 
       <div style="display:flex;justify-content:flex-end;gap:12px">
-        <button class="btn btn-secondary" onclick="modal.close()">Fechar</button>
+        <button class="btn btn-secondary" id="btn-close-lead-modal">Fechar</button>
         <button class="btn btn-primary" id="btn-save-lead">Salvar Alterações</button>
       </div>
-    `, 'medium');
+    `);
+
+    document.getElementById('btn-close-lead-modal').addEventListener('click', close);
 
     document.getElementById('btn-save-lead').addEventListener('click', async () => {
       const status = document.getElementById('lead-status').value;
@@ -375,7 +377,7 @@ export async function renderAdmin(router) {
       try {
         await salesApi.updateLead(lead.id, { status, notas_admin });
         toast('Prospecto atualizado!', 'success');
-        modal.close();
+        close();
         onUpdate();
       } catch (err) {
         toast('Erro ao salvar: ' + err.message, 'error');
@@ -399,7 +401,7 @@ export async function renderAdmin(router) {
       window.questions = questions; // Leak to global for simple onclick handlers in modal
     }
 
-    modal.show('Configurar Anamnese de Vendas', `
+    const { close } = modal('Configurar Anamnese de Vendas', `
       <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:20px">Defina quais perguntas o interessado deve responder ao acessar seu link de captura.</p>
       
       <div id="questions-list" style="margin-bottom:20px"></div>
@@ -418,10 +420,12 @@ export async function renderAdmin(router) {
       </div>
 
       <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px">
-        <button class="btn btn-secondary" onclick="modal.close()">Cancelar</button>
+        <button class="btn btn-secondary" id="btn-close-sales-modal">Cancelar</button>
         <button class="btn btn-primary" id="btn-save-tpl">Salvar Questionário</button>
       </div>
-    `, 'medium');
+    `);
+
+    document.getElementById('btn-close-sales-modal').addEventListener('click', close);
 
     renderList();
 
@@ -444,7 +448,7 @@ export async function renderAdmin(router) {
       try {
         await salesApi.updateTemplate({ perguntas: questions });
         toast('Questionário atualizado!', 'success');
-        modal.close();
+        close();
       } catch (err) {
         toast('Erro ao salvar template: ' + err.message, 'error');
       }
