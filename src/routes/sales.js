@@ -1,7 +1,20 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const pool = require('../db/pool');
 const auth = require('../middleware/auth');
+const mailer = require('../lib/mailer');
 const router = express.Router();
+
+function makeSlug(nome) {
+    return nome
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        + '-' + Date.now().toString(36);
+}
 
 /**
  * --- PUBLIC ROUTES (FOR PROSPECTS) ---
@@ -25,12 +38,55 @@ router.get('/public/capture/:token', async (req, res) => {
 router.post('/public/capture/:token/submit', async (req, res) => {
     const { nome, email, telefone, cidade, respostas } = req.body;
     try {
-        const { rows } = await pool.query(
+        // 1. Insert lead record
+        const { rows: leadRows } = await pool.query(
             `INSERT INTO prospectos_plataforma (nome, email, telefone, cidade, respostas, origem_slug)
              VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
             [nome, email, telefone, cidade, respostas, req.params.token]
         );
-        res.status(201).json({ success: true, lead_id: rows[0].id });
+
+        // 2. Try to auto-create account (Trial)
+        let accountCreated = false;
+        let temporaryPassword = null;
+
+        const { rows: existing } = await pool.query('SELECT id FROM consultoras WHERE email = $1', [email]);
+        
+        if (existing.length === 0) {
+            temporaryPassword = crypto.randomBytes(4).toString('hex');
+            const senhaHash = await bcrypt.hash(temporaryPassword, 10);
+            const slug = makeSlug(nome);
+
+            const { rows: newUser } = await pool.query(
+                `INSERT INTO consultoras (nome, email, senha_hash, telefone, slug, termos_aceitos, termos_aceitos_em)
+                 VALUES ($1, $2, $3, $4, $5, TRUE, NOW()) RETURNING id`,
+                [nome, email, senhaHash, telefone, slug]
+            );
+
+            await pool.query(
+                `INSERT INTO assinaturas (consultora_id, plano, status, trial_fim) 
+                 VALUES ($1, 'starter', 'trial', NOW() + INTERVAL '7 days')`,
+                [newUser[0].id]
+            );
+            
+            accountCreated = true;
+
+            // Send Welcome Email
+            try {
+                await mailer.sendWelcomeEmail({ 
+                    nome, 
+                    email, 
+                    senhaProvisoria: temporaryPassword 
+                });
+            } catch (mailErr) {
+                console.error('Erro ao enviar email de boas-vindas:', mailErr);
+            }
+        }
+
+        res.status(201).json({ 
+            success: true, 
+            lead_id: leadRows[0].id,
+            account_created: accountCreated
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

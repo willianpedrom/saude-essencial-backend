@@ -164,7 +164,8 @@ export async function renderSalesAnamnesis(router, token) {
         `;
 
         setTimeout(() => {
-          const finalUrl = `${window.location.origin}${window.location.pathname}#/login?register=true&nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&tel=${encodeURIComponent(telefone)}`;
+          const loginUrl = `${window.location.origin}${window.location.pathname}#/login`;
+          const regUrl = `${window.location.origin}${window.location.pathname}#/login?register=true&nome=${encodeURIComponent(nome)}&email=${encodeURIComponent(email)}&tel=${encodeURIComponent(telefone)}`;
 
           app.innerHTML = `
             <div class="sales-page" style="display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at top right, #f0fdf4, #ffffff)">
@@ -176,13 +177,28 @@ export async function renderSalesAnamnesis(router, token) {
                 <h2 style="color:#064e3b; font-size:2.2rem; font-family:'Playfair Display', serif; margin-bottom:8px">Parabéns, ${nome.split(' ')[0]}!</h2>
                 <div style="display:inline-block; padding:6px 16px; background:#dcfce7; color:#166534; border-radius:100px; font-weight:700; font-size:0.8rem; letter-spacing:1px; margin-bottom:24px">PERFIL PRÉ-APROVADO</div>
                 
-                <p style="color:#475569; margin-bottom:32px; line-height:1.6; font-size:1.1rem">
-                  Você acaba de ganhar um convite exclusivo para <strong>7 dias de acesso total</strong> à plataforma Gota App.
-                </p>
-                
-                <button onclick="window.location.href='${finalUrl}'" style="display:block; width:100%; border:none; cursor:pointer !important; background: linear-gradient(135deg, #059669, #10b981); color:white; padding:20px 30px; border-radius:14px; font-weight:800; font-size:1.1rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); transition: transform 0.2s, box-shadow 0.2s; animation: pulse-btn 2s infinite">
-                  ATIVAR MEUS 7 DIAS GRÁTIS 🚀
-                </button>
+                ${data.account_created ? `
+                  <p style="color:#475569; margin-bottom:24px; line-height:1.6; font-size:1.1rem">
+                    Sua conta trial de 7 dias foi <strong>criada automaticamente!</strong>
+                  </p>
+                  <div style="background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px; padding:20px; margin-bottom:32px">
+                    <p style="color:#1e293b; font-weight:600; font-size:0.95rem; margin-bottom:8px">📧 Verifique seu e-mail</p>
+                    <p style="color:#64748b; font-size:0.85rem; line-height:1.4">
+                      Enviamos seus dados de acesso para <strong>${email}</strong>.<br>
+                      <span style="color:#dc2626; font-weight:600">⚠ Verifique também sua caixa de SPAM.</span>
+                    </p>
+                  </div>
+                  <button onclick="window.location.href='${loginUrl}'" style="display:block; width:100%; border:none; cursor:pointer !important; background: linear-gradient(135deg, #059669, #10b981); color:white; padding:20px 30px; border-radius:14px; font-weight:800; font-size:1.1rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); transition: transform 0.2s, box-shadow 0.2s">
+                    IR PARA O LOGIN 🚀
+                  </button>
+                ` : `
+                  <p style="color:#475569; margin-bottom:32px; line-height:1.6; font-size:1.1rem">
+                    Você já possui um cadastro ou seu perfil foi identificado. Clique abaixo para ativar seu acesso.
+                  </p>
+                  <button onclick="window.location.href='${regUrl}'" style="display:block; width:100%; border:none; cursor:pointer !important; background: linear-gradient(135deg, #059669, #10b981); color:white; padding:20px 30px; border-radius:14px; font-weight:800; font-size:1.1rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4); transition: transform 0.2s, box-shadow 0.2s; animation: pulse-btn 2s infinite">
+                    ATIVAR MEUS 7 DIAS GRÁTIS 🚀
+                  </button>
+                `}
                 
                 <p style="margin-top:24px; font-size:0.9rem">
                   <a href="https://www.gotaapp.com.br/doterra" style="color:#94a3b8; text-decoration:none; transition:color 0.2s">Não quero o trial, apenas ver o site</a>
