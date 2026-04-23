@@ -1,11 +1,21 @@
 import { auth } from '../store.js';
 import { toast } from '../utils.js';
 
-export function renderLogin(router) {
+export function renderLogin(router, params = {}) {
+  // Merge router params with actual URL search params as fallback
+  const urlParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
+  const finalParams = {
+    register: params.register || urlParams.get('register'),
+    nome: params.nome || urlParams.get('nome'),
+    email: params.email || urlParams.get('email'),
+    tel: params.tel || urlParams.get('tel'),
+    token: urlParams.get('token')
+  };
+
   // Check for reset-password token in URL
   const hash = window.location.hash;
   const resetMatch = hash.match(/reset-password\?token=([a-f0-9]+)/);
-  const resetToken = resetMatch ? resetMatch[1] : null;
+  const resetToken = finalParams.token || (resetMatch ? resetMatch[1] : null);
 
   const app = document.getElementById('app');
   app.innerHTML = `
@@ -20,7 +30,7 @@ export function renderLogin(router) {
       </div>
 
       <!-- LOGIN -->
-      <div id="panel-login" ${resetToken ? 'style="display:none"' : ''}>
+      <div id="panel-login" ${resetToken || finalParams.register === 'true' ? 'style="display:none"' : ''}>
         <div style="text-align:center;margin-bottom:16px;">
           <h2 style="margin:0;font-size:1.4rem;font-weight:700;">Bem-vinda (o)</h2>
           <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;">Faça login para continuar</p>
@@ -47,7 +57,7 @@ export function renderLogin(router) {
       </div>
 
       <!-- REGISTER -->
-      <div id="panel-register" style="display:none">
+      <div id="panel-register" ${finalParams.register === 'true' ? 'style="display:block"' : 'style="display:none"'}>
         <div style="text-align:center;margin-bottom:16px;">
           <h2 style="margin:0;font-size:1.4rem;font-weight:700;">Criar Conta Gratuita</h2>
           <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;">Comece seu trial de 7 dias agora</p>
@@ -55,15 +65,15 @@ export function renderLogin(router) {
         <form class="auth-form" id="register-form">
           <div class="form-group">
             <label class="form-label">Nome Completo</label>
-            <input class="form-input" type="text" id="reg-nome" placeholder="Seu nome" required />
+            <input class="form-input" type="text" id="reg-nome" placeholder="Seu nome" value="${finalParams.nome || ''}" required />
           </div>
           <div class="form-group">
             <label class="form-label">E-mail</label>
-            <input class="form-input" type="email" id="reg-email" placeholder="seu@email.com" required />
+            <input class="form-input" type="email" id="reg-email" placeholder="seu@email.com" value="${finalParams.email || ''}" required />
           </div>
           <div class="form-group">
             <label class="form-label">WhatsApp (com DDD)</label>
-            <input class="form-input" type="tel" id="reg-tel" placeholder="(00) 00000-0000" required />
+            <input class="form-input" type="tel" id="reg-tel" placeholder="(00) 00000-0000" value="${finalParams.tel || ''}" required />
           </div>
           <div class="form-group">
             <label class="form-label">Senha (min. 8 caracteres)</label>
@@ -338,16 +348,6 @@ export function renderLogin(router) {
       btn.disabled = false; btn.textContent = 'Criar minha conta agora! 🚀';
     }
   });
-
-  // ── Pre-fill from URL params ───────────────────────────────────────────
-  const urlParams = new URLSearchParams(window.location.hash.split('?')[1]);
-  if (urlParams.get('register') === 'true') {
-    document.getElementById('panel-login').style.display = 'none';
-    document.getElementById('panel-register').style.display = 'block';
-    if (urlParams.get('nome')) document.getElementById('reg-nome').value = decodeURIComponent(urlParams.get('nome'));
-    if (urlParams.get('email')) document.getElementById('reg-email').value = decodeURIComponent(urlParams.get('email'));
-    if (urlParams.get('tel')) document.getElementById('reg-tel').value = decodeURIComponent(urlParams.get('tel'));
-  }
 }
 
 // ── Tela dedicada de redefinição de senha (rota: /#/reset-password?token=...) ──
