@@ -124,7 +124,7 @@ export async function renderSalesAnamnesis(router, token) {
             Seu Presente VIP: 7 Dias de Acesso ao <span style="color:#eab308; background: linear-gradient(to right, #fde047, #eab308); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Gota App</span> 🎁
           </h1>
           <p style="color:rgba(255,255,255,0.8); margin-top:16px; font-size:1.2rem; max-width:550px; margin-left:auto; margin-right:auto; line-height:1.6">
-            Complete seu perfil e desbloqueie as ferramentas que as maiores consultoras de sucesso utilizam para escalar sua aromaterapia.
+            Complete seu perfil e desbloqueie as ferramentas que vão acelerar seu crescimento na dōTERRA.
           </p>
         </div>
 
