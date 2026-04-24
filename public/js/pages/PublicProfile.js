@@ -330,7 +330,6 @@ export async function renderPublicProfile(router, slug) {
         <div style="display:flex;flex-direction:column;align-items:center;gap:14px;max-width:320px;margin:0 auto;position:relative">
           ${mainCtaUrl
       ? `
-               <div class="pp-conversion-badge">🔥 mais de 377 pessoas ajudadas</div>
                <a href="${mainCtaUrl}" class="pp-btn pp-btn-primary" style="width:100%;display:flex">
                 ${mainCtaText}
                </a>`
