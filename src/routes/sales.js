@@ -117,10 +117,10 @@ router.get('/admin/template', async (req, res) => {
         if (rows.length === 0) {
             const defaultQuestions = {
                 perguntas: [
-                    { id: 'status_profissional', texto: 'Qual sua ocupação principal?', tipo: 'text' },
-                    { id: 'trabalha_oleos', texto: 'Já trabalha com Óleos Essenciais?', tipo: 'select', opcoes: ['Sim', 'Não'] },
-                    { id: 'faturamento_desejado', texto: 'Quanto você deseja faturar por mês com aromaterapia?', tipo: 'text' },
-                    { id: 'maior_desafio', texto: 'Qual seu maior desafio na gestão de clientes hoje?', tipo: 'textarea' }
+                    { id: 'posicao_atual', texto: 'Qual sua posição atual no mercado de aromaterapia?', tipo: 'select', opcoes: ['Iniciante (estudando)', 'Consultora Ativa', 'Líder de Equipe', 'Aromaterapeuta Clínica'] },
+                    { id: 'maior_desafio', texto: 'Qual seu maior desafio na gestão de clientes hoje?', tipo: 'textarea' },
+                    { id: 'faturamento_desejado', texto: 'Quanto você deseja faturar por mês com seus atendimentos?', tipo: 'text' },
+                    { id: 'importancia_sistema', texto: 'Quão importante é para você profissionalizar sua consultoria este mês?', tipo: 'select', opcoes: ['1 - Apenas pesquisando', '2 - Importante', '3 - Prioridade Máxima 🚀'] }
                 ]
             };
             const insert = await pool.query(

@@ -76,11 +76,11 @@ export async function renderSalesAnamnesis(router, token) {
           from { opacity: 0; transform: translateY(40px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .form-label { display: block; font-size: 0.75rem; font-weight: 800; color: #64748b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .form-label { display: block; font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 8px; letter-spacing: -0.2px; }
         .form-input { 
-          width: 100%; padding: 16px; border: 1px solid #e2e8f0; border-radius: 16px; 
+          width: 100%; padding: 16px; border: 1px solid #cbd5e1; border-radius: 16px; 
           margin-bottom: 24px; font-size: 1rem; transition: all 0.3s;
-          background: #f8fafc;
+          background: #ffffff;
           color: #1e293b;
           box-sizing: border-box;
         }
@@ -155,8 +155,8 @@ export async function renderSalesAnamnesis(router, token) {
           <div style="height:1px; background:#f1f5f9; margin:20px 0 40px"></div>
 
           <h3 style="margin-top:0; margin-bottom:32px; font-size:1.4rem; color:#064e3b; display:flex; align-items:center; gap:10px">
-            <span style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; background:#f0fdf4; border-radius:10px; font-size:1.2rem">🎯</span> 
-            Suas Expectativas
+            <span style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; background:#f0fdf4; border-radius:100px; font-size:1.2rem">🚀</span> 
+            Sobre sua Jornada
           </h3>
 
           ${questions.map(q => `
