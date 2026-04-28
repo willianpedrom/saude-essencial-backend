@@ -264,12 +264,15 @@ export async function renderReport(router, dataParam, hash = null) {
                 </tr>
               </thead>
               <tbody>
-                ${complementOils.map(o => `
+                ${complementOils.map(o => {
+                  const cat = OILS_DATABASE && OILS_DATABASE[o.name] ? OILS_DATABASE[o.name].cat : '';
+                  const icon = cat === 'supplement' ? '💊' : (cat === 'personal_care' ? '🧴' : '➕');
+                  return `
                   <tr>
-                    <td style="padding:8px 12px;border:1px solid #dbeafe;font-weight:500;color:#1e40af">➕ ${o.name}</td>
+                    <td style="padding:8px 12px;border:1px solid #dbeafe;font-weight:500;color:#1e40af">${icon} ${o.name}</td>
                     <td style="padding:8px 12px;border:1px solid #dbeafe;color:#555">${o.fn}</td>
                   </tr>
-                `).join('')}
+                `}).join('')}
               </tbody>
             </table>
           </div>` : ''}
