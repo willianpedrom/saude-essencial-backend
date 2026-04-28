@@ -243,6 +243,9 @@ const DOTERRA_PRODUCTS = [
     { nome: "Loção Spa Mãos e Corpo", cat: "Personal Care" },
     { nome: "Sabonete Líquido Spa", cat: "Personal Care" },
     { nome: "Veráge Kit Skincare", cat: "Kit" },
+    { nome: "Creatina Lifepower", cat: "Suplemento" },
+    { nome: "Copaíba Pastilha", cat: "Suplemento" },
+    { nome: "Kit Gênesis Performance", cat: "Kit" }
 ];
 
 // ── Tabela de Preços Oficiais doTERRA (por produto + tamanho) ──────────────
@@ -432,7 +435,7 @@ const DOTERRA_PRICES = {
     'TrimShake Vanilla': { 'Unidade / Kit': { r: 211, m: 158 } },
     'Turmeric (Cúrcuma)': { '15ml': { r: 233, m: 175 } },
     'Turmeric Pastilhas': { 'Cápsulas': { r: 199, m: 149 } },
-    'VM Complex': { 'Cápsulas': { r: 265, m: 199 } },
+    'VM Complex': { 'Cápsulas': { r: 248, m: 186 } },
     'Veráge Creme Hidratante': { 'Unidade / Kit': { r: 243, m: 182 } },
     'Veráge Hidratante': { 'Unidade / Kit': { r: 211, m: 158 } },
     'Veráge Salubelle Sérum': { 'Unidade / Kit': { r: 452, m: 339 } },
@@ -456,6 +459,9 @@ const DOTERRA_PRICES = {
     'xEO Mega': { 'Cápsulas': { r: 360, m: 270 } },
     'xEO Mega Omega': { 'Cápsulas': { r: 360, m: 270 } },
     'Óleo de Coco Fracionado': { 'Unidade / Kit': { r: 113, m: 85 } },
+    'Creatina Lifepower': { 'Unidade / Kit': { r: 239, m: 179 } },
+    'Copaíba Pastilha': { 'Unidade / Kit': { r: 252, m: 189 } },
+    'Kit Gênesis Performance': { 'Unidade / Kit': { r: 787, m: 590 } },
 };
 
 // Mapa de typos comuns e aliases de nome que não casam via fuzzy
