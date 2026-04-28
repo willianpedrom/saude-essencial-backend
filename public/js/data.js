@@ -48,7 +48,7 @@ export const ANAMNESIS_QUESTIONS = {
                     'Refluxo / Azia', 'Gastrite', 'Inchaço abdominal', 'Gases excessivos',
                     'Constipação', 'Diarreia frequente', 'Intestino irritável',
                     'Náuseas', 'Intolerância à lactose', 'Sensibilidade ao glúten',
-                    'Fígado sobrecarregado', 'Compulsão alimentar',
+                    'Fígado sobrecarregado', 'Compulsão alimentar / Vontade de doces',
                 ]
             },
             {
@@ -93,6 +93,7 @@ export const ANAMNESIS_QUESTIONS = {
                 label: 'Fadiga e baixa energia', key: 'low_energy_symptoms', type: 'checkbox', options: [
                     'Fadiga crônica / cansaço constante', 'Esgotamento após pequenos esforços',
                     'Falta de motivação', 'Procrastinação excessiva', 'Dependência de cafeína',
+                    'Falta de força/energia para exercícios',
                 ]
             },
             { label: 'Nível de estresse (1=baixo, 10=extremo)', key: 'stress_level', type: 'scale', max: 10 },
@@ -138,9 +139,9 @@ export const ANAMNESIS_QUESTIONS = {
                     'Reduzir estresse e ansiedade', 'Melhorar o sono', 'Aliviar dores',
                     'Melhorar a digestão', 'Fortalecer a imunidade', 'Equilibrar hormônios',
                     'Emagrecer / metabolismo', 'Melhorar pele e cabelo',
-                    'Aumentar energia', 'Desintoxicar o organismo',
-                    'Prevenir doenças naturalmente', 'Cuidado emocional profundo',
-                    'Apoio à menopausa', 'Saúde para a família',
+                    'Aumentar energia', 'Aumentar performance física', 'Acelerar recuperação muscular',
+                    'Desintoxicar o organismo', 'Prevenir doenças naturalmente', 
+                    'Cuidado emocional profundo', 'Apoio à menopausa', 'Saúde para a família',
                 ]
             },
             { label: 'Já usou óleos essenciais?', key: 'previous_experience', type: 'radio', options: ['Nunca usei', 'Usei e gostei', 'Usei mas não tive resultado', 'Uso regularmente'] },
