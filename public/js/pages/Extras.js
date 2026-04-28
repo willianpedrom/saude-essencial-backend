@@ -470,6 +470,40 @@ export async function renderPurchases(router) {
     store.getEstoque().catch(() => [])
   ]);
 
+  // Pre-generate product catalog for instant search
+  const productCatalog = [];
+  try {
+    if (Array.isArray(estoque)) {
+      estoque.forEach(it => {
+        if (!it.nome_produto) return;
+        productCatalog.push({
+          name: `${it.nome_produto}${it.ml_tamanho ? ' ('+it.ml_tamanho+')' : ''}`,
+          price: it.preco_venda || it.preco_custo || 0,
+          source: 'estoque',
+          search: (it.nome_produto + ' ' + (it.ml_tamanho || '')).toLowerCase()
+        });
+      });
+    }
+    if (typeof OILS_DATABASE === 'object' && OILS_DATABASE !== null) {
+      Object.entries(OILS_DATABASE).forEach(([name, data]) => {
+        const sizes = Array.isArray(data.sizes) ? data.sizes : [];
+        const nameEn = data.nameEn || '';
+        if (sizes.length > 0) {
+          sizes.forEach(s => {
+            const fullName = `${name} (${s.size})`;
+            if (!productCatalog.find(c => c.name === fullName)) {
+              productCatalog.push({ name: fullName, price: s.member || s.regular || 0, source: 'doterra', search: (name + ' ' + nameEn + ' ' + s.size).toLowerCase() });
+            }
+          });
+        } else {
+          if (!productCatalog.find(c => c.name === name)) {
+            productCatalog.push({ name: name, price: 0, source: 'doterra', search: (name + ' ' + nameEn).toLowerCase() });
+          }
+        }
+      });
+    }
+  } catch (err) { console.error("Erro no catálogo:", err); }
+
   let localPurchases = [...purchases];
 
   function renderList() {
@@ -559,68 +593,6 @@ export async function renderPurchases(router) {
         </div>
       </div>`, {
       confirmLabel: 'Salvar Alterações',
-      onOpen: () => {
-        const pSearchInput = document.getElementById('pu-product-search-edt');
-        const pHiddenInput = document.getElementById('pu-product-edt');
-        const pDropdown = document.getElementById('pu-product-dropdown-edt');
-        const valueInput = document.getElementById('pu-value-edt');
-
-        const catalog = [];
-        try {
-          if (Array.isArray(estoque)) {
-            estoque.forEach(it => {
-              if (!it.nome_produto) return;
-              catalog.push({
-                name: `${it.nome_produto}${it.ml_tamanho ? ' ('+it.ml_tamanho+')' : ''}`,
-                price: it.preco_venda || it.preco_custo || 0,
-                source: 'estoque',
-                search: (it.nome_produto + ' ' + (it.ml_tamanho || '')).toLowerCase()
-              });
-            });
-          }
-          if (typeof OILS_DATABASE === 'object' && OILS_DATABASE !== null) {
-            Object.entries(OILS_DATABASE).forEach(([name, data]) => {
-              const sizes = Array.isArray(data.sizes) ? data.sizes : [];
-              const nameEn = data.nameEn || '';
-              if (sizes.length > 0) {
-                sizes.forEach(s => {
-                  const fullName = `${name} (${s.size})`;
-                  if (!catalog.find(c => c.name === fullName)) {
-                    catalog.push({ name: fullName, price: s.member || s.regular || 0, source: 'doterra', search: (name + ' ' + nameEn + ' ' + s.size).toLowerCase() });
-                  }
-                });
-              } else {
-                if (!catalog.find(c => c.name === name)) {
-                  catalog.push({ name: name, price: 0, source: 'doterra', search: (name + ' ' + nameEn).toLowerCase() });
-                }
-              }
-            });
-          }
-        } catch(e) { console.error(e); }
-
-        function renderProductDropdown(query) {
-          const q = query.toLowerCase().trim();
-          const matches = q ? catalog.filter(p => p.search.includes(q)) : catalog.slice(0, 15);
-          if (!matches.length) {
-            pDropdown.innerHTML = `<div style="padding:10px 14px;color:var(--text-muted);font-size:0.82rem">Nenhum produto encontrado.</div>`;
-          } else {
-            pDropdown.innerHTML = matches.map(p => `
-              <div data-name="${p.name}" data-price="${p.price}"
-                style="padding:8px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s"
-                onmouseover="this.style.background='var(--green-50)'" onmouseout="this.style.background=''">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <span style="font-size:0.88rem;font-weight:600;">${p.name}</span>
-                  <span style="font-size:0.7rem;background:${p.source==='estoque'?'#dcfce7':'#eff6ff'};color:${p.source==='estoque'?'#166534':'#1d4ed8'};padding:1px 5px;border-radius:4px">
-                    ${p.source==='estoque' ? 'Meu Estoque' : 'doTERRA'}
-                  </span>
-                </div>
-              </div>
-            `).join('');
-          }
-          pDropdown.style.display = 'block';
-        }
-
-        pSearchInput.addEventListener('input', () => { pHiddenInput.value = pSearchInput.value; renderProductDropdown(pSearchInput.value); });
         pSearchInput.addEventListener('focus', () => renderProductDropdown(pSearchInput.value));
         pDropdown.addEventListener('mousedown', (e) => {
           const item = e.target.closest('[data-name]');
@@ -736,60 +708,9 @@ export async function renderPurchases(router) {
         const pDropdown = document.getElementById('pu-product-dropdown');
         const valueInput = document.getElementById('pu-value');
 
-        // Gerar catálogo unificado (cacheado para esta abertura do modal)
-        const catalog = [];
-        try {
-          // 1. Do estoque do usuário
-          if (Array.isArray(estoque)) {
-            estoque.forEach(it => {
-              if (!it.nome_produto) return;
-              catalog.push({
-                name: `${it.nome_produto}${it.ml_tamanho ? ' ('+it.ml_tamanho+')' : ''}`,
-                price: it.preco_venda || it.preco_custo || 0,
-                source: 'estoque',
-                search: (it.nome_produto + ' ' + (it.ml_tamanho || '')).toLowerCase()
-              });
-            });
-          }
-
-          // 2. Da base global doTERRA
-          if (typeof OILS_DATABASE === 'object' && OILS_DATABASE !== null) {
-            Object.entries(OILS_DATABASE).forEach(([name, data]) => {
-              const sizes = Array.isArray(data.sizes) ? data.sizes : [];
-              const nameEn = data.nameEn || '';
-              
-              if (sizes.length > 0) {
-                sizes.forEach(s => {
-                  const fullName = `${name} (${s.size})`;
-                  if (!catalog.find(c => c.name === fullName)) {
-                    catalog.push({
-                      name: fullName,
-                      price: s.member || s.regular || 0,
-                      source: 'doterra',
-                      search: (name + ' ' + nameEn + ' ' + s.size).toLowerCase()
-                    });
-                  }
-                });
-              } else {
-                // Caso não tenha tamanhos, adiciona o nome puro
-                if (!catalog.find(c => c.name === name)) {
-                  catalog.push({
-                    name: name,
-                    price: 0,
-                    source: 'doterra',
-                    search: (name + ' ' + nameEn).toLowerCase()
-                  });
-                }
-              }
-            });
-          }
-        } catch (err) {
-          console.error("Erro ao gerar catálogo:", err);
-        }
-
         function renderProductDropdown(query) {
           const q = query.toLowerCase().trim();
-          const matches = q ? catalog.filter(p => p.search.includes(q)) : catalog.slice(0, 25);
+          const matches = q ? productCatalog.filter(p => p.search.includes(q)) : productCatalog.slice(0, 25);
           
           if (!matches.length) {
             pDropdown.innerHTML = `<div style="padding:12px 16px;color:var(--text-muted);font-size:0.85rem">Nenhum produto encontrado. Continue digitando para registrar como texto livre.</div>`;
