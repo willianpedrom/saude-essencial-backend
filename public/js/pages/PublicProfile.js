@@ -457,7 +457,7 @@ export async function renderPublicProfile(router, slug) {
         </div>
         
         <div id="express-form-container" style="background:white;padding:32px;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,0.05);border:1px solid #fef08a">
-          <form id="express-form" onsubmit="handleExpressSubmit(event, '${slug}')">
+          <form id="express-form">
             <div style="margin-bottom:20px">
               <label style="display:block;font-weight:600;color:#374151;margin-bottom:8px;font-size:0.95rem">Qual é o seu principal problema hoje?</label>
               <select id="express-problema" required style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:12px;font-size:1rem;background:#f9fafb;color:#1f2937">
@@ -614,85 +614,87 @@ export async function renderPublicProfile(router, slug) {
       </div>
     </div>
 
-    <script>
-      (function() {
-        const cta = document.getElementById('pp-mobile-cta');
-        if (!cta) return;
-        const SCROLL_THRESHOLD = 320; // rola ~1 tela antes de aparecer
-        let ticking = false;
-        function onScroll() {
-          if (!ticking) {
-            requestAnimationFrame(function() {
-              if (window.scrollY > SCROLL_THRESHOLD) {
-                cta.classList.add('visible');
-              } else {
-                cta.classList.remove('visible');
-              }
-              ticking = false;
-            });
-            ticking = true;
+      </div>
+    </section>
+    `;
+
+  // Attach JS Logic after rendering
+  const cta = document.getElementById('pp-mobile-cta');
+  if (cta) {
+    const SCROLL_THRESHOLD = 320;
+    let ticking = false;
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(function() {
+          if (window.scrollY > SCROLL_THRESHOLD) {
+            cta.classList.add('visible');
+          } else {
+            cta.classList.remove('visible');
           }
-        }
-        window.addEventListener('scroll', onScroll, { passive: true });
-        
-        // Express Form check limit
-        if(localStorage.getItem('express_generated_${slug}')) {
-          const form = document.getElementById('express-form');
-          const success = document.getElementById('express-success');
-          if(form && success) {
-            form.style.display = 'none';
-            success.style.display = 'block';
-          }
-        }
-      })();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
 
-      window.handleExpressSubmit = async function(e, slug) {
-        e.preventDefault();
-        const btn = document.getElementById('express-submit');
-        const err = document.getElementById('express-error');
-        const oldText = btn.textContent;
-        
-        err.style.display = 'none';
-        btn.textContent = 'Gerando...';
-        btn.disabled = true;
-        btn.style.opacity = '0.7';
+  // Express Form Logic
+  if(localStorage.getItem('express_generated_' + slug)) {
+    const form = document.getElementById('express-form');
+    const success = document.getElementById('express-success');
+    if(form && success) {
+      form.style.display = 'none';
+      success.style.display = 'block';
+    }
+  }
 
-        const data = {
-          slug,
-          problema: document.getElementById('express-problema').value,
-          nome: document.getElementById('express-nome').value,
-          telefone: document.getElementById('express-telefone').value,
-          email: document.getElementById('express-email').value,
-          idade: document.getElementById('express-idade').value,
-          cidade: document.getElementById('express-cidade').value
-        };
+  const expressForm = document.getElementById('express-form');
+  if (expressForm) {
+    expressForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('express-submit');
+      const err = document.getElementById('express-error');
+      const oldText = btn.textContent;
+      
+      err.style.display = 'none';
+      btn.textContent = 'Gerando...';
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
 
-        try {
-          // Track Event if Meta CAPI
-          if (window.fbq) fbq('track', 'Lead', { content_name: 'Protocolo Expresso' });
-
-          const res = await fetch('/api/publico/express-protocol', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          });
-          const json = await res.json();
-
-          if (!res.ok) throw new Error(json.error || 'Erro ao gerar protocolo.');
-          
-          // Lock
-          localStorage.setItem('express_generated_' + slug, 'true');
-          
-          // Redirect
-          window.location.href = '/laudo/' + json.hash;
-        } catch (error) {
-          err.textContent = error.message;
-          err.style.display = 'block';
-          btn.textContent = oldText;
-          btn.disabled = false;
-          btn.style.opacity = '1';
-        }
+      const data = {
+        slug,
+        problema: document.getElementById('express-problema').value,
+        nome: document.getElementById('express-nome').value,
+        telefone: document.getElementById('express-telefone').value,
+        email: document.getElementById('express-email').value,
+        idade: document.getElementById('express-idade').value,
+        cidade: document.getElementById('express-cidade').value
       };
-    </script>
+
+      try {
+        if (window.fbq) fbq('track', 'Lead', { content_name: 'Protocolo Expresso' });
+
+        const res = await fetch('/api/publico/express-protocol', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const json = await res.json();
+
+        if (!res.ok) throw new Error(json.error || 'Erro ao gerar protocolo.');
+        
+        localStorage.setItem('express_generated_' + slug, 'true');
+        
+        window.location.hash = '#/laudo/' + json.hash;
+      } catch (error) {
+        err.textContent = error.message;
+        err.style.display = 'block';
+        btn.textContent = oldText;
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      }
+    });
+  }
     `;
 }
