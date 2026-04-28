@@ -1,4 +1,5 @@
 import { auth, store } from '../store.js';
+import { OILS_DATABASE } from '../data.js';
 import { renderLayout } from './Dashboard.js';
 import { formatDate, formatCurrency, toast, modal, copyToClipboard } from '../utils.js';
 
@@ -463,9 +464,10 @@ export async function renderPurchases(router) {
     `<div style="display:flex;align-items:center;justify-content:center;height:200px;font-size:1.1rem;color:var(--text-muted)">⏳ Carregando...</div>`,
     'purchases');
 
-  const [clients, purchases] = await Promise.all([
+  const [clients, purchases, estoque] = await Promise.all([
     store.getClients().catch(() => []),
-    store.getCompras().catch(() => [])
+    store.getCompras().catch(() => []),
+    store.getEstoque().catch(() => [])
   ]);
 
   let localPurchases = [...purchases];
@@ -535,7 +537,13 @@ export async function renderPurchases(router) {
         </div>
         <div class="form-group form-field-full">
           <label class="field-label">Produto / Kit *</label>
-          <input class="field-input" id="pu-product-edt" value="${p.produto || ''}" />
+          <div style="position:relative">
+            <input class="field-input" id="pu-product-search-edt" placeholder="🔍 Buscar no estoque ou base doTERRA..." autocomplete="off" value="${p.produto || ''}" style="padding-right:36px" />
+            <input type="hidden" id="pu-product-edt" value="${p.produto || ''}" />
+            <div id="pu-product-dropdown-edt" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:999;
+                     background:#fff;border:1px solid var(--border);border-radius:10px;
+                     box-shadow:0 8px 24px rgba(0,0,0,0.12);max-height:180px;overflow-y:auto;margin-top:4px"></div>
+          </div>
         </div>
         <div class="form-group">
           <label class="field-label">Valor (R$)</label>
@@ -551,6 +559,57 @@ export async function renderPurchases(router) {
         </div>
       </div>`, {
       confirmLabel: 'Salvar Alterações',
+      onOpen: () => {
+        const pSearchInput = document.getElementById('pu-product-search-edt');
+        const pHiddenInput = document.getElementById('pu-product-edt');
+        const pDropdown = document.getElementById('pu-product-dropdown-edt');
+        const valueInput = document.getElementById('pu-value-edt');
+
+        const catalog = [];
+        estoque.forEach(it => catalog.push({ name: `${it.nome_produto}${it.ml_tamanho ? ' ('+it.ml_tamanho+')' : ''}`, price: it.preco_venda || it.preco_custo || 0, source: 'estoque' }));
+        Object.entries(OILS_DATABASE).forEach(([name, data]) => {
+          (data.sizes || []).forEach(s => {
+            const fullName = `${name} (${s.size})`;
+            if (!catalog.find(c => c.name === fullName)) catalog.push({ name: fullName, price: s.member || s.regular || 0, source: 'doterra' });
+          });
+        });
+
+        function renderProductDropdown(query) {
+          const q = query.toLowerCase().trim();
+          const matches = q ? catalog.filter(p => p.name.toLowerCase().includes(q)) : catalog.slice(0, 15);
+          if (!matches.length) {
+            pDropdown.innerHTML = `<div style="padding:10px 14px;color:var(--text-muted);font-size:0.82rem">Nenhum produto encontrado.</div>`;
+          } else {
+            pDropdown.innerHTML = matches.map(p => `
+              <div data-name="${p.name}" data-price="${p.price}"
+                style="padding:8px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s"
+                onmouseover="this.style.background='var(--green-50)'" onmouseout="this.style.background=''">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:0.88rem;font-weight:600;">${p.name}</span>
+                  <span style="font-size:0.7rem;background:${p.source==='estoque'?'#dcfce7':'#eff6ff'};color:${p.source==='estoque'?'#166534':'#1d4ed8'};padding:1px 5px;border-radius:4px">
+                    ${p.source==='estoque' ? 'Meu Estoque' : 'doTERRA'}
+                  </span>
+                </div>
+              </div>
+            `).join('');
+          }
+          pDropdown.style.display = 'block';
+        }
+
+        pSearchInput.addEventListener('input', () => { pHiddenInput.value = pSearchInput.value; renderProductDropdown(pSearchInput.value); });
+        pSearchInput.addEventListener('focus', () => renderProductDropdown(pSearchInput.value));
+        pDropdown.addEventListener('mousedown', (e) => {
+          const item = e.target.closest('[data-name]');
+          if (!item) return;
+          pSearchInput.value = item.dataset.name;
+          pHiddenInput.value = item.dataset.name;
+          if (item.dataset.price && parseFloat(item.dataset.price) > 0) valueInput.value = parseFloat(item.dataset.price).toFixed(2);
+          pDropdown.style.display = 'none';
+        });
+        document.addEventListener('mousedown', (e) => {
+          if (!pSearchInput.contains(e.target) && !pDropdown.contains(e.target)) pDropdown.style.display = 'none';
+        }, { once: true });
+      },
       onConfirm: async () => {
         const produto = document.getElementById('pu-product-edt').value.trim();
         if (!produto) { toast('Preencha o produto / kit', 'error'); return false; }
@@ -583,7 +642,13 @@ export async function renderPurchases(router) {
         </div>
         <div class="form-group form-field-full">
           <label class="field-label">Produto / Kit *</label>
-          <input class="field-input" id="pu-product" placeholder="Ex: Lavanda 15ml, Kit Imunidade..." />
+          <div style="position:relative">
+            <input class="field-input" id="pu-product-search" placeholder="🔍 Buscar no estoque ou base doTERRA..." autocomplete="off" style="padding-right:36px" />
+            <input type="hidden" id="pu-product" />
+            <div id="pu-product-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:999;
+                     background:#fff;border:1px solid var(--border);border-radius:10px;
+                     box-shadow:0 8px 24px rgba(0,0,0,0.12);max-height:220px;overflow-y:auto;margin-top:4px"></div>
+          </div>
         </div>
         <div class="form-group">
           <label class="field-label">Valor (R$)</label>
@@ -640,8 +705,81 @@ export async function renderPurchases(router) {
           searchInput.value = item.dataset.name;
           dropdown.style.display = 'none';
         });
+
+        // --- Lógica do Dropdown de PRODUTOS ---
+        const pSearchInput = document.getElementById('pu-product-search');
+        const pHiddenInput = document.getElementById('pu-product');
+        const pDropdown = document.getElementById('pu-product-dropdown');
+        const valueInput = document.getElementById('pu-value');
+
+        // Gerar catálogo unificado
+        const catalog = [];
+        // 1. Do estoque do usuário
+        estoque.forEach(it => {
+          catalog.push({
+            name: `${it.nome_produto}${it.ml_tamanho ? ' ('+it.ml_tamanho+')' : ''}`,
+            price: it.preco_venda || it.preco_custo || 0,
+            source: 'estoque'
+          });
+        });
+        // 2. Da base global (evitando duplicados se já estiver no estoque com mesmo nome)
+        Object.entries(OILS_DATABASE).forEach(([name, data]) => {
+          (data.sizes || []).forEach(s => {
+            const fullName = `${name} (${s.size})`;
+            if (!catalog.find(c => c.name === fullName)) {
+              catalog.push({
+                name: fullName,
+                price: s.member || s.regular || 0,
+                source: 'doterra'
+              });
+            }
+          });
+        });
+
+        function renderProductDropdown(query) {
+          const q = query.toLowerCase().trim();
+          const matches = q ? catalog.filter(p => p.name.toLowerCase().includes(q)) : catalog.slice(0, 20);
+          
+          if (!matches.length) {
+            pDropdown.innerHTML = `<div style="padding:12px 16px;color:var(--text-muted);font-size:0.85rem">Nenhum produto encontrado. Continue digitando para registrar como texto livre.</div>`;
+          } else {
+            pDropdown.innerHTML = matches.map(p => `
+              <div data-name="${p.name}" data-price="${p.price}"
+                style="padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s"
+                onmouseover="this.style.background='var(--green-50)'" onmouseout="this.style.background=''">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:0.9rem;font-weight:600;color:var(--text-dark)">${p.name}</span>
+                  <span style="font-size:0.75rem;background:${p.source==='estoque'?'#dcfce7':'#eff6ff'};color:${p.source==='estoque'?'#166534':'#1d4ed8'};padding:2px 6px;border-radius:4px">
+                    ${p.source==='estoque' ? 'Meu Estoque' : 'doTERRA'}
+                  </span>
+                </div>
+                <div style="font-size:0.8rem;color:var(--green-700);margin-top:2px">Sugerido: R$ ${p.price.toFixed(2)}</div>
+              </div>
+            `).join('');
+          }
+          pDropdown.style.display = 'block';
+        }
+
+        pSearchInput.addEventListener('input', () => {
+          pHiddenInput.value = pSearchInput.value; // permite texto livre
+          renderProductDropdown(pSearchInput.value);
+        });
+        pSearchInput.addEventListener('focus', () => renderProductDropdown(pSearchInput.value));
+        
+        pDropdown.addEventListener('mousedown', (e) => {
+          const item = e.target.closest('[data-name]');
+          if (!item) return;
+          pSearchInput.value = item.dataset.name;
+          pHiddenInput.value = item.dataset.name;
+          if (item.dataset.price && parseFloat(item.dataset.price) > 0) {
+            valueInput.value = parseFloat(item.dataset.price).toFixed(2);
+          }
+          pDropdown.style.display = 'none';
+        });
+
         document.addEventListener('click', (e) => {
           if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) dropdown.style.display = 'none';
+          if (!pSearchInput.contains(e.target) && !pDropdown.contains(e.target)) pDropdown.style.display = 'none';
         }, { once: false, capture: true });
       },
       onConfirm: async () => {

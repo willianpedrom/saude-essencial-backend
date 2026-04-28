@@ -349,6 +349,7 @@ CREATE TABLE IF NOT EXISTS estoque (
 -- Migrations idempotentes para tabela estoque já existente
 ALTER TABLE estoque ADD COLUMN IF NOT EXISTS validade    DATE;
 ALTER TABLE estoque ADD COLUMN IF NOT EXISTS preco_custo NUMERIC(10,2);
+ALTER TABLE estoque ADD COLUMN IF NOT EXISTS preco_venda NUMERIC(10,2);
 ALTER TABLE estoque ADD COLUMN IF NOT EXISTS uso_tipo    VARCHAR(20) DEFAULT 'venda';
 
 CREATE INDEX IF NOT EXISTS idx_estoque_consultora ON estoque(consultora_id);

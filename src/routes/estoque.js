@@ -9,7 +9,7 @@ router.use(authMiddleware);
 router.get('/', async (req, res) => {
     try {
         const { rows } = await pool.query(
-            `SELECT * FROM estoque WHERE consultora_id = $1 ORDER BY nome_produto ASC`,
+            `SELECT *, preco_venda FROM estoque WHERE consultora_id = $1 ORDER BY nome_produto ASC`,
             [req.consultora.id]
         );
         res.json(rows);
@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
 
 // POST /api/estoque
 router.post('/', async (req, res) => {
-    const { nome_produto, categoria, quantidade, ml_tamanho, notas, validade, preco_custo, uso_tipo } = req.body;
+    const { nome_produto, categoria, quantidade, ml_tamanho, notas, validade, preco_custo, preco_venda, uso_tipo } = req.body;
     if (!nome_produto) return res.status(400).json({ error: 'Nome do produto é obrigatório.' });
 
     try {
@@ -41,19 +41,19 @@ router.post('/', async (req, res) => {
             const newQtd = existing.rows[0].quantidade + (Number(quantidade) || 1);
             const updated = await pool.query(
                 `UPDATE estoque 
-                 SET quantidade=$1, notas=COALESCE($2, notas), preco_custo=COALESCE($3, preco_custo), atualizado_em=NOW()
-                 WHERE id=$4 RETURNING *`,
-                [newQtd, notas, preco_custo || null, id]
+                 SET quantidade=$1, notas=COALESCE($2, notas), preco_custo=COALESCE($3, preco_custo), preco_venda=COALESCE($4, preco_venda), atualizado_em=NOW()
+                 WHERE id=$5 RETURNING *`,
+                [newQtd, notas, preco_custo || null, preco_venda || null, id]
             );
             return res.json(updated.rows[0]);
         }
 
         const { rows } = await pool.query(
-            `INSERT INTO estoque (consultora_id, nome_produto, categoria, quantidade, ml_tamanho, notas, validade, preco_custo, uso_tipo)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+            `INSERT INTO estoque (consultora_id, nome_produto, categoria, quantidade, ml_tamanho, notas, validade, preco_custo, preco_venda, uso_tipo)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
             [req.consultora.id, nome_produto, categoria || 'Óleo Essencial',
              Number(quantidade) || 0, ml_tamanho, notas,
-             validade || null, preco_custo || null, uso_tipo || 'venda']
+             validade || null, preco_custo || null, preco_venda || null, uso_tipo || 'venda']
         );
         res.status(201).json(rows[0]);
     } catch (err) {
@@ -73,13 +73,14 @@ router.put('/:id', async (req, res) => {
                notas       = COALESCE($2, notas),
                validade    = COALESCE($3, validade),
                preco_custo = COALESCE($4, preco_custo),
-               uso_tipo    = COALESCE($5, uso_tipo),
-               nome_produto= COALESCE($6, nome_produto),
-               categoria   = COALESCE($7, categoria),
-               ml_tamanho  = COALESCE($8, ml_tamanho),
+               preco_venda = COALESCE($5, preco_venda),
+               uso_tipo    = COALESCE($6, uso_tipo),
+               nome_produto= COALESCE($7, nome_produto),
+               categoria   = COALESCE($8, categoria),
+               ml_tamanho  = COALESCE($9, ml_tamanho),
                atualizado_em = NOW()
-             WHERE id=$9 AND consultora_id=$10 RETURNING *`,
-            [quantidade, notas, validade || null, preco_custo || null, uso_tipo,
+             WHERE id=$10 AND consultora_id=$11 RETURNING *`,
+            [quantidade, notas, validade || null, preco_custo || null, preco_venda || null, uso_tipo,
              nome_produto, categoria, ml_tamanho, id, req.consultora.id]
         );
         if (!rows.length) return res.status(404).json({ error: 'Produto não encontrado.' });
