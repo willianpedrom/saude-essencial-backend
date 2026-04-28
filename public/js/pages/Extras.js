@@ -3,6 +3,11 @@ import { OILS_DATABASE } from '../data.js';
 import { renderLayout } from './Dashboard.js';
 import { formatDate, formatCurrency, toast, modal, copyToClipboard } from '../utils.js';
 
+// Helper to remove accents for better searching
+function normalize(str) {
+  return (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
 // LocalStorage helper for features without backend endpoints
 function ls(key) {
   const uid = auth.current?.id || 'anon';
@@ -473,36 +478,62 @@ export async function renderPurchases(router) {
   // Pre-generate product catalog for instant search
   const productCatalog = [];
   try {
+    // 1. Do estoque do usuário
     if (Array.isArray(estoque)) {
       estoque.forEach(it => {
         if (!it.nome_produto) return;
+        const name = it.nome_produto;
+        const size = it.ml_tamanho || '';
+        const fullName = `${name}${size ? ' ('+size+')' : ''}`;
         productCatalog.push({
-          name: `${it.nome_produto}${it.ml_tamanho ? ' ('+it.ml_tamanho+')' : ''}`,
-          price: it.preco_venda || it.preco_custo || 0,
+          name: fullName,
+          price: Number(it.preco_venda || it.preco_custo || 0),
           source: 'estoque',
-          search: (it.nome_produto + ' ' + (it.ml_tamanho || '')).toLowerCase()
+          search: normalize(name + ' ' + size)
         });
       });
     }
+    // 2. Da base global doTERRA
     if (typeof OILS_DATABASE === 'object' && OILS_DATABASE !== null) {
       Object.entries(OILS_DATABASE).forEach(([name, data]) => {
-        const sizes = Array.isArray(data.sizes) ? data.sizes : [];
+        if (!data) return;
         const nameEn = data.nameEn || '';
+        const sizes = Array.isArray(data.sizes) ? data.sizes : [];
+        
         if (sizes.length > 0) {
           sizes.forEach(s => {
             const fullName = `${name} (${s.size})`;
             if (!productCatalog.find(c => c.name === fullName)) {
-              productCatalog.push({ name: fullName, price: s.member || s.regular || 0, source: 'doterra', search: (name + ' ' + nameEn + ' ' + s.size).toLowerCase() });
+              productCatalog.push({
+                name: fullName,
+                price: Number(s.member || s.regular || 0),
+                source: 'doterra',
+                search: normalize(name + ' ' + nameEn + ' ' + s.size)
+              });
             }
           });
         } else {
           if (!productCatalog.find(c => c.name === name)) {
-            productCatalog.push({ name: name, price: 0, source: 'doterra', search: (name + ' ' + nameEn).toLowerCase() });
+            productCatalog.push({
+              name: name,
+              price: 0,
+              source: 'doterra',
+              search: normalize(name + ' ' + nameEn)
+            });
           }
         }
       });
     }
-  } catch (err) { console.error("Erro no catálogo:", err); }
+  } catch (err) { 
+    console.error("Erro crítico ao gerar catálogo:", err);
+  }
+
+  // Ensure we always have at least some items to avoid empty UI
+  if (productCatalog.length === 0) {
+    productCatalog.push({ name: 'Lavanda (15 ml)', price: 148, source: 'doterra', search: 'lavanda' });
+    productCatalog.push({ name: 'Lemon (15 ml)', price: 69, source: 'doterra', search: 'lemon' });
+    productCatalog.push({ name: 'Peppermint (15 ml)', price: 133, source: 'doterra', search: 'peppermint' });
+  }
 
   let localPurchases = [...purchases];
 
@@ -738,8 +769,8 @@ export async function renderPurchases(router) {
         const valueInput = document.getElementById('pu-value');
 
         function renderProductDropdown(query) {
-          const q = query.toLowerCase().trim();
-          const matches = q ? productCatalog.filter(p => p.search.includes(q)) : productCatalog.slice(0, 25);
+          const q = normalize(query);
+          const matches = q ? productCatalog.filter(p => p.search.includes(q)) : productCatalog.slice(0, 30);
           
           if (!matches.length) {
             pDropdown.innerHTML = `<div style="padding:12px 16px;color:var(--text-muted);font-size:0.85rem">Nenhum produto encontrado. Continue digitando para registrar como texto livre.</div>`;
