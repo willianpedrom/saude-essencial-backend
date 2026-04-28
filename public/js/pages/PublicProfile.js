@@ -614,10 +614,9 @@ export async function renderPublicProfile(router, slug) {
       </div>
     </div>
 
-      </div>
-    </section>
-    `;
 
+  `;
+  
   // Attach JS Logic after rendering
   const cta = document.getElementById('pp-mobile-cta');
   if (cta) {
@@ -696,5 +695,5 @@ export async function renderPublicProfile(router, slug) {
       }
     });
   }
-    `;
+  }
 }
