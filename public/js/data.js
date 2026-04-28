@@ -765,7 +765,39 @@ export const PROTOCOLS = {
         expectedResults: 'Mais energia e disposição ao longo do dia, menos dependência de estimulantes.',
         affirmation: 'Energia é seu estado natural. Vamos restaurar esse equilíbrio.',
     },
-    'Gênesis Performance (Energia e Vitalidade)': {
+    'Aumentar performance física': {
+        focus: 'Eixo Energético e Performance', icon: '🚀',
+        therapeuticObjective: 'Aumento expressivo da disposição física e mental, fortalecimento da imunidade e rápida recuperação celular e muscular.',
+        oils: [
+            { name: 'VM Complex', fn: 'Preenche lacunas nutricionais e estimula metabolismo' },
+            { name: 'Creatina Lifepower', fn: 'Aumento de força e energia celular (ATP)' },
+            { name: 'Copaíba Pastilha', fn: 'Controle inflamatório e antioxidante sistêmico' },
+        ],
+        routine: {
+            morning: ['2 cápsulas de VM Complex com o café da manhã (absorção com gorduras boas)'],
+            afternoon: ['1 porção de Creatina Lifepower (3,5g em água) como bebida revigorante ou pré-treino'],
+            night: ['1 a 2 pastilhas de Copaíba Pastilha no meio da tarde ou pós-treino para recuperação muscular'],
+        },
+        expectedResults: 'Disposição sustentada ao longo do dia, melhor recuperação pós-esforço e modulação do estresse.',
+        affirmation: 'A verdadeira performance vem de nutrir o corpo com o que ele precisa. Você é imparável.',
+    },
+    'Acelerar recuperação muscular': {
+        focus: 'Eixo Energético e Performance', icon: '🚀',
+        therapeuticObjective: 'Aumento expressivo da disposição física e mental, fortalecimento da imunidade e rápida recuperação celular e muscular.',
+        oils: [
+            { name: 'VM Complex', fn: 'Preenche lacunas nutricionais e estimula metabolismo' },
+            { name: 'Creatina Lifepower', fn: 'Aumento de força e energia celular (ATP)' },
+            { name: 'Copaíba Pastilha', fn: 'Controle inflamatório e antioxidante sistêmico' },
+        ],
+        routine: {
+            morning: ['2 cápsulas de VM Complex com o café da manhã (absorção com gorduras boas)'],
+            afternoon: ['1 porção de Creatina Lifepower (3,5g em água) como bebida revigorante ou pré-treino'],
+            night: ['1 a 2 pastilhas de Copaíba Pastilha no meio da tarde ou pós-treino para recuperação muscular'],
+        },
+        expectedResults: 'Disposição sustentada ao longo do dia, melhor recuperação pós-esforço e modulação do estresse.',
+        affirmation: 'A verdadeira performance vem de nutrir o corpo com o que ele precisa. Você é imparável.',
+    },
+    'Falta de força/energia para exercícios': {
         focus: 'Eixo Energético e Performance', icon: '🚀',
         therapeuticObjective: 'Aumento expressivo da disposição física e mental, fortalecimento da imunidade e rápida recuperação celular e muscular.',
         oils: [
