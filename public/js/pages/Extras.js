@@ -593,6 +593,35 @@ export async function renderPurchases(router) {
         </div>
       </div>`, {
       confirmLabel: 'Salvar Alterações',
+      onOpen: () => {
+        const pSearchInput = document.getElementById('pu-product-search-edt');
+        const pHiddenInput = document.getElementById('pu-product-edt');
+        const pDropdown = document.getElementById('pu-product-dropdown-edt');
+        const valueInput = document.getElementById('pu-value-edt');
+
+        function renderProductDropdown(query) {
+          const q = query.toLowerCase().trim();
+          const matches = q ? productCatalog.filter(p => p.search.includes(q)) : productCatalog.slice(0, 15);
+          if (!matches.length) {
+            pDropdown.innerHTML = `<div style="padding:10px 14px;color:var(--text-muted);font-size:0.82rem">Nenhum produto encontrado.</div>`;
+          } else {
+            pDropdown.innerHTML = matches.map(p => `
+              <div data-name="${p.name}" data-price="${p.price}"
+                style="padding:8px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s"
+                onmouseover="this.style.background='var(--green-50)'" onmouseout="this.style.background=''">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:0.88rem;font-weight:600;color:var(--text-dark)">${p.name}</span>
+                  <span style="font-size:0.75rem;background:${p.source==='estoque'?'#dcfce7':'#eff6ff'};color:${p.source==='estoque'?'#166534':'#1d4ed8'};padding:2px 6px;border-radius:4px">
+                    ${p.source==='estoque' ? 'Meu Estoque' : 'doTERRA'}
+                  </span>
+                </div>
+              </div>
+            `).join('');
+          }
+          pDropdown.style.display = 'block';
+        }
+
+        pSearchInput.addEventListener('input', () => { pHiddenInput.value = pSearchInput.value; renderProductDropdown(pSearchInput.value); });
         pSearchInput.addEventListener('focus', () => renderProductDropdown(pSearchInput.value));
         pDropdown.addEventListener('mousedown', (e) => {
           const item = e.target.closest('[data-name]');
