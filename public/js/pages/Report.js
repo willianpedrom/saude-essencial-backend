@@ -297,7 +297,7 @@ export async function renderReport(router, dataParam, hash = null) {
         <div style="position:relative;margin-bottom:24px">
           
           <!-- Conteúdo Bloqueado/Embaçado -->
-          <div style="${payload.protocolo_customizado?.customUnlock ? '' : 'filter:blur(6px);opacity:0.5;pointer-events:none;user-select:none;transition:all 0.3s'}">
+          <div style="${(payload.subtipo === 'express' && !payload.protocolo_customizado?.customUnlock) ? 'filter:blur(6px);opacity:0.5;pointer-events:none;user-select:none;transition:all 0.3s' : ''}">
             
             ${(combinedRoutine.afternoon.length > 0 || combinedRoutine.night.length > 0) ? `
             <div style="margin-bottom:24px">
@@ -330,8 +330,8 @@ export async function renderReport(router, dataParam, hash = null) {
 
             <!-- RESULTADOS ESPERADOS (CURIOSITY GAP) -->
             <div>
-              <h2 style="font-size:1rem;color:#2d5016;font-weight:700;margin-bottom:8px;border-bottom:2px solid #2d5016;padding-bottom:4px">${4 + specificProts.length}. RESULTADOS CLÍNICOS ${payload.protocolo_customizado?.customUnlock ? '' : '🔒'}</h2>
-              <div style="${payload.protocolo_customizado?.customUnlock ? 'padding:12px;background:#f0fdf4;border-radius:12px;border:1px solid #bbf7d0;' : ''}">
+              <h2 style="font-size:1rem;color:#2d5016;font-weight:700;margin-bottom:8px;border-bottom:2px solid #2d5016;padding-bottom:4px">${4 + specificProts.length}. RESULTADOS CLÍNICOS ${(payload.subtipo === 'express' && !payload.protocolo_customizado?.customUnlock) ? '🔒' : ''}</h2>
+              <div style="${(payload.subtipo !== 'express' || payload.protocolo_customizado?.customUnlock) ? 'padding:12px;background:#f0fdf4;border-radius:12px;border:1px solid #bbf7d0;' : ''}">
                 <p style="font-size:0.85rem;color:#333;line-height:1.6">${payload.protocolo_customizado?.customNotes || expectedResults || 'A restauração completa do seu eixo saúde garantirá uma imunidade alta e estável ao longo de todas as estações do ano.'}</p>
               </div>
             </div>
@@ -339,7 +339,7 @@ export async function renderReport(router, dataParam, hash = null) {
           </div>
 
           <!-- MENSAGEM DE CADEADO OVERLAY -->
-          ${!payload.protocolo_customizado?.customUnlock ? `
+          ${(payload.subtipo === 'express' && !payload.protocolo_customizado?.customUnlock) ? `
           <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:100%;z-index:10px">
             <div style="background:rgba(255,255,255,0.95);padding:14px 24px;border-radius:20px;display:inline-block;box-shadow:0 10px 25px rgba(0,0,0,0.15);border:1px solid #ddd;max-width:90%">
               <span style="font-size:1.4rem">🔒</span> <strong style="font-size:0.95rem;color:#d97706;display:block;margin:4px 0">Área Restrita</strong>

@@ -445,6 +445,102 @@ export async function renderPublicProfile(router, slug) {
       </div>
     </section>` : ''}
 
+    <!-- ═══════════════ DIAGNÓSTICO EXPRESSO ═══════════════ -->
+    <section class="pp-section pp-fade" style="background:#fefce8;padding-top:60px;padding-bottom:60px;border-top:1px solid #fef08a;border-bottom:1px solid #fef08a">
+      <div class="pp-container" style="max-width:600px">
+        <div style="text-align:center;margin-bottom:24px">
+          <div style="display:inline-flex;align-items:center;gap:6px;background:#fef08a;color:#854d0e;font-size:0.85rem;font-weight:700;padding:6px 16px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:16px">
+            <span>⚡</span> Protocolo Expresso Gratuito
+          </div>
+          <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2rem);color:#0a2818;margin-bottom:12px">Resolva 1 Problema Específico</h2>
+          <p style="color:#4b5563;font-size:1rem;line-height:1.6">Selecione abaixo a sua principal queixa atual. Gerarei na hora um protocolo aromaterápico customizado para você.</p>
+        </div>
+        
+        <div id="express-form-container" style="background:white;padding:32px;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,0.05);border:1px solid #fef08a">
+          <form id="express-form" onsubmit="handleExpressSubmit(event, '${slug}')">
+            <div style="margin-bottom:20px">
+              <label style="display:block;font-weight:600;color:#374151;margin-bottom:8px;font-size:0.95rem">Qual é o seu principal problema hoje?</label>
+              <select id="express-problema" required style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:12px;font-size:1rem;background:#f9fafb;color:#1f2937">
+                <option value="">Selecione na lista...</option>
+                <optgroup label="Emocional e Sono">
+                  <option value="Ansiedade">Ansiedade</option>
+                  <option value="Depressão">Depressão</option>
+                  <option value="Insônia">Insônia</option>
+                  <option value="Fadiga/cansaço físico e mental">Fadiga / Cansaço físico e mental</option>
+                  <option value="Autismo">Autismo</option>
+                </optgroup>
+                <optgroup label="Dor e Inflamação">
+                  <option value="Dores de cabeça">Dores de cabeça</option>
+                  <option value="Dores na coluna">Dores na coluna</option>
+                  <option value="Dores lombar">Dores lombar</option>
+                  <option value="Dores articulares">Dores articulares</option>
+                  <option value="Dores crônicas">Dores crônicas</option>
+                  <option value="Dores em Geral no corpo">Dores em Geral no corpo</option>
+                  <option value="Fibromialgia">Fibromialgia</option>
+                </optgroup>
+                <optgroup label="Respiratório e Imunidade">
+                  <option value="Imunidade">Baixa Imunidade</option>
+                  <option value="Gripe e resfriado">Gripe e resfriado</option>
+                  <option value="Rinite">Rinite</option>
+                  <option value="Sinusite">Sinusite</option>
+                  <option value="Infecção de garganta">Infecção de garganta</option>
+                </optgroup>
+                <optgroup label="Pele e Estética">
+                  <option value="Psoríase">Psoríase</option>
+                  <option value="Dermatite atópica">Dermatite atópica</option>
+                  <option value="Alergia na pele">Alergia na pele</option>
+                  <option value="Queda capilar">Queda capilar</option>
+                  <option value="Pele com manchas melasma">Pele com manchas (Melasma)</option>
+                  <option value="Rugas e linhas de expressão">Rugas e linhas de expressão</option>
+                  <option value="Envelhecimento do corpo">Envelhecimento do corpo</option>
+                </optgroup>
+                <optgroup label="Sistêmico e Metabólico">
+                  <option value="Pressão alta">Pressão alta</option>
+                  <option value="Colesterol alto">Colesterol alto</option>
+                  <option value="Emagrecimento">Emagrecimento</option>
+                  <option value="Cálculo renal">Cálculo renal</option>
+                  <option value="Cálculo vesícula">Cálculo vesícula</option>
+                  <option value="Lúpus">Lúpus</option>
+                </optgroup>
+              </select>
+            </div>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+              <div style="grid-column:1/-1">
+                <input type="text" id="express-nome" placeholder="Seu Nome Completo" required style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:12px;font-size:1rem">
+              </div>
+              <div>
+                <input type="tel" id="express-telefone" placeholder="WhatsApp (com DDD)" required style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:12px;font-size:1rem">
+              </div>
+              <div>
+                <input type="email" id="express-email" placeholder="E-mail" style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:12px;font-size:1rem">
+              </div>
+              <div>
+                <input type="number" id="express-idade" placeholder="Idade" style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:12px;font-size:1rem">
+              </div>
+              <div>
+                <input type="text" id="express-cidade" placeholder="Cidade / UF" style="width:100%;padding:14px;border:1px solid #d1d5db;border-radius:12px;font-size:1rem">
+              </div>
+            </div>
+            
+            <button type="submit" id="express-submit" style="width:100%;background:linear-gradient(135deg,#16a34a,#15803d);color:white;padding:16px;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer;box-shadow:0 4px 15px rgba(22,163,74,0.3);transition:transform 0.2s, box-shadow 0.2s">
+              Gerar Meu Protocolo Agora
+            </button>
+            <div id="express-error" style="color:#ef4444;font-size:0.9rem;text-align:center;margin-top:12px;display:none"></div>
+          </form>
+          
+          <div id="express-success" style="display:none;text-align:center;padding:20px 0">
+            <div style="font-size:3rem;margin-bottom:16px">✅</div>
+            <h3 style="color:#166534;margin-bottom:8px">Você já possui um protocolo!</h3>
+            <p style="color:#4b5563;font-size:0.95rem;margin-bottom:20px">Identificamos que você já gerou um protocolo gratuito anteriormente.</p>
+            <a href="${whatsLink}" target="_blank" style="display:inline-block;background:#25d366;color:white;padding:12px 24px;border-radius:50px;text-decoration:none;font-weight:600">
+              Chamar Consultora no WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ═══════════════ CTA FINAL ═══════════════ -->
     <section style="background:linear-gradient(135deg,#0a2818,#1a4527);padding:80px 24px;text-align:center">
       <div class="pp-container pp-fade">
@@ -538,7 +634,65 @@ export async function renderPublicProfile(router, slug) {
           }
         }
         window.addEventListener('scroll', onScroll, { passive: true });
+        
+        // Express Form check limit
+        if(localStorage.getItem('express_generated_${slug}')) {
+          const form = document.getElementById('express-form');
+          const success = document.getElementById('express-success');
+          if(form && success) {
+            form.style.display = 'none';
+            success.style.display = 'block';
+          }
+        }
       })();
+
+      window.handleExpressSubmit = async function(e, slug) {
+        e.preventDefault();
+        const btn = document.getElementById('express-submit');
+        const err = document.getElementById('express-error');
+        const oldText = btn.textContent;
+        
+        err.style.display = 'none';
+        btn.textContent = 'Gerando...';
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+
+        const data = {
+          slug,
+          problema: document.getElementById('express-problema').value,
+          nome: document.getElementById('express-nome').value,
+          telefone: document.getElementById('express-telefone').value,
+          email: document.getElementById('express-email').value,
+          idade: document.getElementById('express-idade').value,
+          cidade: document.getElementById('express-cidade').value
+        };
+
+        try {
+          // Track Event if Meta CAPI
+          if (window.fbq) fbq('track', 'Lead', { content_name: 'Protocolo Expresso' });
+
+          const res = await fetch('/api/publico/express-protocol', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          const json = await res.json();
+
+          if (!res.ok) throw new Error(json.error || 'Erro ao gerar protocolo.');
+          
+          // Lock
+          localStorage.setItem('express_generated_' + slug, 'true');
+          
+          // Redirect
+          window.location.href = '/laudo/' + json.hash;
+        } catch (error) {
+          err.textContent = error.message;
+          err.style.display = 'block';
+          btn.textContent = oldText;
+          btn.disabled = false;
+          btn.style.opacity = '1';
+        }
+      };
     </script>
     `;
 }
