@@ -695,5 +695,4 @@ export async function renderPublicProfile(router, slug) {
       }
     });
   }
-  }
 }
