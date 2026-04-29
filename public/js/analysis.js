@@ -172,7 +172,13 @@ export function analyzeBusinessProfile(answers) {
             secret: 'Vença pelo desafio. Mostre que ela pode ser a melhor e que o sistema recompensa a velocidade.',
             approach: 'Seja direto. Mostre os números de ganho (Blue Diamond, Presidential Diamond). Fale de metas.',
             objection: 'Se disser que não tem tempo, diga: "Justamente por isso, dōTERRA vai te dar a liberdade que a CLT nunca deu".',
-            motivations: ['💰 Lucratividade', '🏆 Desafios', '⚡ Rapidez', '📈 Poder']
+            motivations: ['💰 Lucratividade', '🏆 Desafios', '⚡ Rapidez', '📈 Poder'],
+            roadmap: [
+                { stage: 'Abertura', task: 'Vá direto ao ponto. Sem "quebra-gelo" longo.' },
+                { stage: 'Sondagem', task: 'Pergunte: "Quanto você quer ganhar nos próximos 6 meses?"' },
+                { stage: 'Valor', task: 'Mostre o plano de carreira e o Poder de 3.' },
+                { stage: 'Fechamento', task: 'Desafie-a: "Esse negócio é para quem decide rápido. Vamos?"' }
+            ]
         },
         'I': {
             toSay: 'Fale sobre pessoas e reconhecimento.',
@@ -182,7 +188,13 @@ export function analyzeBusinessProfile(answers) {
             secret: 'Vença pelo entusiasmo. Fale de viagens, convenções, palco e o impacto social que ela terá.',
             approach: 'Conte histórias de sucesso. Fale de liberdade e de como o negócio é divertido e cheio de gente.',
             objection: 'Se tiver medo de vendas, diga: "Você não vai vender, você vai compartilhar sua energia e o que você ama".',
-            motivations: ['🌟 Reconhecimento', '🤝 Conexões', '🎨 Criatividade', '✈️ Liberdade']
+            motivations: ['🌟 Reconhecimento', '🤝 Conexões', '🎨 Criatividade', '✈️ Liberdade'],
+            roadmap: [
+                { stage: 'Abertura', task: 'Crie conexão emocional. Elogie a energia dela.' },
+                { stage: 'Sondagem', task: 'Pergunte: "Como seria a sua vida com liberdade total de tempo?"' },
+                { stage: 'Valor', task: 'Mostre fotos de viagens e eventos da equipe.' },
+                { stage: 'Fechamento', task: 'Venda a diversão: "Você vai amar o nosso grupo. Vamos nessa?"' }
+            ]
         },
         'S': {
             toSay: 'Fale sobre segurança e suporte.',
@@ -192,7 +204,13 @@ export function analyzeBusinessProfile(answers) {
             secret: 'Vença pela confiança. Mostre que ela nunca estará sozinha e que temos um sistema de treinamento completo.',
             approach: 'Fale de família e segurança. Mostre que é um negócio hereditário e seguro para o futuro.',
             objection: 'Se tiver dúvida, diga: "Eu estarei ao seu lado no passo a passo. Temos um suporte que é uma família".',
-            motivations: ['🛡️ Segurança', '🧘 Equilíbrio', '📈 Estabilidade', '🤝 Lealdade']
+            motivations: ['🛡️ Segurança', '🧘 Equilíbrio', '📈 Estabilidade', '🤝 Lealdade'],
+            roadmap: [
+                { stage: 'Abertura', task: 'Seja gentil e calmo. Transmita segurança.' },
+                { stage: 'Sondagem', task: 'Pergunte: "Como você se sentiria ajudando outras famílias?"' },
+                { stage: 'Valor', task: 'Mostre o suporte da equipe e o sistema de educação.' },
+                { stage: 'Fechamento', task: 'Dê segurança: "Eu vou te guiar em cada detalhe. Vamos começar?"' }
+            ]
         },
         'C': {
             toSay: 'Fale sobre dados e qualidade.',
@@ -202,7 +220,13 @@ export function analyzeBusinessProfile(answers) {
             secret: 'Vença pelos fatos. Envie laudos, planos de compensação detalhados e provas de pureza CPTG.',
             approach: 'Seja técnico e calmo. Não use "hype". Deixe que ela analise os dados no tempo dela.',
             objection: 'Se questionar a qualidade, mostre o site Source to You e os certificados de pureza.',
-            motivations: ['🔬 Qualidade', '📚 Conhecimento', '🎯 Precisão', '📋 Organização']
+            motivations: ['🔬 Qualidade', '📚 Conhecimento', '🎯 Precisão', '📋 Organização'],
+            roadmap: [
+                { stage: 'Abertura', task: 'Seja profissional e formal. Use dados.' },
+                { stage: 'Sondagem', task: 'Pergunte: "Ficou alguma dúvida sobre a lógica do negócio?"' },
+                { stage: 'Valor', task: 'Mostre gráficos de retenção e certificados CPTG.' },
+                { stage: 'Fechamento', task: 'Apele à lógica: "Os dados mostram que este é o melhor caminho. Vamos?"' }
+            ]
         }
     };
 
@@ -223,7 +247,8 @@ export function analyzeBusinessProfile(answers) {
             closingStrategy: comm.closingStrategy,
             secret: comm.secret,
             approach: comm.approach,
-            objection: comm.objection
+            objection: comm.objection,
+            roadmap: comm.roadmap
         },
         meta: {
             urgency: readiness.includes('Imediatamente') ? 'Alta' : 'Média',

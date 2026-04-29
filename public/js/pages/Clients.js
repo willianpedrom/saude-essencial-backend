@@ -1,7 +1,7 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { formatDate, getInitials, toast, modal, openClientOffcanvas } from '../utils.js';
-import { analyzeAnamnesis, analyzeBusinessProfile } from '../analysis.js?v=12';
+import { analyzeAnamnesis, analyzeBusinessProfile } from '../analysis.js?v=13';
 import { PROTOCOLS } from '../protocols.js';
 import { OILS_DATABASE } from '../oils.js';
 
@@ -58,6 +58,30 @@ export async function showAnamneseModal(client, router, anamneseOverride = null)
           <div style="font-size:2.2rem; font-weight:900; color:${leadership.isPotential ? '#064e3b' : '#1e293b'}; margin-bottom:4px">${leadership.score}%</div>
           <div style="background:${leadership.isPotential ? '#10b981' : '#64748b'}; color:white; display:inline-block; padding:4px 12px; border-radius:100px; font-size:0.85rem; font-weight:700">${leadership.label}</div>
           ${leadership.isPotential ? `<p style="color:#15803d; font-size:0.85rem; margin-top:12px; font-weight:600">🚀 Este prospecto tem alto potencial para se tornar um líder na sua rede!</p>` : ''}
+        </div>
+
+        <!-- NEW: INFAILIBLE CLOSING ROADMAP -->
+        <div style="background:linear-gradient(135deg, #0f172a, #1e293b); border-radius:24px; padding:24px; margin-bottom:24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2)">
+          <h4 style="margin:0 0 20px 0; font-size:1.1rem; color:#f8fafc; display:flex; align-items:center; gap:10px">
+            <span style="font-size:1.4rem">🛣️</span> Roteiro de Fechamento Infalível
+          </h4>
+          
+          <div style="display:flex; flex-direction:column; gap:20px; position:relative">
+            <!-- Progress Line -->
+            <div style="position:absolute; left:19px; top:10px; bottom:10px; width:2px; background:rgba(255,255,255,0.1)"></div>
+            
+            ${(guide.roadmap || []).map((step, idx) => `
+              <div style="display:flex; gap:16px; position:relative; z-index:1">
+                <div style="width:40px; height:40px; background:${idx === 3 ? '#10b981' : 'rgba(255,255,255,0.1)'}; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:900; font-size:0.8rem; border:2px solid ${idx === 3 ? '#10b981' : 'rgba(255,255,255,0.2)'}">
+                  ${idx + 1}
+                </div>
+                <div style="flex:1">
+                  <div style="font-size:0.75rem; color:${idx === 3 ? '#10b981' : '#94a3b8'}; text-transform:uppercase; font-weight:800; letter-spacing:1px">${step.stage}</div>
+                  <div style="font-size:0.95rem; color:#f1f5f9; margin-top:4px; line-height:1.4">${step.task}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
         </div>
 
         <!-- WHATSAPP HOOK -->
