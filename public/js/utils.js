@@ -932,14 +932,15 @@ export function openClientOffcanvas(client) {
           toast(`⚠️ ${client.nome || 'Este contato'} ainda não preencheu o questionário de saúde.`, 'warning');
           return;
         }
-      } catch (e) {
-        // ignorar e tentar abrir
-      }
 
-      closeOC();
-      document.dispatchEvent(new CustomEvent('open-anamnese', { 
-        detail: { client, anamneseOverride: healthAnamnese } 
-      }));
+        closeOC();
+        document.dispatchEvent(new CustomEvent('open-anamnese', { 
+          detail: { client, anamneseOverride: healthAnamnese } 
+        }));
+      } catch (e) {
+        console.error("Erro ao abrir anamnese:", e);
+        toast("Erro ao carregar os dados. Tente novamente.", "error");
+      }
     });
   }
 }
