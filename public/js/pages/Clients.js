@@ -73,10 +73,32 @@ export async function showAnamneseModal(client, router, anamneseOverride = null)
           </button>
         </div>
 
+        <!-- NEW: PRECISE COMMUNICATION INSTRUCTIONS -->
+        <div style="background:#fdfcf0; border:1px solid #fef3c7; border-radius:16px; padding:20px; margin-bottom:24px">
+          <h4 style="margin:0 0 16px 0; font-size:1rem; color:#92400e; display:flex; align-items:center; gap:8px">
+            <span>🎯</span> Instruções de Comunicação
+          </h4>
+          
+          <div style="margin-bottom:16px">
+            <strong style="font-size:0.75rem; color:#b45309; text-transform:uppercase; display:block; margin-bottom:4px">🔑 O Segredo deste Perfil:</strong>
+            <div style="font-size:0.95rem; color:#451a03; line-height:1.4">${guide.secret}</div>
+          </div>
+
+          <div style="margin-bottom:16px">
+            <strong style="font-size:0.75rem; color:#b45309; text-transform:uppercase; display:block; margin-bottom:4px">🗣️ Como Abordar o Negócio:</strong>
+            <div style="font-size:0.95rem; color:#451a03; line-height:1.4">${guide.approach}</div>
+          </div>
+
+          <div>
+            <strong style="font-size:0.75rem; color:#b45309; text-transform:uppercase; display:block; margin-bottom:4px">🛡️ Como Contornar Objeções:</strong>
+            <div style="font-size:0.95rem; color:#451a03; line-height:1.4">${guide.objection}</div>
+          </div>
+        </div>
+
         <!-- CONSULTANT GUIDE (GOLDEN TIPS) -->
         <div style="background:#fff7ed; border:1px solid #ffedd5; border-radius:16px; padding:20px; margin-bottom:24px">
           <h4 style="margin:0 0 16px 0; font-size:1rem; color:#9a3412; display:flex; align-items:center; gap:8px">
-            <span>💡</span> Guia de Abordagem Estratégica
+            <span>💡</span> Dicas Rápidas
           </h4>
           <div style="display:grid; grid-template-columns:1fr; gap:12px">
             <div style="background:white; padding:12px; border-radius:12px; border-left:4px solid #f97316">

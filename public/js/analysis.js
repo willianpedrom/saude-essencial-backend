@@ -178,6 +178,43 @@ export function analyzeBusinessProfile(answers) {
         'C': ['🔬 Qualidade', '📚 Conhecimento', '🎯 Precisão']
     };
 
+    // 6. Deep Communication Guide & Hooks
+    const communicationMatrix = {
+        'D': {
+            hook: `Olá! Vi que você tem um perfil extremamente focado em resultados e metas. Tenho uma visão estratégica para te mostrar que vai direto ao ponto. Podemos falar?`,
+            secret: 'Vença pelo desafio. Mostre que ela pode ser a melhor e que o sistema recompensa a velocidade.',
+            approach: 'Seja direto. Mostre os números de ganho (Blue Diamond, Presidential Diamond). Fale de metas.',
+            objection: 'Se disser que não tem tempo, diga: "Justamente por isso, dōTERRA vai te dar a liberdade que a CLT nunca deu".'
+        },
+        'I': {
+            hook: `Olá! Adorei seu perfil, você transmite muita energia! Vi que você valoriza conexão e reconhecimento. Tenho um projeto que é a sua cara. Topa conhecer?`,
+            secret: 'Vença pelo entusiasmo. Fale de viagens, convenções, palco e o impacto social que ela terá.',
+            approach: 'Conte histórias de sucesso. Fale de liberdade e de como o negócio é divertido e cheio de gente.',
+            objection: 'Se tiver medo de vendas, diga: "Você não vai vender, você vai compartilhar sua energia e o que você ama".'
+        },
+        'S': {
+            hook: `Olá! Vi seu perfil e percebi que você valoriza segurança e um método passo a passo. Preparei um material bem estruturado para te mostrar como podemos crescer com estabilidade.`,
+            secret: 'Vença pela confiança. Mostre que ela nunca estará sozinha e que temos um sistema de treinamento completo.',
+            approach: 'Fale de família e segurança. Mostre que é um negócio hereditário e seguro para o futuro.',
+            objection: 'Se tiver dúvida, diga: "Eu estarei ao seu lado no passo a passo. Temos um suporte que é uma família".'
+        },
+        'C': {
+            hook: `Olá! Analisei seu perfil e vi que você é uma pessoa criteriosa e atenta aos detalhes. Gostaria de te apresentar os dados e a base técnica do nosso projeto. O que acha?`,
+            secret: 'Vença pelos fatos. Envie laudos, planos de compensação detalhados e provas de pureza CPTG.',
+            approach: 'Seja técnico e calmo. Não use "hype". Deixe que ela analise os dados no tempo dela.',
+            objection: 'Se questionar a qualidade, mostre o site Source to You e os certificados de pureza.'
+        }
+    };
+
+    const motivations = {
+        'D': ['💰 Lucratividade', '🏆 Desafios', '⚡ Rapidez', '📈 Poder'],
+        'I': ['🌟 Reconhecimento', '🤝 Conexões', '🎨 Criatividade', '✈️ Liberdade'],
+        'S': ['🛡️ Segurança', '🧘 Equilíbrio', '📈 Estabilidade', '🤝 Lealdade'],
+        'C': ['🔬 Qualidade', '📚 Conhecimento', '🎯 Precisão', '📋 Organização']
+    };
+
+    const comm = communicationMatrix[disc.code] || communicationMatrix['D'];
+
     return {
         disc,
         archetype,
@@ -187,14 +224,19 @@ export function analyzeBusinessProfile(answers) {
             label: isPotentialLeader ? '🔥 LIDERANÇA ALTA' : (leadershipScore > 60 ? '🟡 POTENCIAL' : '❄️ EXECUTOR')
         },
         jung: { energy: isExtrovert ? 'Extrovertido' : 'Introvertido', approach: isLogical ? 'Racional' : 'Empático' },
-        guide,
+        guide: {
+            ...guide,
+            secret: comm.secret,
+            approach: comm.approach,
+            objection: comm.objection
+        },
         meta: {
             urgency: readiness.includes('Imediatamente') ? 'Alta' : 'Média',
             financialGoal: answers.financial_goal || 'Não definida',
             availability: answers.time_availability || 'Não definida'
         },
         communication: {
-            hook: hooks[disc.code] || hooks['D'],
+            hook: comm.hook,
             motivations: motivations[disc.code] || motivations['D']
         }
     };
