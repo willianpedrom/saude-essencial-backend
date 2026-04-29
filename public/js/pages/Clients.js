@@ -7,7 +7,7 @@ import { OILS_DATABASE } from '../oils.js';
 
 let cachedAnamneses = null; // lazy-load once per session
 
-export async function showAnamneseModal(client, router) {
+export async function showAnamneseModal(client, router, anamneseOverride = null) {
   // Fetch anamneses directly by client ID (includes filled generic copies)
   const anamneses = await store.getClientAnamneses(client.id).catch(() => []);
   if (anamneses.length === 0) {
@@ -19,7 +19,12 @@ export async function showAnamneseModal(client, router) {
       </div>`);
     return;
   }
-  const a = anamneses[0]; // most recent filled
+
+  // Se vier um override (ex: banner de negócios clicado), usa ele diretamente.
+  // Caso contrário, prioriza a anamnese de SAÚDE mais recente (não recrutamento).
+  const a = anamneseOverride
+    || anamneses.find(x => x.tipo !== 'recrutamento' && x.subtipo !== 'recrutamento')
+    || anamneses[0]; // fallback para qualquer uma se só tiver negócios
   const rawDados = a.dados || {};
   // Garantir que temos acesso a todos os dados flat
   const dados = {

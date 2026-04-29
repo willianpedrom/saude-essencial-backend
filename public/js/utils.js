@@ -442,18 +442,34 @@ export function openClientOffcanvas(client) {
           <!-- PANE: GERAL -->
           <div class="oc-pane active" id="pane-geral">
 
+             <!-- BANNER: Ficha de Anamnese de Saúde -->
              <div id="anamnese-banner-oc" style="display:flex;align-items:center;justify-content:space-between;
                background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border:1px solid #a5d6a7;
-               border-radius:10px;padding:12px 16px;margin-bottom:18px;cursor:pointer">
+               border-radius:10px;padding:12px 16px;margin-bottom:8px;cursor:pointer">
                <div style="display:flex;align-items:center;gap:10px">
                  <span style="font-size:1.3rem">📋</span>
                  <div>
                    <div style="font-weight:600;color:#2d4a28;font-size:0.9rem">Ficha de Anamnese</div>
-                   <div style="font-size:0.78rem;color:#4a7c40">Clique para ver todas as respostas do questionário</div>
+                   <div style="font-size:0.78rem;color:#4a7c40">Clique para ver as respostas do questionário de saúde</div>
                  </div>
                </div>
                <span style="color:#4a7c40;font-size:1.1rem">›</span>
              </div>
+             <!-- BANNER: Perfil Empreendedor (aparece dinamicamente se tiver anamnese de negócios) -->
+             <div id="business-banner-oc" style="display:none;align-items:center;justify-content:space-between;
+               background:linear-gradient(135deg,#eff6ff,#e0f2fe);border:1px solid #bfdbfe;
+               border-radius:10px;padding:12px 16px;margin-bottom:18px;cursor:pointer">
+               <div style="display:flex;align-items:center;gap:10px">
+                 <span style="font-size:1.3rem">💼</span>
+                 <div>
+                   <div style="font-weight:600;color:#1e40af;font-size:0.9rem">Perfil Empreendedor</div>
+                   <div style="font-size:0.78rem;color:#2563eb">Clique para ver o perfil de negócios</div>
+                 </div>
+               </div>
+               <span style="color:#2563eb;font-size:1.1rem">›</span>
+             </div>
+             <!-- Spacer para quando só tem um banner -->
+             <div id="anamnese-spacer-oc" style="margin-bottom:10px"></div>
 
              <div class="form-group" style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid var(--border);margin-bottom:16px;position:relative">
                 <label class="field-label" style="font-size:0.75rem;margin-bottom:8px;display:block">Classificação de Atuação</label>
@@ -874,23 +890,52 @@ export function openClientOffcanvas(client) {
     });
   }
 
-  // Action: Open Anamnese
+  // Action: Open Anamnese – distingue saúde de negócios
   const bannerOc = overlay.querySelector('#anamnese-banner-oc');
+  const businessBannerOc = overlay.querySelector('#business-banner-oc');
+  const anamnesesSpacer = overlay.querySelector('#anamnese-spacer-oc');
+
+  // Carrega as anamneses ao abrir e mostra/esconde o banner de negócios
+  import('./store.js').then(async ({ store }) => {
+    const anamneses = await store.getClientAnamneses(client.id).catch(() => []);
+    const hasHealth = anamneses.some(a => a.tipo !== 'recrutamento' && a.subtipo !== 'recrutamento');
+    const bizAnamnese = anamneses.find(a => a.tipo === 'recrutamento' || a.subtipo === 'recrutamento');
+
+    // Esconde o banner de saúde se não tiver anamnese de saúde
+    if (!hasHealth && bannerOc) bannerOc.style.display = 'none';
+
+    // Mostra o banner de negócios se tiver
+    if (bizAnamnese && businessBannerOc) {
+      businessBannerOc.style.display = 'flex';
+      if (anamnesesSpacer) anamnesesSpacer.style.marginBottom = '0';
+
+      businessBannerOc.addEventListener('click', () => {
+        closeOC();
+        // Despacha o evento com a anamnese de negócios específica para abrir o modal correto
+        document.dispatchEvent(new CustomEvent('open-anamnese', {
+          detail: { client, anamneseOverride: bizAnamnese }
+        }));
+      });
+    }
+  });
+
   if (bannerOc) {
     bannerOc.addEventListener('click', async () => {
-      // 1. Checar rapidamente se tem anamnese antes de forçar o fechamento e disparo
       try {
         const { store } = await import('./store.js');
         const anamneses = await store.getClientAnamneses(client.id).catch(() => []);
-        
-        if (!anamneses || anamneses.length === 0) {
-          toast(`⚠️ ${client.nome || 'Este contato'} ainda não finalizou de preencher o formulário.`, 'warning');
-          return; // Aborta e mantém a ficha aberta
+
+        // Filtra especificamente a anamnese de SAÚDE (não recrutamento)
+        const healthAnamnese = anamneses.find(a => a.tipo !== 'recrutamento' && a.subtipo !== 'recrutamento');
+
+        if (!healthAnamnese) {
+          toast(`⚠️ ${client.nome || 'Este contato'} ainda não preencheu o questionário de saúde.`, 'warning');
+          return;
         }
       } catch (e) {
-         // ignorar e tentar abrir
+        // ignorar e tentar abrir
       }
-      
+
       closeOC();
       document.dispatchEvent(new CustomEvent('open-anamnese', { detail: { client } }));
     });
