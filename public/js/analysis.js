@@ -163,6 +163,21 @@ export function analyzeBusinessProfile(answers) {
     if (disc.code === 'S') guide = { toSay: 'Fale sobre segurança e suporte.', toAvoid: 'Não pressione por decisão imediata.', closingStrategy: 'Venda o passo a passo.' };
     if (disc.code === 'C') guide = { toSay: 'Fale sobre dados e qualidade.', toAvoid: 'Evite promessas sem provas.', closingStrategy: 'Venda a solidez do método.' };
 
+    // 6. Communication Hooks & Motivations
+    const hooks = {
+        'D': `Olá! Vi que você tem um perfil extremamente focado em resultados e metas. Tenho uma visão estratégica para te mostrar que vai direto ao ponto. Podemos falar?`,
+        'I': `Olá! Adorei seu perfil, você transmite muita energia! Vi que você valoriza conexão e reconhecimento. Tenho um projeto que é a sua cara. Topa conhecer?`,
+        'S': `Olá! Vi seu perfil e percebi que você valoriza segurança e um método passo a passo. Preparei um material bem estruturado para te mostrar como podemos crescer com estabilidade.`,
+        'C': `Olá! Analisei seu perfil e vi que você é uma pessoa criteriosa e atenta aos detalhes. Gostaria de te apresentar os dados e a base técnica do nosso projeto. O que acha?`
+    };
+
+    const motivations = {
+        'D': ['💰 Lucratividade', '🏆 Desafios', '⚡ Rapidez'],
+        'I': ['🌟 Reconhecimento', '🤝 Conexões', '🎨 Criatividade'],
+        'S': ['🛡️ Segurança', '🧘 Equilíbrio', '📈 Estabilidade'],
+        'C': ['🔬 Qualidade', '📚 Conhecimento', '🎯 Precisão']
+    };
+
     return {
         disc,
         archetype,
@@ -177,6 +192,10 @@ export function analyzeBusinessProfile(answers) {
             urgency: readiness.includes('Imediatamente') ? 'Alta' : 'Média',
             financialGoal: answers.financial_goal || 'Não definida',
             availability: answers.time_availability || 'Não definida'
+        },
+        communication: {
+            hook: hooks[disc.code] || hooks['D'],
+            motivations: motivations[disc.code] || motivations['D']
         }
     };
 }

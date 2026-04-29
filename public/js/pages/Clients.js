@@ -48,7 +48,7 @@ export async function showAnamneseModal(client, router, anamneseOverride = null)
   
   if (a.tipo === 'recrutamento') {
     const biz = analyzeBusinessProfile(dados);
-    const { disc, archetype, leadership, jung, guide, meta } = biz;
+    const { disc, archetype, leadership, jung, guide, meta, communication } = biz;
 
     modal('💼 Perfil Empreendedor — ' + client.name, `
       <div style="max-height:75vh;overflow-y:auto;padding-right:8px">
@@ -58,6 +58,19 @@ export async function showAnamneseModal(client, router, anamneseOverride = null)
           <div style="font-size:2.2rem; font-weight:900; color:${leadership.isPotential ? '#064e3b' : '#1e293b'}; margin-bottom:4px">${leadership.score}%</div>
           <div style="background:${leadership.isPotential ? '#10b981' : '#64748b'}; color:white; display:inline-block; padding:4px 12px; border-radius:100px; font-size:0.85rem; font-weight:700">${leadership.label}</div>
           ${leadership.isPotential ? `<p style="color:#15803d; font-size:0.85rem; margin-top:12px; font-weight:600">🚀 Este prospecto tem alto potencial para se tornar um líder na sua rede!</p>` : ''}
+        </div>
+
+        <!-- WHATSAPP HOOK -->
+        <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:16px; padding:20px; margin-bottom:24px">
+          <h4 style="margin:0 0 12px 0; font-size:1rem; color:#0369a1; display:flex; align-items:center; gap:8px">
+            <span>💬</span> Sugestão de Gancho (WhatsApp)
+          </h4>
+          <div style="font-size:0.9rem; color:#0c4a6e; background:white; padding:15px; border-radius:12px; border:1px dashed #7dd3fc; line-height:1.5; margin-bottom:16px; font-style:italic">
+            "${communication.hook}"
+          </div>
+          <button onclick="window.open('https://wa.me/55${(client.phone || '').replace(/\D/g, '')}?text=${encodeURIComponent(communication.hook)}', '_blank')" style="width:100%; background:#0ea5e9; color:white; border:none; padding:12px; border-radius:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow: 0 4px 12px rgba(14,165,233,0.3)">
+            <span>📲</span> Abrir WhatsApp com este Gancho
+          </button>
         </div>
 
         <!-- CONSULTANT GUIDE (GOLDEN TIPS) -->
@@ -86,7 +99,9 @@ export async function showAnamneseModal(client, router, anamneseOverride = null)
           <div style="background:#f1f5f9; padding:16px; border-radius:12px">
             <div style="font-size:0.7rem; font-weight:700; color:#64748b; text-transform:uppercase">Perfil DISC</div>
             <div style="font-size:1.1rem; font-weight:800; color:#0f172a">${disc.type}</div>
-            <div style="font-size:0.8rem; color:#334155">Traço: ${disc.trait}</div>
+            <div style="font-size:0.8rem; color:#334155; margin-top:4px">
+              ${communication.motivations.map(m => `<span style="background:white; padding:2px 6px; border-radius:4px; font-size:0.7rem; margin-right:4px; display:inline-block; margin-top:4px; border:1px solid #e2e8f0">${m}</span>`).join('')}
+            </div>
           </div>
           <div style="background:#f1f5f9; padding:16px; border-radius:12px">
             <div style="font-size:0.7rem; font-weight:700; color:#64748b; text-transform:uppercase">Jung / Energia</div>
