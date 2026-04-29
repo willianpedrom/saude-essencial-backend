@@ -14,7 +14,7 @@ document.addEventListener('open-anamnese', async (e) => {
     const client = e.detail?.client;
     const anamneseOverride = e.detail?.anamneseOverride || null;
     if (client) {
-        const { showAnamneseModal } = await import('./pages/Clients.js?v=10');
+        const { showAnamneseModal } = await import('./pages/Clients.js?v=11');
         showAnamneseModal(client, router, anamneseOverride);
     }
 });
@@ -54,7 +54,7 @@ const router = new Router({
         renderDashboard(router, params);
     }),
     '/clients': guard(async (params) => {
-        const { renderClients } = await import('./pages/Clients.js?v=10');
+        const { renderClients } = await import('./pages/Clients.js?v=11');
         renderClients(router, params);
     }),
     '/links': guard(async (params) => {

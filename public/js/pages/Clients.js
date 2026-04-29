@@ -1,7 +1,7 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { formatDate, getInitials, toast, modal, openClientOffcanvas } from '../utils.js';
-import { analyzeAnamnesis, analyzeBusinessProfile } from '../analysis.js?v=2';
+import { analyzeAnamnesis, analyzeBusinessProfile } from '../analysis.js?v=11';
 import { PROTOCOLS } from '../protocols.js';
 import { OILS_DATABASE } from '../oils.js';
 

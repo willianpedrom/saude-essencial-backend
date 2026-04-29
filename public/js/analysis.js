@@ -120,97 +120,90 @@ export function analyzeAnamnesis(answers) {
  * Analisa as respostas do perfil de negócio (DISC, Jung, Arquétipos)
  */
 export function analyzeBusinessProfile(answers) {
-    // 1. DISC Pillar
-    const action = answers.disc_action || '';
-    let disc = { type: 'Executor', trait: 'Dominância', code: 'D' };
-    if (action.includes('entusiasmo')) disc = { type: 'Comunicador', trait: 'Influência', code: 'I' };
-    if (action.includes('Manter a calma')) disc = { type: 'Planejador', trait: 'Estabilidade', code: 'S' };
-    if (action.includes('Analisar todos')) disc = { type: 'Analista', trait: 'Conformidade', code: 'C' };
+    // 1. DISC Analysis (Action Style)
+    const discAction = answers.disc_action || '';
+    let discCode = 'D';
+    if (discAction.includes('entusiasmo')) discCode = 'I';
+    else if (discAction.includes('calma')) discCode = 'S';
+    else if (discAction.includes('riscos')) discCode = 'C';
 
-    // 2. Jung Pillar
+    const discTypes = {
+        'D': { type: 'Executor', trait: 'Dominância' },
+        'I': { type: 'Comunicador', trait: 'Influência' },
+        'S': { type: 'Planejador', trait: 'Estabilidade' },
+        'C': { type: 'Analista', trait: 'Cautela' }
+    };
+    const disc = { code: discCode, ...discTypes[discCode] };
+
+    // 2. Jung Analysis (Energy & Decisions)
     const energy = answers.jung_energy || '';
-    const isExtrovert = energy.includes('Estando com pessoas');
     const decisions = answers.jung_decisions || '';
-    const isLogical = decisions.includes('lógica fria');
+    const isExtrovert = energy.includes('pessoas');
+    const isLogical = decisions.includes('lógica');
 
-    // 3. Archetype Pillar
+    // 3. Archetype (Drive)
     const drive = answers.archetype_drive || '';
-    let archetype = { name: 'O Herói', desc: 'Foco em superação, vitória e metas audaciosas.', leadershipPotential: 90 };
-    if (drive.includes('Ensinar')) archetype = { name: 'O Sábio', desc: 'Foco em conhecimento, verdade e desenvolvimento alheio.', leadershipPotential: 75 };
-    if (drive.includes('Proteger')) archetype = { name: 'O Cuidador', desc: 'Foco em segurança, acolhimento e proteção da rede.', leadershipPotential: 60 };
-    if (drive.includes('liberdade total')) archetype = { name: 'O Criador', desc: 'Foco em inovação, autenticidade e novas formas de agir.', leadershipPotential: 80 };
+    let archetype = { name: 'O Herói', focus: 'Superação e metas' };
+    if (drive.includes('Ensinar')) archetype = { name: 'O Sábio', focus: 'Conhecimento e ensino' };
+    else if (drive.includes('Proteger')) archetype = { name: 'O Cuidador', focus: 'Segurança e acolhimento' };
+    else if (drive.includes('liberdade')) archetype = { name: 'O Criador', focus: 'Inovação e liberdade' };
 
-    // 4. Leadership Index Calculation
+    // 4. Leadership Potential
     const posture = answers.leadership_posture || '';
+    const investment = answers.investment_posture || '';
     const readiness = answers.readiness || '';
     
-    let leadershipScore = archetype.leadershipPotential;
-    if (posture.includes('muito confortável')) leadershipScore += 10;
-    if (posture.includes('exemplo')) leadershipScore += 5;
+    let leadershipScore = 50;
+    if (posture.includes('confortável')) leadershipScore += 30;
+    if (posture.includes('exemplo')) leadershipScore += 15;
+    if (investment.includes('decidido')) leadershipScore += 15;
     if (readiness.includes('Imediatamente')) leadershipScore += 5;
     
     leadershipScore = Math.min(100, leadershipScore);
     const isPotentialLeader = leadershipScore >= 80;
 
-    // 5. Management Guide (For Consultant)
-    let guide = {
-        toSay: 'Fale sobre resultados e bônus.',
-        toAvoid: 'Não demore com detalhes.',
-        closingStrategy: 'Venda a visão de topo.'
-    };
-
-    if (disc.code === 'I') guide = { toSay: 'Fale sobre pessoas e reconhecimento.', toAvoid: 'Evite planilhas pesadas agora.', closingStrategy: 'Venda o estilo de vida.' };
-    if (disc.code === 'S') guide = { toSay: 'Fale sobre segurança e suporte.', toAvoid: 'Não pressione por decisão imediata.', closingStrategy: 'Venda o passo a passo.' };
-    if (disc.code === 'C') guide = { toSay: 'Fale sobre dados e qualidade.', toAvoid: 'Evite promessas sem provas.', closingStrategy: 'Venda a solidez do método.' };
-
-    // 6. Communication Hooks & Motivations
-    const hooks = {
-        'D': `Olá! Vi que você tem um perfil extremamente focado em resultados e metas. Tenho uma visão estratégica para te mostrar que vai direto ao ponto. Podemos falar?`,
-        'I': `Olá! Adorei seu perfil, você transmite muita energia! Vi que você valoriza conexão e reconhecimento. Tenho um projeto que é a sua cara. Topa conhecer?`,
-        'S': `Olá! Vi seu perfil e percebi que você valoriza segurança e um método passo a passo. Preparei um material bem estruturado para te mostrar como podemos crescer com estabilidade.`,
-        'C': `Olá! Analisei seu perfil e vi que você é uma pessoa criteriosa e atenta aos detalhes. Gostaria de te apresentar os dados e a base técnica do nosso projeto. O que acha?`
-    };
-
-    const motivations = {
-        'D': ['💰 Lucratividade', '🏆 Desafios', '⚡ Rapidez'],
-        'I': ['🌟 Reconhecimento', '🤝 Conexões', '🎨 Criatividade'],
-        'S': ['🛡️ Segurança', '🧘 Equilíbrio', '📈 Estabilidade'],
-        'C': ['🔬 Qualidade', '📚 Conhecimento', '🎯 Precisão']
-    };
-
-    // 6. Deep Communication Guide & Hooks
+    // 5. Communication Matrix
     const communicationMatrix = {
         'D': {
+            toSay: 'Fale sobre resultados e bônus.',
+            toAvoid: 'Não demore com detalhes.',
+            closingStrategy: 'Venda a visão de topo.',
             hook: `Olá! Vi que você tem um perfil extremamente focado em resultados e metas. Tenho uma visão estratégica para te mostrar que vai direto ao ponto. Podemos falar?`,
             secret: 'Vença pelo desafio. Mostre que ela pode ser a melhor e que o sistema recompensa a velocidade.',
             approach: 'Seja direto. Mostre os números de ganho (Blue Diamond, Presidential Diamond). Fale de metas.',
-            objection: 'Se disser que não tem tempo, diga: "Justamente por isso, dōTERRA vai te dar a liberdade que a CLT nunca deu".'
+            objection: 'Se disser que não tem tempo, diga: "Justamente por isso, dōTERRA vai te dar a liberdade que a CLT nunca deu".',
+            motivations: ['💰 Lucratividade', '🏆 Desafios', '⚡ Rapidez', '📈 Poder']
         },
         'I': {
+            toSay: 'Fale sobre pessoas e reconhecimento.',
+            toAvoid: 'Evite planilhas pesadas agora.',
+            closingStrategy: 'Venda o estilo de vida.',
             hook: `Olá! Adorei seu perfil, você transmite muita energia! Vi que você valoriza conexão e reconhecimento. Tenho um projeto que é a sua cara. Topa conhecer?`,
             secret: 'Vença pelo entusiasmo. Fale de viagens, convenções, palco e o impacto social que ela terá.',
             approach: 'Conte histórias de sucesso. Fale de liberdade e de como o negócio é divertido e cheio de gente.',
-            objection: 'Se tiver medo de vendas, diga: "Você não vai vender, você vai compartilhar sua energia e o que você ama".'
+            objection: 'Se tiver medo de vendas, diga: "Você não vai vender, você vai compartilhar sua energia e o que você ama".',
+            motivations: ['🌟 Reconhecimento', '🤝 Conexões', '🎨 Criatividade', '✈️ Liberdade']
         },
         'S': {
+            toSay: 'Fale sobre segurança e suporte.',
+            toAvoid: 'Não pressione por decisão imediata.',
+            closingStrategy: 'Venda o passo a passo.',
             hook: `Olá! Vi seu perfil e percebi que você valoriza segurança e um método passo a passo. Preparei um material bem estruturado para te mostrar como podemos crescer com estabilidade.`,
             secret: 'Vença pela confiança. Mostre que ela nunca estará sozinha e que temos um sistema de treinamento completo.',
             approach: 'Fale de família e segurança. Mostre que é um negócio hereditário e seguro para o futuro.',
-            objection: 'Se tiver dúvida, diga: "Eu estarei ao seu lado no passo a passo. Temos um suporte que é uma família".'
+            objection: 'Se tiver dúvida, diga: "Eu estarei ao seu lado no passo a passo. Temos um suporte que é uma família".',
+            motivations: ['🛡️ Segurança', '🧘 Equilíbrio', '📈 Estabilidade', '🤝 Lealdade']
         },
         'C': {
+            toSay: 'Fale sobre dados e qualidade.',
+            toAvoid: 'Evite promessas sem provas.',
+            closingStrategy: 'Venda a solidez do método.',
             hook: `Olá! Analisei seu perfil e vi que você é uma pessoa criteriosa e atenta aos detalhes. Gostaria de te apresentar os dados e a base técnica do nosso projeto. O que acha?`,
             secret: 'Vença pelos fatos. Envie laudos, planos de compensação detalhados e provas de pureza CPTG.',
             approach: 'Seja técnico e calmo. Não use "hype". Deixe que ela analise os dados no tempo dela.',
-            objection: 'Se questionar a qualidade, mostre o site Source to You e os certificados de pureza.'
+            objection: 'Se questionar a qualidade, mostre o site Source to You e os certificados de pureza.',
+            motivations: ['🔬 Qualidade', '📚 Conhecimento', '🎯 Precisão', '📋 Organização']
         }
-    };
-
-    const motivations = {
-        'D': ['💰 Lucratividade', '🏆 Desafios', '⚡ Rapidez', '📈 Poder'],
-        'I': ['🌟 Reconhecimento', '🤝 Conexões', '🎨 Criatividade', '✈️ Liberdade'],
-        'S': ['🛡️ Segurança', '🧘 Equilíbrio', '📈 Estabilidade', '🤝 Lealdade'],
-        'C': ['🔬 Qualidade', '📚 Conhecimento', '🎯 Precisão', '📋 Organização']
     };
 
     const comm = communicationMatrix[disc.code] || communicationMatrix['D'];
@@ -225,7 +218,9 @@ export function analyzeBusinessProfile(answers) {
         },
         jung: { energy: isExtrovert ? 'Extrovertido' : 'Introvertido', approach: isLogical ? 'Racional' : 'Empático' },
         guide: {
-            ...guide,
+            toSay: comm.toSay,
+            toAvoid: comm.toAvoid,
+            closingStrategy: comm.closingStrategy,
             secret: comm.secret,
             approach: comm.approach,
             objection: comm.objection
@@ -237,7 +232,7 @@ export function analyzeBusinessProfile(answers) {
         },
         communication: {
             hook: comm.hook,
-            motivations: motivations[disc.code] || motivations['D']
+            motivations: comm.motivations
         }
     };
 }
