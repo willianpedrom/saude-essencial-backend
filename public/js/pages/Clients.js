@@ -1,7 +1,7 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { formatDate, getInitials, toast, modal, openClientOffcanvas } from '../utils.js';
-import { analyzeAnamnesis, analyzeBusinessProfile } from '../analysis.js?v=15';
+import { analyzeAnamnesis, analyzeBusinessProfile } from '../analysis.js?v=16';
 import { PROTOCOLS } from '../protocols.js';
 import { OILS_DATABASE } from '../oils.js';
 
@@ -46,9 +46,9 @@ export async function showAnamneseModal(client, router, anamneseOverride = null)
     goals: { goals: dados.goals, main_complaint: dados.main_complaint }
   };
   
-  if (a.tipo === 'recrutamento') {
+    if (a.tipo === 'recrutamento') {
     const biz = analyzeBusinessProfile(dados);
-    const { disc, archetype, leadership, jung, guide, meta, communication } = biz;
+    const { disc, archetype, leadership, lead, jung, guide, meta, communication } = biz;
 
     modal('💼 Perfil Empreendedor — ' + client.name, `
       <div style="max-height:75vh;overflow-y:auto;padding-right:8px">
