@@ -1,7 +1,7 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { formatDate, getInitials, toast, modal, openClientOffcanvas } from '../utils.js';
-import { analyzeAnamnesis, analyzeBusinessProfile } from '../analysis.js?v=14';
+import { analyzeAnamnesis, analyzeBusinessProfile } from '../analysis.js?v=15';
 import { PROTOCOLS } from '../protocols.js';
 import { OILS_DATABASE } from '../oils.js';
 
@@ -97,12 +97,36 @@ export async function showAnamneseModal(client, router, anamneseOverride = null)
           </button>
         </div>
 
-        <!-- NEW: PRECISE COMMUNICATION INSTRUCTIONS -->
+        <!-- LEAD SCORING BANNER -->
+        <div style="background:linear-gradient(135deg, #475569, #1e293b); border-radius:16px; padding:15px; margin-bottom:24px; text-align:center; border:1px solid rgba(255,255,255,0.1)">
+          <div style="font-size:0.7rem; color:#cbd5e1; text-transform:uppercase; font-weight:800; letter-spacing:1px; margin-bottom:4px">Classificação do Prospecto</div>
+          <div style="font-size:1rem; font-weight:900; color:#fff">${lead.label}</div>
+        </div>
+
+        <!-- NEW: STRATEGIC AROMATHERAPY -->
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:20px; padding:20px; margin-bottom:24px; display:flex; gap:16px; align-items:center">
+          <div style="width:60px; height:60px; background:#16a34a; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:2rem; flex-shrink:0; box-shadow: 0 8px 16px rgba(22,163,74,0.2)">
+            🌿
+          </div>
+          <div>
+            <h4 style="margin:0 0 4px 0; font-size:0.95rem; color:#166534">Aromaterapia Estratégica</h4>
+            <div style="font-size:0.9rem; color:#14532d; line-height:1.4">
+              Indique o uso de <strong>${guide.strategicOil.name}</strong>. ${guide.strategicOil.reason}
+            </div>
+          </div>
+        </div>
+
+        <!-- INSTRUCTIONS -->
         <div style="background:#fdfcf0; border:1px solid #fef3c7; border-radius:16px; padding:20px; margin-bottom:24px">
           <h4 style="margin:0 0 16px 0; font-size:1rem; color:#92400e; display:flex; align-items:center; gap:8px">
             <span>🎯</span> Instruções de Comunicação
           </h4>
           
+          <div style="margin-bottom:16px">
+            <strong style="font-size:0.75rem; color:#b45309; text-transform:uppercase; display:block; margin-bottom:4px">🎙️ Tom de Voz Sugerido:</strong>
+            <div style="font-size:0.95rem; color:#451a03; line-height:1.4; font-weight:600">${guide.voice}</div>
+          </div>
+
           <div style="margin-bottom:16px">
             <strong style="font-size:0.75rem; color:#b45309; text-transform:uppercase; display:block; margin-bottom:4px">🔑 O Segredo deste Perfil:</strong>
             <div style="font-size:0.95rem; color:#451a03; line-height:1.4">${guide.secret}</div>

@@ -173,6 +173,8 @@ export function analyzeBusinessProfile(answers) {
             approach: 'Seja direto. Mostre os números de ganho (Blue Diamond, Presidential Diamond). Fale de metas.',
             objection: 'Se disser que não tem tempo, diga: "Justamente por isso, dōTERRA vai te dar a liberdade que a CLT nunca deu".',
             motivations: ['💰 Lucratividade', '🏆 Desafios', '⚡ Rapidez', '📈 Poder'],
+            voice: 'Rápido, firme e seguro. Não hesite.',
+            strategicOil: { name: 'Adaptive', reason: 'Para gerenciar o estresse da alta performance e manter o equilíbrio nas decisões sob pressão.' },
             roadmap: [
                 { stage: 'Abertura', task: 'Vá direto ao ponto. Sem "quebra-gelo" longo.' },
                 { stage: 'Sondagem', task: 'Pergunte: "Quanto você quer ganhar nos próximos 6 meses?"' },
@@ -189,6 +191,8 @@ export function analyzeBusinessProfile(answers) {
             approach: 'Conte histórias de sucesso. Fale de liberdade e de como o negócio é divertido e cheio de gente.',
             objection: 'Se tiver medo de vendas, diga: "Você não vai vender, você vai compartilhar sua energia e o que você ama".',
             motivations: ['🌟 Reconhecimento', '🤝 Conexões', '🎨 Criatividade', '✈️ Liberdade'],
+            voice: 'Animado, expressivo e amigável. Use o nome dela.',
+            strategicOil: { name: 'Motivate', reason: 'Para canalizar sua criatividade e entusiasmo em ações produtivas e foco em resultados consistentes.' },
             roadmap: [
                 { stage: 'Abertura', task: 'Crie conexão emocional. Elogie a energia dela.' },
                 { stage: 'Sondagem', task: 'Pergunte: "Como seria a sua vida com liberdade total de tempo?"' },
@@ -205,6 +209,8 @@ export function analyzeBusinessProfile(answers) {
             approach: 'Fale de família e segurança. Mostre que é um negócio hereditário e seguro para o futuro.',
             objection: 'Se tiver dúvida, diga: "Eu estarei ao seu lado no passo a passo. Temos um suporte que é uma família".',
             motivations: ['🛡️ Segurança', '🧘 Equilíbrio', '📈 Estabilidade', '🤝 Lealdade'],
+            voice: 'Calmo, acolhedor e pausado. Transmita paz.',
+            strategicOil: { name: 'Brave', reason: 'Para fortalecer a autoconfiança e a coragem de tomar iniciativa em novos desafios de liderança.' },
             roadmap: [
                 { stage: 'Abertura', task: 'Seja gentil e calmo. Transmita segurança.' },
                 { stage: 'Sondagem', task: 'Pergunte: "Como você se sentiria ajudando outras famílias?"' },
@@ -221,6 +227,8 @@ export function analyzeBusinessProfile(answers) {
             approach: 'Seja técnico e calmo. Não use "hype". Deixe que ela analise os dados no tempo dela.',
             objection: 'Se questionar a qualidade, mostre o site Source to You e os certificados de pureza.',
             motivations: ['🔬 Qualidade', '📚 Conhecimento', '🎯 Precisão', '📋 Organização'],
+            voice: 'Profissional, lógico e sem exageros emocionais.',
+            strategicOil: { name: 'Citrus Bliss', reason: 'Para estimular a criatividade, flexibilidade e reduzir a autocrítica excessiva durante o processo analítico.' },
             roadmap: [
                 { stage: 'Abertura', task: 'Seja profissional e formal. Use dados.' },
                 { stage: 'Sondagem', task: 'Pergunte: "Ficou alguma dúvida sobre a lógica do negócio?"' },
@@ -232,6 +240,15 @@ export function analyzeBusinessProfile(answers) {
 
     const comm = communicationMatrix[disc.code] || communicationMatrix['D'];
 
+    // Lead Scoring
+    const urgency = readiness.includes('Imediatamente') ? 40 : 20;
+    const money = answers.financial_goal?.includes('10.000') ? 30 : 15;
+    const time = answers.time_availability?.includes('Integralmente') ? 30 : 15;
+    const leadScore = urgency + money + time;
+    let leadLabel = '💎 LEAD DIAMANTE (Prioridade Máxima)';
+    if (leadScore < 60) leadLabel = '🥉 LEAD PRATA (Manter no Radar)';
+    else if (leadScore < 85) leadLabel = '🥇 LEAD OURO (Alta Qualificação)';
+
     return {
         disc,
         archetype,
@@ -240,6 +257,7 @@ export function analyzeBusinessProfile(answers) {
             isPotential: isPotentialLeader,
             label: isPotentialLeader ? '🔥 LIDERANÇA ALTA' : (leadershipScore > 60 ? '🟡 POTENCIAL' : '❄️ EXECUTOR')
         },
+        lead: { score: leadScore, label: leadLabel },
         jung: { energy: isExtrovert ? 'Extrovertido' : 'Introvertido', approach: isLogical ? 'Racional' : 'Empático' },
         guide: {
             toSay: comm.toSay,
@@ -248,7 +266,9 @@ export function analyzeBusinessProfile(answers) {
             secret: comm.secret,
             approach: comm.approach,
             objection: comm.objection,
-            roadmap: comm.roadmap
+            roadmap: comm.roadmap,
+            voice: comm.voice,
+            strategicOil: comm.strategicOil
         },
         meta: {
             urgency: readiness.includes('Imediatamente') ? 'Alta' : 'Média',
