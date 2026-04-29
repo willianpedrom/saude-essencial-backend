@@ -27,9 +27,9 @@ export class Router {
         app.style.opacity = '0';
         setTimeout(() => {
           handler({ ...routeParams, ...params });
-          app.style.transition = 'opacity 0.18s ease';
+          app.style.transition = 'opacity 0.12s ease';
           app.style.opacity = '1';
-        }, 120);
+        }, 40);
       } else {
         handler({ ...routeParams, ...params });
       }
@@ -292,7 +292,10 @@ export function getConsultantTitle(gender) {
  */
 export function injectTrackingScripts(rastreamento) {
   if (!rastreamento) return;
-  const { meta_pixel_id, clarity_id, ga_id, gtm_id, custom_script } = rastreamento;
+  
+  // Defer injection to allow the main page to render smoothly first
+  const inject = () => {
+    const { meta_pixel_id, clarity_id, ga_id, gtm_id, custom_script } = rastreamento;
 
   /** Create and append an inline <script> that will actually execute */
   function addInlineScript(id, code) {
@@ -362,6 +365,8 @@ export function injectTrackingScripts(rastreamento) {
   // Custom script (raw HTML — parsed and re-created to ensure execution)
   if (custom_script && custom_script.trim()) {
     if (document.getElementById('tracking-custom')) return;
+    const temp = document.createElement('div');
+    temp.innerHTML = custom_script;
     Array.from(temp.querySelectorAll('script')).forEach((orig, i) => {
       const s = document.createElement('script');
       s.id = 'tracking-custom-' + i;
@@ -369,6 +374,13 @@ export function injectTrackingScripts(rastreamento) {
       else { s.textContent = orig.textContent; }
       document.head.appendChild(s);
     });
+  }
+};
+
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => inject());
+  } else {
+    setTimeout(inject, 1000);
   }
 }
 

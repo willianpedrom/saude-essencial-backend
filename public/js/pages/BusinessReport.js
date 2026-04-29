@@ -1,4 +1,4 @@
-import { analyzeBusinessProfile } from '../data.js';
+import { analyzeBusinessProfile } from '../analysis.js';
 
 export function renderBusinessReport(router, dataParam, preFetchedData = null) {
   const app = document.getElementById('app');
@@ -8,13 +8,11 @@ export function renderBusinessReport(router, dataParam, preFetchedData = null) {
     payload = preFetchedData;
   } else {
     try {
-      // Busca do storage primeiro para evitar URLs imensas que quebram no celular
       const storedData = sessionStorage.getItem('tempAnamnesisPayload');
       if (storedData) {
         payload = JSON.parse(storedData);
         sessionStorage.removeItem('tempAnamnesisPayload');
       } else {
-        // Fallback p/ URLs originais antigas
         payload = JSON.parse(decodeURIComponent(dataParam || '{}'));
       }
     } catch {
@@ -38,130 +36,105 @@ export function renderBusinessReport(router, dataParam, preFetchedData = null) {
   try {
     analysis = analyzeBusinessProfile(answers);
   } catch (e) {
-    console.error("Analysis generation failed:", e);
-    analysis = { archetype: { name: 'Perfil não mapeado', desc: '', type: '' }, pain: 'Não definida', goal: 'renda extra', hours: 'algumas horas' };
+    console.error("Analysis failed:", e);
+    return;
   }
-  const { archetype = {}, pain = '', goal = '', hours = '', urgency = '', motor = '' } = analysis;
+
+  const { disc, archetype, leadership, jung, meta } = analysis;
 
   app.innerHTML = `
-    <div class="report-page">
-      <div class="report-card" style="max-width:750px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden;">
+    <div class="report-page" style="background:#f1f5f9; min-height:100vh; padding:40px 20px;">
+      <div class="report-card" style="max-width:800px; margin: 0 auto; background: white; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); overflow: hidden;">
         
         <!-- HEADER -->
-        <div class="report-header" style="background:linear-gradient(135deg, #1e293b, #0f172a);padding:32px 28px;text-align:center">
-          <div style="background:rgba(255,255,255,0.1);color:#f8fafc;border:none;display:inline-block;padding:6px 14px;border-radius:20px;font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Seu Resultado</div>
-          <h1 style="color:white;font-size:1.6rem;margin-bottom:8px">Relatório de Perfil <em>Empreendedor</em></h1>
-          <p style="color:rgba(255,255,255,0.8);font-size:0.9rem;margin:0">Baseado em suas respostas, preparamos uma análise exclusiva do seu perfil comportamental e potencial.</p>
+        <div class="report-header" style="background:linear-gradient(135deg, #064e3b, #022c22); padding:48px 32px; text-align:center; color:white">
+          <div style="background:rgba(255,255,255,0.1); padding:6px 16px; border-radius:100px; display:inline-block; font-size:0.75rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:16px">Análise Comportamental Exclusiva</div>
+          <h1 style="font-size:2.2rem; margin:0 0 12px 0; font-family:'Playfair Display', serif">Relatório de Perfil <em>Empreendedor</em></h1>
+          <p style="opacity:0.8; font-size:1rem; max-width:500px; margin:0 auto">Olá, ${clientName.split(' ')[0]}. Mapeamos seus padrões naturais para identificar sua melhor forma de construir riqueza.</p>
         </div>
-        
-        <div class="report-body" style="padding:32px 28px">
-          <!-- Intro -->
-          <div style="border-left: 4px solid #3b82f6; padding:16px 20px; margin-bottom: 28px; background:#f8fafc; border-radius: 0 8px 8px 0;">
-             <h3 style="color:#1e293b;font-size:1.2rem;margin-top:0;margin-bottom:8px">Olá, ${clientName.split(' ')[0]}!</h3>
-             <p style="color:#475569;font-size:0.95rem;line-height:1.6;margin:0">
-               Chegou a hora de entender como seus padrões de comportamento podem ser o seu maior ativo 
-               na construção de uma nova fonte de renda direcionada aos <strong>${goal}</strong> que você almeja.
-             </p>
+
+        <div style="padding:40px 32px">
+          
+          <!-- DISC & JUNG GRID -->
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:40px">
+            <div style="background:#f8fafc; padding:24px; border-radius:20px; border:1px solid #e2e8f0">
+              <div style="font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:8px">Seu Estilo DISC</div>
+              <div style="font-size:1.6rem; font-weight:800; color:#064e3b; margin-bottom:4px">${disc.type}</div>
+              <div style="font-size:0.9rem; color:#10b981; font-weight:600">Baseado em: ${disc.trait}</div>
+            </div>
+            <div style="background:#f8fafc; padding:24px; border-radius:20px; border:1px solid #e2e8f0">
+              <div style="font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:8px">Energia & Decisão</div>
+              <div style="font-size:1.2rem; font-weight:700; color:#1e293b; margin-bottom:4px">${jung.energy}</div>
+              <div style="font-size:1rem; color:#475569">${jung.approach}</div>
+            </div>
           </div>
 
-          <!-- Archetype Card -->
-          <div style="margin-bottom:28px">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-              <div style="font-size:2rem;background:#f1f5f9;width:56px;height:56px;display:flex;align-items:center;justify-content:center;border-radius:12px">🧠</div>
+          <!-- ARCHETYPE SECTION -->
+          <div style="margin-bottom:40px">
+            <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px">
+              <div style="font-size:2.5rem">✨</div>
               <div>
-                <div style="font-size:0.8rem;color:#64748b;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:2px">O seu Arquétipo Predominante</div>
-                <h3 style="margin:0;color:#1e293b;font-size:1.3rem">${archetype.name}</h3>
+                <div style="font-size:0.85rem; font-weight:800; color:#64748b; text-transform:uppercase">Arquétipo de Negócio</div>
+                <h2 style="margin:0; font-size:1.8rem; color:#0f172a">${archetype.name}</h2>
               </div>
             </div>
-            
-            <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:20px;border-radius:12px;margin-bottom:20px">
-              <p style="color:#334155;line-height:1.6;margin:0;font-size:0.95rem">
-                <strong>Características:</strong> ${archetype.desc}
-              </p>
-            </div>
-            
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-              <div style="background:#fefce8;border:1px solid #fef08a;padding:16px;border-radius:12px">
-                <div style="font-size:0.75rem;color:#854d0e;text-transform:uppercase;font-weight:700">Propulsor Principal</div>
-                <div style="color:#713f12;font-weight:600;margin-top:4px">${motor || 'Mudança de Vida'}</div>
-              </div>
-              <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:16px;border-radius:12px">
-                <div style="font-size:0.75rem;color:#166534;text-transform:uppercase;font-weight:700">Nível de Prontidão</div>
-                <div style="color:#14532d;font-weight:600;margin-top:4px">${urgency || 'Moderada'}</div>
-              </div>
-            </div>
-            
-            <div style="line-height:1.7;color:#475569;font-size:0.95rem">
-              <p style="margin-top:0;margin-bottom:12px">
-                Pessoas com o perfil <strong>${archetype.type}</strong> tendem a ter um desempenho acima da média quando recebem as ferramentas certas. 
-                Sabemos que seu maior incômodo atual é a <strong>${pain.toLowerCase()}</strong>. 
-              </p>
-              <p style="margin:0">
-                A boa notícia é que o seu perfil é ideal para modelos de negócio escaláveis e práticos, que podem ser iniciados dedicando 
-                <strong>${hours.toLowerCase()}</strong> inicialmente, sem necessidade de abandonar sua atividade principal.
-              </p>
+            <div style="background:linear-gradient(to right, #f0fdf4, #f8fafc); padding:24px; border-radius:16px; border-left:6px solid #10b981; line-height:1.6; color:#334155; font-size:1.1rem">
+              ${archetype.desc}
             </div>
           </div>
 
-          <!-- Call to Action AGENDAR (Whatsapp) -->
-          <div class="report-cta-box" style="background:#eff6ff;border:2px solid #bfdbfe;padding:28px 24px;border-radius:12px;margin-bottom:32px">
-            <h3 style="color:#1e3a8a;margin-top:0;margin-bottom:12px;display:flex;align-items:center;gap:8px;font-size:1.15rem">
-              <span>🚀</span> Próximo Passo: Plano de Execução
-            </h3>
-            <p style="color:#1e40af;margin-bottom:24px;font-size:0.95rem;line-height:1.6;margin-top:0">
-              Eu sou <strong>${consultant.name || 'Consultor'}</strong>, Especialista em Transição Estratégica. 
-              Quero te mostrar uma oportunidade de negócio de baixo custo e alto retorno, desenhada para que pessoas com o seu perfil faturem os <strong>${goal}</strong> desejados.
-            </p>
-            
-            <button id="btn-schedule" style="width:100%;font-size:1.05rem;padding:16px;background:linear-gradient(135deg, #2563eb, #1d4ed8);border:none;border-radius:8px;color:white;cursor:pointer;font-weight:600;box-shadow: 0 4px 14px rgba(37,99,235,0.25);transition: transform 0.2s">
-              📅 Agendar Minha Reunião Estratégica
+          <!-- LEADERSHIP GAUGE -->
+          <div style="background:#0f172a; color:white; border-radius:24px; padding:32px; margin-bottom:40px; text-align:center">
+            <div style="font-size:0.9rem; font-weight:700; color:#10b981; text-transform:uppercase; letter-spacing:1px; margin-bottom:20px">Potencial de Liderança</div>
+            <div style="position:relative; width:160px; height:160px; margin:0 auto 20px auto">
+              <svg viewBox="0 0 36 36" style="width:100%; height:100%">
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3" />
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#10b981" stroke-width="3" stroke-dasharray="${leadership.score}, 100" />
+              </svg>
+              <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:2.2rem; font-weight:800">${leadership.score}%</div>
+            </div>
+            <div style="font-size:1.2rem; font-weight:700; color:#f8fafc">${leadership.label}</div>
+            <p style="color:rgba(255,255,255,0.6); font-size:0.9rem; margin-top:12px">Este índice mede sua prontidão para gerir equipes e escalar resultados.</p>
+          </div>
+
+          <!-- GOALS -->
+          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; margin-bottom:40px">
+            <div style="text-align:center; padding:16px; background:#f8fafc; border-radius:12px">
+              <div style="font-size:0.75rem; color:#64748b; font-weight:700">Meta Financeira</div>
+              <div style="font-weight:700; color:#0f172a; margin-top:4px">${meta.financialGoal}</div>
+            </div>
+            <div style="text-align:center; padding:16px; background:#f8fafc; border-radius:12px">
+              <div style="font-size:0.75rem; color:#64748b; font-weight:700">Disponibilidade</div>
+              <div style="font-weight:700; color:#0f172a; margin-top:4px">${meta.availability}</div>
+            </div>
+            <div style="text-align:center; padding:16px; background:#f8fafc; border-radius:12px">
+              <div style="font-size:0.75rem; color:#64748b; font-weight:700">Urgência</div>
+              <div style="font-weight:700; color:#0f172a; margin-top:4px">${meta.urgency}</div>
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <div style="background:#eff6ff; border:2px solid #bfdbfe; border-radius:20px; padding:32px; text-align:center">
+            <h3 style="margin-top:0; color:#1e40af; font-size:1.4rem">Próximo Passo: Sua Reunião Estratégica</h3>
+            <p style="color:#3b82f6; margin-bottom:24px; line-height:1.6">O seu consultor <strong>${consultant.name || 'Gota App'}</strong> já recebeu seu diagnóstico. Agende agora uma conversa gratuita para traçar seu plano de ação para os próximos 90 dias.</p>
+            <button id="btn-schedule" style="background:#2563eb; color:white; border:none; padding:18px 40px; border-radius:12px; font-weight:700; font-size:1.1rem; box-shadow: 0 10px 25px rgba(37,99,235,0.3); cursor:pointer">
+              💬 Agendar via WhatsApp
             </button>
-            <div style="text-align:center;margin-top:12px;font-size:0.85rem;color:#3b82f6;">Reunião gratuita e sem compromisso via WhatsApp.</div>
           </div>
 
-          <!-- Imprimir -->
-          <div style="text-align:center;color:#999;font-size:0.85rem;margin-top:40px">
-            <a href="#" class="btn-print" onclick="window.print();return false" style="color:#64748b;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition: color 0.2s">
-              <span style="font-size: 1.1rem">🖨️</span> <span style="text-decoration: underline">Imprimir este relatório</span>
-            </a>
-          </div>
-
-        </div> <!-- /report-body -->
-
-        <!-- Footer -->
-        <div class="report-consultant-footer" style="padding:16px 28px;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:0 0 16px 16px">
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="width:36px;height:36px;border-radius:50%;background:#1e293b;color:white;display:flex;align-items:center;justify-content:center;font-size:0.9rem">💼</div>
-            <div>
-              <div style="font-weight:600;font-size:0.9rem;color:#1e293b">${consultant.name || 'Consultor Estratégico'}</div>
-              <div style="font-size:0.78rem;color:#64748b">Especialista em Negócios</div>
-            </div>
-          </div>
         </div>
-
       </div>
     </div>
+  `;
 
-    <style>
-      @media print {
-        .report-cta-box, .btn-print, .report-consultant-footer { display: none !important; }
-        .report-page { background: white !important; padding: 0 !important; margin:0 !important; }
-        .report-card { box-shadow: none !important; margin:0 !important; border:none !important; border-radius:0 !important; }
-        .report-header { background: #1e293b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border-radius: 0 !important;}
-        body { background: white !important; }
-      }
-      .btn-print:hover { color: #1e293b !important; }
-      #btn-schedule:hover { transform: translateY(-2px); }
-    </style>`;
-
-  // Ação de Agendar com o Consultor
   document.getElementById('btn-schedule')?.addEventListener('click', () => {
     const text = encodeURIComponent(
-      "Olá " + (consultant.name ? consultant.name.split(' ')[0] : 'Consultor') + ", acabei de finalizar a Análise de Perfil!\n\n" +
-      "🧠 Meu Arquétipo: *" + archetype.name + "*\n" +
-      "🎯 Meu Alvo de Renda: *" + goal + "*\n\n" +
-      "Gostaria de agendar a reunião estratégica gratuita."
+      `Olá ${consultant.name || 'Consultor'}, finalizei meu Perfil Empreendedor!\n\n` +
+      `🧠 Arquétipo: *${archetype.name}*\n` +
+      `🔥 Liderança: *${leadership.score}%*\n` +
+      `🚀 Urgência: *${meta.urgency}*\n\n` +
+      `Quero agendar minha reunião estratégica.`
     );
-    window.open("https://wa.me/55" + consultant.phone?.replace(/\\D/g, '') + "?text=" + text, '_blank');
+    window.open(`https://wa.me/55${consultant.phone?.replace(/\D/g, '')}?text=${text}`, '_blank');
   });
 }

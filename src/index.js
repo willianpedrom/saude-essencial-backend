@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const compression = require('compression');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
@@ -21,6 +22,7 @@ if (missing.length > 0) {
 }
 
 const app = express();
+app.use(compression());
 const PORT = process.env.PORT || 3001;
 const VERSION = '1.8';
 
@@ -210,10 +212,14 @@ app.use('/convite', require('./routes/share'));
 app.use(express.static(path.join(__dirname, '../public'), {
     maxAge: '7d',
     setHeaders: (res, filePath) => {
-        if (filePath.endsWith('.html') || filePath.endsWith('.js') || filePath.endsWith('.json')) {
+        // HTML and JSON should always be fresh
+        if (filePath.endsWith('.html') || filePath.endsWith('.json')) {
             res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
             res.setHeader('Pragma', 'no-cache');
             res.setHeader('Expires', '0');
+        } else {
+            // CSS, JS, Images, Fonts — allow long term cache
+            res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
         }
     }
 }));

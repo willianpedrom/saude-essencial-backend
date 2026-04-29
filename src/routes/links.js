@@ -81,20 +81,23 @@ router.post('/reorder', async (req, res) => {
     const { orderedIds } = req.body;
     if (!Array.isArray(orderedIds)) return res.status(400).json({ error: 'Lista inválida.' });
 
+    const client = await pool.connect();
     try {
-        await pool.query('BEGIN');
+        await client.query('BEGIN');
         for (let i = 0; i < orderedIds.length; i++) {
-            await pool.query(
+            await client.query(
                 'UPDATE consultora_links SET ordem = $1 WHERE id = $2 AND consultora_id = $3',
                 [i, orderedIds[i], req.consultora.id]
             );
         }
-        await pool.query('COMMIT');
+        await client.query('COMMIT');
         res.json({ success: true });
     } catch (err) {
-        await pool.query('ROLLBACK');
+        await client.query('ROLLBACK');
         console.error(err);
         res.status(500).json({ error: 'Erro ao reordenar links.' });
+    } finally {
+        client.release();
     }
 });
 

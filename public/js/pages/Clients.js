@@ -1,7 +1,9 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { formatDate, getInitials, toast, modal, openClientOffcanvas } from '../utils.js';
-import { analyzeAnamnesis, PROTOCOLS, OILS_DATABASE } from '../data.js';
+import { analyzeAnamnesis, analyzeBusinessProfile } from '../analysis.js';
+import { PROTOCOLS } from '../protocols.js';
+import { OILS_DATABASE } from '../oils.js';
 
 let cachedAnamneses = null; // lazy-load once per session
 
@@ -26,6 +28,9 @@ export async function showAnamneseModal(client, router) {
     ...(rawDados.emotional || {}),
     ...(rawDados.body || {}),
     ...(rawDados.goals || {}),
+    ...(rawDados.profession || {}),
+    ...(rawDados.profile || {}),
+    ...(rawDados.vision || {}),
     ...rawDados // fallback
   };
   
@@ -36,6 +41,78 @@ export async function showAnamneseModal(client, router) {
     goals: { goals: dados.goals, main_complaint: dados.main_complaint }
   };
   
+  if (a.tipo === 'recrutamento') {
+    const biz = analyzeBusinessProfile(dados);
+    const { disc, archetype, leadership, jung, guide, meta } = biz;
+
+    modal('💼 Perfil Empreendedor — ' + client.name, `
+      <div style="max-height:75vh;overflow-y:auto;padding-right:8px">
+        <!-- LEADERSHIP ALERT -->
+        <div style="background:${leadership.isPotential ? '#f0fdf4' : '#f8fafc'}; border:2px solid ${leadership.isPotential ? '#10b981' : '#e2e8f0'}; border-radius:16px; padding:20px; margin-bottom:24px; text-align:center">
+          <div style="font-size:0.75rem; font-weight:800; color:${leadership.isPotential ? '#15803d' : '#64748b'}; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px">Potencial de Liderança</div>
+          <div style="font-size:2.2rem; font-weight:900; color:${leadership.isPotential ? '#064e3b' : '#1e293b'}; margin-bottom:4px">${leadership.score}%</div>
+          <div style="background:${leadership.isPotential ? '#10b981' : '#64748b'}; color:white; display:inline-block; padding:4px 12px; border-radius:100px; font-size:0.85rem; font-weight:700">${leadership.label}</div>
+          ${leadership.isPotential ? `<p style="color:#15803d; font-size:0.85rem; margin-top:12px; font-weight:600">🚀 Este prospecto tem alto potencial para se tornar um líder na sua rede!</p>` : ''}
+        </div>
+
+        <!-- CONSULTANT GUIDE (GOLDEN TIPS) -->
+        <div style="background:#fff7ed; border:1px solid #ffedd5; border-radius:16px; padding:20px; margin-bottom:24px">
+          <h4 style="margin:0 0 16px 0; font-size:1rem; color:#9a3412; display:flex; align-items:center; gap:8px">
+            <span>💡</span> Guia de Abordagem Estratégica
+          </h4>
+          <div style="display:grid; grid-template-columns:1fr; gap:12px">
+            <div style="background:white; padding:12px; border-radius:12px; border-left:4px solid #f97316">
+              <strong style="font-size:0.75rem; color:#c2410c; text-transform:uppercase">O que falar:</strong>
+              <div style="font-size:0.9rem; color:#431407; margin-top:2px">${guide.toSay}</div>
+            </div>
+            <div style="background:white; padding:12px; border-radius:12px; border-left:4px solid #ef4444">
+              <strong style="font-size:0.75rem; color:#b91c1c; text-transform:uppercase">O que evitar:</strong>
+              <div style="font-size:0.9rem; color:#431407; margin-top:2px">${guide.toAvoid}</div>
+            </div>
+            <div style="background:#1e293b; padding:12px; border-radius:12px; color:white">
+              <strong style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase">Estratégia de Fechamento:</strong>
+              <div style="font-size:0.9rem; margin-top:2px; font-weight:600">${guide.closingStrategy}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BEHAVIORAL GRID -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:24px">
+          <div style="background:#f1f5f9; padding:16px; border-radius:12px">
+            <div style="font-size:0.7rem; font-weight:700; color:#64748b; text-transform:uppercase">Perfil DISC</div>
+            <div style="font-size:1.1rem; font-weight:800; color:#0f172a">${disc.type}</div>
+            <div style="font-size:0.8rem; color:#334155">Traço: ${disc.trait}</div>
+          </div>
+          <div style="background:#f1f5f9; padding:16px; border-radius:12px">
+            <div style="font-size:0.7rem; font-weight:700; color:#64748b; text-transform:uppercase">Jung / Energia</div>
+            <div style="font-size:1.1rem; font-weight:800; color:#0f172a">${jung.energy}</div>
+            <div style="font-size:0.8rem; color:#334155">${jung.approach}</div>
+          </div>
+        </div>
+
+        <!-- ARCHETYPE -->
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:20px; border-radius:16px; margin-bottom:24px">
+          <div style="font-size:0.75rem; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:4px">Arquétipo Dominante</div>
+          <h3 style="margin:0 0 8px 0; color:#0f172a">${archetype.name}</h3>
+          <p style="margin:0; font-size:0.9rem; color:#475569; line-height:1.5">${archetype.desc}</p>
+        </div>
+
+        <!-- TARGETS -->
+        <h4 style="font-size:0.9rem; color:#1e293b; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:6px">Objetivos & Disponibilidade</h4>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:24px">
+          <div style="font-size:0.85rem"><strong>Meta Financeira:</strong><br>${meta.financialGoal}</div>
+          <div style="font-size:0.85rem"><strong>Tempo Semanal:</strong><br>${meta.availability}</div>
+          <div style="font-size:0.85rem"><strong>Urgência:</strong><br>${meta.urgency}</div>
+          <div style="font-size:0.85rem"><strong>Momento Atual:</strong><br>${dados.current_moment || '—'}</div>
+        </div>
+
+        <div style="font-size:0.75rem; color:#94a3b8; text-align:right">Avaliação realizada em ${formatDate(a.criado_em)}</div>
+      </div>
+    `);
+    return;
+  }
+
+  // FALLBACK FOR HEALTH ANAMNESIS (Original code follows...)
   let analysisResultados = 'Não foi possível gerar prognóstico automático para este perfil.';
   try {
     const anamnesisAnalysis = analyzeAnamnesis(dados);

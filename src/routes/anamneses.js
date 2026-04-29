@@ -5,6 +5,9 @@ const checkSub = require('../middleware/checkSubscription');
 const { validate, schemas } = require('../lib/validate');
 const { v4: uuidv4 } = require('uuid');
 
+const NodeCache = require('node-cache');
+const cache = new NodeCache({ stdTTL: 300 }); // 5 minutes
+
 const router = express.Router();
 
 // ─── PUBLIC ROUTE: client opens the anamnesis form ─────────────────────────
@@ -12,6 +15,11 @@ const router = express.Router();
 // GET /api/anamneses/public/:token
 router.get('/public/:token', async (req, res) => {
     try {
+        const { token } = req.params;
+        const cacheKey = `public_anamnese_${token}`;
+        const cached = cache.get(cacheKey);
+        if (cached) return res.json(cached);
+
         const { rows } = await pool.query(
             `SELECT a.id, a.tipo, a.dados, a.preenchido, a.subtipo, a.nome_link, a.acessos,
               c.nome AS consultora_nome, c.slug AS consultora_slug, c.genero AS consultora_genero,
@@ -50,6 +58,7 @@ router.get('/public/:token', async (req, res) => {
             };
         }
 
+        cache.set(cacheKey, anamnese);
         res.json(anamnese);
     } catch (err) {
         console.error(err);
@@ -356,6 +365,7 @@ router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) 
             console.error('[Push] Trigger error:', e);
         }
 
+        cache.del(`public_anamnese_${req.params.token}`);
         res.json({ success: true, id: anamnese_id, cliente_id: clienteId });
     } catch (err) {
         await client.query('ROLLBACK');

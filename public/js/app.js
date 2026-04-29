@@ -18,11 +18,15 @@ document.addEventListener('open-anamnese', async (e) => {
     }
 });
 
-// Remove loader
-window.addEventListener('load', () => {
+// Loader Removal Utility
+window.hideAppLoader = () => {
     const loader = document.getElementById('page-loader');
-    if (loader) { loader.style.opacity = '0'; setTimeout(() => loader.remove(), 500); }
-});
+    if (loader) {
+        loader.style.opacity = '0';
+        setTimeout(() => loader.remove(), 500);
+    }
+};
+window.addEventListener('load', window.hideAppLoader);
 
 // Guard: requires login
 function guard(fn) {

@@ -26,19 +26,21 @@ function applyBirthdateMask(input) {
 export async function renderPublicAnamnesis(router, token) {
   const app = document.getElementById('app');
 
-  // Show loading
-  app.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:1.2rem;color:#4a4a4a">
-      <div style="text-align:center">
-        <div style="font-size:3rem;margin-bottom:16px">💧</div>
-        <div>Carregando sua avaliação de saúde...</div>
-      </div>
-    </div>`;
+  // If main loader is gone, show a subtle inline loader
+  if (!document.getElementById('page-loader')) {
+    app.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#06120b;color:white;flex-direction:column;text-align:center;padding:20px">
+        <div class="premium-loader"></div>
+        <div style="margin-top:24px;font-family:'Playfair Display',serif;font-size:1.6rem;color:#f5d061">Gota App</div>
+        <div style="margin-top:8px;font-size:1rem;color:rgba(255,255,255,0.7)">Lendo seus dados de saúde...</div>
+      </div>`;
+  }
 
   // Fetch public anamnesis info
   let anamneseData;
   try {
     anamneseData = await store.getPublicAnamnesis(token);
+    if (window.hideAppLoader) window.hideAppLoader();
   } catch (err) {
     app.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh">
           <div style="text-align:center;padding:60px 40px">
@@ -124,7 +126,7 @@ export async function renderPublicAnamnesis(router, token) {
       </div>
       <style>@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }</style>
     `;
-    setTimeout(callback, 1600);
+    setTimeout(callback, 900);
   }
 
   function showProcessingEffect(callback) {
@@ -375,7 +377,12 @@ export async function renderPublicAnamnesis(router, token) {
         showProcessingEffect(submitAnamnesis);
       } else {
         const curName = (answers.personal?.full_name || 'Amigo(a)').split(' ')[0];
-        const msgs = [
+        const msgs = isBusiness ? [
+          `Excelente, ${curName}! Vamos entender seu momento profissional...`,
+          `Muito bom! Agora vamos mapear seu perfil de ação...`,
+          `Quase lá! Vamos alinhar sua visão de futuro e metas.`,
+          `Finalizando! Seu diagnóstico está sendo processado...`
+        ] : [
           `Ótimo começo, ${curName}! Vamos analisar sua saúde física...`,
           `Isso mesmo, ${curName}! O sono e dores dizem muito sobre você.`,
           `Excelente, ${curName}! Como estão seus hábitos diários?`,

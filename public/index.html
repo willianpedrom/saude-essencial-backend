@@ -25,9 +25,32 @@
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet" />
     <link rel="stylesheet" href="css/index.css" />
+    <link rel="modulepreload" href="js/app.js?v=35" />
+    <link rel="modulepreload" href="js/store.js?v=35" />
+    <link rel="modulepreload" href="js/utils.js?v=35" />
+    <link rel="modulepreload" href="js/data.js?v=35" />
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfMZhrib2Bg-4.woff2" as="font" type="font/woff2" crossorigin />
 </head>
 
 <body>
+    <!-- Initial Loader (Visible immediately) -->
+    <div id="page-loader" style="position:fixed;inset:0;z-index:9999;background:#06120b;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;transition:opacity 0.5s">
+      <div class="premium-loader"></div>
+      <div style="margin-top:24px;font-family:'Playfair Display',serif;font-size:1.6rem;color:#f5d061">Gota App</div>
+      <div style="margin-top:8px;font-size:1rem;color:rgba(255,255,255,0.7);font-family:'Inter',sans-serif">Conectando ao sistema de saúde natural...</div>
+      <style>
+        .premium-loader {
+          width: 60px;
+          height: 60px;
+          border: 3px solid rgba(245, 208, 97, 0.1);
+          border-radius: 50%;
+          border-top-color: #f5d061;
+          animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+      </style>
+    </div>
+
     <div id="app"></div>
     <!-- API URL config (external to comply with Content Security Policy) -->
 

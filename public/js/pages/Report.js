@@ -1,4 +1,6 @@
-import { analyzeAnamnesis, PROTOCOLS, OILS_DATABASE, LIVING_KIT } from '../data.js';
+import { analyzeAnamnesis } from '../analysis.js';
+import { PROTOCOLS } from '../protocols.js';
+import { OILS_DATABASE, LIVING_KIT } from '../oils.js';
 import { getConsultantTitle } from '../utils.js';
 
 export async function renderReport(router, dataParam, hash = null) {
