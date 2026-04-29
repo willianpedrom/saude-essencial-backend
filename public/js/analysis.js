@@ -128,10 +128,10 @@ export function analyzeBusinessProfile(answers) {
     else if (discAction.includes('riscos')) discCode = 'C';
 
     const discTypes = {
-        'D': { type: 'Executor', trait: 'Dominância' },
-        'I': { type: 'Comunicador', trait: 'Influência' },
-        'S': { type: 'Planejador', trait: 'Estabilidade' },
-        'C': { type: 'Analista', trait: 'Cautela' }
+        'D': { type: 'Executor', trait: 'Dominância', desc: 'Focado em resultados, direto e decisivo. Motivado por desafios, metas claras e poder de decisão.' },
+        'I': { type: 'Comunicador', trait: 'Influência', desc: 'Entusiasmado, sociável e influente. Motivado por reconhecimento, conexões humanas e novas experiências.' },
+        'S': { type: 'Planejador', trait: 'Estabilidade', desc: 'Calmo, confiável e metódico. Motivado por segurança, harmonia e estabilidade a longo prazo.' },
+        'C': { type: 'Analista', trait: 'Cautela', desc: 'Preciso, detalhista e cauteloso. Motivado por qualidade, dados técnicos e perfeccionismo.' }
     };
     const disc = { code: discCode, ...discTypes[discCode] };
 

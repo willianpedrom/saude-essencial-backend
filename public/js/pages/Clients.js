@@ -1,7 +1,7 @@
 import { auth, store } from '../store.js';
 import { renderLayout } from './Dashboard.js';
 import { formatDate, getInitials, toast, modal, openClientOffcanvas } from '../utils.js';
-import { analyzeAnamnesis, analyzeBusinessProfile } from '../analysis.js?v=13';
+import { analyzeAnamnesis, analyzeBusinessProfile } from '../analysis.js?v=14';
 import { PROTOCOLS } from '../protocols.js';
 import { OILS_DATABASE } from '../oils.js';
 
@@ -145,6 +145,7 @@ export async function showAnamneseModal(client, router, anamneseOverride = null)
           <div style="background:#f1f5f9; padding:16px; border-radius:12px">
             <div style="font-size:0.7rem; font-weight:700; color:#64748b; text-transform:uppercase">Perfil DISC</div>
             <div style="font-size:1.1rem; font-weight:800; color:#0f172a">${disc.type}</div>
+            <p style="margin:8px 0; font-size:0.8rem; color:#475569; line-height:1.4">${disc.desc}</p>
             <div style="font-size:0.8rem; color:#334155; margin-top:4px">
               ${communication.motivations.map(m => `<span style="background:white; padding:2px 6px; border-radius:4px; font-size:0.7rem; margin-right:4px; display:inline-block; margin-top:4px; border:1px solid #e2e8f0">${m}</span>`).join('')}
             </div>
