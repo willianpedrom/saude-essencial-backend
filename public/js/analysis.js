@@ -143,10 +143,10 @@ export function analyzeBusinessProfile(answers) {
 
     // 3. Archetype (Drive)
     const drive = answers.archetype_drive || '';
-    let archetype = { name: 'O Herói', focus: 'Superação e metas' };
-    if (drive.includes('Ensinar')) archetype = { name: 'O Sábio', focus: 'Conhecimento e ensino' };
-    else if (drive.includes('Proteger')) archetype = { name: 'O Cuidador', focus: 'Segurança e acolhimento' };
-    else if (drive.includes('liberdade')) archetype = { name: 'O Criador', focus: 'Inovação e liberdade' };
+    let archetype = { name: 'O Herói', desc: 'Foco em superação e metas' };
+    if (drive.includes('Ensinar')) archetype = { name: 'O Sábio', desc: 'Conhecimento e ensino' };
+    else if (drive.includes('Proteger')) archetype = { name: 'O Cuidador', desc: 'Segurança e acolhimento' };
+    else if (drive.includes('liberdade')) archetype = { name: 'O Criador', desc: 'Inovação e liberdade' };
 
     // 4. Leadership Potential
     const posture = answers.leadership_posture || '';
