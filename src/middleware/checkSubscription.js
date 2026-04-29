@@ -1,4 +1,9 @@
 const pool = require('../db/pool');
+const NodeCache = require('node-cache');
+
+// Cache de assinatura por usuário: 60 segundos
+// Reduz drasticamente as queries ao banco em cada requisição autenticada
+const subCache = new NodeCache({ stdTTL: 60 });
 
 /**
  * Middleware: verifies active subscription and injects plan limits into req.consultora.
@@ -6,7 +11,7 @@ const pool = require('../db/pool');
  */
 module.exports = async function checkSubscription(req, res, next) {
     try {
-        // ── Admins always have full access ──────────────────────────────
+        // ── Admins always have full access (role já está no JWT) ─────────
         if (req.consultora.role === 'admin') {
             req.consultora.plano = 'admin';
             req.consultora.limites = {
@@ -21,33 +26,27 @@ module.exports = async function checkSubscription(req, res, next) {
             return next();
         }
 
-        // Double-check role from DB (JWT might be stale)
-        const { rows: roleRows } = await pool.query(
-            'SELECT role FROM consultoras WHERE id = $1', [req.consultora.id]
-        );
-        if (roleRows[0]?.role === 'admin') {
-            req.consultora.plano = 'admin';
-            req.consultora.limites = {
-                clientes_max: null, anamneses_mes_max: null,
-                tem_integracoes: true, tem_pipeline: true, tem_multiusuario: true,
-                tem_pagina_pessoal: true, tem_raiox: true, tem_minhas_vendas: true,
-                tem_radar: true, tem_agenda: true, tem_links: true, tem_anamneses: true, tem_clientes: true
-            };
-            return next();
-        }
+        // ── Verificar cache antes de ir ao banco ─────────────────────────
+        const cacheKey = `sub_${req.consultora.id}`;
+        let rows = subCache.get(cacheKey);
 
-        // Fetch subscription joined with plan limits
-        const { rows } = await pool.query(
-            `SELECT a.status, a.periodo_fim, a.trial_fim, a.plano,
-                    p.clientes_max, p.anamneses_mes_max,
-                    p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario,
-                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes
-             FROM assinaturas a
-             LEFT JOIN planos p ON p.slug = a.plano AND p.ativo = TRUE
-             WHERE a.consultora_id = $1
-             ORDER BY a.criado_em DESC LIMIT 1`,
-            [req.consultora.id]
-        );
+        if (!rows) {
+            // 1 única query: assinatura + limites do plano
+            const result = await pool.query(
+                `SELECT a.status, a.periodo_fim, a.trial_fim, a.plano,
+                        p.clientes_max, p.anamneses_mes_max,
+                        p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario,
+                        p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas,
+                        p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes
+                 FROM assinaturas a
+                 LEFT JOIN planos p ON p.slug = a.plano AND p.ativo = TRUE
+                 WHERE a.consultora_id = $1
+                 ORDER BY a.criado_em DESC LIMIT 1`,
+                [req.consultora.id]
+            );
+            rows = result.rows;
+            if (rows.length > 0) subCache.set(cacheKey, rows);
+        }
 
         if (rows.length === 0) {
             return res.status(403).json({ error: 'Nenhuma assinatura encontrada.', code: 'SUBSCRIPTION_REQUIRED' });

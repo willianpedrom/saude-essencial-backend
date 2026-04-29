@@ -412,6 +412,19 @@ app.listen(PORT, '0.0.0.0', async () => {
     console.log(`📦 DATABASE_URL: ${process.env.DATABASE_URL ? '✅' : '❌'}`);
     console.log(`🔑 JWT_SECRET: ${process.env.JWT_SECRET ? '✅' : '❌'}`);
     await runMigration();
+
+    // ── DB Keepalive: mantém conexões quentes a cada 4 min ─────────────────
+    // Evita que o PostgreSQL no Railway feche conexões idle e cause
+    // latência alta nos primeiros requests após períodos de inatividade.
+    const pool = require('./db/pool');
+    setInterval(async () => {
+        try {
+            await pool.query('SELECT 1');
+            console.log('[keepalive] DB ping OK');
+        } catch (e) {
+            console.warn('[keepalive] DB ping failed:', e.message);
+        }
+    }, 4 * 60 * 1000); // 4 minutos
 });
 
 module.exports = app;

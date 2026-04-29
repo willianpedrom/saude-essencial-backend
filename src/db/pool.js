@@ -9,7 +9,6 @@ if (!databaseUrl) {
 let pool;
 
 try {
-  // Use pg-connection-string which handles all postgresql URL formats robustly
   const { parse } = require('pg-connection-string');
   const config = parse(databaseUrl || '');
 
@@ -22,13 +21,27 @@ try {
     user: config.user,
     password: config.password,
     ssl: { rejectUnauthorized: false },
-    connectionTimeoutMillis: 10000,
-    idleTimeoutMillis: 30000,
-    max: 10,
+
+    // ── Performance tuning ────────────────────────────────────────────────
+    // Mais conexões simultâneas para absorver picos de tráfego
+    max: 20,
+    // Tempo máximo para obter conexão do pool (era 10s → reduzido para 5s)
+    connectionTimeoutMillis: 5000,
+    // Conexões idle ficam 60s antes de fechar (evita reconexão frequente)
+    idleTimeoutMillis: 60000,
+    // Keep-alive para manter conexões quentes e evitar timeouts do firewall
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10000,
+    // Statement timeout: queries não devem demorar mais que 15s
+    statement_timeout: 15000,
   });
+
+  // ── Warm-up: abre 2 conexões no start para evitar cold-start no primeiro request ──
+  pool.query('SELECT 1').catch(() => {});
+  pool.query('SELECT 1').catch(() => {});
+
 } catch (err) {
   console.error('❌ Erro ao configurar pool:', err.message);
-  // Fallback pool (all queries will fail gracefully via error handler)
   pool = new Pool({ connectionTimeoutMillis: 5000 });
 }
 
