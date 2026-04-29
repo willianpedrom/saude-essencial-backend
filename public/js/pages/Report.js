@@ -518,10 +518,71 @@ export async function renderReport(router, dataParam, hash = null) {
   </button>
 `;
 
-  // ── Auto-print quando aberto via botão "Gerar PDF" ──────────────────────
-  // O botão em utils.js adiciona ?print=1 na URL. Ao detectar este parâmetro,
-  // a página aciona window.print() após 800ms para o conteúdo renderizar.
+  // ── Overlay "Gerar PDF" quando aberto via botão da ficha do cliente ────────
+  // Browsers modernos bloqueiam window.print() chamado programaticamente.
+  // A solução é mostrar um overlay que requer um clique do usuário (user gesture),
+  // o que garante que window.print() seja aceito em todos os browsers.
   if (new URLSearchParams(window.location.search).get('print') === '1') {
-    setTimeout(() => window.print(), 800);
+    // Cria overlay de confirmação por cima do protocolo
+    const overlay = document.createElement('div');
+    overlay.id = 'pdf-overlay';
+    overlay.style.cssText = `
+      position: fixed; inset: 0; z-index: 99999;
+      background: rgba(10, 40, 24, 0.92);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeInOverlay 0.3s ease;
+    `;
+    overlay.innerHTML = `
+      <style>
+        @keyframes fadeInOverlay { from { opacity:0 } to { opacity:1 } }
+        @keyframes popIn { from { opacity:0; transform:scale(0.9) } to { opacity:1; transform:scale(1) } }
+        #pdf-overlay-card { animation: popIn 0.35s cubic-bezier(.34,1.56,.64,1) both; }
+        #btn-download-pdf {
+          display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+          background: linear-gradient(135deg, #16a34a, #15803d);
+          color: white; border: none; padding: 18px 40px; border-radius: 50px;
+          font-size: 1.1rem; font-weight: 700; cursor: pointer;
+          box-shadow: 0 8px 24px rgba(22,163,74,0.4);
+          transition: transform 0.15s, box-shadow 0.15s;
+          width: 100%;
+        }
+        #btn-download-pdf:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(22,163,74,0.5); }
+        #btn-download-pdf:active { transform: scale(0.98); }
+      </style>
+      <div id="pdf-overlay-card" style="
+        background: white; border-radius: 24px; padding: 40px 36px; max-width: 420px;
+        width: 90%; text-align: center; box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+      ">
+        <div style="font-size: 3.5rem; margin-bottom: 16px; line-height: 1">📄</div>
+        <h2 style="font-family: 'Playfair Display', Georgia, serif; color: #0a2818; font-size: 1.5rem; margin-bottom: 8px">
+          Protocolo pronto!
+        </h2>
+        <p style="color: #6b7280; font-size: 0.95rem; line-height: 1.6; margin-bottom: 28px">
+          Clique no botão abaixo para abrir o diálogo de impressão.<br>
+          Em seguida, escolha <strong style="color:#15803d">Salvar como PDF</strong> na impressora.
+        </p>
+        <button id="btn-download-pdf" onclick="
+          document.getElementById('pdf-overlay').remove();
+          setTimeout(() => window.print(), 120);
+        ">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 6 2 18 2 18 9"/>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+            <rect x="6" y="14" width="12" height="8"/>
+          </svg>
+          Baixar PDF
+        </button>
+        <button onclick="document.getElementById('pdf-overlay').remove()" style="
+          display: block; width: 100%; margin-top: 12px; background: none; border: none;
+          color: #9ca3af; font-size: 0.85rem; cursor: pointer; padding: 8px;
+        ">
+          Apenas visualizar o protocolo
+        </button>
+      </div>
+    `;
+    // Aguarda o conteúdo renderizar antes de mostrar o overlay
+    setTimeout(() => document.body.appendChild(overlay), 400);
   }
 }
+
