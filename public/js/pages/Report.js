@@ -444,12 +444,84 @@ export async function renderReport(router, dataParam, hash = null) {
   </div>
 
   <style>
-    @media print {
-      .report-cta { display: none !important; }
-      .report-page { background: white !important; padding: 0; }
-      .report-card { box-shadow: none !important; }
-      .report-header { background: #2d5016 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      table { page-break-inside: avoid; }
+    /* ── Botão Salvar PDF (visível na tela, oculto no print) ── */
+    #btn-print-pdf {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 9999;
+      background: linear-gradient(135deg, #2d5016, #1a4527);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.15s, box-shadow 0.15s;
     }
-  </style>`;
+    #btn-print-pdf:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    @media print {
+      /* Ocultar elementos de UI que não pertencem ao PDF */
+      #btn-print-pdf,
+      .report-cta { display: none !important; }
+
+      /* Ocultar seção viral de compartilhamento */
+      .report-page .report-card > div:last-of-type { display: none !important; }
+
+      /* Layout limpo */
+      body { margin: 0; padding: 0; background: white !important; }
+      .report-page { background: white !important; padding: 0; margin: 0; }
+      .report-card {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+      }
+      /* Cabeçalho verde com cor impressa */
+      .report-header {
+        background: #2d5016 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+      }
+      /* Evitar quebra de página dentro de tabelas */
+      table { page-break-inside: avoid; }
+      .report-body > div { page-break-inside: avoid; }
+      /* Desbloquear conteúdo borrado — no PDF aparece completo */
+      div[style*="filter:blur"] {
+        filter: none !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        user-select: auto !important;
+      }
+      /* Ocultar overlay do cadeado */
+      div[style*="position:absolute"][style*="top:50%"] { display: none !important; }
+    }
+  </style>
+
+  <button id="btn-print-pdf" onclick="window.print()" title="Salvar como PDF">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="6 9 6 2 18 2 18 9"/>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+      <rect x="6" y="14" width="12" height="8"/>
+    </svg>
+    Salvar PDF
+  </button>
+`;
+
+  // ── Auto-print quando aberto via botão "Gerar PDF" ──────────────────────
+  // O botão em utils.js adiciona ?print=1 na URL. Ao detectar este parâmetro,
+  // a página aciona window.print() após 800ms para o conteúdo renderizar.
+  if (new URLSearchParams(window.location.search).get('print') === '1') {
+    setTimeout(() => window.print(), 800);
+  }
 }

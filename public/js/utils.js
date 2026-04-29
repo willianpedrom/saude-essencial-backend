@@ -737,9 +737,9 @@ export function openClientOffcanvas(client) {
           const btnOpen = document.createElement('button');
           btnOpen.className = 'btn';
           btnOpen.style.cssText = `flex:1;background:transparent;color:${color};border:none;border-right:1px solid ${border};border-radius:0;font-size:0.75rem;padding:8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px`;
-          btnOpen.innerHTML = `<span>📑 Abrir PDF </span>`;
+          btnOpen.innerHTML = `<span>📄 Gerar PDF</span>`;
           btnOpen.onclick = async () => {
-             // Lógica legada para abrir o PDF na tela da Consultora
+             // Busca dados frescos da anamnese
              const freshAnamneses = await import('./store.js').then(m => m.store.getClientAnamneses(client.id)).catch(() => []);
              const freshA = freshAnamneses.find(x => x.id === a.id) || a;
              const { auth } = await import('./store.js');
@@ -757,9 +757,11 @@ export function openClientOffcanvas(client) {
                  clientId: client.id
              });
              sessionStorage.setItem('tempAnamnesisPayload', rawPayload);
+             // ?print=1 → página do protocolo vai acionar window.print() automaticamente ao carregar
              const route = isBusiness ? '#/business-report' : '#/protocolo';
-             window.open(window.location.origin + window.location.pathname + route, '_blank');
+             window.open(window.location.origin + window.location.pathname + '?print=1' + route, '_blank');
           };
+
 
           const btnLink = document.createElement('button');
           btnLink.className = 'btn';
