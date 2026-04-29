@@ -937,7 +937,9 @@ export function openClientOffcanvas(client) {
       }
 
       closeOC();
-      document.dispatchEvent(new CustomEvent('open-anamnese', { detail: { client } }));
+      document.dispatchEvent(new CustomEvent('open-anamnese', { 
+        detail: { client, anamneseOverride: healthAnamnese } 
+      }));
     });
   }
 }
