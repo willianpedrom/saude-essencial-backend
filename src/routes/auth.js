@@ -82,8 +82,20 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
             return res.status(400).json({ error: 'E-mail e senha são obrigatórios.' });
         }
 
+        // ── 1 única query: consultora + assinatura + plano + token_version ──
         const { rows } = await pool.query(
-            'SELECT id, nome, email, senha_hash, slug, role, genero, telefone, foto_url, link_afiliada, termos_aceitos FROM consultoras WHERE email = $1',
+            `SELECT c.id, c.nome, c.email, c.senha_hash, c.slug, c.role, c.genero,
+                    c.telefone, c.foto_url, c.link_afiliada, c.termos_aceitos, c.token_version,
+                    a.plano AS sub_plano, a.status AS sub_status, a.trial_fim, a.periodo_fim,
+                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar,
+                    p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes,
+                    p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario,
+                    p.tem_relatorios, p.tem_estoque, p.tem_depoimentos
+             FROM consultoras c
+             LEFT JOIN assinaturas a ON a.consultora_id = c.id
+             LEFT JOIN planos p ON a.plano = p.slug AND p.ativo = TRUE
+             WHERE c.email = $1
+             ORDER BY a.criado_em DESC LIMIT 1`,
             [email]
         );
 
@@ -92,57 +104,65 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
             return res.status(401).json({ error: 'E-mail ou senha incorretos.' });
         }
 
-        const consultora = rows[0];
-        const ok = await bcrypt.compare(senha, consultora.senha_hash);
+        const row = rows[0];
+        const ok = await bcrypt.compare(senha, row.senha_hash);
         if (!ok) {
-            logger.warn({ event: 'login_failed', consultora_id: consultora.id, email, ip: req.ip, reason: 'senha_incorreta' });
+            logger.warn({ event: 'login_failed', consultora_id: row.id, email, ip: req.ip, reason: 'senha_incorreta' });
             return res.status(401).json({ error: 'E-mail ou senha incorretos.' });
         }
 
-        const subResult = await pool.query(
-            `SELECT a.plano, a.status, a.trial_fim, a.periodo_fim,
-                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes, p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario, p.tem_relatorios,
-                    p.tem_estoque, p.tem_depoimentos
-             FROM assinaturas a
-             LEFT JOIN planos p ON a.plano = p.slug
-             WHERE a.consultora_id = $1
-             ORDER BY a.criado_em DESC LIMIT 1`,
-            [consultora.id]
-        );
-        const sub = subResult.rows[0] || { plano: 'none', status: 'none' };
+        // Montar dados de assinatura a partir da query única
+        const sub = {
+            plano: row.sub_plano || 'none',
+            status: row.sub_status || 'none',
+            trial_fim: row.trial_fim,
+            periodo_fim: row.periodo_fim,
+            tem_pagina_pessoal: row.tem_pagina_pessoal,
+            tem_raiox: row.tem_raiox,
+            tem_minhas_vendas: row.tem_minhas_vendas,
+            tem_radar: row.tem_radar,
+            tem_agenda: row.tem_agenda,
+            tem_links: row.tem_links,
+            tem_anamneses: row.tem_anamneses,
+            tem_clientes: row.tem_clientes,
+            tem_integracoes: row.tem_integracoes,
+            tem_pipeline: row.tem_pipeline,
+            tem_multiusuario: row.tem_multiusuario,
+            tem_relatorios: row.tem_relatorios,
+            tem_estoque: row.tem_estoque,
+            tem_depoimentos: row.tem_depoimentos,
+        };
 
-        const { rows: tvRows } = await pool.query(
-            'SELECT token_version FROM consultoras WHERE id = $1', [consultora.id]
-        );
-        const tv = tvRows[0]?.token_version ?? 1;
+        const tv = row.token_version ?? 1;
 
         // Check Terms of Service Acceptance
-        if (!consultora.termos_aceitos) {
-            logger.info({ event: 'login_terms_pending', consultora_id: consultora.id, email: consultora.email, ip: req.ip });
-            // Return only partial data, without JWT
+        if (!row.termos_aceitos) {
+            logger.info({ event: 'login_terms_pending', consultora_id: row.id, email: row.email, ip: req.ip });
             const csrfToken = generateCsrfToken();
             return res.json({ 
                 needs_terms_acceptance: true, 
                 csrfToken, 
-                consultora: { id: consultora.id, email: consultora.email, nome: consultora.nome } 
+                consultora: { id: row.id, email: row.email, nome: row.nome } 
             });
         }
 
+        const role = (process.env.ADMIN_EMAIL && row.email === process.env.ADMIN_EMAIL) ? 'admin' : (row.role || 'user');
+
         const token = jwt.sign(
-            { id: consultora.id, email: consultora.email, nome: consultora.nome, role: consultora.role || 'user', genero: consultora.genero || 'feminino', tv },
+            { id: row.id, email: row.email, nome: row.nome, role, genero: row.genero || 'feminino', tv },
             process.env.JWT_SECRET,
             { expiresIn: '7d', issuer: 'gota-app', audience: 'gota-app-api' }
         );
 
-        const { senha_hash, ...consultoraData } = consultora;
         const csrfToken = generateCsrfToken();
-        
-        // Auto-promote if matches ADMIN_EMAIL
-        if (process.env.ADMIN_EMAIL && consultoraData.email === process.env.ADMIN_EMAIL) {
-            consultoraData.role = 'admin';
-        }
-        
-        logger.info({ event: 'login_success', consultora_id: consultora.id, email: consultora.email, ip: req.ip });
+        const consultoraData = {
+            id: row.id, nome: row.nome, email: row.email, slug: row.slug,
+            role, genero: row.genero, telefone: row.telefone,
+            foto_url: row.foto_url, link_afiliada: row.link_afiliada,
+            termos_aceitos: row.termos_aceitos,
+        };
+
+        logger.info({ event: 'login_success', consultora_id: row.id, email: row.email, ip: req.ip });
         return res.json({ token, csrfToken, consultora: { ...consultoraData, assinatura: sub } });
     } catch (err) {
         logger.error({ event: 'login_error', email: req.body?.email, ip: req.ip, error: err }, 'Erro no login');
@@ -153,31 +173,51 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
 // GET /api/auth/me
 router.get('/me', authMiddleware, async (req, res, next) => {
     try {
+        // 1 única query: consultora + assinatura + plano
         const { rows } = await pool.query(
-            `SELECT id, nome, email, telefone, slug, foto_url, role,
-              endereco, bio, instagram, youtube, facebook, linkedin, genero, doterra_nivel, tema_cor, criado_em, video_apresentacao, video_headline, video_cta_texto, video_cta_link, perfil_cta_texto, perfil_cta_link, subheadline_1, subheadline_2
-             FROM consultoras WHERE id = $1`,
+            `SELECT c.id, c.nome, c.email, c.telefone, c.slug, c.foto_url, c.role,
+                    c.endereco, c.bio, c.instagram, c.youtube, c.facebook, c.linkedin,
+                    c.genero, c.doterra_nivel, c.tema_cor, c.criado_em,
+                    c.video_apresentacao, c.video_headline, c.video_cta_texto, c.video_cta_link,
+                    c.perfil_cta_texto, c.perfil_cta_link, c.subheadline_1, c.subheadline_2,
+                    a.plano AS sub_plano, a.status AS sub_status, a.trial_fim, a.periodo_fim,
+                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar,
+                    p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes,
+                    p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario,
+                    p.tem_relatorios, p.tem_estoque, p.tem_depoimentos
+             FROM consultoras c
+             LEFT JOIN assinaturas a ON a.consultora_id = c.id
+             LEFT JOIN planos p ON a.plano = p.slug AND p.ativo = TRUE
+             WHERE c.id = $1
+             ORDER BY a.criado_em DESC LIMIT 1`,
             [req.consultora.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });
 
-        const subResult = await pool.query(
-            `SELECT a.plano, a.status, a.trial_fim, a.periodo_fim,
-                    p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes, p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario, p.tem_relatorios,
-                    p.tem_estoque, p.tem_depoimentos
-             FROM assinaturas a
-             LEFT JOIN planos p ON a.plano = p.slug
-             WHERE a.consultora_id = $1
-             ORDER BY a.criado_em DESC LIMIT 1`,
-            [req.consultora.id]
-        );
+        const row = rows[0];
+        const role = (process.env.ADMIN_EMAIL && row.email === process.env.ADMIN_EMAIL) ? 'admin' : row.role;
 
-        const consultoraData = rows[0];
-        if (process.env.ADMIN_EMAIL && consultoraData.email === process.env.ADMIN_EMAIL) {
-            consultoraData.role = 'admin';
-        }
+        const assinatura = {
+            plano: row.sub_plano, status: row.sub_status, trial_fim: row.trial_fim, periodo_fim: row.periodo_fim,
+            tem_pagina_pessoal: row.tem_pagina_pessoal, tem_raiox: row.tem_raiox, tem_minhas_vendas: row.tem_minhas_vendas,
+            tem_radar: row.tem_radar, tem_agenda: row.tem_agenda, tem_links: row.tem_links,
+            tem_anamneses: row.tem_anamneses, tem_clientes: row.tem_clientes, tem_integracoes: row.tem_integracoes,
+            tem_pipeline: row.tem_pipeline, tem_multiusuario: row.tem_multiusuario, tem_relatorios: row.tem_relatorios,
+            tem_estoque: row.tem_estoque, tem_depoimentos: row.tem_depoimentos,
+        };
 
-        return res.json({ ...consultoraData, assinatura: subResult.rows[0] || null });
+        const consultoraData = {
+            id: row.id, nome: row.nome, email: row.email, telefone: row.telefone, slug: row.slug,
+            foto_url: row.foto_url, role, endereco: row.endereco, bio: row.bio,
+            instagram: row.instagram, youtube: row.youtube, facebook: row.facebook, linkedin: row.linkedin,
+            genero: row.genero, doterra_nivel: row.doterra_nivel, tema_cor: row.tema_cor, criado_em: row.criado_em,
+            video_apresentacao: row.video_apresentacao, video_headline: row.video_headline,
+            video_cta_texto: row.video_cta_texto, video_cta_link: row.video_cta_link,
+            perfil_cta_texto: row.perfil_cta_texto, perfil_cta_link: row.perfil_cta_link,
+            subheadline_1: row.subheadline_1, subheadline_2: row.subheadline_2,
+        };
+
+        return res.json({ ...consultoraData, assinatura });
     } catch (err) {
         console.error('Erro no /me:', err.message);
         return next(err);
