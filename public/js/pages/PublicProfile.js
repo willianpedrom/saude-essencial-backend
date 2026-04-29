@@ -351,99 +351,6 @@ export async function renderPublicProfile(router, slug) {
       </div>
     </section>
 
-    <!-- ═══════════════ LINKS (LINKTREE) ═══════════════ -->
-    ${data.links && data.links.length > 0 ? `
-    <section class="pp-section" style="background:#f9fafb;padding-top:40px;padding-bottom:40px">
-      <div class="pp-container pp-fade" style="max-width:500px">
-        <h3 style="font-family:'Playfair Display',serif;text-align:center;color:#0a2818;margin-bottom:24px;font-size:1.4rem">Links e Recursos</h3>
-        <div>
-          ${data.links.map(link => `
-            <a href="${link.url}" target="_blank" rel="noopener" class="pp-link-card">
-              <span style="display:flex;align-items:center;gap:14px">
-                <div class="pp-link-icon-wrap">${link.icone || '🔗'}</div>
-                <span>${link.titulo}</span>
-              </span>
-              <span style="color:#9ca3af">➔</span>
-            </a>
-          `).join('')}
-        </div>
-      </div>
-    </section>
-    ` : ''}
-
-    <!-- ═══════════════ VÍDEO PITCH ═══════════════ -->
-    ${embedUrl ? `
-    <section class="pp-section pp-fade" style="background:#fff;padding-top:60px;padding-bottom:60px">
-      <div class="pp-container" style="max-width:720px">
-        <div style="text-align:center;margin-bottom:20px">
-          <div style="display:inline-block;background:#fefce8;color:#a16207;font-size:0.8rem;font-weight:700;padding:5px 16px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;border:1px solid #fef08a">🔥 Mensagem Especial</div>
-        <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.5rem,4vw,2rem);color:#0a2818;margin-bottom:10px">${consultor.video_headline || 'Conheça o meu trabalho'}</h2>
-        </div>
-        <div style="position:relative;width:100%;padding-bottom:56.25%;background:#000;border-radius:20px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.15);border:1px solid rgba(0,0,0,0.05)">
-          <iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen loading="lazy" title="Vídeo de Apresentação"></iframe>
-        </div>
-        ${video_cta_link ? `
-        <div style="text-align:center;margin-top:28px">
-          <a href="${video_cta_link}" target="_blank" rel="noopener noreferrer"
-             style="display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;font-weight:700;font-size:1rem;padding:16px 36px;border-radius:50px;text-decoration:none;box-shadow:0 8px 24px rgba(22,163,74,0.35);transition:transform 0.2s,box-shadow 0.2s;"
-             onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 32px rgba(22,163,74,0.45)'"
-             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 8px 24px rgba(22,163,74,0.35)'">
-            <span>${video_cta_texto || 'Saiba Mais'}</span>
-            <span style="font-size:1.2rem">→</span>
-          </a>
-        </div>` : ''}
-      </div>
-    </section>` : ''}
-
-    <!-- ═══════════════ SOBRE ═══════════════ -->
-    ${bio ? `
-    <section class="pp-section" style="background:${data.links && data.links.length > 0 ? 'white' : '#f9fafb'}">
-      <div class="pp-container pp-fade">
-        <div style="text-align:center;margin-bottom:32px">
-          <div style="display:inline-block;background:#dcfce7;color:#166534;font-size:0.8rem;font-weight:600;padding:4px 14px;border-radius:20px;margin-bottom:12px">SOBRE MIM</div>
-          <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.2rem);color:#0a2818">A minha história</h2>
-        </div>
-        <div style="max-width:680px;margin:0 auto;background:white;border-radius:20px;padding:36px;box-shadow:0 2px 20px rgba(0,0,0,0.06);font-size:1rem;line-height:1.8;color:#374151;white-space:pre-wrap">${bio}</div>
-      </div>
-    </section>` : ''}
-
-    <!-- ═══════════════ DEPOIMENTOS (CLIENTES) ═══════════════ -->
-    ${depClientes.length > 0 ? `
-    <section class="pp-section" style="background:${(data.links && data.links.length > 0 && !bio) || (!data.links?.length && bio) ? '#f9fafb' : 'white'}">
-      <div class="pp-container">
-        <div style="text-align:center;margin-bottom:8px">
-          <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.2rem);color:#0a2818">Veja o que dizem as pessoas que eu já ajudei</h2>
-          <p style="color:#6b7280;margin-top:8px">${depClientes.length} depoimento${depClientes.length > 1 ? 's' : ''} verificado${depClientes.length > 1 ? 's' : ''}</p>
-        </div>
-        <div class="pp-depo-grid">
-          ${depClientes.map(d => `
-          <div class="pp-depo-card pp-fade">
-            <div style="color:#fbbf24;font-size:1.1rem;margin-bottom:12px">${stars(d.nota)}</div>
-            <p style="color:#374151;line-height:1.65;font-size:0.92rem;margin-bottom:16px">"${d.texto}"</p>
-            <div style="font-weight:600;color:#1a4527;font-size:0.85rem">— ${d.cliente_nome}</div>
-          </div>`).join('')}
-        </div>
-      </div>
-    </section>` : ''}
-
-    <!-- ═══════════════ DEPOIMENTOS (LIDERANÇA) ═══════════════ -->
-    ${depLideranca.length > 0 ? `
-    <section class="pp-section" style="background:${depClientes.length > 0 ? ((data.links && data.links.length > 0 && !bio) || (!data.links?.length && bio) ? 'white' : '#f9fafb') : ((data.links && data.links.length > 0 && !bio) || (!data.links?.length && bio) ? '#f9fafb' : 'white')}">
-      <div class="pp-container">
-        <div style="text-align:center;margin-bottom:8px">
-          <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.2rem);color:#0a2818">O que a minha equipe fala sobre mim</h2>
-          <p style="color:#6b7280;margin-top:8px">${depLideranca.length} depoimento${depLideranca.length > 1 ? 's' : ''} verificado${depLideranca.length > 1 ? 's' : ''}</p>
-        </div>
-        <div class="pp-depo-grid">
-          ${depLideranca.map(d => `
-          <div class="pp-depo-card pp-fade" style="border:1px solid #f1f5f9;box-shadow:0 4px 20px rgba(0,0,0,0.03)">
-            <div style="color:#fbbf24;font-size:1.1rem;margin-bottom:12px">${stars(d.nota)}</div>
-            <p style="color:#374151;line-height:1.65;font-size:0.92rem;margin-bottom:16px">"${d.texto}"</p>
-            <div style="font-weight:600;color:#1a4527;font-size:0.85rem">— ${d.cliente_nome}</div>
-          </div>`).join('')}
-        </div>
-      </div>
-    </section>` : ''}
 
     <!-- ═══════════════ DIAGNÓSTICO EXPRESSO ═══════════════ -->
     <section class="pp-section pp-fade" style="background:#fefce8;padding-top:60px;padding-bottom:60px;border-top:1px solid #fef08a;border-bottom:1px solid #fef08a">
@@ -541,7 +448,103 @@ export async function renderPublicProfile(router, slug) {
       </div>
     </section>
 
+    <!-- ═══════════════ LINKS (LINKTREE) ═══════════════ -->
+    ${data.links && data.links.length > 0 ? `
+    <section class="pp-section" style="background:#f9fafb;padding-top:40px;padding-bottom:40px">
+      <div class="pp-container pp-fade" style="max-width:500px">
+        <h3 style="font-family:'Playfair Display',serif;text-align:center;color:#0a2818;margin-bottom:24px;font-size:1.4rem">Links e Recursos</h3>
+        <div>
+          ${data.links.map(link => `
+            <a href="${link.url}" target="_blank" rel="noopener" class="pp-link-card">
+              <span style="display:flex;align-items:center;gap:14px">
+                <div class="pp-link-icon-wrap">${link.icone || '🔗'}</div>
+                <span>${link.titulo}</span>
+              </span>
+              <span style="color:#9ca3af">➔</span>
+            </a>
+          `).join('')}
+        </div>
+      </div>
+    </section>
+    ` : ''}
+
+
+    ${embedUrl ? `
+    <section class="pp-section pp-fade" style="background:#fff;padding-top:60px;padding-bottom:60px">
+      <div class="pp-container" style="max-width:720px">
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="display:inline-block;background:#fefce8;color:#a16207;font-size:0.8rem;font-weight:700;padding:5px 16px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;border:1px solid #fef08a">🔥 Mensagem Especial</div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.5rem,4vw,2rem);color:#0a2818;margin-bottom:10px">${consultor.video_headline || 'Conheça o meu trabalho'}</h2>
+        </div>
+        <div style="position:relative;width:100%;padding-bottom:56.25%;background:#000;border-radius:20px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.15);border:1px solid rgba(0,0,0,0.05)">
+          <iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen loading="lazy" title="Vídeo de Apresentação"></iframe>
+        </div>
+        ${video_cta_link ? `
+        <div style="text-align:center;margin-top:28px">
+          <a href="${video_cta_link}" target="_blank" rel="noopener noreferrer"
+             style="display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;font-weight:700;font-size:1rem;padding:16px 36px;border-radius:50px;text-decoration:none;box-shadow:0 8px 24px rgba(22,163,74,0.35);transition:transform 0.2s,box-shadow 0.2s;"
+             onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 32px rgba(22,163,74,0.45)'"
+             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 8px 24px rgba(22,163,74,0.35)'">
+            <span>${video_cta_texto || 'Saiba Mais'}</span>
+            <span style="font-size:1.2rem">→</span>
+          </a>
+        </div>` : ''}
+      </div>
+    </section>` : ''}
+
+    <!-- ═══════════════ SOBRE ═══════════════ -->
+    ${bio ? `
+    <section class="pp-section" style="background:${data.links && data.links.length > 0 ? 'white' : '#f9fafb'}">
+      <div class="pp-container pp-fade">
+        <div style="text-align:center;margin-bottom:32px">
+          <div style="display:inline-block;background:#dcfce7;color:#166534;font-size:0.8rem;font-weight:600;padding:4px 14px;border-radius:20px;margin-bottom:12px">SOBRE MIM</div>
+          <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.2rem);color:#0a2818">A minha história</h2>
+        </div>
+        <div style="max-width:680px;margin:0 auto;background:white;border-radius:20px;padding:36px;box-shadow:0 2px 20px rgba(0,0,0,0.06);font-size:1rem;line-height:1.8;color:#374151;white-space:pre-wrap">${bio}</div>
+      </div>
+    </section>` : ''}
+
+    <!-- ═══════════════ DEPOIMENTOS (CLIENTES) ═══════════════ -->
+    ${depClientes.length > 0 ? `
+    <section class="pp-section" style="background:${(data.links && data.links.length > 0 && !bio) || (!data.links?.length && bio) ? '#f9fafb' : 'white'}">
+      <div class="pp-container">
+        <div style="text-align:center;margin-bottom:8px">
+          <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.2rem);color:#0a2818">Veja o que dizem as pessoas que eu já ajudei</h2>
+          <p style="color:#6b7280;margin-top:8px">${depClientes.length} depoimento${depClientes.length > 1 ? 's' : ''} verificado${depClientes.length > 1 ? 's' : ''}</p>
+        </div>
+        <div class="pp-depo-grid">
+          ${depClientes.map(d => `
+          <div class="pp-depo-card pp-fade">
+            <div style="color:#fbbf24;font-size:1.1rem;margin-bottom:12px">${stars(d.nota)}</div>
+            <p style="color:#374151;line-height:1.65;font-size:0.92rem;margin-bottom:16px">"${d.texto}"</p>
+            <div style="font-weight:600;color:#1a4527;font-size:0.85rem">— ${d.cliente_nome}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </section>` : ''}
+
+    <!-- ═══════════════ DEPOIMENTOS (LIDERANÇA) ═══════════════ -->
+    ${depLideranca.length > 0 ? `
+    <section class="pp-section" style="background:${depClientes.length > 0 ? ((data.links && data.links.length > 0 && !bio) || (!data.links?.length && bio) ? 'white' : '#f9fafb') : ((data.links && data.links.length > 0 && !bio) || (!data.links?.length && bio) ? '#f9fafb' : 'white')}">
+      <div class="pp-container">
+        <div style="text-align:center;margin-bottom:8px">
+          <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.2rem);color:#0a2818">O que a minha equipe fala sobre mim</h2>
+          <p style="color:#6b7280;margin-top:8px">${depLideranca.length} depoimento${depLideranca.length > 1 ? 's' : ''} verificado${depLideranca.length > 1 ? 's' : ''}</p>
+        </div>
+        <div class="pp-depo-grid">
+          ${depLideranca.map(d => `
+          <div class="pp-depo-card pp-fade" style="border:1px solid #f1f5f9;box-shadow:0 4px 20px rgba(0,0,0,0.03)">
+            <div style="color:#fbbf24;font-size:1.1rem;margin-bottom:12px">${stars(d.nota)}</div>
+            <p style="color:#374151;line-height:1.65;font-size:0.92rem;margin-bottom:16px">"${d.texto}"</p>
+            <div style="font-weight:600;color:#1a4527;font-size:0.85rem">— ${d.cliente_nome}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </section>` : ''}
+
+
     <!-- ═══════════════ CTA FINAL ═══════════════ -->
+
     <section style="background:linear-gradient(135deg,#0a2818,#1a4527);padding:80px 24px;text-align:center">
       <div class="pp-container pp-fade">
         <div style="font-size:3rem;margin-bottom:16px">🌿</div>

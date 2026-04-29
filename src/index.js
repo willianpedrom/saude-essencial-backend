@@ -4,8 +4,8 @@ const compression = require('compression');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const fs = require('fs');
 const path = require('path');
+const { runMigrations } = require('./db/migrationRunner');
 
 // ─── Validação de variáveis de ambiente obrigatórias ──────────────────────────
 // Em produção, o servidor aborta imediatamente se JWT_SECRET não estiver definido.
@@ -243,167 +243,19 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Auto-run schema migration
+// ── Auto-run schema migrations (incremental — só roda o que ainda não foi aplicado) ──
 async function runMigration() {
     if (!process.env.DATABASE_URL) {
-        console.warn('⚠️  DATABASE_URL não configurado.');
+        console.warn('⚠️  DATABASE_URL não configurado — migrations ignoradas.');
         return;
     }
     const pool = require('./db/pool');
     try {
-        // 1. Column migrations first (ensure columns exist before SEEDs in schema.sql run)
-        // These are idempotent (ADD COLUMN IF NOT EXISTS)
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS preco_semestral DECIMAL(10,2) DEFAULT NULL`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS preco_anual DECIMAL(10,2) DEFAULT NULL`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS dias_trial INTEGER DEFAULT 0`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_pagina_pessoal BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_raiox BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_minhas_vendas BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_radar BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_agenda BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_links BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_anamneses BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_clientes BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_multiusuario BOOLEAN DEFAULT FALSE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_relatorios BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_estoque BOOLEAN DEFAULT TRUE`);
-        await pool.query(`ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_depoimentos BOOLEAN DEFAULT TRUE`);
-
-        // 2. Run main schema (Tables and Seeds)
-        const sql = fs.readFileSync(path.join(__dirname, 'db/schema.sql'), 'utf-8');
-        await pool.query(sql);
-
-        // 3. Other migrations
-        await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS rastreamento JSONB DEFAULT NULL`);
-        await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS doterra_nivel VARCHAR(60) DEFAULT NULL`);
-        await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS subheadline_1 VARCHAR(255) DEFAULT NULL`);
-        await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS subheadline_2 VARCHAR(255) DEFAULT NULL`);
-        await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS termos_aceitos BOOLEAN DEFAULT FALSE`);
-        await pool.query(`ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS termos_aceitos_em TIMESTAMPTZ`);
-        
-        await pool.query(`ALTER TABLE assinaturas ADD COLUMN IF NOT EXISTS hotmart_transaction_id TEXT`);
-        await pool.query(`ALTER TABLE assinaturas ADD COLUMN IF NOT EXISTS hotmart_subscription_id TEXT`);
-        await pool.query(`ALTER TABLE assinaturas ADD COLUMN IF NOT EXISTS gateway VARCHAR(20) DEFAULT 'hotmart'`);
-
-        await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS recrutamento_stage VARCHAR(40)`);
-        await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS recrutamento_notas TEXT`);
-        await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS motivo_perda_recrutamento TEXT`);
-        await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS tipo_cadastro VARCHAR(30)`);
-        await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS protocolo_mensagem TEXT`);
-        await pool.query(`ALTER TABLE clientes ADD COLUMN IF NOT EXISTS indicado_por_id UUID REFERENCES clientes(id) ON DELETE SET NULL`);
-
-        await pool.query(`ALTER TABLE anamneses ADD COLUMN IF NOT EXISTS protocolo_customizado JSONB`);
-        await pool.query(`ALTER TABLE anamneses ADD COLUMN IF NOT EXISTS hash_laudo VARCHAR(20) UNIQUE`);
-
-        // System settings table
-        await pool.query(`CREATE TABLE IF NOT EXISTS configuracoes (
-            chave VARCHAR(100) PRIMARY KEY,
-            valor TEXT,
-            atualizado_em TIMESTAMPTZ DEFAULT NOW()
-        )`);
-
-        // Prospecting table
-        await pool.query(`CREATE TABLE IF NOT EXISTS prospects (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            consultora_id UUID REFERENCES consultoras(id) ON DELETE CASCADE,
-            nome VARCHAR(255) NOT NULL,
-            place_id VARCHAR(255),
-            endereco TEXT,
-            telefone VARCHAR(50),
-            website TEXT,
-            nicho VARCHAR(100),
-            instagram TEXT,
-            facebook TEXT,
-            email TEXT,
-            status VARCHAR(50) DEFAULT 'prospectado', 
-            notas TEXT,
-            criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )`);
-        await pool.query(`CREATE INDEX IF NOT EXISTS idx_prospects_consultora ON prospects(consultora_id)`);
-        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS historico JSONB DEFAULT '[]'`);
-        /* ... more columns ... */
-        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS instagram TEXT`);
-        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS facebook TEXT`);
-        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS email TEXT`);
-        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS nicho VARCHAR(100)`);
-        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS telefone VARCHAR(50)`);
-        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS website TEXT`);
-        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS rating DECIMAL(2,1)`);
-        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS user_ratings_total INTEGER`);
-        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS lat DECIMAL(10,8)`);
-        await pool.query(`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS lng DECIMAL(11,8)`);
-
-        // Push Notifications
-        await pool.query(`CREATE TABLE IF NOT EXISTS push_subscriptions (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            consultora_id UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
-            endpoint TEXT UNIQUE NOT NULL,
-            expiration_time TIMESTAMPTZ,
-            keys JSONB NOT NULL,
-            browser_name VARCHAR(100),
-            device_type VARCHAR(50),
-            criado_em TIMESTAMPTZ DEFAULT NOW(),
-            atualizado_em TIMESTAMPTZ DEFAULT NOW()
-        )`);
-        await pool.query(`CREATE INDEX IF NOT EXISTS idx_push_consultora ON push_subscriptions(consultora_id)`);
-
-        // Admin Promotion
-        if (process.env.ADMIN_EMAIL) {
-            await pool.query("UPDATE consultoras SET role = 'admin' WHERE email = $1", [process.env.ADMIN_EMAIL]);
-        }
-        await pool.query(`
-            UPDATE consultoras SET role = 'admin'
-            WHERE id = (SELECT id FROM consultoras ORDER BY criado_em ASC LIMIT 1)
-        `);
-
-        // Admin Notifications
-        await pool.query(`CREATE TABLE IF NOT EXISTS admin_incentive_pool (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            titulo VARCHAR(255) DEFAULT 'Incentivo',
-            mensagem TEXT NOT NULL,
-            ativo BOOLEAN DEFAULT TRUE,
-            criado_em TIMESTAMPTZ DEFAULT NOW(),
-            atualizado_em TIMESTAMPTZ DEFAULT NOW()
-        )`);
-
-        await pool.query(`CREATE TABLE IF NOT EXISTS notification_broadcasts (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            admin_id UUID REFERENCES consultoras(id) ON DELETE SET NULL,
-            titulo VARCHAR(255) NOT NULL,
-            mensagem TEXT NOT NULL,
-            tipo VARCHAR(50) DEFAULT 'manual',
-            destinatarios_qtd INT DEFAULT 0,
-            cliques_qtd INT DEFAULT 0,
-            criado_em TIMESTAMPTZ DEFAULT NOW()
-        )`);
-
-        await pool.query(`CREATE TABLE IF NOT EXISTS notification_clicks (
-            broadcast_id UUID NOT NULL REFERENCES notification_broadcasts(id) ON DELETE CASCADE,
-            consultora_id UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
-            clicado_em TIMESTAMPTZ DEFAULT NOW(),
-            PRIMARY KEY (broadcast_id, consultora_id)
-        )`);
-
-        await pool.query(`CREATE INDEX IF NOT EXISTS idx_notif_broadcast_admin ON notification_broadcasts(admin_id)`);
-        await pool.query(`CREATE INDEX IF NOT EXISTS idx_notif_clicks_broadcast ON notification_clicks(broadcast_id)`);
-
-        // Seed pool
-        const { rows: poolCount } = await pool.query('SELECT COUNT(*) FROM admin_incentive_pool');
-        if (parseInt(poolCount[0].count) === 0) {
-            await pool.query(`
-                INSERT INTO admin_incentive_pool (titulo, mensagem) VALUES 
-                ('Bom dia {nome}! ☀️', 'Que tal começar o dia revisando suas anamneses pendentes? Um bom acompanhamento é a chave do sucesso.'),
-                ('Dica do Dia 💧', 'Olá {nome}, você já conferiu os novos protocolos de óleos essenciais? Conhecimento ajuda a vender mais!'),
-                ('Sua Página Pessoal 🚀', 'Oi {nome}, já configurou seu link de divulgação hoje? Sua vitrine digital é seu melhor cartão de visitas.'),
-                ('Acompanhamento 📝', 'Olá {nome}, lembrou de fazer o follow-up com seus clientes de ontem? A atenção aos detalhes fideliza!'),
-                ('Meta de Hoje ✅', 'Vamos pra cima, {nome}! Qual é a sua meta de atendimentos para hoje? O sistema está pronto para te ajudar.')
-            `);
-        }
-
-        console.log('✅ Schema OK');
+        await runMigrations(pool);
     } catch (err) {
-        console.error('⚠️  Erro na migração:', err.message);
+        // Migrations falhando não devem parar o servidor em produção;
+        // apenas loga para que o time investigue via Railway logs.
+        console.error('⚠️  Erro nas migrations (servidor continua):', err.message);
     }
 }
 

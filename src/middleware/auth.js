@@ -39,12 +39,17 @@ module.exports = async function authMiddleware(req, res, next) {
             decoded.role = decoded.role || rows[0].role;
             tokenCache.set(cacheKey, currentVersion);
         }
-        const tokenVersion = decoded.tv ?? 1;   // 'tv' = token version claim
-        if (tokenVersion < currentVersion) {
-            return res.status(401).json({
-                error: 'Sessão encerrada. Faça login novamente.',
-                code: 'TOKEN_REVOKED',
-            });
+
+        // Só verificar versão se o token tiver o campo 'tv' (tokens legados sem 'tv' são aceitos)
+        // Tokens com 'tv' são rejeitados se versão estiver desatualizada (logout/troca de senha)
+        if (decoded.tv !== undefined) {
+            const tokenVersion = decoded.tv;
+            if (tokenVersion < currentVersion) {
+                return res.status(401).json({
+                    error: 'Sessão encerrada. Faça login novamente.',
+                    code: 'TOKEN_REVOKED',
+                });
+            }
         }
     } catch (dbErr) {
         // If DB is unavailable, deny access (fail secure)
