@@ -1,6 +1,6 @@
 // Minimal Service Worker — required for PWA install prompt
-// v5: 2026-04 — bust cache to pick up database compras migration
-const CACHE_NAME = 'gota-app-v7';
+// v8: 2026-04 — forçar atualização do Perfil Empreendedor e WhatsApp hooks
+const CACHE_NAME = 'gota-app-v8';
 const PRECACHE = ['/', '/css/index.css', '/logo.png'];
 
 self.addEventListener('install', e => {
