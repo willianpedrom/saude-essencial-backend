@@ -26,13 +26,31 @@ function applyBirthdateMask(input) {
 export async function renderPublicAnamnesis(router, token) {
   const app = document.getElementById('app');
 
-  // If main loader is gone, show a subtle inline loader
+  // If main loader is gone, show the same premium design
   if (!document.getElementById('page-loader')) {
     app.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#06120b;color:white;flex-direction:column;text-align:center;padding:20px">
-        <div class="premium-loader"></div>
-        <div style="margin-top:24px;font-family:'Playfair Display',serif;font-size:1.6rem;color:#f5d061">Gota App</div>
-        <div style="margin-top:8px;font-size:1rem;color:rgba(255,255,255,0.7)">Lendo seus dados de saúde...</div>
+      <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:radial-gradient(circle at center, #0a1f14 0%, #06120b 100%);color:white;flex-direction:column;text-align:center;padding:20px">
+        <div class="liquid-drop"><div class="drop-inner"></div></div>
+        <h1 class="shimmer-text" style="font-family:'Playfair Display',serif;font-size:2.2rem;margin:0;font-weight:700">Gota App</h1>
+        <p class="loading-subtext" style="margin-top:10px;color:rgba(255,255,255,0.4);font-family:'Inter',sans-serif;font-size:0.85rem;letter-spacing:3px;text-transform:uppercase">Analisando suas necessidades...</p>
+        <style>
+          .liquid-drop {
+            width: 80px; height: 80px; margin: 0 auto 30px; position: relative;
+            background: rgba(245, 208, 97, 0.08); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            animation: liquidMorph 4s ease-in-out infinite; display: flex; align-items: center; justify-content: center;
+          }
+          .drop-inner {
+            width: 42px; height: 42px; background: linear-gradient(135deg, #f5d061 0%, #b8860b 100%);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; animation: pulseDrop 2s ease-in-out infinite;
+            box-shadow: 0 8px 20px rgba(184, 134, 11, 0.4);
+          }
+          @keyframes liquidMorph {
+            0%, 100% { border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
+            33% { border-radius: 40% 60% 50% 50% / 50% 40% 60% 50%; }
+            66% { border-radius: 60% 40% 40% 60% / 40% 60% 50% 40%; }
+          }
+          @keyframes pulseDrop { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.1); opacity: 1; } }
+        </style>
       </div>`;
   }
 

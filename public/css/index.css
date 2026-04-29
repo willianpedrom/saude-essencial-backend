@@ -60,6 +60,18 @@
   --sidebar-w: 260px;
 }
 
+.shimmer-text {
+  background: linear-gradient(90deg, #f5d061, #fff, #f5d061);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  to { background-position: 200% center; }
+}
+
 /* ============================================
    DARK MODE DISABLED
    Para evitar problemas de contraste em iPhones (texto branco em fundo branco),
