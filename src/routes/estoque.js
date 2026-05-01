@@ -65,7 +65,7 @@ router.post('/', async (req, res) => {
 // PUT /api/estoque/:id
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { quantidade, notas, validade, preco_custo, uso_tipo, nome_produto, categoria, ml_tamanho } = req.body;
+    const { quantidade, notas, validade, preco_custo, preco_venda, uso_tipo, nome_produto, categoria, ml_tamanho } = req.body;
     try {
         const { rows } = await pool.query(
             `UPDATE estoque SET
@@ -80,8 +80,19 @@ router.put('/:id', async (req, res) => {
                ml_tamanho  = COALESCE($9, ml_tamanho),
                atualizado_em = NOW()
              WHERE id=$10 AND consultora_id=$11 RETURNING *`,
-            [quantidade, notas, validade || null, preco_custo || null, preco_venda || null, uso_tipo,
-             nome_produto, categoria, ml_tamanho, id, req.consultora.id]
+            [
+                quantidade !== undefined ? quantidade : null,
+                notas !== undefined ? notas : null,
+                validade !== undefined ? (validade || null) : null,
+                preco_custo !== undefined ? preco_custo : null,
+                preco_venda !== undefined ? preco_venda : null,
+                uso_tipo !== undefined ? uso_tipo : null,
+                nome_produto !== undefined ? nome_produto : null,
+                categoria !== undefined ? categoria : null,
+                ml_tamanho !== undefined ? ml_tamanho : null,
+                id,
+                req.consultora.id
+            ]
         );
         if (!rows.length) return res.status(404).json({ error: 'Produto não encontrado.' });
         res.json(rows[0]);
