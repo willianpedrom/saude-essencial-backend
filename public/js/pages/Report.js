@@ -98,7 +98,7 @@ export async function renderReport(router, dataParam, hash = null) {
 
   // Build WhatsApp link
   const whatsappMsg = encodeURIComponent(
-    `Ola, ${consultant.name?.split(' ')[0] || cTitle}!\n\nAcabei de preencher a anamnese e adorei o meu protocolo personalizado!\n\nMeu nome e ${clientName} e gostaria de saber mais sobre como comecar.\n\nEstou pront${isMasc ? 'o' : 'a'} para transformar minha saude!`
+    `Olá, ${consultant.name?.split(' ')[0] || cTitle}!\n\nAcabei de preencher a anamnese e adorei o meu protocolo personalizado!\n\nMeu nome é ${clientName} e gostaria de saber mais sobre como começar.\n\nEstou pront${isMasc ? 'o' : 'a'} para transformar minha saúde!`
   );
   const phone = (consultant.phone || '').replace(/\D/g, '');
   const waPhone = phone.startsWith('55') ? phone : `55${phone}`;
