@@ -50,7 +50,6 @@ export function renderLogin(router, params = {}) {
           <div class="auth-error" id="login-error"></div>
           <button class="btn-auth" type="submit" id="login-btn">Acessar minha área ✦</button>
           <p class="auth-link-area" style="display:flex;flex-direction:column;align-items:center;gap:12px;font-size:0.85rem;margin-top:20px;">
-            <span class="auth-link" id="link-to-register" style="color:var(--primary-color);font-weight:700;cursor:pointer">Ainda não tem conta? Crie agora ✨</span>
             <span class="auth-link" id="link-forgot" style="color:var(--text-muted);cursor:pointer;">Esqueci minha senha</span>
           </p>
         </form>
@@ -188,10 +187,6 @@ export function renderLogin(router, params = {}) {
     document.getElementById('panel-login').style.display = 'block';
   });
 
-  document.getElementById('link-to-register')?.addEventListener('click', () => {
-    document.getElementById('panel-login').style.display = 'none';
-    document.getElementById('panel-register').style.display = 'block';
-  });
 
   document.getElementById('link-back-to-login')?.addEventListener('click', () => {
     document.getElementById('panel-register').style.display = 'none';
