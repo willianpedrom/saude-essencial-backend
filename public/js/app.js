@@ -109,7 +109,7 @@ const router = new Router({
         renderProspecting(router);
     }),
     '/estoque': guard(async () => {
-        const { renderInventory } = await import('./pages/Inventory.js');
+        const { renderInventory } = await import('./pages/Inventory.js?v=2');
         renderInventory(router);
     }),
 
