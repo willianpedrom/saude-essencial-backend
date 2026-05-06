@@ -450,7 +450,7 @@ const DOTERRA_PRICES = {
     'Yarrow Pom': { '30ml': { r: 728, m: 546 }, '15ml': { r: 360, m: 270 } },
     'Yarrow Pom Sérum Firmador': { 'Unidade / Kit': { r: 553, m: 415 } },
     'Ylang Ylang': { '15ml': { r: 299, m: 224 }, '5ml': { r: 123, m: 92 } },
-    'ZenGest': { '15ml': { r: 257, m: 193 } },
+    'ZenGest': { '15ml': { r: 257, m: 193 }, '5ml': { r: 105, m: 79 } },
     'ZenGest Pastilhas': { 'Cápsulas': { r: 172, m: 129 } },
     'ZenGest Softgels': { 'Cápsulas': { r: 172, m: 129 } },
     'ZenGest Touch': { '10ml Touch': { r: 176, m: 132 } },
