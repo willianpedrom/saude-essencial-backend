@@ -678,8 +678,41 @@ export async function renderPurchases(router) {
   }
 
   function showAddModal() {
+    let items = [];
+
+    const renderItems = () => {
+      const list = document.getElementById('pu-items-list');
+      if (!list) return;
+      if (items.length === 0) {
+        list.innerHTML = `<div style="text-align:center;padding:15px;color:var(--text-muted);font-size:0.85rem;border:1px dashed var(--border);border-radius:8px">Nenhum produto adicionado ainda.</div>`;
+      } else {
+        list.innerHTML = items.map((it, idx) => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px">
+            <div style="flex:1;min-width:0;padding-right:10px">
+              <div style="font-size:0.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${it.produto}</div>
+            </div>
+            <div style="font-weight:700;color:var(--green-700);font-size:0.85rem;margin-right:12px">${formatCurrency(it.valor)}</div>
+            <button class="btn-remove-item" data-idx="${idx}" style="background:none;border:none;color:#ef4444;cursor:pointer;padding:4px;font-size:1rem;line-height:1" title="Remover item">×</button>
+          </div>
+        `).join('');
+      }
+      
+      const total = items.reduce((s, it) => s + it.valor, 0);
+      const totalEl = document.getElementById('pu-total-preview');
+      if (totalEl) totalEl.textContent = formatCurrency(total);
+
+      // Bind remove events
+      list.querySelectorAll('.btn-remove-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          items.splice(parseInt(btn.dataset.idx), 1);
+          renderItems();
+        });
+      });
+    };
+
     modal('Registrar Venda', `
       <div class="form-grid">
+        <!-- Cliente e Info Geral -->
         <div class="form-group form-field-full">
           <label class="field-label">Cliente *</label>
           <div style="position:relative">
@@ -690,35 +723,73 @@ export async function renderPurchases(router) {
                      box-shadow:0 8px 24px rgba(0,0,0,0.12);max-height:220px;overflow-y:auto;margin-top:4px"></div>
           </div>
         </div>
-        <div class="form-group form-field-full">
-          <label class="field-label">Produto / Kit *</label>
-          <div style="position:relative">
-            <input class="field-input" id="pu-product-search" placeholder="🔍 Buscar no estoque ou base doTERRA..." autocomplete="off" style="padding-right:36px" />
-            <input type="hidden" id="pu-product" />
-            <div id="pu-product-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:999;
-                     background:#fff;border:1px solid var(--border);border-radius:10px;
-                     box-shadow:0 8px 24px rgba(0,0,0,0.12);max-height:220px;overflow-y:auto;margin-top:4px"></div>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="field-label">Valor (R$)</label>
-          <input class="field-input" id="pu-value" type="number" step="0.01" placeholder="0,00" />
-        </div>
+        
         <div class="form-group">
           <label class="field-label">Data</label>
           <input class="field-input" id="pu-date" type="date" value="${new Date().toISOString().slice(0, 10)}" />
         </div>
-        <div class="form-group form-field-full">
+        <div class="form-group">
           <label class="field-label">Observação</label>
           <input class="field-input" id="pu-note" placeholder="Ex: Pagamento PIX..." />
         </div>
+
+        <div style="grid-column: 1 / -1; height: 1px; background: #e2e8f0; margin: 10px 0"></div>
+
+        <!-- Adicionar Produtos -->
+        <div class="form-group form-field-full">
+          <label class="field-label" style="display:flex;justify-content:space-between">
+            Produtos Escolhidos
+            <span style="color:var(--green-700);font-weight:800" id="pu-total-preview">R$ 0,00</span>
+          </label>
+          
+          <div id="pu-items-list" style="margin-bottom:12px"></div>
+
+          <div style="background:#f1f5f9;padding:12px;border-radius:10px;border:1px solid #e2e8f0">
+            <div style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:8px">➕ Adicionar ao Carrinho</div>
+            <div style="display:grid;grid-template-columns: 1fr 100px 50px;gap:8px">
+              <div style="position:relative">
+                <input class="field-input" id="pu-product-search" placeholder="Buscar produto..." autocomplete="off" />
+                <input type="hidden" id="pu-product" />
+                <div id="pu-product-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:999;
+                         background:#fff;border:1px solid var(--border);border-radius:10px;
+                         box-shadow:0 8px 24px rgba(0,0,0,0.12);max-height:220px;overflow-y:auto;margin-top:4px"></div>
+              </div>
+              <input class="field-input" id="pu-value" type="number" step="0.01" placeholder="0,00" />
+              <button class="btn btn-primary" id="btn-add-item-to-list" style="padding:0;font-size:1.2rem;display:flex;align-items:center;justify-content:center">+</button>
+            </div>
+          </div>
+        </div>
       </div>`, {
-      confirmLabel: 'Registrar',
+      confirmLabel: 'Registrar Tudo',
       onOpen: () => {
         const searchInput = document.getElementById('pu-client-search');
         const hiddenInput = document.getElementById('pu-client');
         const dropdown = document.getElementById('pu-client-dropdown');
 
+        const pSearchInput = document.getElementById('pu-product-search');
+        const pHiddenInput = document.getElementById('pu-product');
+        const pDropdown = document.getElementById('pu-product-dropdown');
+        const valueInput = document.getElementById('pu-value');
+        const btnAdd = document.getElementById('btn-add-item-to-list');
+
+        renderItems();
+
+        // Add item logic
+        btnAdd.addEventListener('click', (e) => {
+          e.preventDefault();
+          const prod = pSearchInput.value.trim();
+          const val = parseFloat(valueInput.value) || 0;
+          if (!prod) return toast('Selecione um produto', 'warning');
+          
+          items.push({ produto: prod, valor: val });
+          pSearchInput.value = '';
+          pHiddenInput.value = '';
+          valueInput.value = '';
+          renderItems();
+          pSearchInput.focus();
+        });
+
+        // Client dropdown logic
         function renderDropdown(query) {
           const q = query.toLowerCase().trim();
           const matches = q ? clients.filter(c => (c.nome || '').toLowerCase().includes(q)) : clients;
@@ -727,25 +798,15 @@ export async function renderPurchases(router) {
           } else {
             dropdown.innerHTML = matches.map(c => {
               const name = c.nome || '';
-              const highlighted = name.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
-                '<strong style="color:var(--green-700)">$1</strong>');
-              return `<div data-id="${c.id}" data-name="${name}"
-                style="padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;
-                       border-bottom:1px solid var(--border);transition:background 0.15s"
-                onmouseover="this.style.background='var(--green-50)'"
-                onmouseout="this.style.background=''">
-                <div style="width:32px;height:32px;border-radius:50%;background:var(--green-100);
-                            color:var(--green-700);font-weight:700;display:flex;align-items:center;
-                            justify-content:center;flex-shrink:0;font-size:0.85rem">
-                  ${name[0]?.toUpperCase() || '?'}
-                </div>
+              const highlighted = name.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<strong style="color:var(--green-700)">$1</strong>');
+              return `<div data-id="${c.id}" data-name="${name}" style="padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);transition:background 0.15s" onmouseover="this.style.background='var(--green-50)'" onmouseout="this.style.background=''">
+                <div style="width:32px;height:32px;border-radius:50%;background:var(--green-100);color:var(--green-700);font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.85rem">${name[0]?.toUpperCase() || '?'}</div>
                 <span style="font-size:0.92rem">${highlighted}</span>
               </div>`;
             }).join('');
           }
           dropdown.style.display = 'block';
         }
-
         searchInput.addEventListener('input', () => { hiddenInput.value = ''; renderDropdown(searchInput.value); });
         searchInput.addEventListener('focus', () => renderDropdown(searchInput.value));
         dropdown.addEventListener('mousedown', (e) => {
@@ -756,28 +817,18 @@ export async function renderPurchases(router) {
           dropdown.style.display = 'none';
         });
 
-        // --- Lógica do Dropdown de PRODUTOS ---
-        const pSearchInput = document.getElementById('pu-product-search');
-        const pHiddenInput = document.getElementById('pu-product');
-        const pDropdown = document.getElementById('pu-product-dropdown');
-        const valueInput = document.getElementById('pu-value');
-
+        // Product dropdown logic
         function renderProductDropdown(query) {
           const q = normalize(query);
           const matches = q ? productCatalog.filter(p => p.search.includes(q)) : productCatalog.slice(0, 30);
-          
           if (!matches.length) {
-            pDropdown.innerHTML = `<div style="padding:12px 16px;color:var(--text-muted);font-size:0.85rem">Nenhum produto encontrado. Continue digitando para registrar como texto livre.</div>`;
+            pDropdown.innerHTML = `<div style="padding:12px 16px;color:var(--text-muted);font-size:0.85rem">Nenhum produto encontrado.</div>`;
           } else {
             pDropdown.innerHTML = matches.map(p => `
-              <div data-name="${p.name}" data-price="${p.price}"
-                style="padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s"
-                onmouseover="this.style.background='var(--green-50)'" onmouseout="this.style.background=''">
+              <div data-name="${p.name}" data-price="${p.price}" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s" onmouseover="this.style.background='var(--green-50)'" onmouseout="this.style.background=''">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
                   <span style="font-size:0.9rem;font-weight:600;color:var(--text-dark)">${p.name}</span>
-                  <span style="font-size:0.75rem;background:${p.source==='estoque'?'#dcfce7':'#eff6ff'};color:${p.source==='estoque'?'#166534':'#1d4ed8'};padding:2px 6px;border-radius:4px">
-                    ${p.source==='estoque' ? 'Meu Estoque' : 'doTERRA'}
-                  </span>
+                  <span style="font-size:0.75rem;background:${p.source==='estoque'?'#dcfce7':'#eff6ff'};color:${p.source==='estoque'?'#166534':'#1d4ed8'};padding:2px 6px;border-radius:4px">${p.source==='estoque' ? 'Meu Estoque' : 'doTERRA'}</span>
                 </div>
                 <div style="font-size:0.8rem;color:var(--green-700);margin-top:2px">Sugerido: R$ ${p.price.toFixed(2)}</div>
               </div>
@@ -785,21 +836,14 @@ export async function renderPurchases(router) {
           }
           pDropdown.style.display = 'block';
         }
-
-        pSearchInput.addEventListener('input', () => {
-          pHiddenInput.value = pSearchInput.value; // permite texto livre
-          renderProductDropdown(pSearchInput.value);
-        });
+        pSearchInput.addEventListener('input', () => { pHiddenInput.value = pSearchInput.value; renderProductDropdown(pSearchInput.value); });
         pSearchInput.addEventListener('focus', () => renderProductDropdown(pSearchInput.value));
-        
         pDropdown.addEventListener('mousedown', (e) => {
           const item = e.target.closest('[data-name]');
           if (!item) return;
           pSearchInput.value = item.dataset.name;
           pHiddenInput.value = item.dataset.name;
-          if (item.dataset.price && parseFloat(item.dataset.price) > 0) {
-            valueInput.value = parseFloat(item.dataset.price).toFixed(2);
-          }
+          if (item.dataset.price && parseFloat(item.dataset.price) > 0) valueInput.value = parseFloat(item.dataset.price).toFixed(2);
           pDropdown.style.display = 'none';
         });
 
@@ -810,22 +854,37 @@ export async function renderPurchases(router) {
       },
       onConfirm: async () => {
         const cliente_id = document.getElementById('pu-client').value;
-        const produto = document.getElementById('pu-product').value.trim();
-        if (!cliente_id) { toast('Selecione uma cliente na lista de sugestões', 'error'); return false; }
-        if (!produto) { toast('Preencha o produto / kit', 'error'); return false; }
+        const data = document.getElementById('pu-date').value;
+        const observacao = document.getElementById('pu-note').value;
+        
+        if (!cliente_id) { toast('Selecione uma cliente', 'error'); return false; }
+        if (items.length === 0) { toast('Adicione pelo menos um produto ao carrinho', 'error'); return false; }
+
         try {
-          const nova = await store.addCompra({
-            cliente_id,
-            produto,
-            valor: parseFloat(document.getElementById('pu-value').value) || 0,
-            data: document.getElementById('pu-date').value,
-            observacao: document.getElementById('pu-note').value,
+          const results = await Promise.all(items.map(it => 
+            store.addCompra({
+              cliente_id,
+              produto: it.produto,
+              valor: it.valor,
+              data,
+              observacao
+            })
+          ));
+
+          const cliente_nome = clients.find(c => c.id === cliente_id)?.nome || 'Cliente';
+          results.forEach(nova => {
+            nova.cliente_nome = cliente_nome;
+            localPurchases.unshift(nova);
           });
-          // Enriquecer com nome do cliente para a UI
-          nova.cliente_nome = clients.find(c => c.id === cliente_id)?.nome || null;
-          localPurchases.unshift(nova);
-          renderList(); toast('Compra registrada! 🛒');
-        } catch(e) { toast(e.message, 'error'); return false; }
+
+          renderList();
+          toast(`${items.length} produto(s) registrado(s) com sucesso! 🛒`);
+          return true;
+        } catch(e) { 
+          toast('Erro ao registrar alguns itens: ' + e.message, 'error'); 
+          renderList();
+          return false; 
+        }
       }
     });
   }
