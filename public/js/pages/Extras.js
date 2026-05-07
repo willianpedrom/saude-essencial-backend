@@ -115,7 +115,7 @@ export async function renderTestimonials(router) {
           { icon: '⭐', label: 'Total', value: localTestimonials.length, color: '#7c3aed', bg: '#f5f3ff' },
           { icon: '🔥', label: 'Promotores', value: promoters, color: '#16a34a', bg: '#f0fdf4' },
           { icon: '📊', label: 'NPS Médio', value: avgNps, color: '#0891b2', bg: '#ecfeff' },
-          { icon: '✅', label: 'Aprovados', value: approved, color: '#d97706', bg: '#fffbeb' },
+          { icon: '🌐', label: 'Exibidos na Página', value: approved, color: '#d97706', bg: '#fffbeb' },
         ].map(s => `
             <div style="background:${s.bg};border-radius:12px;padding:14px 16px;border:1px solid ${s.color}22">
               <div style="font-size:1.3rem;margin-bottom:4px">${s.icon}</div>
@@ -223,16 +223,18 @@ export async function renderTestimonials(router) {
                           </button>
                         </div>
                         <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
-                          ${!t.aprovado
-                ? `<button class="btn btn-sm" data-approve="${t.id}"
-                                style="background:#16a34a;color:#fff;border-color:#16a34a;
-                                       font-size:0.77rem;padding:5px 10px;font-weight:600">
-                                ✅ Aprovar
-                              </button>`
-                : `<span style="font-size:0.77rem;color:#16a34a;font-weight:700;
-                                          display:flex;align-items:center;gap:3px">
-                                ✅ Aprov.
-                              </span>`}
+                          <div style="display:flex;background:#f1f5f9;border-radius:8px;padding:2px;gap:2px;border:1px solid #e2e8f0;flex-shrink:0">
+                            <button class="btn-toggle-visibility" data-id="${t.id}" data-value="true" 
+                              style="border:none;padding:5px 10px;font-size:0.72rem;border-radius:6px;font-weight:700;cursor:pointer;transition:all 0.2s;
+                              ${t.aprovado ? 'background:#16a34a;color:#fff;box-shadow:0 2px 4px rgba(22,163,74,0.2)' : 'background:transparent;color:#64748b'}">
+                              Exibir
+                            </button>
+                            <button class="btn-toggle-visibility" data-id="${t.id}" data-value="false" 
+                              style="border:none;padding:5px 10px;font-size:0.72rem;border-radius:6px;font-weight:700;cursor:pointer;transition:all 0.2s;
+                              ${!t.aprovado ? 'background:#64748b;color:#fff' : 'background:transparent;color:#64748b'}">
+                              Ocultar
+                            </button>
+                          </div>
                           
                           <select class="btn btn-sm type-selector" data-id="${t.id}" style="background:#f8fafc;border:1px solid #cbd5e1;padding:4px 8px;font-size:0.7rem;border-radius:6px;outline:none;cursor:pointer">
                             <option value="cliente" ${!t.tipo || t.tipo === 'cliente' ? 'selected' : ''}>Público: Clientes</option>
@@ -293,31 +295,23 @@ export async function renderTestimonials(router) {
         });
       });
 
-      // Approvation
-      document.querySelectorAll('[data-approve]').forEach(btn => {
+      // Visibility Toggle (Show/Hide)
+      document.querySelectorAll('.btn-toggle-visibility').forEach(btn => {
         btn.addEventListener('click', async () => {
-          const id = btn.dataset.approve;
-          let success = false;
+          const id = btn.dataset.id;
+          const value = btn.dataset.value === 'true';
+          const t = localTestimonials.find(x => String(x.id) === String(id));
+          if (!t || t.aprovado === value) return;
+
           btn.disabled = true;
-          btn.textContent = '⏳ Aprovando...';
           try {
-            await store.approveTestimonial(id, true);
-            // Usa String() para evitar falha silenciosa: id do banco é number, dataset é string
-            localTestimonials = localTestimonials.map(t => String(t.id) === String(id) ? { ...t, aprovado: true } : t);
-            success = true;
+            await store.approveTestimonial(id, value);
+            t.aprovado = value;
+            toast(value ? 'Depoimento exibido na página pública! ✅' : 'Depoimento ocultado da página pública. 👁️‍🗨️');
+            renderView();
           } catch (e) {
-            const msg = e?.message || '';
-            if (msg.includes('401') || msg.toLowerCase().includes('expirado') || msg.toLowerCase().includes('inválido')) {
-              toast('Sua sessão expirou. Recarregue a página e tente novamente.', 'error');
-            } else {
-              toast(msg || 'Erro ao aprovar. Tente novamente.', 'error');
-            }
-          } finally {
-            // Garante que a UI SEMPRE seja atualizada, mesmo se toast() falhar
-            try { renderView(); } catch { /* silencioso */ }
-            if (success) {
-              try { toast('Depoimento aprovado com sucesso! ✅'); } catch { /* silencioso */ }
-            }
+            toast(e.message || 'Erro ao alterar visibilidade.', 'error');
+            btn.disabled = false;
           }
         });
       });
