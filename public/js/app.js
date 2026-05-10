@@ -73,11 +73,11 @@ const router = new Router({
         router.navigate('/schedule');
     }),
     '/testimonials': guard(async () => {
-        const { renderTestimonials } = await import('./pages/Extras.js?v=37');
+        const { renderTestimonials } = await import('./pages/Extras.js?v=38');
         renderTestimonials(router);
     }),
     '/purchases': guard(async () => {
-        const { renderPurchases } = await import('./pages/Extras.js?v=37');
+        const { renderPurchases } = await import('./pages/Extras.js?v=38');
         renderPurchases(router);
     }),
     '/assinatura': guard(async () => {
@@ -109,7 +109,7 @@ const router = new Router({
         renderProspecting(router);
     }),
     '/estoque': guard(async () => {
-        const { renderInventory } = await import('./pages/Inventory.js?v=2');
+        const { renderInventory } = await import('./pages/Inventory.js?v=3');
         renderInventory(router);
     }),
 
