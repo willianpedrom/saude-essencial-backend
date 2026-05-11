@@ -66,18 +66,18 @@ const router = new Router({
         renderAnamnesisList(router, params);
     }),
     '/schedule': guard(async () => {
-        const { renderSchedule } = await import('./pages/Schedule.js?v=4');
+        const { renderSchedule } = await import('./pages/Schedule.js?v=5');
         renderSchedule(router);
     }),
     '/followup': guard(async () => {
         router.navigate('/schedule');
     }),
     '/testimonials': guard(async () => {
-        const { renderTestimonials } = await import('./pages/Extras.js?v=38');
+        const { renderTestimonials } = await import('./pages/Extras.js?v=40');
         renderTestimonials(router);
     }),
     '/purchases': guard(async () => {
-        const { renderPurchases } = await import('./pages/Extras.js?v=38');
+        const { renderPurchases } = await import('./pages/Extras.js?v=40');
         renderPurchases(router);
     }),
     '/assinatura': guard(async () => {
@@ -109,7 +109,7 @@ const router = new Router({
         renderProspecting(router);
     }),
     '/estoque': guard(async () => {
-        const { renderInventory } = await import('./pages/Inventory.js?v=4');
+        const { renderInventory } = await import('./pages/Inventory.js?v=5');
         renderInventory(router);
     }),
 

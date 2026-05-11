@@ -138,6 +138,7 @@ const DOTERRA_PRODUCTS = [
     { nome: "Sabonete Líquido On Guard", cat: "Personal Care" },
     { nome: "Pomada Deep Blue Rub", cat: "Personal Care" },
     { nome: "Bálsamo Labial Original", cat: "Personal Care" },
+    { nome: "Lavender Fields Body Splash", cat: "Personal Care" },
     { nome: "Loção Mãos e Corpo", cat: "Personal Care" },
     { nome: "Shampoo Salon Essentials", cat: "Personal Care" },
     { nome: "Condicionador Salon Essentials", cat: "Personal Care" },
