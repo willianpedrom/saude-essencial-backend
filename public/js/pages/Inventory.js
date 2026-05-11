@@ -199,6 +199,7 @@ const DOTERRA_PRODUCTS = [
     { nome: "Pimenta Rosa (Pink Pepper)", cat: "Óleo Essencial" },
     { nome: "Petitgrain", cat: "Óleo Essencial" },
     { nome: "Douglas Fir", cat: "Óleo Essencial" },
+    { nome: "Black Spruce", cat: "Óleo Essencial" },
     { nome: "Spikenard", cat: "Óleo Essencial" },
     { nome: "Breu Branco", cat: "Óleo Essencial" },
     { nome: "Erva Baleeira", cat: "Óleo Essencial" },
