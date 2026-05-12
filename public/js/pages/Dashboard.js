@@ -200,7 +200,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
           `);
           m.el.querySelector('#btn-upsell-upgrade').addEventListener('click', () => {
              m.close();
-             router.navigate('/profile');
+             window.location.href = 'https://www.gotaapp.com.br/upgrade';
           });
         });
         return;
