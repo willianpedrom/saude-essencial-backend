@@ -53,7 +53,7 @@ export function normalizeClient(c) {
         phone: c.telefone || c.phone || '',
         birthdate: c.data_nascimento || c.birthdate || '',
         city: c.cidade || c.city || '',
-        notes: c.observacoes || c.notes || '',
+        notes: c.notas || c.observacoes || c.notes || '',
         status: c.status || 'active',
         genero: c.genero || 'feminino',
         protocolo_mensagem: c.protocolo_mensagem || '',

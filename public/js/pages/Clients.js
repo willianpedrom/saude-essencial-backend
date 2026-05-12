@@ -1236,7 +1236,7 @@ export async function renderClients(router, params) {
         </div>` : ''}
         <div class="form-group form-field-full">
           <label class="field-label">Observações Internas</label>
-          <textarea class="field-textarea" id="m-notes">${client?.notes || ''}</textarea>
+          <textarea class="field-textarea" id="m-notes">${client?.notas || client?.notes || ''}</textarea>
         </div>
       </div>`, {
       confirmLabel: client ? 'Salvar' : 'Adicionar',
