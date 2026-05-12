@@ -380,8 +380,31 @@ export async function renderPublicAnamnesis(router, token) {
       // General validation for required fields on current step
       let isValid = true;
       (QUESTIONS[stepDef.id].fields || []).forEach(f => {
-        if (f.required && !document.getElementById('field-' + (f.name||f.key))?.value?.trim()) isValid = false;
+        if (f.showIf && !f.showIf(answers)) return;
+        if (f.required) {
+          if (f.type === 'radio') {
+            if (!document.querySelector(`input[name="${f.name||f.key}"]:checked`)) isValid = false;
+          } else if (f.type === 'scale') {
+            if (!document.querySelector(`[data-scale-key="${f.name||f.key}"] .scale-btn.selected`)) isValid = false;
+          } else {
+            if (!document.getElementById('field-' + (f.name||f.key))?.value?.trim()) isValid = false;
+          }
+        }
       });
+      
+      (QUESTIONS[stepDef.id].sections || []).forEach(sec => {
+        if (sec.showIf && !sec.showIf(answers)) return;
+        if (sec.required) {
+           if (sec.type === 'radio' || sec.type === 'checkbox') {
+             if (!document.querySelector(`input[name="${sec.key}"]:checked`)) isValid = false;
+           } else if (sec.type === 'scale') {
+             if (!document.querySelector(`[data-scale-key="${sec.key}"] .scale-btn.selected`)) isValid = false;
+           } else if (sec.type === 'textarea') {
+             if (!document.querySelector(`textarea[name="${sec.key}"]`)?.value?.trim()) isValid = false;
+           }
+        }
+      });
+      
       if (!isValid) { toast('Preencha as informações obrigatórias para continuar.', 'error'); return; }
 
       collectAnswers(stepDef.id);
@@ -434,11 +457,10 @@ export async function renderPublicAnamnesis(router, token) {
 
   function renderFields(section, saved) {
     let html = '';
-    const allAns = Object.values(answers).reduce((acc, v) => ({ ...acc, ...v }), {});
 
     if (section.fields) {
       html += section.fields.map(f => {
-        if (f.showIf && !f.showIf(allAns)) return '';
+        if (f.showIf && !f.showIf(answers)) return '';
         const key = f.name || f.key;
         const val = saved[key] || '';
         const extraClass = f.onChangeSubmit ? ' trigger-update' : '';
@@ -499,7 +521,7 @@ export async function renderPublicAnamnesis(router, token) {
 
     if (section.sections) {
       html += section.sections.map(sec => {
-        if (sec.showIf && !sec.showIf(allAns)) return '';
+        if (sec.showIf && !sec.showIf(answers)) return '';
         const sv = saved[sec.key];
         const extraClass = sec.onChangeSubmit ? ' trigger-update' : '';
         if (sec.type === 'checkbox') {
