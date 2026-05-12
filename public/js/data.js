@@ -15,7 +15,12 @@ export const ANAMNESIS_QUESTIONS = {
     personal: {
         title: 'Olá! Como podemos te chamar?', icon: '👋',
         fields: [
-            { name: 'full_name', label: 'Seu Nome ou Apelido', type: 'text', required: true, placeholder: 'Ex: Ana Maria' },
+            { name: 'target', label: 'Para quem é esta anamnese?', type: 'radio', options: ['Para mim', 'Para meu filho(a)'], onChangeSubmit: true, required: true },
+            { name: 'full_name', label: 'Seu Nome ou Apelido', type: 'text', required: true, placeholder: 'Ex: Ana Maria', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)' },
+            { name: 'child_name', label: 'Nome da Criança', type: 'text', required: true, placeholder: 'Ex: João', showIf: (ans) => ans.personal?.target === 'Para meu filho(a)' },
+            { name: 'guardian_name', label: 'Seu Nome (Responsável)', type: 'text', required: true, placeholder: 'Ex: Ana Maria', showIf: (ans) => ans.personal?.target === 'Para meu filho(a)' },
+            { name: 'child_age', label: 'Idade da Criança (ex: 3 anos e 8 meses)', type: 'text', required: true, placeholder: 'Idade exata', showIf: (ans) => ans.personal?.target === 'Para meu filho(a)' },
+            { name: 'child_weight', label: 'Peso Aproximado (kg)', type: 'text', required: true, placeholder: 'Ex: 15kg', showIf: (ans) => ans.personal?.target === 'Para meu filho(a)' },
             { name: 'phone', label: 'Seu melhor WhatsApp', type: 'tel', required: true, placeholder: '(11) 99999-9999' }
         ]
     },
@@ -23,7 +28,7 @@ export const ANAMNESIS_QUESTIONS = {
         title: 'Ótimo começo, {nome}! Como está a sua Saúde Física?', icon: '🫀',
         sections: [
             {
-                label: 'Atenção especial: O uso será para alguém com alguma destas condições?', key: 'special_conditions', type: 'checkbox', options: [
+                label: 'Atenção especial: O uso será para alguém com alguma destas condições?', key: 'special_conditions', type: 'checkbox', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: [
                     'Gestante',
                     'Lactante',
                     'Criança (menor de 3 anos)',
@@ -33,9 +38,15 @@ export const ANAMNESIS_QUESTIONS = {
                     'Nenhuma destas'
                 ]
             },
+            {
+                label: 'Imunidade e Saúde Física da Criança', key: 'child_health_symptoms', type: 'checkbox', showIf: (ans) => ans.personal?.target === 'Para meu filho(a)', options: [
+                    'Resfriados frequentes', 'Viroses de repetição', 'Alergias respiratórias (rinite/asma)',
+                    'Dermatite / Assaduras', 'Cólicas (bebês)', 'Constipação / Intestino preso', 'Refluxo', 'Febre frequente'
+                ]
+            },
             { label: 'Medicamentos ou suplementos em uso contínuo?', key: 'medications', type: 'textarea', placeholder: 'Liste medicamentos e suplementos (ou deixe em branco)' },
             {
-                label: 'Sintomas físicos frequentes', key: 'general_symptoms', type: 'checkbox', options: [
+                label: 'Sintomas físicos frequentes', key: 'general_symptoms', type: 'checkbox', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: [
                     'Dores de cabeça frequentes', 'Enxaqueca', 'Dores musculares', 'Dores nas articulações',
                     'Dor nas costas', 'Pressão alta', 'Pressão baixa', 'Falta de ar',
                     'Sinusite / Rinite', 'Alergias frequentes', 'Gripes frequentes',
@@ -43,7 +54,7 @@ export const ANAMNESIS_QUESTIONS = {
                 ]
             },
             {
-                label: 'Problemas digestivos', key: 'digestive_symptoms', type: 'checkbox', options: [
+                label: 'Problemas digestivos', key: 'digestive_symptoms', type: 'checkbox', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: [
                     'Refluxo / Azia', 'Gastrite', 'Inchaço abdominal', 'Gases excessivos',
                     'Constipação', 'Diarreia frequente', 'Intestino irritável',
                     'Náuseas', 'Intolerância à lactose', 'Sensibilidade ao glúten',
@@ -51,7 +62,7 @@ export const ANAMNESIS_QUESTIONS = {
                 ]
             },
             {
-                label: 'Saúde hormonal', key: 'hormonal_female', type: 'checkbox', options: [
+                label: 'Saúde hormonal', key: 'hormonal_female', type: 'checkbox', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: [
                     'Cólicas menstruais intensas', 'Ciclo irregular', 'TPM intensa',
                     'Endometriose', 'SOP', 'Menopausa em curso', 'Fogachos / Calores',
                     'Baixa libido', 'Dificuldade para engravidar',
@@ -59,20 +70,20 @@ export const ANAMNESIS_QUESTIONS = {
                 ]
             },
             {
-                label: 'Condições crônicas diagnosticadas', key: 'chronic_conditions', type: 'checkbox', options: [
+                label: 'Condições crônicas diagnosticadas', key: 'chronic_conditions', type: 'checkbox', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: [
                     'Diabetes', 'Hipertensão', 'Colesterol alto', 'Artrite / Artrose',
                     'Fibromialgia', 'Asma', 'Doença celíaca', 'Nenhuma',
                 ]
             },
-            { label: 'Frequência da dor', key: 'pain_frequency', type: 'scale', scaleLabel: ['Raramente', 'Às vezes', 'Frequente', 'Sempre'], max: 5 },
+            { label: 'Frequência da dor', key: 'pain_frequency', type: 'scale', scaleLabel: ['Raramente', 'Às vezes', 'Frequente', 'Sempre'], max: 5, showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)' },
         ]
     },
     emotional: {
         title: 'Isso aí, {nome}! Conta pra gente sobre suas Emoções e Sono', icon: '🧠',
         sections: [
-            { label: 'Conte como está se sentindo emocionalmente', key: 'emotional_open', type: 'textarea', placeholder: 'Descreva sua situação emocional atual...' },
+            { label: 'Conte como está se sentindo emocionalmente', key: 'emotional_open', type: 'textarea', placeholder: 'Descreva sua situação emocional atual...', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)' },
             {
-                label: 'Sintomas emocionais', key: 'emotional_symptoms', type: 'checkbox', options: [
+                label: 'Sintomas emocionais', key: 'emotional_symptoms', type: 'checkbox', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: [
                     'Ansiedade', 'Ataques de pânico', 'Estresse crônico',
                     'Esgotamento emocional (burnout)', 'Depressão', 'Tristeza frequente',
                     'Irritabilidade', 'Dificuldade de concentração', 'Esquecimento',
@@ -81,7 +92,14 @@ export const ANAMNESIS_QUESTIONS = {
                 ]
             },
             {
-                label: 'Problemas de sono', key: 'sleep_symptoms', type: 'checkbox', options: [
+                label: 'Comportamento e Sono da Criança', key: 'child_emotional_symptoms', type: 'checkbox', showIf: (ans) => ans.personal?.target === 'Para meu filho(a)', options: [
+                    'Agitação noturna', 'Dificuldade para pegar no sono', 'Acorda muito de madrugada / Terror noturno',
+                    'Birras extremas / Irritabilidade', 'Ansiedade de separação', 'Adaptação escolar difícil',
+                    'Hiperatividade / Dificuldade de foco', 'Espectro autista / TDAH'
+                ]
+            },
+            {
+                label: 'Problemas de sono', key: 'sleep_symptoms', type: 'checkbox', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: [
                     'Insônia (dificuldade de adormecer)', 'Acorda no meio da noite',
                     'Sono leve', 'Bruxismo', 'Apneia do sono',
                     'Acorda sem disposição', 'Sonolência durante o dia',
@@ -89,52 +107,65 @@ export const ANAMNESIS_QUESTIONS = {
                 ]
             },
             {
-                label: 'Fadiga e baixa energia', key: 'low_energy_symptoms', type: 'checkbox', options: [
+                label: 'Fadiga e baixa energia', key: 'low_energy_symptoms', type: 'checkbox', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: [
                     'Fadiga crônica / cansaço constante', 'Esgotamento após pequenos esforços',
                     'Falta de motivação', 'Procrastinação excessiva', 'Dependência de cafeína',
                     'Falta de força/energia para exercícios',
                 ]
             },
-            { label: 'Nível de estresse (1=baixo, 10=extremo)', key: 'stress_level', type: 'scale', max: 10 },
-            { label: 'Nível de energia (1=exausto, 10=disposto)', key: 'energy_level', type: 'scale', max: 10 },
-            { label: 'Horas de sono por noite', key: 'sleep_hours', type: 'radio', options: ['Menos de 5h', '5 a 6h', '6 a 7h', '7 a 8h', 'Mais de 8h'] },
+            { label: 'Nível de estresse (1=baixo, 10=extremo)', key: 'stress_level', type: 'scale', max: 10, showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)' },
+            { label: 'Nível de energia (1=exausto, 10=disposto)', key: 'energy_level', type: 'scale', max: 10, showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)' },
+            { label: 'Horas de sono por noite', key: 'sleep_hours', type: 'radio', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: ['Menos de 5h', '5 a 6h', '6 a 7h', '7 a 8h', 'Mais de 8h'] },
         ]
     },
     body: {
         title: 'Estamos quase lá, {nome}! Como são seus Hábitos Diários?', icon: '✨',
         sections: [
             {
-                label: 'Condições de pele', key: 'skin_symptoms', type: 'checkbox', options: [
+                label: 'Condições de pele', key: 'skin_symptoms', type: 'checkbox', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: [
                     'Acne / Espinhas frequentes', 'Pele oleosa', 'Pele muito seca',
                     'Eczema / Dermatite', 'Psoríase', 'Manchas na pele',
                     'Rugas precoces', 'Flacidez', 'Celulite', 'Pele opaca / sem brilho',
                 ]
             },
             {
-                label: 'Condições do cabelo', key: 'hair_symptoms', type: 'checkbox', options: [
+                label: 'Condições do cabelo', key: 'hair_symptoms', type: 'checkbox', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: [
                     'Queda excessiva', 'Cabelo fraco e quebradiço',
                     'Couro cabeludo oleoso', 'Caspa', 'Cabelo sem brilho', 'Alopecia / Calvície',
                 ]
             },
-            { label: 'Tipo de pele', key: 'skin_type', type: 'radio', options: ['Normal', 'Oleosa', 'Seca', 'Mista', 'Sensível'] },
-            { label: 'Atividade física', key: 'exercise_freq', type: 'radio', options: ['Sedentário', '1-2x por semana', '3-4x por semana', 'Todos os dias'] },
-            { label: 'Alimentação predominante', key: 'diet_type', type: 'radio', options: ['Saudável', 'Moderada', 'Industrializada', 'Vegetariana / Vegana', 'Low carb'] },
-            { label: 'Água por dia', key: 'water_intake', type: 'radio', options: ['Menos de 1L', '1 a 1,5L', '1,5 a 2L', 'Mais de 2L'] },
-            { label: 'Consome com frequência', key: 'bad_habits_food', type: 'checkbox', options: ['Álcool', 'Café em excesso', 'Refrigerantes', 'Açúcar refinado', 'Cigarro'] },
+            {
+                label: 'Rotina e Ambiente', key: 'child_routine', type: 'checkbox', showIf: (ans) => ans.personal?.target === 'Para meu filho(a)', options: [
+                    'Frequenta creche ou escola', 'Aceita bem cheiros e toques (massagem)',
+                    'Possui sensibilidade sensorial', 'Tem restrição alimentar', 'Nasceu prematuro'
+                ]
+            },
+            { label: 'Já usou óleos essenciais na criança antes? Houve alguma reação?', key: 'child_experience', type: 'textarea', showIf: (ans) => ans.personal?.target === 'Para meu filho(a)', placeholder: 'Conte um pouco...' },
+            {
+                label: 'Via de Uso Preferida', key: 'child_preference', type: 'checkbox', showIf: (ans) => ans.personal?.target === 'Para meu filho(a)', options: [
+                    'No difusor de ambiente', 'Uso tópico (Roll-on nos pés/coluna)', 'Banhos aromáticos'
+                ]
+            },
+            { label: 'Tipo de pele', key: 'skin_type', type: 'radio', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: ['Normal', 'Oleosa', 'Seca', 'Mista', 'Sensível'] },
+            { label: 'Atividade física', key: 'exercise_freq', type: 'radio', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: ['Sedentário', '1-2x por semana', '3-4x por semana', 'Todos os dias'] },
+            { label: 'Alimentação predominante', key: 'diet_type', type: 'radio', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: ['Saudável', 'Moderada', 'Industrializada', 'Vegetariana / Vegana', 'Low carb'] },
+            { label: 'Água por dia', key: 'water_intake', type: 'radio', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: ['Menos de 1L', '1 a 1,5L', '1,5 a 2L', 'Mais de 2L'] },
+            { label: 'Consome com frequência', key: 'bad_habits_food', type: 'checkbox', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: ['Álcool', 'Café em excesso', 'Refrigerantes', 'Açúcar refinado', 'Cigarro'] },
         ]
     },
     goals: {
         title: 'Excelente, {nome}! Seu protocolo está quase pronto.', icon: '🎯',
         fields: [
             { name: 'email', label: 'Para qual e-mail enviamos seu Protocolo?', type: 'email', required: true, placeholder: 'seu@email.com' },
-            { name: 'birthdate', label: 'Sua data de nascimento', type: 'birthdate', required: true },
-            { name: 'gender', label: 'Qual é o seu Gênero?', type: 'select', required: true, options: ['Feminino', 'Masculino'] },
+            { name: 'birthdate', label: 'Sua data de nascimento', type: 'birthdate', required: true, showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)' },
+            { name: 'gender', label: 'Qual é o seu Gênero?', type: 'select', required: true, showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: ['Feminino', 'Masculino'] },
+            { name: 'child_gender', label: 'Qual é o gênero da criança?', type: 'select', required: true, showIf: (ans) => ans.personal?.target === 'Para meu filho(a)', options: ['Feminino', 'Masculino'] },
             { name: 'city', label: 'Cidade e Estado', type: 'text', placeholder: 'Ex: São Paulo, SP' }
         ],
         sections: [
             { label: 'Qual é sua maior queixa de saúde HOJE?', key: 'main_complaint', type: 'textarea', placeholder: 'Descreva o principal problema que quer resolver...' },
             {
-                label: 'O que busca com óleos essenciais?', key: 'goals', type: 'checkbox', options: [
+                label: 'O que busca com óleos essenciais?', key: 'goals', type: 'checkbox', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: [
                     'Reduzir estresse e ansiedade', 'Melhorar o sono', 'Aliviar dores',
                     'Melhorar a digestão', 'Fortalecer a imunidade', 'Equilibrar hormônios',
                     'Emagrecer / metabolismo', 'Melhorar pele e cabelo',
@@ -143,7 +174,15 @@ export const ANAMNESIS_QUESTIONS = {
                     'Cuidado emocional profundo', 'Apoio à menopausa', 'Saúde para a família',
                 ]
             },
-            { label: 'Já usou óleos essenciais?', key: 'previous_experience', type: 'radio', options: ['Nunca usei', 'Usei e gostei', 'Usei mas não tive resultado', 'Uso regularmente'] },
+            {
+                label: 'O que busca com os óleos para a criança?', key: 'child_goals', type: 'checkbox', showIf: (ans) => ans.personal?.target === 'Para meu filho(a)', options: [
+                    'Aumentar a imunidade (prevenir doenças)', 'Melhorar a qualidade do sono',
+                    'Acalmar agitação e ansiedade', 'Aliviar problemas respiratórios',
+                    'Melhorar a digestão / aliviar cólicas', 'Cuidar da pele naturalmente',
+                    'Apoio emocional e comportamental'
+                ]
+            },
+            { label: 'Já usou óleos essenciais?', key: 'previous_experience', type: 'radio', showIf: (ans) => ans.personal?.target !== 'Para meu filho(a)', options: ['Nunca usei', 'Usei e gostei', 'Usei mas não tive resultado', 'Uso regularmente'] },
             { label: 'Comprometimento com mudança de hábitos', key: 'commitment_level', type: 'scale', max: 5, scaleLabel: ['Baixo', '', 'Médio', '', 'Alto'] },
         ]
     }

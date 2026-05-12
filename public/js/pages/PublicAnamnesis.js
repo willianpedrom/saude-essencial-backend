@@ -200,7 +200,7 @@ export async function renderPublicAnamnesis(router, token) {
     const isLast = currentStep === STEPS.length - 1;
     
     // Substitui {nome} pelo primeiro nome, se houver
-    let firstName = (answers.personal?.full_name || '').split(' ')[0] || 'você';
+    let firstName = (answers.personal?.guardian_name || answers.personal?.full_name || '').split(' ')[0] || 'você';
     let sectionTitle = section.title.replace('{nome}', firstName);
 
     // Timer Logic for Scarcity
@@ -394,7 +394,7 @@ export async function renderPublicAnamnesis(router, token) {
       if (isLast) {
         showProcessingEffect(submitAnamnesis);
       } else {
-        const curName = (answers.personal?.full_name || 'Amigo(a)').split(' ')[0];
+        const curName = (answers.personal?.guardian_name || answers.personal?.full_name || 'Amigo(a)').split(' ')[0];
         const msgs = isBusiness ? [
           `Excelente, ${curName}! Vamos entender seu momento profissional...`,
           `Muito bom! Agora vamos mapear seu perfil de ação...`,
@@ -423,25 +423,33 @@ export async function renderPublicAnamnesis(router, token) {
         btn.classList.add('selected');
       });
     });
+
+    document.querySelectorAll('.trigger-update').forEach(el => {
+      el.addEventListener('change', () => {
+        collectAnswers(stepDef.id);
+        renderStep();
+      });
+    });
   }
 
   function renderFields(section, saved) {
     let html = '';
+    const allAns = Object.values(answers).reduce((acc, v) => ({ ...acc, ...v }), {});
 
     if (section.fields) {
       html += section.fields.map(f => {
+        if (f.showIf && !f.showIf(allAns)) return '';
         const key = f.name || f.key;
         const val = saved[key] || '';
+        const extraClass = f.onChangeSubmit ? ' trigger-update' : '';
 
         if (['text', 'email', 'tel', 'date'].includes(f.type)) {
           return `<div class="form-group" style="margin-bottom:14px">
               <label class="field-label">${f.label}${f.required ? ' *' : ''}</label>
-              <input class="field-input" id="field-${key}" type="${f.type}" value="${val}" placeholder="${f.placeholder || ''}" ${f.required ? 'required' : ''} />
+              <input class="field-input${extraClass}" id="field-${key}" type="${f.type}" value="${val}" placeholder="${f.placeholder || ''}" ${f.required ? 'required' : ''} />
             </div>`;
         }
         if (f.type === 'birthdate') {
-          // Special masked birthdate input for better UX (tel type opens numeric keyboard)
-          // Value is stored as YYYY-MM-DD, but displayed as DD/MM/YYYY
           let displayVal = val;
           if (val && val.includes('-')) {
              const [y, m, d] = val.split('-');
@@ -449,7 +457,7 @@ export async function renderPublicAnamnesis(router, token) {
           }
           return `<div class="form-group" style="margin-bottom:14px">
               <label class="field-label">${f.label}${f.required ? ' *' : ''}</label>
-              <input class="field-input" id="field-${key}" type="tel" inputmode="numeric" 
+              <input class="field-input${extraClass}" id="field-${key}" type="tel" inputmode="numeric" 
                 value="${displayVal}" placeholder="DD/MM/AAAA" ${f.required ? 'required' : ''} 
                 oninput="this.value = this.value.replace(/\\D/g, '').replace(/(\\d{2})(\\d)/, '$1/$2').replace(/(\\d{2})\\/(\\d{2})(\\d)/, '$1/$2/$3').slice(0, 10)" />
             </div>`;
@@ -457,7 +465,7 @@ export async function renderPublicAnamnesis(router, token) {
         if (f.type === 'select') {
           return `<div class="form-group" style="margin-bottom:14px">
               <label class="field-label">${f.label}${f.required ? ' *' : ''}</label>
-              <select class="field-input" id="field-${key}" ${f.required ? 'required' : ''} style="padding:12px 14px;border-radius:10px">
+              <select class="field-input${extraClass}" id="field-${key}" ${f.required ? 'required' : ''} style="padding:12px 14px;border-radius:10px">
                 <option value="">— Selecionar —</option>
                 ${(f.options || []).map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('')}
               </select>
@@ -469,7 +477,7 @@ export async function renderPublicAnamnesis(router, token) {
             <div class="radio-group">
               ${f.options.map(opt => `
                 <label class="radio-pill">
-                  <input type="radio" name="${key}" value="${opt}" ${val === opt ? 'checked' : ''} /> ${opt}
+                  <input type="radio" class="${extraClass}" name="${key}" value="${opt}" ${val === opt ? 'checked' : ''} /> ${opt}
                 </label>`).join('')}
             </div>
           </div>`;
@@ -491,14 +499,16 @@ export async function renderPublicAnamnesis(router, token) {
 
     if (section.sections) {
       html += section.sections.map(sec => {
+        if (sec.showIf && !sec.showIf(allAns)) return '';
         const sv = saved[sec.key];
+        const extraClass = sec.onChangeSubmit ? ' trigger-update' : '';
         if (sec.type === 'checkbox') {
           return `<div style="margin-bottom:22px">
             <div style="font-weight:600;margin-bottom:10px;font-size:0.9rem;color:var(--text-body)">${sec.label}</div>
             <div class="checkbox-grid">
               ${sec.options.map(opt => `
                 <label class="checkbox-item">
-                  <input type="checkbox" name="${sec.key}" value="${opt}" ${Array.isArray(sv) && sv.includes(opt) ? 'checked' : ''} />
+                  <input type="checkbox" class="${extraClass}" name="${sec.key}" value="${opt}" ${Array.isArray(sv) && sv.includes(opt) ? 'checked' : ''} />
                   <div class="checkbox-mark"></div> ${opt}
                 </label>`).join('')}
             </div>
@@ -521,7 +531,7 @@ export async function renderPublicAnamnesis(router, token) {
             <div class="radio-group">
               ${sec.options.map(opt => `
                 <label class="radio-pill">
-                  <input type="radio" name="${sec.key}" value="${opt}" ${sv === opt ? 'checked' : ''} /> ${opt}
+                  <input type="radio" class="${extraClass}" name="${sec.key}" value="${opt}" ${sv === opt ? 'checked' : ''} /> ${opt}
                 </label>`).join('')}
             </div>
           </div>`;
@@ -529,7 +539,7 @@ export async function renderPublicAnamnesis(router, token) {
         if (sec.type === 'textarea') {
           return `<div style="margin-bottom:22px">
             <div style="font-weight:600;margin-bottom:8px;font-size:0.9rem;color:var(--text-body)">${sec.label}</div>
-            <textarea class="field-textarea" name="${sec.key}" placeholder="${sec.placeholder || ''}">${sv || ''}</textarea>
+            <textarea class="field-textarea${extraClass}" name="${sec.key}" placeholder="${sec.placeholder || ''}">${sv || ''}</textarea>
           </div>`;
         }
         return '';
@@ -622,7 +632,7 @@ export async function renderPublicAnamnesis(router, token) {
             link: window.location.origin + '/#anamnese/' + token,
             link_afiliada: anamneseData.consultora_link_afiliada 
         },
-        clientName: allAnswers.full_name || 'Empreendedor',
+        clientName: allAnswers.child_name || allAnswers.full_name || 'Empreendedor',
         clientId: result?.cliente_id || null // Necessário p/ montar o Link de Referência
       });
 
