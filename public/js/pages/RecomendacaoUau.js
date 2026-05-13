@@ -1,4 +1,4 @@
-import { getConsultantTitle } from '../utils.js?v=1002';
+import { getConsultantTitle } from '../utils.js?v=1003';
 
 export function renderRecomendacaoUau(router) {
     const app = document.getElementById('app');

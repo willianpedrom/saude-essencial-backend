@@ -1,5 +1,5 @@
-import { auth, store } from '../store.js?v=1002';
-import { formatDate, formatCurrency, getInitials, toast, getConsultantTitle } from '../utils.js?v=1002';
+import { auth, store } from '../store.js?v=1003';
+import { formatDate, formatCurrency, getInitials, toast, getConsultantTitle } from '../utils.js?v=1003';
 
 // ── Helper: get consultant's display name ────────────────────
 function getNome(consultant) {
@@ -39,7 +39,7 @@ function processNextAviso(avisos, index) {
   if (index >= avisos.length) return; // Fim da fila
   const a = avisos[index];
 
-  import('../utils.js?v=1002').then(({ modal }) => {
+  import('../utils.js?v=1003').then(({ modal }) => {
     modal(
       `${a.tipo === 'danger' ? '🔴' : a.tipo === 'success' ? '🟢' : a.tipo === 'warning' ? '🟡' : '🔵'} ${a.titulo}`,
       `<p style="font-size:0.95rem;white-space:pre-wrap;color:var(--text-dark)">${autoLinkify(a.mensagem)}</p>`,
@@ -90,7 +90,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
   <div class="app-layout">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-logo" id="sidebar-logo" style="margin-bottom:12px">
-        <img src="/logo.png?v=1002" alt="Gota App" style="width:100%;max-width:180px;height:auto;object-fit:contain" />
+        <img src="/logo.png?v=1003" alt="Gota App" style="width:100%;max-width:180px;height:auto;object-fit:contain" />
       </div>
       <div class="sidebar-user" id="sidebar-user-btn" style="cursor:pointer" title="Meu Perfil">
         <div class="sidebar-avatar">
@@ -189,7 +189,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
       
       const req = lockedRoutes[btn.dataset.nav];
       if (req && consultant?.assinatura && consultant.assinatura[req.flag] === false) {
-        import('../utils.js?v=1002').then(({ modal }) => {
+        import('../utils.js?v=1003').then(({ modal }) => {
           const m = modal('🔒 Recurso Premium', `
             <div style="text-align:center;padding:20px 10px">
               <div style="font-size:3rem;margin-bottom:15px">💎</div>
@@ -1123,7 +1123,7 @@ window.dashboardDoneFu = function (id) {
     if (idx >= 0) {
       list[idx].status = 'done';
       localStorage.setItem(key, JSON.stringify(list));
-      import('../utils.js?v=1002').then(m => m.toast('Follow-up concluído! ✅'));
+      import('../utils.js?v=1003').then(m => m.toast('Follow-up concluído! ✅'));
       // re-render
       const app = document.getElementById('app');
       app.querySelector('[data-nav="dashboard"]')?.click();
