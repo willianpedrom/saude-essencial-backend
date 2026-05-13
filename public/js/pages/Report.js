@@ -1,7 +1,7 @@
-import { analyzeAnamnesis } from '../analysis.js?v=1001';
-import { PROTOCOLS } from '../protocols.js?v=1001';
-import { OILS_DATABASE, LIVING_KIT } from '../oils.js?v=1001';
-import { getConsultantTitle } from '../utils.js?v=1001';
+import { analyzeAnamnesis } from '../analysis.js?v=1002';
+import { PROTOCOLS } from '../protocols.js?v=1002';
+import { OILS_DATABASE, LIVING_KIT } from '../oils.js?v=1002';
+import { getConsultantTitle } from '../utils.js?v=1002';
 
 export async function renderReport(router, dataParam, hash = null) {
   const app = document.getElementById('app');
@@ -16,7 +16,7 @@ export async function renderReport(router, dataParam, hash = null) {
         
         // Se for um laudo de RECRUTAMENTO (Negócio), redireciona p/ o BusinessReport
         if (data.tipo === 'recrutamento' || data.subtipo === 'recrutamento') {
-          const { renderBusinessReport } = await import('./BusinessReport.js?v=1001');
+          const { renderBusinessReport } = await import('./BusinessReport.js?v=1002');
           return renderBusinessReport(router, null, {
             answers: data.dados,
             protocolo_customizado: data.protocolo_customizado,
@@ -178,6 +178,8 @@ export async function renderReport(router, dataParam, hash = null) {
   const tReg = bReg + budgetShipping;
   const tMem = bMem + budgetShipping;
   const tDiff = tReg - tMem;
+
+  const guardianName = payload.answers?.personal?.guardian_name;
   
   app.innerHTML = `
   <div class="report-page">
@@ -189,7 +191,7 @@ export async function renderReport(router, dataParam, hash = null) {
           Olá, ${firstName}! 🌱
         </div>
         <h1 style="font-size:1.2rem;letter-spacing:2px;margin-bottom:4px;font-weight:600;text-transform:uppercase">SEU PROTOCOLO AROMATERAPÊUTICO</h1>
-        <p style="opacity:0.8;font-size:0.85rem">Criado exclusivamente para ${clientName}</p>
+        <p style="opacity:0.8;font-size:0.85rem">Criado exclusivamente para ${clientName}${guardianName ? ` <br><span style="font-size:0.75rem;opacity:0.9">(Responsável: ${guardianName})</span>` : ''}</p>
         ${focusText ? `<div style="margin-top:12px;display:inline-block;background:rgba(255,255,255,0.25);color:#ffffff;padding:4px 16px;border-radius:20px;font-size:0.85rem;font-weight:600;letter-spacing:0.5px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">Foco: ${focusText}</div>` : ''}
       </div>
 
