@@ -1,5 +1,5 @@
-import { auth, store } from '../store.js';
-import { formatDate, formatCurrency, getInitials, toast, getConsultantTitle } from '../utils.js';
+import { auth, store } from '../store.js?v=999';
+import { formatDate, formatCurrency, getInitials, toast, getConsultantTitle } from '../utils.js?v=999';
 
 // ── Helper: get consultant's display name ────────────────────
 function getNome(consultant) {
@@ -39,7 +39,7 @@ function processNextAviso(avisos, index) {
   if (index >= avisos.length) return; // Fim da fila
   const a = avisos[index];
 
-  import('../utils.js').then(({ modal }) => {
+  import('../utils.js?v=999').then(({ modal }) => {
     modal(
       `${a.tipo === 'danger' ? '🔴' : a.tipo === 'success' ? '🟢' : a.tipo === 'warning' ? '🟡' : '🔵'} ${a.titulo}`,
       `<p style="font-size:0.95rem;white-space:pre-wrap;color:var(--text-dark)">${autoLinkify(a.mensagem)}</p>`,
@@ -189,7 +189,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
       
       const req = lockedRoutes[btn.dataset.nav];
       if (req && consultant?.assinatura && consultant.assinatura[req.flag] === false) {
-        import('../utils.js').then(({ modal }) => {
+        import('../utils.js?v=999').then(({ modal }) => {
           const m = modal('🔒 Recurso Premium', `
             <div style="text-align:center;padding:20px 10px">
               <div style="font-size:3rem;margin-bottom:15px">💎</div>
@@ -1123,7 +1123,7 @@ window.dashboardDoneFu = function (id) {
     if (idx >= 0) {
       list[idx].status = 'done';
       localStorage.setItem(key, JSON.stringify(list));
-      import('../utils.js').then(m => m.toast('Follow-up concluído! ✅'));
+      import('../utils.js?v=999').then(m => m.toast('Follow-up concluído! ✅'));
       // re-render
       const app = document.getElementById('app');
       app.querySelector('[data-nav="dashboard"]')?.click();

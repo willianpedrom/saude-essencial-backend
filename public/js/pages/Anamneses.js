@@ -1,7 +1,7 @@
-import { auth, store } from '../store.js';
-import { renderLayout } from './Dashboard.js';
-import { ANAMNESIS_STEPS, ANAMNESIS_QUESTIONS } from '../data.js';
-import { formatDate, toast, modal, getConsultantTitle, copyToClipboard } from '../utils.js';
+import { auth, store } from '../store.js?v=999';
+import { renderLayout } from './Dashboard.js?v=999';
+import { ANAMNESIS_STEPS, ANAMNESIS_QUESTIONS } from '../data.js?v=999';
+import { formatDate, toast, modal, getConsultantTitle, copyToClipboard } from '../utils.js?v=999';
 
 export async function renderAnamnesisList(router) {
   renderLayout(router, 'Links de Anamnese',

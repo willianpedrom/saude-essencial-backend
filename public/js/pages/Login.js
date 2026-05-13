@@ -1,5 +1,5 @@
-import { auth } from '../store.js';
-import { toast } from '../utils.js';
+import { auth } from '../store.js?v=999';
+import { toast } from '../utils.js?v=999';
 
 export function renderLogin(router, params = {}) {
   // Merge router params with actual URL search params as fallback

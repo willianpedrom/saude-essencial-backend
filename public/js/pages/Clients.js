@@ -1,9 +1,9 @@
-import { auth, store } from '../store.js';
-import { renderLayout } from './Dashboard.js';
-import { formatDate, getInitials, toast, modal, openClientOffcanvas } from '../utils.js';
-import { analyzeAnamnesis, analyzeBusinessProfile } from '../analysis.js?v=16';
-import { PROTOCOLS } from '../protocols.js';
-import { OILS_DATABASE } from '../oils.js';
+import { auth, store } from '../store.js?v=999';
+import { renderLayout } from './Dashboard.js?v=999';
+import { formatDate, getInitials, toast, modal, openClientOffcanvas } from '../utils.js?v=999';
+import { analyzeAnamnesis, analyzeBusinessProfile } from '../analysis.js?v=999';
+import { PROTOCOLS } from '../protocols.js?v=999';
+import { OILS_DATABASE } from '../oils.js?v=999';
 
 let cachedAnamneses = null; // lazy-load once per session
 
@@ -345,7 +345,7 @@ export async function showAnamneseModal(client, router, anamneseOverride = null)
       if (navigator.clipboard && window.ClipboardItem) {
         try {
           const fetchHash = async () => {
-            const { api } = await import('../store.js');
+            const { api } = await import('../store.js?v=999');
             const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
             return window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
           };
@@ -367,7 +367,7 @@ export async function showAnamneseModal(client, router, anamneseOverride = null)
 
       // Fallback
       try {
-        const { api } = await import('../store.js');
+        const { api } = await import('../store.js?v=999');
         const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
         const magicUrl = window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
         
@@ -1502,7 +1502,7 @@ export async function renderClients(router, params) {
           status: 'ativo'
         })).filter(r => !!r.nome?.trim()); // Drop empty names
 
-        const { api } = await import('../store.js').then(m => ({ api: m.api }));
+        const { api } = await import('../store.js?v=999').then(m => ({ api: m.api }));
         const res = await api('POST', '/api/clientes/import', { clientes: finalData });
         
         overlay.querySelector('#import-step2').style.display = 'none';
