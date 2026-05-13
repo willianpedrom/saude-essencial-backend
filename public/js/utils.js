@@ -628,7 +628,7 @@ export function openClientOffcanvas(client) {
        try {
          if (tipoLoading) tipoLoading.style.display = 'flex';
          const val = e.target.value === 'lead' ? null : e.target.value;
-         const { store } = await import('./store.js?v=999');
+         const { store } = await import('./store.js?v=1000');
          
          // Fetch fresh data or use existing to preserve other fields
          const atual = { ...client };
@@ -663,7 +663,7 @@ export function openClientOffcanvas(client) {
         btnAddRecrutamento.disabled = true;
         btnAddRecrutamento.textContent = "Adicionando...";
         // Importando o store.js dinamicamente pra evitar circular dependency se existir
-        const { store } = await import('./store.js?v=999');
+        const { store } = await import('./store.js?v=1000');
         await store.updateRecrutamentoStage(client.id, 'prospecto_negocio');
         toast('Cliente adicionado(a) ao Funil de Recrutamento! 🎉', 'success');
         closeOC();
@@ -707,7 +707,7 @@ export function openClientOffcanvas(client) {
                  if (!nota) throw new Error('Anotação obrigatória.');
                  if (!data) throw new Error('Data obrigatória.');
                  
-                 const { store } = await import('./store.js?v=999');
+                 const { store } = await import('./store.js?v=1000');
                  await store.addFollowup({
                      cliente_id: client.id,
                      nota,
@@ -724,7 +724,7 @@ export function openClientOffcanvas(client) {
   // Action: Carregar Dossiês Preenchidos
   const dossiesContainer = overlay.querySelector('#oc-dossies-container');
   if (dossiesContainer) {
-    import('./store.js?v=999').then(async ({ store }) => {
+    import('./store.js?v=1000').then(async ({ store }) => {
       try {
         const anamneses = await store.getClientAnamneses(client.id);
         if (!anamneses || anamneses.length === 0) {
@@ -756,9 +756,9 @@ export function openClientOffcanvas(client) {
           btnOpen.innerHTML = `<span>📄 Gerar PDF</span>`;
           btnOpen.onclick = async () => {
              // Busca dados frescos da anamnese
-             const freshAnamneses = await import('./store.js?v=999').then(m => m.store.getClientAnamneses(client.id)).catch(() => []);
+             const freshAnamneses = await import('./store.js?v=1000').then(m => m.store.getClientAnamneses(client.id)).catch(() => []);
              const freshA = freshAnamneses.find(x => x.id === a.id) || a;
-             const { auth } = await import('./store.js?v=999');
+             const { auth } = await import('./store.js?v=1000');
              const consultantObj = auth.current;
              const rawPayload = JSON.stringify({
                  answers: freshA.dados || {},
@@ -791,7 +791,7 @@ export function openClientOffcanvas(client) {
              if (navigator.clipboard && window.ClipboardItem) {
                  try {
                      const fetchHash = async () => {
-                         const { api } = await import('./store.js?v=999');
+                         const { api } = await import('./store.js?v=1000');
                          const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
                          return window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
                      };
@@ -814,7 +814,7 @@ export function openClientOffcanvas(client) {
 
              // Fallback default (Android / Chrome PC onde transient activation não morre no await)
              try {
-                const { api } = await import('./store.js?v=999');
+                const { api } = await import('./store.js?v=1000');
                 const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
                 const magicUrl = window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
                 
@@ -847,7 +847,7 @@ export function openClientOffcanvas(client) {
   // Action: Carregar Histórico de Compras (mesclando por email)
   const comprasContainer = overlay.querySelector('#oc-compras-container');
   if (comprasContainer) {
-    import('./store.js?v=999').then(async ({ store }) => {
+    import('./store.js?v=1000').then(async ({ store }) => {
       try {
         const myPurchases = await store.getComprasByCliente(client.id);
 
@@ -896,7 +896,7 @@ export function openClientOffcanvas(client) {
   const anamnesesSpacer = overlay.querySelector('#anamnese-spacer-oc');
 
   // Carrega as anamneses ao abrir e mostra/esconde o banner de negócios
-  import('./store.js?v=999').then(async ({ store }) => {
+  import('./store.js?v=1000').then(async ({ store }) => {
     const anamneses = await store.getClientAnamneses(client.id).catch(() => []);
     const hasHealth = anamneses.some(a => a.tipo !== 'recrutamento' && a.subtipo !== 'recrutamento');
     const bizAnamnese = anamneses.find(a => a.tipo === 'recrutamento' || a.subtipo === 'recrutamento');
@@ -922,7 +922,7 @@ export function openClientOffcanvas(client) {
   if (bannerOc) {
     bannerOc.addEventListener('click', async () => {
       try {
-        const { store } = await import('./store.js?v=999');
+        const { store } = await import('./store.js?v=1000');
         const anamneses = await store.getClientAnamneses(client.id).catch(() => []);
 
         // Filtra especificamente a anamnese de SAÚDE (não recrutamento)

@@ -1,5 +1,5 @@
-import { auth } from '../store.js?v=999';
-import { toast } from '../utils.js?v=999';
+import { auth } from '../store.js?v=1000';
+import { toast } from '../utils.js?v=1000';
 
 export function renderLogin(router, params = {}) {
   // Merge router params with actual URL search params as fallback
@@ -26,7 +26,7 @@ export function renderLogin(router, params = {}) {
     </div>
     <div class="auth-card">
       <div class="auth-logo" style="margin-bottom:32px; display:flex; justify-content:center;">
-        <img src="/img/logo_premium.png?v=35" alt="Gota App Logo" style="width:100%; max-width:320px; height:auto; object-fit:contain; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));" />
+        <img src="/img/logo_premium.png?v=1000" alt="Gota App Logo" style="width:100%; max-width:320px; height:auto; object-fit:contain; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));" />
       </div>
 
       <!-- LOGIN -->
@@ -361,7 +361,7 @@ export function renderResetPassword(router) {
     </div>
     <div class="auth-card">
       <div class="auth-logo" style="margin-bottom:12px">
-        <img src="/logo.png?v=17" alt="Gota App" style="height:120px;width:auto;object-fit:contain" />
+        <img src="/logo.png?v=1000" alt="Gota App" style="height:120px;width:auto;object-fit:contain" />
       </div>
 
       ${!resetToken ? `

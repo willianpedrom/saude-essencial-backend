@@ -1,7 +1,7 @@
-import { auth, store } from '../store.js?v=999';
-import { OILS_DATABASE } from '../oils.js?v=999';
-import { renderLayout } from './Dashboard.js?v=999';
-import { formatDate, formatCurrency, toast, modal, copyToClipboard } from '../utils.js?v=999';
+import { auth, store } from '../store.js?v=1000';
+import { OILS_DATABASE } from '../oils.js?v=1000';
+import { renderLayout } from './Dashboard.js?v=1000';
+import { formatDate, formatCurrency, toast, modal, copyToClipboard } from '../utils.js?v=1000';
 
 // Helper to remove accents for better searching
 function normalize(str) {

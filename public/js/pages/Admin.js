@@ -1,6 +1,6 @@
-import { auth, store, api } from '../store.js?v=999';
-import { renderLayout } from './Dashboard.js?v=999';
-import { formatDate, toast, modal } from '../utils.js?v=999';
+import { auth, store, api } from '../store.js?v=1000';
+import { renderLayout } from './Dashboard.js?v=1000';
+import { formatDate, toast, modal } from '../utils.js?v=1000';
 
 // Admin-only API helper
 const adminApi = {
