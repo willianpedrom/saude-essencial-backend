@@ -282,9 +282,17 @@ export async function showAnamneseModal(client, router, anamneseOverride = null)
       <h4 style="font-size:1rem;color:#0f172a;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:4px;margin-top:20px;">Dores e Condições Marcadas</h4>
 
       <div style="margin-bottom:12px">
-        <strong style="font-size:0.85rem;color:#1e293b;">Sintomas Físicos / Emocionais:</strong>
+        <strong style="font-size:0.85rem;color:#1e293b;">Principais Queixas:</strong>
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
-          ${printTagArray(allSymptoms, '#b91c1c', '#fef2f2')}
+          ${printTagArray(dados.general_symptoms, '#dc2626', '#fee2e2')}
+          ${printTagArray(dados.child_health_symptoms, '#dc2626', '#fee2e2')}
+          ${printTagArray(dados.emotional_symptoms, '#4f46e5', '#e0e7ff')}
+          ${printTagArray(dados.child_emotional_symptoms, '#4f46e5', '#e0e7ff')}
+          ${printTagArray(dados.digestive_symptoms, '#d97706', '#fef3c7')}
+          ${printTagArray(dados.skin_symptoms, '#059669', '#d1fae5')}
+          ${printTagArray(dados.sleep_symptoms, '#7c3aed', '#ede9fe')}
+          ${printTagArray(dados.hormonal_female, '#db2777', '#fce7f3')}
+          ${printTagArray(dados.child_routine, '#0891b2', '#cffafe')}
         </div>
       </div>
       
@@ -306,6 +314,7 @@ export async function showAnamneseModal(client, router, anamneseOverride = null)
         <strong style="font-size:0.85rem;color:#1e293b;">Objetivos do Cliente:</strong>
         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
           ${printTagArray(dados.goals?.goals || dados.goals, '#15803d', '#dcfce7')}
+          ${printTagArray(dados.child_goals, '#15803d', '#dcfce7')}
         </div>
       </div>
 
