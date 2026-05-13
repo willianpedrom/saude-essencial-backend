@@ -3,8 +3,8 @@
    Algoritmos de diagnóstico comportamental e físico
    ============================================================ */
 
-import { PROTOCOLS } from './protocols.js?v=1003';
-import { LIVING_KIT } from './oils.js?v=1003';
+import { PROTOCOLS } from './protocols.js?v=1004';
+import { LIVING_KIT } from './oils.js?v=1004';
 
 /**
  * Analisa as respostas da anamnese física e emocional

@@ -1,7 +1,7 @@
-import { analyzeAnamnesis } from '../analysis.js?v=1003';
-import { PROTOCOLS } from '../protocols.js?v=1003';
-import { OILS_DATABASE, LIVING_KIT } from '../oils.js?v=1003';
-import { getConsultantTitle } from '../utils.js?v=1003';
+import { analyzeAnamnesis } from '../analysis.js?v=1004';
+import { PROTOCOLS } from '../protocols.js?v=1004';
+import { OILS_DATABASE, LIVING_KIT } from '../oils.js?v=1004';
+import { getConsultantTitle } from '../utils.js?v=1004';
 
 export async function renderReport(router, dataParam, hash = null) {
   const app = document.getElementById('app');
@@ -16,7 +16,7 @@ export async function renderReport(router, dataParam, hash = null) {
         
         // Se for um laudo de RECRUTAMENTO (Negócio), redireciona p/ o BusinessReport
         if (data.tipo === 'recrutamento' || data.subtipo === 'recrutamento') {
-          const { renderBusinessReport } = await import('./BusinessReport.js?v=1003');
+          const { renderBusinessReport } = await import('./BusinessReport.js?v=1004');
           return renderBusinessReport(router, null, {
             answers: data.dados,
             protocolo_customizado: data.protocolo_customizado,
@@ -498,19 +498,10 @@ export async function renderReport(router, dataParam, hash = null) {
       /* Evitar quebra de página dentro de tabelas */
       table { page-break-inside: avoid; }
       .report-body > div { page-break-inside: avoid; }
-      /* Desbloquear conteúdo borrado — no PDF aparece completo */
-      div[style*="filter:blur"] {
-        filter: none !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        user-select: auto !important;
-      }
-      /* Ocultar overlay do cadeado */
-      div[style*="position:absolute"][style*="top:50%"] { display: none !important; }
     }
   </style>
 
-  <button id="btn-print-pdf" onclick="window.print()" title="Salvar como PDF">
+  <button id="btn-print-pdf" onclick="window.print()" title="Salvar como PDF" style="display: ${payload.protocolo_customizado?.customUnlock ? 'flex' : 'none'}">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
       <polyline points="6 9 6 2 18 2 18 9"/>
       <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>

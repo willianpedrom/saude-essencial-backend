@@ -1,6 +1,6 @@
-import { store } from '../store.js?v=1003';
-import { renderLayout } from './Dashboard.js?v=1003';
-import { toast, modal, openClientOffcanvas } from '../utils.js?v=1003';
+import { store } from '../store.js?v=1004';
+import { renderLayout } from './Dashboard.js?v=1004';
+import { toast, modal, openClientOffcanvas } from '../utils.js?v=1004';
 
 // ── Pipeline stages config ────────────────────────────────────
 const STAGES = [

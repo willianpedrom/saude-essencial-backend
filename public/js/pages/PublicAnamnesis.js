@@ -1,6 +1,6 @@
-import { store } from '../store.js?v=1003';
-import { ANAMNESIS_QUESTIONS, ANAMNESIS_STEPS, BUSINESS_STEPS, BUSINESS_QUESTIONS } from '../data.js?v=1003';
-import { toast, injectTrackingScripts } from '../utils.js?v=1003';
+import { store } from '../store.js?v=1004';
+import { ANAMNESIS_QUESTIONS, ANAMNESIS_STEPS, BUSINESS_STEPS, BUSINESS_QUESTIONS } from '../data.js?v=1004';
+import { toast, injectTrackingScripts } from '../utils.js?v=1004';
 
 /** 
  * Helper to apply DD/MM/YYYY mask to an input
