@@ -23,6 +23,10 @@ export function analyzeAnamnesis(answers) {
         ...(answers.sleep_symptoms || []),
         ...(answers.hormonal_female || []),
         ...(answers.goals || []),
+        ...(answers.child_health_symptoms || []),
+        ...(answers.child_emotional_symptoms || []),
+        ...(answers.child_routine || []),
+        ...(answers.child_goals || []),
     ];
 
     allSymptoms.forEach(symptom => {

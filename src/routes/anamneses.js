@@ -70,7 +70,7 @@ router.get('/public/:token', async (req, res) => {
 router.post('/public/:token/partial', async (req, res) => {
     try {
         const { dados } = req.body;
-        if (!dados || (!dados.phone && !dados.full_name)) return res.json({ ok: false });
+        if (!dados || (!dados.phone && !dados.full_name && !dados.child_name)) return res.json({ ok: false });
 
         // 1. Get consultora
         const { rows: tmpl } = await pool.query(
@@ -80,7 +80,7 @@ router.post('/public/:token/partial', async (req, res) => {
         if (tmpl.length === 0) return res.json({ ok: false });
         const consultora_id = tmpl[0].consultora_id;
 
-        const nome = dados.full_name || dados.nome || 'Lead Incompleto';
+        const nome = dados.child_name || dados.full_name || dados.nome || 'Lead Incompleto';
         const telefone = dados.phone || dados.telefone || null;
         if (!telefone) return res.json({ ok: false });
 
@@ -216,7 +216,7 @@ router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) 
 
         // 3. Extract personal data
         const pData = dados.personal || dados || {}; // Fallback for old/flat structures
-        const nome = pData.full_name || pData.nome || 'Cliente';
+        const nome = pData.child_name || pData.full_name || pData.nome || 'Cliente';
         const email = pData.email || null;
         const telefone = pData.phone || pData.telefone || null;
         const data_nasc = (pData.birthdate && pData.birthdate.length > 5) ? pData.birthdate : null;
@@ -612,7 +612,7 @@ router.post('/relink-orphaned', async (req, res) => {
         for (const anamnese of orphans) {
             const pData = anamnese.dados?.personal || anamnese.dados || {};
             const email = (pData.email || '').trim().toLowerCase();
-            const nome = (pData.full_name || pData.nome || '').trim().toLowerCase();
+            const nome = (pData.child_name || pData.full_name || pData.nome || '').trim().toLowerCase();
 
             if (!email || !nome) { skipped.push({ id: anamnese.id, reason: 'sem nome ou email' }); continue; }
 

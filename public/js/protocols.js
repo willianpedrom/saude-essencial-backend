@@ -1210,4 +1210,364 @@ export const PROTOCOLS = {
         expectedResults: 'Disposição sustentada sem a quebra (crash) causada pelo excesso de café.',
         affirmation: 'Sou guiado por uma energia infinita e renovável.',
     },
+
+    // --- PROTOCOLOS INFANTIS ---
+    'Resfriados frequentes': {
+        focus: 'Eixo Imunológico (Infantil)', icon: '🛡️',
+        therapeuticObjective: 'Fortalecimento imunológico suave e proteção contra viroses.',
+        oils: [
+            { name: 'On Guard', fn: 'Proteção e defesa celular' },
+            { name: 'Frankincense', fn: 'Suporte imunológico' },
+            { name: 'Lemon', fn: 'Limpeza e purificação' }
+        ],
+        routine: {
+            morning: ['On Guard nas solas dos pés (diluído)'],
+            afternoon: [],
+            night: ['On Guard no difusor']
+        },
+        expectedResults: 'Menor frequência de adoecimento e recuperação mais rápida.',
+        affirmation: 'O corpo do seu filho sabe se defender e está cada dia mais forte.'
+    },
+    'Viroses de repetição': {
+        focus: 'Eixo Imunológico (Infantil)', icon: '🦠',
+        therapeuticObjective: 'Estimular defesas naturais contra agentes patogênicos virais.',
+        oils: [
+            { name: 'On Guard', fn: 'Ação antiviral e proteção' },
+            { name: 'Melaleuca', fn: 'Purificação e suporte antiviral' },
+            { name: 'Frankincense', fn: 'Regeneração celular' }
+        ],
+        routine: {
+            morning: ['Melaleuca + On Guard na sola dos pés (diluídos)'],
+            afternoon: [],
+            night: ['Frankincense ao longo da coluna (diluído)']
+        },
+        expectedResults: 'Aumento da resistência imunológica e redução das viroses.',
+        affirmation: 'Seu filho(a) está construindo um sistema imunológico robusto.'
+    },
+    'Alergias respiratórias (rinite/asma)': {
+        focus: 'Eixo Respiratório (Infantil)', icon: '🌬️',
+        therapeuticObjective: 'Descongestionar vias respiratórias e modular a resposta alérgica de forma segura.',
+        oils: [
+            { name: 'Breathe', fn: 'Descongestionamento respiratório' },
+            { name: 'Lavanda', fn: 'Antialérgico natural e calmante' },
+            { name: 'Lemon', fn: 'Ação purificante' }
+        ],
+        routine: {
+            morning: ['Breathe no peito e costas (diluído)'],
+            afternoon: [],
+            night: ['Lavanda no difusor', 'Breathe nas solas dos pés']
+        },
+        expectedResults: 'Respiração mais livre, menos crises alérgicas.',
+        affirmation: 'Respirar é seguro e natural.'
+    },
+    'Dermatite / Assaduras': {
+        focus: 'Eixo Pele (Infantil)', icon: '🧴',
+        therapeuticObjective: 'Acalmar inflamações cutâneas e regenerar a pele delicada.',
+        oils: [
+            { name: 'Lavanda', fn: 'Calmante cutâneo' },
+            { name: 'Melaleuca', fn: 'Antisséptico e cicatrizante' },
+            { name: 'Frankincense', fn: 'Regenerador profundo' }
+        ],
+        routine: {
+            morning: ['Mistura de Lavanda e Melaleuca em óleo de coco fracionado no local afetado'],
+            afternoon: [],
+            night: ['Lavanda no difusor para confortar e acalmar durante a cicatrização']
+        },
+        expectedResults: 'Pele íntegra, redução da coceira e vermelhidão.',
+        affirmation: 'A pele do seu bebê é restaurada suavemente.'
+    },
+    'Cólicas (bebês)': {
+        focus: 'Eixo Digestivo (Infantil)', icon: '👶',
+        therapeuticObjective: 'Alívio de espasmos intestinais e eliminação de gases.',
+        oils: [
+            { name: 'Lavanda', fn: 'Relaxamento muscular e calmante geral' },
+            { name: 'Roman Chamomile', fn: 'Antiespasmódico suave' },
+            { name: 'ZenGest', fn: 'Suporte digestivo (usar hiper-diluído)' }
+        ],
+        routine: {
+            morning: [],
+            afternoon: ['Massagem abdominal (sentido horário) com Lavanda hiper-diluída'],
+            night: ['Lavanda no difusor para acalmar o bebê']
+        },
+        expectedResults: 'Alívio das dores, eliminação facilitada de gases e sono mais tranquilo.',
+        affirmation: 'O corpinho dele está aprendendo a funcionar. Você está ajudando com amor.'
+    },
+    'Constipação / Intestino preso': {
+        focus: 'Eixo Digestivo (Infantil)', icon: '💩',
+        therapeuticObjective: 'Estimular o trânsito intestinal e hidratar mucosas.',
+        oils: [
+            { name: 'ZenGest', fn: 'Estimula motilidade' },
+            { name: 'Wild Orange', fn: 'Relaxante do trato digestivo e animador' }
+        ],
+        routine: {
+            morning: ['Massagem no abdômen (sentido horário) com ZenGest diluído'],
+            afternoon: [],
+            night: ['Wild Orange no difusor']
+        },
+        expectedResults: 'Trânsito intestinal regulado sem dor.',
+        affirmation: 'Tudo flui com naturalidade.'
+    },
+    'Refluxo': {
+        focus: 'Eixo Digestivo (Infantil)', icon: '🍼',
+        therapeuticObjective: 'Acalmar o trato gastrointestinal e reduzir irritação mucosa.',
+        oils: [
+            { name: 'ZenGest', fn: 'Alívio de irritação digestiva' },
+            { name: 'Lavanda', fn: 'Acalmar contrações estomacais' }
+        ],
+        routine: {
+            morning: ['ZenGest hiper-diluído no estômago/abdômen'],
+            afternoon: [],
+            night: ['Lavanda no difusor e nas costas']
+        },
+        expectedResults: 'Menos episódios de volta de leite/alimento, estômago mais sereno.',
+        affirmation: 'O digestivo do seu bebê encontra paz e estabilidade.'
+    },
+    'Febre frequente': {
+        focus: 'Eixo Imunológico (Infantil)', icon: '🌡️',
+        therapeuticObjective: 'Modulação térmica e suporte à resposta imunológica natural.',
+        oils: [
+            { name: 'Peppermint', fn: 'Resfriamento corporal (uso com extrema cautela)' },
+            { name: 'Lavanda', fn: 'Acalmar a tensão da febre' },
+            { name: 'Frankincense', fn: 'Apoio imunológico' }
+        ],
+        routine: {
+            morning: ['Lavanda na nuca e sola dos pés para conforto'],
+            afternoon: [],
+            night: ['Peppermint super diluído ao longo da espinha (nunca puro!) caso temperatura suba']
+        },
+        expectedResults: 'Auxílio na regulação da temperatura e mais conforto sistêmico.',
+        affirmation: 'O corpo dele sabe curar a si mesmo.'
+    },
+    'Agitação noturna': {
+        focus: 'Eixo Emocional/Sono (Infantil)', icon: '🌙',
+        therapeuticObjective: 'Reduzir picos de excitação e promover relaxamento induzido.',
+        oils: [
+            { name: 'Serenity', fn: 'Calmante potente' },
+            { name: 'Lavanda', fn: 'Relaxante do sistema nervoso' },
+            { name: 'Vetiver', fn: 'Aterramento emocional profundo' }
+        ],
+        routine: {
+            morning: [],
+            afternoon: ['Reduzir estímulos visuais após 18h'],
+            night: ['Serenity no difusor 30m antes de deitar', 'Lavanda + Vetiver nas solas dos pés']
+        },
+        expectedResults: 'Noites mais serenas e sono reparador para toda a família.',
+        affirmation: 'A noite foi feita para o descanso tranquilo.'
+    },
+    'Dificuldade para pegar no sono': {
+        focus: 'Eixo Emocional/Sono (Infantil)', icon: '💤',
+        therapeuticObjective: 'Facilitar a transição para o sono e diminuir resistência.',
+        oils: [
+            { name: 'Lavanda', fn: 'Indução ao sono natural' },
+            { name: 'Roman Chamomile', fn: 'Acalmante e ansiolítico' }
+        ],
+        routine: {
+            morning: [],
+            afternoon: [],
+            night: ['Difusor com Lavanda', 'Massagem nas costas e pés com Lavanda diluída']
+        },
+        expectedResults: 'Adormecer mais rápido e com menos resistência/choro.',
+        affirmation: 'O soninho chega como um abraço seguro.'
+    },
+    'Acorda muito de madrugada / Terror noturno': {
+        focus: 'Eixo Emocional/Sono (Infantil)', icon: '😱',
+        therapeuticObjective: 'Prevenir pesadelos, oferecer segurança emocional e sustentação do sono.',
+        oils: [
+            { name: 'Vetiver', fn: 'Ancoragem e segurança' },
+            { name: 'Frankincense', fn: 'Proteção e dissipador de medos' },
+            { name: 'Serenity', fn: 'Relaxamento contínuo' }
+        ],
+        routine: {
+            morning: [],
+            afternoon: [],
+            night: ['Serenity no difusor', 'Vetiver no dedão do pé', 'Frankincense no coração']
+        },
+        expectedResults: 'Menos episódios de despertar abrupto, noites ininterruptas.',
+        affirmation: 'Você está protegido e seguro a noite toda.'
+    },
+    'Birras extremas / Irritabilidade': {
+        focus: 'Eixo Comportamental (Infantil)', icon: '😡',
+        therapeuticObjective: 'Estabilizar humor, ajudar no processamento emocional e frustração.',
+        oils: [
+            { name: 'Balance', fn: 'Estabilidade emocional imediata' },
+            { name: 'Wild Orange', fn: 'Elevar o humor' },
+            { name: 'Lavanda', fn: 'Acalmar reatividade' }
+        ],
+        routine: {
+            morning: ['Balance na sola dos pés antes de sair de casa'],
+            afternoon: ['Wild Orange no difusor ou inalado das mãos da mãe/pai no momento da crise'],
+            night: ['Lavanda para desacelerar']
+        },
+        expectedResults: 'Redução na intensidade e duração das birras, criança mais cooperativa.',
+        affirmation: 'As emoções podem ser sentidas e soltas com segurança.'
+    },
+    'Ansiedade de separação': {
+        focus: 'Eixo Comportamental (Infantil)', icon: '🥺',
+        therapeuticObjective: 'Fornecer sensação de amparo e segurança quando os pais não estão presentes.',
+        oils: [
+            { name: 'Brave', fn: 'Coragem e autoconfiança (Kids Collection)' },
+            { name: 'Vetiver', fn: 'Segurança e enraizamento' },
+            { name: 'Balance', fn: 'Estabilidade' }
+        ],
+        routine: {
+            morning: ['Brave ou Balance no peito e pulsos antes da escola/creche'],
+            afternoon: [],
+            night: ['Vetiver nas solas dos pés']
+        },
+        expectedResults: 'Maior tranquilidade na despedida escolar, mais segurança interna.',
+        affirmation: 'Mamãe sempre volta. Você é corajoso e amado.'
+    },
+    'Adaptação escolar difícil': {
+        focus: 'Eixo Comportamental (Infantil)', icon: '🎒',
+        therapeuticObjective: 'Facilitar a socialização, reduzir medos de novos ambientes.',
+        oils: [
+            { name: 'Adaptiv', fn: 'Adaptação a novas rotinas' },
+            { name: 'Wild Orange', fn: 'Estímulo positivo' }
+        ],
+        routine: {
+            morning: ['Adaptiv nos pulsos antes de sair para a escola'],
+            afternoon: ['Wild Orange na volta, para celebrar o dia'],
+            night: ['Lavanda para um sono restaurador']
+        },
+        expectedResults: 'Redução do choro na escola, maior interação com colegas.',
+        affirmation: 'Aprender e brincar com amigos é divertido e seguro.'
+    },
+    'Hiperatividade / Dificuldade de foco': {
+        focus: 'Eixo Cognitivo (Infantil)', icon: '⚡',
+        therapeuticObjective: 'Acalmar o sistema nervoso superestimulado e modular foco nas atividades.',
+        oils: [
+            { name: 'Vetiver', fn: 'Acalma mentes aceleradas' },
+            { name: 'InTune', fn: 'Mix para foco' },
+            { name: 'Peppermint', fn: 'Desperta a atenção' }
+        ],
+        routine: {
+            morning: ['Vetiver nos pés e InTune na nuca'],
+            afternoon: ['Peppermint (apenas uma gota inalada se a idade permitir, ou no difusor para tarefa de casa)'],
+            night: ['Lavanda no difusor']
+        },
+        expectedResults: 'Criança consegue permanecer mais tempo engajada na mesma tarefa, menos agitação motora.',
+        affirmation: 'Sua mente pode trabalhar de forma calma e focada.'
+    },
+    'Espectro autista / TDAH': {
+        focus: 'Eixo Cognitivo/Comportamental', icon: '🧩',
+        therapeuticObjective: 'Regular processamento sensorial, reduzir sobrecargas (meltdowns) e ancorar a atenção.',
+        oils: [
+            { name: 'Frankincense', fn: 'Suporte neurológico' },
+            { name: 'Vetiver', fn: 'Aterramento poderoso' },
+            { name: 'Copaiba', fn: 'Neuroproteção e calma sistêmica' },
+            { name: 'Balance', fn: 'Prevenção de crises emocionais' }
+        ],
+        routine: {
+            morning: ['Frankincense sublingual (ou solas dos pés) e Balance na coluna'],
+            afternoon: ['Vetiver nas solas dos pés para aterrar'],
+            night: ['Copaiba e Serenity no difusor/massagem']
+        },
+        expectedResults: 'Menor incidência de crises sensoriais, maior conectividade ocular, sono de qualidade e tranquilidade familiar.',
+        affirmation: 'Você é perfeito como é, e o mundo pode ser um lugar confortável.'
+    },
+    'Aumentar a imunidade (prevenir doenças)': {
+        focus: 'Eixo Imunológico (Infantil)', icon: '🛡️',
+        therapeuticObjective: 'Prevenção de doenças e fortalecimento da resposta imunológica.',
+        oils: [
+            { name: 'On Guard', fn: 'Mistura protetora, suporte imunológico' },
+            { name: 'Frankincense', fn: 'Saúde celular' }
+        ],
+        routine: {
+            morning: ['On Guard diluído na sola dos pés'],
+            afternoon: [],
+            night: ['On Guard no difusor']
+        },
+        expectedResults: 'Menos adoecimento sazonal e resposta imune eficiente.',
+        affirmation: 'Seu escudo protetor está ativado.'
+    },
+    'Melhorar a qualidade do sono': {
+        focus: 'Eixo Emocional/Sono (Infantil)', icon: '💤',
+        therapeuticObjective: 'Indução e manutenção de sono profundo.',
+        oils: [
+            { name: 'Serenity', fn: 'Relaxamento' },
+            { name: 'Lavanda', fn: 'Calmante do sistema nervoso' }
+        ],
+        routine: {
+            morning: [],
+            afternoon: [],
+            night: ['Lavanda no difusor', 'Serenity diluído nas costas']
+        },
+        expectedResults: 'Noite completa de sono e despertar renovado.',
+        affirmation: 'O descanso nos prepara para mais um dia feliz.'
+    },
+    'Acalmar agitação e ansiedade': {
+        focus: 'Eixo Comportamental (Infantil)', icon: '🧘',
+        therapeuticObjective: 'Redução da reatividade do sistema nervoso.',
+        oils: [
+            { name: 'Balance', fn: 'Aterramento' },
+            { name: 'Vetiver', fn: 'Calmante profundo' }
+        ],
+        routine: {
+            morning: ['Balance na nuca'],
+            afternoon: [],
+            night: ['Vetiver nas solas dos pés']
+        },
+        expectedResults: 'Dias mais calmos e sem picos de adrenalina infundados.',
+        affirmation: 'Respiramos juntos a paz e soltamos a preocupação.'
+    },
+    'Aliviar problemas respiratórios': {
+        focus: 'Eixo Respiratório (Infantil)', icon: '🌬️',
+        therapeuticObjective: 'Abertura das vias aéreas e prevenção de crises.',
+        oils: [
+            { name: 'Breathe', fn: 'Apoio respiratório' },
+            { name: 'Eucalyptus', fn: 'Expectorante suave (uso diluído)' }
+        ],
+        routine: {
+            morning: ['Breathe no peito (diluído)'],
+            afternoon: [],
+            night: ['Breathe no difusor']
+        },
+        expectedResults: 'Respiração profunda e sem bloqueios.',
+        affirmation: 'O ar entra livremente e traz vida.'
+    },
+    'Melhorar a digestão / aliviar cólicas': {
+        focus: 'Eixo Digestivo (Infantil)', icon: '🌿',
+        therapeuticObjective: 'Suporte enzimático e motilidade.',
+        oils: [
+            { name: 'ZenGest', fn: 'Blend digestivo dōTERRA' },
+            { name: 'Lavanda', fn: 'Antiespasmódico' }
+        ],
+        routine: {
+            morning: [],
+            afternoon: ['Massagem local em sentido horário'],
+            night: []
+        },
+        expectedResults: 'Fim do inchaço e dor digestiva.',
+        affirmation: 'Nutrir o corpo é um processo tranquilo.'
+    },
+    'Cuidar da pele naturalmente': {
+        focus: 'Eixo Pele (Infantil)', icon: '✨',
+        therapeuticObjective: 'Proteção antimicrobiana e regeneração da epiderme.',
+        oils: [
+            { name: 'Lavanda', fn: 'Acalmar pele' },
+            { name: 'Melaleuca', fn: 'Combater patógenos da pele' }
+        ],
+        routine: {
+            morning: ['Aplicação tópica diluída nas áreas desejadas'],
+            afternoon: [],
+            night: ['Hidratação profunda com óleo de coco vegetal']
+        },
+        expectedResults: 'Pele livre de irritações sistêmicas.',
+        affirmation: 'Pele saudável reflete cuidado interno e amor externo.'
+    },
+    'Apoio emocional e comportamental': {
+        focus: 'Eixo Emocional (Infantil)', icon: '💖',
+        therapeuticObjective: 'Amparo durante fases de salto de desenvolvimento.',
+        oils: [
+            { name: 'Frankincense', fn: 'Neuroproteção e espiritualidade' },
+            { name: 'Wild Orange', fn: 'Alegria e conexão lúdica' }
+        ],
+        routine: {
+            morning: ['Wild Orange no difusor do quarto'],
+            afternoon: [],
+            night: ['Frankincense no topo da cabeça (diluído)']
+        },
+        expectedResults: 'Atravessar fases difíceis com mais leveza e proximidade com os pais.',
+        affirmation: 'Você é forte, capaz e profundamente amado.'
+    }
 };

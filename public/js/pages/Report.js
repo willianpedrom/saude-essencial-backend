@@ -28,7 +28,7 @@ export async function renderReport(router, dataParam, hash = null) {
               phone: data.consultora_telefone,
               link: data.consultora_link_afiliada
             },
-            clientName: data.cliente_nome || data.dados?.personal?.full_name || data.dados?.personal?.nome || data.dados?.nome || 'Você',
+            clientName: data.cliente_nome || data.dados?.personal?.child_name || data.dados?.personal?.full_name || data.dados?.personal?.nome || data.dados?.nome || 'Você',
           });
         }
 
@@ -43,7 +43,7 @@ export async function renderReport(router, dataParam, hash = null) {
              phone: data.consultora_telefone,
              link: data.consultora_link_afiliada
           },
-          clientName: data.cliente_nome || data.dados?.personal?.full_name || data.dados?.personal?.nome || data.dados?.nome || 'Você',
+          clientName: data.cliente_nome || data.dados?.personal?.child_name || data.dados?.personal?.full_name || data.dados?.personal?.nome || data.dados?.nome || 'Você',
           subtipo: data.subtipo
        };
      } catch(e) {
