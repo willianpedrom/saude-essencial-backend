@@ -1,4 +1,4 @@
-import { analyzeBusinessProfile } from '../analysis.js?v=1000';
+import { analyzeBusinessProfile } from '../analysis.js?v=1001';
 
 export function renderBusinessReport(router, dataParam, preFetchedData = null) {
   const app = document.getElementById('app');

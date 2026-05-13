@@ -1,5 +1,5 @@
-import { store } from '../store.js?v=1000';
-import { toast } from '../utils.js?v=1000';
+import { store } from '../store.js?v=1001';
+import { toast } from '../utils.js?v=1001';
 
 const PLANOS = [
   {

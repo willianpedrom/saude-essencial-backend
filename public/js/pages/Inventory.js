@@ -1,6 +1,6 @@
-import { store } from '../store.js?v=1000';
-import { toast } from '../utils.js?v=1000';
-import { renderLayout } from './Dashboard.js?v=1000';
+import { store } from '../store.js?v=1001';
+import { toast } from '../utils.js?v=1001';
+import { renderLayout } from './Dashboard.js?v=1001';
 
 const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
@@ -254,6 +254,7 @@ const DOTERRA_PRODUCTS = [
 // Fonte: Lista de Preços P BR V36_27mai25 (Oficial doTERRA Brasil)
 // Formato: { 'Nome Produto': { '15ml': { r: preço_regular, m: preço_membro } } }
 const DOTERRA_PRICES = {
+    'Kids Collection': { 'Kit': { r: 1022, m: 766.25 } },
     'Adaptiv': { '15ml': { r: 378, m: 283.75 } },
     'Adaptiv Pastilhas': { 'Unidade / Kit': { r: 247, m: 185 } },
     'Adaptiv Touch': { '10ml Touch': { r: 160, m: 120 } },
@@ -268,7 +269,7 @@ const DOTERRA_PRICES = {
     'Black Spruce': { '5ml': { r: 180, m: 135 } },
     'Blue Tansy': { '5ml': { r: 532, m: 399 } },
     'Brasil Living Kit': { 'Unidade / Kit': { r: 960, m: 720 } },
-    'Brave Touch': { '10ml Touch': { r: 164, m: 123 } },
+    'Brave Touch': { '10ml Touch': { r: 220, m: 165 } },
     'Breathe': { '15ml': { r: 230, m: 172.5 } },
     'Breathe Balas': { 'Unidade / Kit': { r: 120, m: 90 } },
     'Breathe Balm Stick': { 'Unidade / Kit': { r: 148, m: 111.25 } },
@@ -403,7 +404,7 @@ const DOTERRA_PRICES = {
     'Pur Femme Eau de Parfum': { 'Unidade / Kit': { r: 385, m: 289 } },
     'Pur Homme Eau de Parfum': { 'Unidade / Kit': { r: 385, m: 289 } },
     'Purify': { '15ml': { r: 200, m: 150 } },
-    'Rescuer Touch': { '10ml Touch': { r: 120, m: 90 } },
+    'Rescuer Touch': { '10ml Touch': { r: 160, m: 120 } },
     'Roman Chamomile (Camomila)': { '5ml': { r: 510, m: 382.5 } },
     'Rose': { '5ml': { r: 67, m: 50 } },
     'Rose Touch': { '10ml Touch': { r: 499, m: 374 } },
@@ -425,12 +426,12 @@ const DOTERRA_PRICES = {
     'Stronger Touch': { '10ml Touch': { r: 115, m: 86 } },
     'SuperMint': { '15ml': { r: 242, m: 181.25 } },
     'SuperMint Beadlets': { 'Unidade / Kit': { r: 145, m: 109 } },
-    'Tamer Touch': { '10ml Touch': { r: 113, m: 85 } },
+    'Tamer Touch': { '10ml Touch': { r: 150, m: 112.5 } },
     'Tangerine (Tangerina)': { '15ml': { r: 170, m: 127.5 }, '5ml': { r: 70, m: 52.5 } },
     'TerraShield': { '15ml': { r: 110, m: 82.5 } },
     'TerraShield Spray': { '30ml': { r: 159, m: 119 } },
     'TerraZyme': { 'Cápsulas': { r: 207, m: 155 } },
-    'Thinker Touch': { '10ml Touch': { r: 128, m: 96 } },
+    'Thinker Touch': { '10ml Touch': { r: 170, m: 127.5 } },
     'Thyme (Tomilho)': { '15ml': { r: 292, m: 218.75 }, '5ml': { r: 123, m: 92.5 } },
     'TriEase Pastilha': { 'Cápsulas': { r: 237, m: 178 } },
     'TrimShake Chocolate': { 'Unidade / Kit': { r: 211, m: 158 } },

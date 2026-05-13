@@ -1,6 +1,6 @@
-import { api, auth } from '../store.js?v=1000';
-import { renderLayout } from './Dashboard.js?v=1000';
-import { toast } from '../utils.js?v=1000';
+import { api, auth } from '../store.js?v=1001';
+import { renderLayout } from './Dashboard.js?v=1001';
+import { toast } from '../utils.js?v=1001';
 
 export async function renderProspecting(router) {
     const container = renderLayout(router, 'Radar de Leads Inteligente 🛰️', `

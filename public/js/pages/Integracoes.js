@@ -1,6 +1,6 @@
-import { auth, api } from '../store.js?v=1000';
-import { renderLayout } from './Dashboard.js?v=1000';
-import { toast } from '../utils.js?v=1000';
+import { auth, api } from '../store.js?v=1001';
+import { renderLayout } from './Dashboard.js?v=1001';
+import { toast } from '../utils.js?v=1001';
 
 // ── Store wrapper ──────────────────────────────────────────────
 async function getMyTracking() {
