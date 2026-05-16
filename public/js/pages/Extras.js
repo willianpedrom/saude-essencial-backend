@@ -530,9 +530,21 @@ export async function renderPurchases(router) {
   }
 
   let localPurchases = [...purchases];
+  let activeProductFilter = '';
 
   function renderList() {
-    const sorted = [...localPurchases].sort((a, b) => new Date(b.data || b.criado_em) - new Date(a.data || a.criado_em));
+    // Unique products for datalist
+    const uniqueProducts = [...new Set(localPurchases.map(p => p.produto))].sort();
+    const datalist = document.getElementById('products-datalist');
+    if (datalist) {
+      datalist.innerHTML = uniqueProducts.map(p => `<option value="${p}">`).join('');
+    }
+
+    const filtered = activeProductFilter 
+      ? localPurchases.filter(p => normalize(p.produto).includes(normalize(activeProductFilter)))
+      : localPurchases;
+
+    const sorted = [...filtered].sort((a, b) => new Date(b.data || b.criado_em) - new Date(a.data || a.criado_em));
     const total = sorted.reduce((s, p) => s + (Number(p.valor) || 0), 0);
 
     const container = document.getElementById('purchases-list');
@@ -540,17 +552,58 @@ export async function renderPurchases(router) {
     const totalEl = document.getElementById('total-revenue');
     if (totalEl) totalEl.textContent = formatCurrency(total);
 
-    container.innerHTML = sorted.length === 0
+    // Summary of clients when filtering
+    let summaryHtml = '';
+    let filteredClientsList = [];
+    if (activeProductFilter && sorted.length > 0) {
+      const uniqueClientIds = [...new Set(sorted.map(p => p.cliente_id))];
+      filteredClientsList = uniqueClientIds.map(id => {
+        const c = clients.find(cl => cl.id === id);
+        const count = sorted.filter(p => p.cliente_id === id).length;
+        return { ...c, purchaseCount: count };
+      }).filter(c => c && (c.nome || c.name));
+
+      summaryHtml = `
+        <div class="card" style="margin-bottom:20px;border:1px solid var(--green-200);background:var(--green-50)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:12px">
+            <div>
+              <h4 style="margin:0;color:var(--green-800)">👥 Clientes que compraram este produto (${filteredClientsList.length})</h4>
+              <p style="font-size:0.8rem;color:var(--green-700);margin:4px 0 0">Total de ${sorted.length} vendas filtradas</p>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-secondary btn-sm" id="btn-export-csv" style="background:white">📥 Baixar Lista (CSV)</button>
+              <button class="btn btn-primary btn-sm" id="btn-copy-phones">📋 Copiar Números</button>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;max-height:150px;overflow-y:auto;padding:4px">
+            ${filteredClientsList.map(c => {
+              const cleanPhone = (c.telefone || c.phone || '').replace(/\D/g, '');
+              const waLink = cleanPhone ? `https://wa.me/${cleanPhone.startsWith('55') ? cleanPhone : '55' + cleanPhone}` : '#';
+              return `
+                <div style="background:white;border:1px solid var(--green-200);border-radius:20px;padding:4px 12px;display:flex;align-items:center;gap:8px;font-size:0.85rem">
+                  <span style="font-weight:600">${c.nome || c.name}</span>
+                  ${c.purchaseCount > 1 ? `<span class="badge" style="background:var(--green-100);color:var(--green-700);font-size:0.7rem;padding:2px 6px">${c.purchaseCount}x</span>` : ''}
+                  ${cleanPhone ? `<a href="${waLink}" target="_blank" title="Enviar WhatsApp" style="text-decoration:none;font-size:1rem">💬</a>` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>`;
+    }
+
+    const tableHtml = sorted.length === 0
       ? `<div class="empty-state"><div class="empty-state-icon">🛒</div><h4>Nenhuma compra registrada</h4></div>`
       : `<table class="clients-table">
           <thead><tr><th>Cliente</th><th>Produto / Kit</th><th>Data</th><th>Valor</th><th>Observação</th><th style="width:80px">Ações</th></tr></thead>
           <tbody>
             ${sorted.map(p => `<tr>
-                <td>${p.cliente_nome || '—'}</td>
-                <td>${p.produto || '—'}</td>
+                <td>
+                  <div style="font-weight:600">${p.cliente_nome || '—'}</div>
+                </td>
+                <td><span class="badge" style="background:var(--green-50);color:var(--green-800);border:1px solid var(--green-200)">${p.produto || '—'}</span></td>
                 <td>${formatDate(p.data || p.criado_em)}</td>
                 <td style="font-weight:700;color:var(--green-700)">${formatCurrency(p.valor)}</td>
-                <td style="color:var(--text-muted);font-size:0.82rem">${p.observacao || '—'}</td>
+                <td style="color:var(--text-muted);font-size:0.82rem;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.observacao || ''}">${p.observacao || '—'}</td>
                 <td>
                   <div style="display:flex;gap:4px">
                     <button class="btn-edit-pu" data-id="${p.id}" title="Editar" style="background:none;border:none;cursor:pointer;font-size:1.1rem;opacity:0.7;padding:5px">✏️</button>
@@ -561,6 +614,41 @@ export async function renderPurchases(router) {
           </tbody>
         </table>`;
 
+    container.innerHTML = summaryHtml + tableHtml;
+    bindTableEvents();
+    if (activeProductFilter) bindSummaryEvents(filteredClientsList);
+  }
+
+  function bindSummaryEvents(filteredClients) {
+    document.getElementById('btn-export-csv')?.addEventListener('click', () => {
+      const headers = ['Nome', 'Telefone', 'Email', 'Qtd Compras'];
+      const rows = filteredClients.map(c => [
+        c.nome || c.name || '',
+        c.telefone || c.phone || '',
+        c.email || '',
+        c.purchaseCount
+      ]);
+      const csvContent = [headers, ...rows].map(e => e.join(';')).join('\n');
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `clientes_${activeProductFilter.replace(/\s+/g, '_')}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    document.getElementById('btn-copy-phones')?.addEventListener('click', (e) => {
+      const phones = filteredClients.map(c => (c.telefone || c.phone || '').replace(/\D/g, '')).filter(p => p).join('\n');
+      if (!phones) return toast('Nenhum telefone encontrado', 'warning');
+      copyToClipboard(phones, e.currentTarget);
+    });
+  }
+
+  function bindTableEvents() {
+    const container = document.getElementById('purchases-list');
     // Delete
     container.querySelectorAll('.btn-del-pu').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -892,13 +980,37 @@ export async function renderPurchases(router) {
   const pc = document.getElementById('page-content');
   if (pc) pc.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
-      <div class="stat-card green" style="padding:14px 20px;margin:0">
-        <div class="stat-label">Receita Total</div>
-        <div class="stat-value" id="total-revenue">R$ 0,00</div>
+      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+        <div class="stat-card green" style="padding:14px 20px;margin:0;min-width:180px">
+          <div class="stat-label">Receita Total</div>
+          <div class="stat-value" id="total-revenue">R$ 0,00</div>
+        </div>
+        
+        <div style="position:relative;width:300px">
+          <input type="text" id="filter-product" class="field-input" placeholder="🔍 Filtrar por produto..." style="padding-left:36px;margin:0" list="products-datalist" />
+          <datalist id="products-datalist"></datalist>
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:0.5">📦</span>
+          ${activeProductFilter ? `<button id="clear-filter" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.2rem;opacity:0.5">×</button>` : ''}
+        </div>
       </div>
       <button class="btn btn-primary" id="btn-add-pu">+ Registrar Venda</button>
     </div>
     <div class="card"><div style="overflow-x:auto" id="purchases-list"></div></div>`;
-  document.getElementById('btn-add-pu')?.addEventListener('click', showAddModal);
+
+  document.getElementById('btn-add-pu')?.addEventListener('click', () => showAddModal());
+  
+  const filterInput = document.getElementById('filter-product');
+  filterInput?.addEventListener('input', (e) => {
+    activeProductFilter = e.target.value.trim();
+    renderList();
+  });
+
+  document.getElementById('clear-filter')?.addEventListener('click', () => {
+    filterInput.value = '';
+    activeProductFilter = '';
+    renderList();
+  });
+
   renderList();
 }
+
