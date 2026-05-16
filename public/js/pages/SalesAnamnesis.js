@@ -1,5 +1,5 @@
-import { store, api } from '../store.js?v=1004';
-import { toast } from '../utils.js?v=1004';
+import { store, api } from '../store.js?v=1005';
+import { toast } from '../utils.js?v=1005';
 
 export async function renderSalesAnamnesis(router, token) {
   const app = document.getElementById('app');
