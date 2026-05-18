@@ -1,6 +1,6 @@
-import { api, store } from '../store.js?v=1005';
-import { renderLayout } from './Dashboard.js?v=1005';
-import { formatCurrency, toast, openClientOffcanvas } from '../utils.js?v=1005';
+import { api, store } from '../store.js?v=1006';
+import { renderLayout } from './Dashboard.js?v=1006';
+import { formatCurrency, toast, openClientOffcanvas } from '../utils.js?v=1006';
 
 export async function renderInsights(router) {
     const pageContent = `

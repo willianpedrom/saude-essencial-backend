@@ -1,7 +1,7 @@
-import { analyzeAnamnesis } from '../analysis.js?v=1005';
-import { PROTOCOLS } from '../protocols.js?v=1005';
-import { OILS_DATABASE, LIVING_KIT } from '../oils.js?v=1005';
-import { getConsultantTitle } from '../utils.js?v=1005';
+import { analyzeAnamnesis } from '../analysis.js?v=1006';
+import { PROTOCOLS } from '../protocols.js?v=1006';
+import { OILS_DATABASE, LIVING_KIT } from '../oils.js?v=1006';
+import { getConsultantTitle } from '../utils.js?v=1006';
 
 export async function renderReport(router, dataParam, hash = null) {
   const app = document.getElementById('app');
@@ -16,7 +16,7 @@ export async function renderReport(router, dataParam, hash = null) {
         
         // Se for um laudo de RECRUTAMENTO (Negócio), redireciona p/ o BusinessReport
         if (data.tipo === 'recrutamento' || data.subtipo === 'recrutamento') {
-          const { renderBusinessReport } = await import('./BusinessReport.js?v=1005');
+          const { renderBusinessReport } = await import('./BusinessReport.js?v=1006');
           return renderBusinessReport(router, null, {
             answers: data.dados,
             protocolo_customizado: data.protocolo_customizado,

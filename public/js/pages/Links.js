@@ -1,6 +1,6 @@
-import { auth, store } from '../store.js?v=1005';
-import { renderLayout } from './Dashboard.js?v=1005';
-import { toast, modal, getConsultantTitle, copyToClipboard } from '../utils.js?v=1005';
+import { auth, store } from '../store.js?v=1006';
+import { renderLayout } from './Dashboard.js?v=1006';
+import { toast, modal, getConsultantTitle, copyToClipboard } from '../utils.js?v=1006';
 
 export async function renderLinks(router) {
   const consultant = auth.current;
