@@ -1,5 +1,5 @@
-import { api } from '../store.js?v=1007';
-import { injectTrackingScripts, ARCHETYPE_THEMES } from '../utils.js?v=1007';
+import { api } from '../store.js?v=1008';
+import { injectTrackingScripts, ARCHETYPE_THEMES } from '../utils.js?v=1008';
 
 const DOTERRA_BADGE_COLORS = {
   'Wellness Advocate': { bg: '#e0f2fe', color: '#0369a1' },

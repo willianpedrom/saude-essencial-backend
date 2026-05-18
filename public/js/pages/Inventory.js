@@ -1,6 +1,6 @@
-import { store } from '../store.js?v=1007';
-import { toast } from '../utils.js?v=1007';
-import { renderLayout } from './Dashboard.js?v=1007';
+import { store } from '../store.js?v=1008';
+import { toast } from '../utils.js?v=1008';
+import { renderLayout } from './Dashboard.js?v=1008';
 
 const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
@@ -461,7 +461,7 @@ const DOTERRA_PRICES = {
     'Zendocrine Pastilhas': { 'Cápsulas': { r: 224, m: 168 } },
     'xEO Mega': { 'Cápsulas': { r: 360, m: 270 } },
     'xEO Mega Omega': { 'Cápsulas': { r: 360, m: 270 } },
-    'Óleo de Coco Fracionado': { 'Unidade / Kit': { r: 113, m: 85 } },
+    'Óleo de Coco Fracionado': { 'Unidade / Kit': { r: 142, m: 106.25 } },
     'Creatina Lifepower': { 'Unidade / Kit': { r: 239, m: 179 } },
     'Copaíba Pastilha': { 'Unidade / Kit': { r: 252, m: 189 } },
     'Kit Gênesis Performance': { 'Unidade / Kit': { r: 787, m: 590 } },
