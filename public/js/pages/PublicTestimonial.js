@@ -1,5 +1,5 @@
-import { api } from '../store.js?v=1006';
-import { injectTrackingScripts, ARCHETYPE_THEMES } from '../utils.js?v=1006';
+import { api } from '../store.js?v=1007';
+import { injectTrackingScripts, ARCHETYPE_THEMES } from '../utils.js?v=1007';
 
 export async function renderPublicTestimonial(router, slug) {
   const app = document.getElementById('app');

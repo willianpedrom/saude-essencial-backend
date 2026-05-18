@@ -8,7 +8,7 @@ def update_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
     
-    new_content = re.sub(r'\?v=\d+', '?v=1006', content)
+    new_content = re.sub(r'\?v=\d+', '?v=1007', content)
     
     if new_content != content:
         with open(filepath, 'w', encoding='utf-8') as f:

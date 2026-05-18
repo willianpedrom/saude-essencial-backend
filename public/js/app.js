@@ -2,8 +2,8 @@
    APP.JS – Orquestrador principal do Sistema Saúde Essencial
    ============================================================ */
 
-import { auth } from './store.js?v=1006';
-import { Router, setupGlobalShortcuts } from './utils.js?v=1006';
+import { auth } from './store.js?v=1007';
+import { Router, setupGlobalShortcuts } from './utils.js?v=1007';
 // Pages are now dynamically imported in the router// Boot
 auth.init();
 setupGlobalShortcuts();
@@ -14,7 +14,7 @@ document.addEventListener('open-anamnese', async (e) => {
     const client = e.detail?.client;
     const anamneseOverride = e.detail?.anamneseOverride || null;
     if (client) {
-        const { showAnamneseModal } = await import('./pages/Clients.js?v=1006');
+        const { showAnamneseModal } = await import('./pages/Clients.js?v=1007');
         showAnamneseModal(client, router, anamneseOverride);
     }
 });
@@ -41,6 +41,12 @@ function guard(fn) {
 window.addEventListener('subscription:required', () => {
     if (document.getElementById('expired-modal')) return;
     
+    const user = auth.current || {};
+    const nome = user.nome || user.name || 'Assinante';
+    const email = user.email || 'Não informado';
+    const waMsg = encodeURIComponent(`Olá Suporte Gota App! Meu plano expirou e desejo reativar ou preciso de ajuda.\n\n👤 Nome: ${nome}\n📧 E-mail: ${email}`);
+    const waLink = `https://wa.me/5521988964012?text=${waMsg}`;
+    
     const m = document.createElement('div');
     m.id = 'expired-modal';
     m.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(4px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:1rem;';
@@ -57,7 +63,7 @@ window.addEventListener('subscription:required', () => {
             <a href="https://www.gotaapp.com.br/reativar" class="btn btn-primary" style="width:100%;justify-content:center;font-size:1.1rem;padding:12px;text-decoration:none;background:#16a34a;color:#fff;border-radius:8px;font-weight:600;display:flex;align-items:center;gap:8px;border:none">
                 🔄 Reativar meu Plano
             </a>
-            <a href="https://wa.me/5521988964012" target="_blank" class="btn btn-secondary" style="width:100%;justify-content:center;text-decoration:none;background:#f1f5f9;color:#334155;border-radius:8px;font-weight:600;padding:12px;display:flex;align-items:center;gap:8px;border:1px solid #e2e8f0">
+            <a href="${waLink}" target="_blank" class="btn btn-secondary" style="width:100%;justify-content:center;text-decoration:none;background:#f1f5f9;color:#334155;border-radius:8px;font-weight:600;padding:12px;display:flex;align-items:center;gap:8px;border:1px solid #e2e8f0">
                 💬 Falar com o Suporte
             </a>
         </div>
@@ -70,122 +76,122 @@ window.addEventListener('subscription:required', () => {
 const router = new Router({
     '/': async (p) => {
         if (auth.isLoggedIn) return router.navigate('/dashboard');
-        const { renderLogin } = await import('./pages/Login.js?v=1006');
+        const { renderLogin } = await import('./pages/Login.js?v=1007');
         renderLogin(router);
     },
     '/dashboard': guard(async (params) => {
-        const { renderDashboard } = await import('./pages/Dashboard.js?v=1006');
+        const { renderDashboard } = await import('./pages/Dashboard.js?v=1007');
         renderDashboard(router, params);
     }),
     '/clients': guard(async (params) => {
-        const { renderClients } = await import('./pages/Clients.js?v=1006');
+        const { renderClients } = await import('./pages/Clients.js?v=1007');
         renderClients(router, params);
     }),
     '/links': guard(async (params) => {
-        const { renderLinks } = await import('./pages/Links.js?v=1006');
+        const { renderLinks } = await import('./pages/Links.js?v=1007');
         renderLinks(router, params);
     }),
     '/anamnesis': guard(async (params) => {
-        const { renderAnamnesisList } = await import('./pages/Anamneses.js?v=1006');
+        const { renderAnamnesisList } = await import('./pages/Anamneses.js?v=1007');
         renderAnamnesisList(router, params);
     }),
     '/schedule': guard(async () => {
-        const { renderSchedule } = await import('./pages/Schedule.js?v=1006');
+        const { renderSchedule } = await import('./pages/Schedule.js?v=1007');
         renderSchedule(router);
     }),
     '/followup': guard(async () => {
         router.navigate('/schedule');
     }),
     '/testimonials': guard(async () => {
-        const { renderTestimonials } = await import('./pages/Extras.js?v=1006');
+        const { renderTestimonials } = await import('./pages/Extras.js?v=1007');
         renderTestimonials(router);
     }),
     '/purchases': guard(async () => {
-        const { renderPurchases } = await import('./pages/Extras.js?v=1006');
+        const { renderPurchases } = await import('./pages/Extras.js?v=1007');
         renderPurchases(router);
     }),
     '/assinatura': guard(async () => {
-        const { renderAssinatura } = await import('./pages/Assinatura.js?v=1006');
+        const { renderAssinatura } = await import('./pages/Assinatura.js?v=1007');
         renderAssinatura(router);
     }),
     '/profile': guard(async () => {
-        const { renderProfile } = await import('./pages/ProfileV31.js?v=1006');
+        const { renderProfile } = await import('./pages/ProfileV31.js?v=1007');
         renderProfile(router);
     }),
     '/admin': guard(async () => {
-        const { renderAdmin } = await import('./pages/Admin.js?v=1006');
+        const { renderAdmin } = await import('./pages/Admin.js?v=1007');
         renderAdmin(router);
     }),
     '/pipeline': guard(async () => {
-        const { renderPipeline } = await import('./pages/Pipeline.js?v=1006');
+        const { renderPipeline } = await import('./pages/Pipeline.js?v=1007');
         renderPipeline(router);
     }),
     '/insights': guard(async () => {
-        const { renderInsights } = await import('./pages/Insights.js?v=1006');
+        const { renderInsights } = await import('./pages/Insights.js?v=1007');
         renderInsights(router);
     }),
     '/integrations': guard(async () => {
-        const { renderIntegrations } = await import('./pages/Integracoes.js?v=1006');
+        const { renderIntegrations } = await import('./pages/Integracoes.js?v=1007');
         renderIntegrations(router);
     }),
     '/prospecting': guard(async () => {
-        const { renderProspecting } = await import('./pages/Prospecting.js?v=1006');
+        const { renderProspecting } = await import('./pages/Prospecting.js?v=1007');
         renderProspecting(router);
     }),
     '/estoque': guard(async () => {
-        const { renderInventory } = await import('./pages/Inventory.js?v=1006');
+        const { renderInventory } = await import('./pages/Inventory.js?v=1007');
         renderInventory(router);
     }),
 
     // Public routes (no auth required)
     '/anamnese/:token': async ({ token }) => {
-        const { renderPublicAnamnesis } = await import('./pages/PublicAnamnesis.js?v=1006');
+        const { renderPublicAnamnesis } = await import('./pages/PublicAnamnesis.js?v=1007');
         renderPublicAnamnesis(router, token);
     },
     '/vendas/capture/:token': async ({ token }) => {
-        const { renderSalesAnamnesis } = await import('./pages/SalesAnamnesis.js?v=1006');
+        const { renderSalesAnamnesis } = await import('./pages/SalesAnamnesis.js?v=1007');
         renderSalesAnamnesis(router, token);
     },
     '/protocolo': async (params) => {
-        const { renderReport } = await import('./pages/Report.js?v=1006');
+        const { renderReport } = await import('./pages/Report.js?v=1007');
         renderReport(router, params?.data);
     },
     '/laudo/:hash': async ({ hash }) => {
-        const { renderReport } = await import('./pages/Report.js?v=1006');
+        const { renderReport } = await import('./pages/Report.js?v=1007');
         renderReport(router, null, hash);
     },
     '/business-report': async (params) => {
-        const { renderBusinessReport } = await import('./pages/BusinessReport.js?v=1006');
+        const { renderBusinessReport } = await import('./pages/BusinessReport.js?v=1007');
         renderBusinessReport(router, params?.data);
     },
     '/recomendacao-uau': async (params) => {
-        const { renderRecomendacaoUau } = await import('./pages/RecomendacaoUau.js?v=1006');
+        const { renderRecomendacaoUau } = await import('./pages/RecomendacaoUau.js?v=1007');
         renderRecomendacaoUau(router, params?.data);
     },
     '/depoimento/:slug': async ({ slug }) => {
-        const { renderPublicTestimonial } = await import('./pages/PublicTestimonial.js?v=1006');
+        const { renderPublicTestimonial } = await import('./pages/PublicTestimonial.js?v=1007');
         renderPublicTestimonial(router, slug);
     },
     '/p/:slug': async ({ slug }) => {
-        const { renderPublicProfile } = await import('./pages/PublicProfile.js?v=1006');
+        const { renderPublicProfile } = await import('./pages/PublicProfile.js?v=1007');
         renderPublicProfile(router, slug);
     },
     '/vendas': async () => {
-        const { renderLandingPage } = await import('./pages/LandingPage.js?v=1006');
+        const { renderLandingPage } = await import('./pages/LandingPage.js?v=1007');
         renderLandingPage(router);
     },
     'vendas': async () => {
-        const { renderLandingPage } = await import('./pages/LandingPage.js?v=1006');
+        const { renderLandingPage } = await import('./pages/LandingPage.js?v=1007');
         renderLandingPage(router);
     },
     '/reset-password': async () => {
-        const { renderResetPassword } = await import('./pages/Login.js?v=1006');
+        const { renderResetPassword } = await import('./pages/Login.js?v=1007');
         renderResetPassword(router);
     },
 
     '*': async () => {
         if (auth.isLoggedIn) return router.navigate('/dashboard');
-        const { renderLogin } = await import('./pages/Login.js?v=1006');
+        const { renderLogin } = await import('./pages/Login.js?v=1007');
         renderLogin(router);
     },
 });
