@@ -353,6 +353,29 @@ const MIGRATIONS = [
             }
         },
     },
+    // ── 015: Patch Preços 2026 (Pastilhas e Beadlets) ────────────────────────
+    {
+        name: '015_patch_missed_prices_2026',
+        async up(pool) {
+            const patches = [
+                { name: 'On Guard Pastilhas', r: 248, m: 186.25 },
+                { name: 'On Guard Beadlets', r: 155, m: 116.25 },
+                { name: 'Peppermint Beadlets', r: 140, m: 105 },
+                { name: 'Copaíba Softgels', r: 252, m: 189 },
+                { name: 'ZenGest Pastilhas', r: 215, m: 161.25 },
+                { name: 'Zendocrine Pastilhas', r: 224, m: 168 },
+                { name: 'Turmeric Pastilhas', r: 248, m: 186.25 },
+                { name: 'Adaptiv Pastilhas', r: 308, m: 231.25 }
+            ];
+            
+            for (let patch of patches) {
+                await pool.query(
+                    `UPDATE estoque SET preco_venda = $1, preco_custo = $2 WHERE nome_produto ILIKE $3`,
+                    [patch.r, patch.m, \`%\${patch.name}%\`]
+                );
+            }
+        }
+    }
 ];
 
 /**
