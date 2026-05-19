@@ -597,7 +597,7 @@ const MIGRATIONS = [
                     'copaiba softgels': 'Copaíba Softgels',
                     'peppermint softgels': 'Copaíba Softgels',
                     'zengest softgels': 'Copaíba Softgels',
-                    'on guard softgels': 'On Guard® Beadlets',
+                    'on guard softgels': 'On Guard®+ Pastilhas',
                     'balas breathe': 'Breathe Balm Stick',
                     'breathe balas': 'Breathe Balm Stick',
                     'balas on guard': 'On Guard® Creme Dental Clareador Natural',

@@ -1059,7 +1059,7 @@ const DOTERRA_PRICES = {
         'Cápsulas': { r: 252, m: 189 },
     },
     'On Guard Softgels': {
-        'Cápsulas': { r: 155, m: 116.25 },
+        'Cápsulas': { r: 248, m: 186.25 },
     },
     'Copaíba Softgels': {
         'Cápsulas': { r: 252, m: 189 },
