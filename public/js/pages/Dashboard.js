@@ -804,6 +804,7 @@ export async function renderDashboard(router) {
     const vendasMes = summaryMetas.vendasMes || 0;
     const clientesMes = monthClients;
     const cadastrosMes = summaryMetas.cadastrosMes || 0;
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const followupsMes = followupsArr.filter(f =>
       f.status === 'completed'
       && new Date(f.completed_at || f.updated_at || 0) >= thisMonth
