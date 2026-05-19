@@ -195,7 +195,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
         if (rows.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });
 
         const row = rows[0];
-        const role = (process.env.ADMIN_EMAIL && row.email === process.env.ADMIN_EMAIL) ? 'admin' : row.role;
+        const role = (process.env.ADMIN_EMAIL && row.email === process.env.ADMIN_EMAIL) ? 'admin' : (row.role || 'user');
 
         const assinatura = {
             plano: row.sub_plano, status: row.sub_status, trial_fim: row.trial_fim, periodo_fim: row.periodo_fim,

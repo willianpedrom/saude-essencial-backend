@@ -704,6 +704,31 @@ const MIGRATIONS = [
                 console.error("Erro na migração de preços 2026:", e);
             }
         }
+    },
+    // ── 017: Garantia do role admin para o primeiro usuário ────────────────────
+    {
+        name: '017_fix_admin_role',
+        async up(pool) {
+            // Garante que o primeiro usuário registrado sempre tem role=admin
+            await pool.query(`
+                UPDATE consultoras SET role = 'admin'
+                WHERE id = (SELECT id FROM consultoras ORDER BY criado_em ASC LIMIT 1)
+                  AND (role IS NULL OR role != 'admin')
+            `);
+            // Se ADMIN_EMAIL configurado, também garante por email
+            if (process.env.ADMIN_EMAIL) {
+                await pool.query(
+                    "UPDATE consultoras SET role = 'admin' WHERE email = $1",
+                    [process.env.ADMIN_EMAIL]
+                );
+            }
+            // Invalida tokens antigos do admin (que podem ter role errado) incrementando token_version
+            await pool.query(`
+                UPDATE consultoras SET token_version = COALESCE(token_version, 1) + 1
+                WHERE role = 'admin'
+            `);
+            console.log('[017_fix_admin_role] Role de admin garantido e tokens antigos invalidados.');
+        }
     }
 ];
 
