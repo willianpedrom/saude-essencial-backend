@@ -212,8 +212,8 @@ app.use('/convite', require('./routes/share'));
 app.use(express.static(path.join(__dirname, '../public'), {
     maxAge: '7d',
     setHeaders: (res, filePath) => {
-        // HTML and JSON should always be fresh
-        if (filePath.endsWith('.html') || filePath.endsWith('.json')) {
+        // HTML, JS and JSON should always be fresh
+        if (filePath.endsWith('.html') || filePath.endsWith('.json') || filePath.endsWith('.js')) {
             res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
             res.setHeader('Pragma', 'no-cache');
             res.setHeader('Expires', '0');

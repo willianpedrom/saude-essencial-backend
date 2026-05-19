@@ -1,6 +1,6 @@
-import { auth, store, api, urlBase64ToUint8Array } from '../store.js?v=1008';
-import { renderLayout } from './Dashboard.js?v=1008';
-import { toast, btnLoading, copyToClipboard, ARCHETYPE_THEMES } from '../utils.js?v=1008';
+import { auth, store, api, urlBase64ToUint8Array } from '../store.js?v=1009';
+import { renderLayout } from './Dashboard.js?v=1009';
+import { toast, btnLoading, copyToClipboard, ARCHETYPE_THEMES } from '../utils.js?v=1009';
 
 
 export async function renderProfile(router) {
