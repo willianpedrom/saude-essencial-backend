@@ -932,7 +932,7 @@ export async function renderClients(router, params) {
           <td><div class="client-name-cell">
             <div class="client-avatar-sm">${getInitials(name)}</div>
             <div>
-              <div style="font-weight:600">${name} ${c.tipo_cadastro === 'preferencial' ? '🛍️' : c.tipo_cadastro === 'consultora' ? '💼' : ''}</div>
+              <div style="font-weight:600">${name} ${c.tipo_cadastro === 'preferencial' ? '🛍️' : c.tipo_cadastro === 'varejo' ? '🛒' : c.tipo_cadastro === 'consultora' ? '💼' : ''}</div>
               <div style="font-size:0.75rem;color:var(--text-muted)">${c.email || ''}</div>
               ${c.indicador_nome ? `<div style="font-size:0.75rem;color:#d97706;background:#fef3c7;padding:2px 6px;border-radius:4px;display:inline-block;margin-top:4px;font-weight:600">🎁 Indicado(a) por: ${c.indicador_nome}</div>` : ''}
             </div>
@@ -1106,6 +1106,7 @@ export async function renderClients(router, params) {
               <option value="all">Tipos (Todos)</option>
               <option value="lead">Prospectos (Leads)</option>
               <option value="preferencial">🛍️ Preferenciais</option>
+              <option value="varejo">🛒 Clientes Varejo</option>
               <option value="consultora">💼 Consultoras</option>
             </select>
 

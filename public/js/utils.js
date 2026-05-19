@@ -419,7 +419,7 @@ export function openClientOffcanvas(client) {
                  <span>${client.cidade || 'Sem cidade'}</span>
                  <span>•</span>
                   <span id="oc-stage-badge" style="color:${isLost ? '#ef4444' : 'var(--green-600)'};font-weight:600">${stageName}</span>
-                  <span id="oc-tipo-icon">${client.tipo_cadastro === 'preferencial' ? '🛍️' : client.tipo_cadastro === 'consultora' ? '💼' : ''}</span>
+                  <span id="oc-tipo-icon">${client.tipo_cadastro === 'preferencial' ? '🛍️' : client.tipo_cadastro === 'varejo' ? '🛒' : client.tipo_cadastro === 'consultora' ? '💼' : ''}</span>
                   ${client.indicador_nome ? `<span>•</span><span style="color:#d97706;font-weight:600;background:#fef3c7;padding:2px 6px;border-radius:4px" title="Este cliente chegou no Funil porque foi indicado.">🎁 Indicado(a) por: ${client.indicador_nome}</span>` : ''}
               </div>
             </div>
@@ -485,6 +485,10 @@ export function openClientOffcanvas(client) {
                   <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
                     <input type="radio" name="oc_tipo_cadastro" value="preferencial" ${client.tipo_cadastro === 'preferencial' ? 'checked' : ''}>
                     <span>🛍️ Preferencial</span>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+                    <input type="radio" name="oc_tipo_cadastro" value="varejo" ${client.tipo_cadastro === 'varejo' ? 'checked' : ''}>
+                    <span>🛒 Cliente Varejo</span>
                   </label>
                   <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
                     <input type="radio" name="oc_tipo_cadastro" value="consultora" ${client.tipo_cadastro === 'consultora' ? 'checked' : ''}>
