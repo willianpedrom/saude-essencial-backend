@@ -32,6 +32,8 @@ export async function api(method, path, body = null) {
             sessionStorage.removeItem('se_token');
             sessionStorage.removeItem('se_csrf');
             sessionStorage.removeItem('se_user');
+            // Dispara evento para que auth._current seja zerado (auth escuta este evento)
+            window.dispatchEvent(new CustomEvent('auth:logout'));
             // Só redireciona se não estiver já na tela de login
             if (!window.location.hash?.includes('/login') && window.location.hash !== '#/') {
                 window.location.hash = '/';
@@ -105,6 +107,8 @@ export const auth = {
         if (token && user) {
             try { this._current = JSON.parse(user); } catch { }
         }
+        // Escuta evento de logout forçado (ex: 401 da API)
+        window.addEventListener('auth:logout', () => { this._current = null; });
     },
 
     async login(email, senha) {

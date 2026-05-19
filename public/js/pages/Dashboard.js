@@ -596,7 +596,8 @@ function fuRow(f) {
 
 // ── Dashboard ────────────────────────────────────────────────
 export async function renderDashboard(router) {
-  const consultant = auth.current;
+  // Sempre usa auth.current no momento da execução (pode ter sido atualizado pelo refresh)
+  let consultant = auth.current;
   const firstName = getNome(consultant).split(' ')[0];
 
   // ── Mensagem do Assistente ──
@@ -701,8 +702,11 @@ export async function renderDashboard(router) {
 
 
 
+    // Recarrega consultor após chamada assíncrona (refresh pode ter atualizado auth.current)
+    consultant = auth.current;
+
     // ── Onboarding Checklist ──
-    const onboardingDismissed = localStorage.getItem('onboarding_dismissed_' + consultant.id) === '1';
+    const onboardingDismissed = localStorage.getItem('onboarding_dismissed_' + (consultant?.id || 'default')) === '1';
     const hasProfile = !!(consultant?.nome && consultant?.telefone && consultant?.foto_url);
     const hasCaptureLink = anamneses.some(a => a.nome_link !== 'Link da Bio'); // Se tem algum link criado que não seja o automático da tela pública
     const hasProduct = totalEstoque > 0;
@@ -718,7 +722,7 @@ export async function renderDashboard(router) {
 
     const onboardingHtml = (!onboardingDismissed && !allDone) ? `
       <div id="onboarding-card" style="background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1.5px solid #86efac;border-radius:16px;padding:20px 24px;margin-bottom:24px;position:relative;">
-        <button onclick="localStorage.setItem('onboarding_dismissed_${consultant.id}','1');document.getElementById('onboarding-card').style.display='none'" style="position:absolute;top:12px;right:14px;background:transparent;border:none;font-size:1.2rem;color:#9ca3af;cursor:pointer;line-height:1;" title="Fechar">×</button>
+        <button onclick="localStorage.setItem('onboarding_dismissed_${consultant?.id || 'default'}','1');document.getElementById('onboarding-card').style.display='none'" style="position:absolute;top:12px;right:14px;background:transparent;border:none;font-size:1.2rem;color:#9ca3af;cursor:pointer;line-height:1;" title="Fechar">×</button>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
           <div style="font-size:1.4rem">🌱</div>
           <div style="flex:1">
