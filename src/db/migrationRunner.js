@@ -371,8 +371,335 @@ const MIGRATIONS = [
             for (let patch of patches) {
                 await pool.query(
                     `UPDATE estoque SET preco_venda = $1, preco_custo = $2 WHERE nome_produto ILIKE $3`,
-                    [patch.r, patch.m, \`%\${patch.name}%\`]
+                    [patch.r, patch.m, `%${patch.name}%`]
                 );
+            }
+        }
+    },
+    // ── 016: Sincronização Geral de Preços e Categorias 2026 ─────────────────
+    {
+        name: '016_sync_all_prices_2026',
+        async up(pool) {
+            try {
+                const fs = require('fs');
+                const path = require('path');
+                
+                const parsedPricesPath = path.join(__dirname, '..', '..', 'parsed_prices.json');
+                if (!fs.existsSync(parsedPricesPath)) {
+                    console.log(`⚠️ Arquivo parsed_prices.json não encontrado em \${parsedPricesPath}. Pulando migração de preços.`);
+                    return;
+                }
+                
+                const parsed = JSON.parse(fs.readFileSync(parsedPricesPath, 'utf8'));
+                
+                function cleanString(s) {
+                    return s.toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .replace(/®|™/g, '')
+                        .replace(/\s*\(.*?\)\s*/g, ' ')
+                        .replace(/\s*-\s*/g, ' ')
+                        .replace(/[^a-z0-9]/g, ' ')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                }
+
+                const RAW_MANUAL_MAPPINGS = {
+                    'pasta de dente on guard': 'On Guard® Creme Dental Clareador Natural',
+                    'creme dental on guard': 'On Guard® Creme Dental Clareador Natural',
+                    'on guard creme dental clareador natural': 'On Guard® Creme Dental Clareador Natural',
+                    'creme dental clareador natural on guard': 'On Guard® Creme Dental Clareador Natural',
+                    'on guard pastilhas': 'On Guard®+ Pastilhas',
+                    'on guard beadlets': 'On Guard® Beadlets',
+                    'peppermint beadlets': 'Peppermint Beadlets',
+                    'copaiba softgels': 'Copaíba Softgels',
+                    'copaíba softgels': 'Copaíba Softgels',
+                    'zengest pastilhas': 'ZenGest® Pastilhas',
+                    'zendocrine pastilhas': 'Zendocrine® Pastilhas',
+                    'turmeric pastilhas': 'Turmeric Pastilhas',
+                    'adaptiv pastilhas': 'Adaptiv® Pastilhas',
+                    'ddr prime pastilha': 'DDR Prime® Pastilha',
+                    'ddr prime pastilhas': 'DDR Prime® Pastilha',
+                    'ddr prime cápsulas': 'DDR Prime® Pastilha',
+                    'deep blue rub': 'dōTERRA Deep Blue® Rub',
+                    'pomada deep blue rub': 'dōTERRA Deep Blue® Rub',
+                    'deep blue stick + copaiba': 'dōTERRA Deep Blue® Stick + Copaíba',
+                    'deep blue stick + copaíba': 'dōTERRA Deep Blue® Stick + Copaíba',
+                    'oleo de coco fracionado': 'Óleo de Coco Fracionado',
+                    'oleo de coco fracionado (115ml)': 'Óleo de Coco Fracionado',
+                    'óleo de coco fracionado': 'Óleo de Coco Fracionado',
+                    'óleo de coco fracionado (115ml)': 'Óleo de Coco Fracionado',
+                    'brasil living kit': 'dōTERRA® Brasil Living Kit',
+                    'kit brasil living (10 oleos 5ml)': 'dōTERRA® Brasil Living Kit',
+                    'essencial para o lar': 'dōTERRA® Essencial Para o Lar (Pebble)',
+                    'kit essencial para o lar': 'dōTERRA® Essencial Para o Lar (Pebble)',
+                    'kit de apresentacao': 'dōTERRA® Kit de Apresentação',
+                    'kit de apresentação': 'dōTERRA® Kit de Apresentação',
+                    'inicio rapido': 'dōTERRA® Kit Início Rápido',
+                    'inicio rápido': 'dōTERRA® Kit Início Rápido',
+                    'início rápido': 'dōTERRA® Kit Início Rápido',
+                    'primeiros cuidados': 'dōTERRA® Kit Primeiros Cuidados',
+                    'aromatouch kit': 'Kit Técnica dōTERRA AromaTouch®',
+                    'aromatouch com difusor': 'Kit Técnica dōTERRA® AromaTouch® com Difusor',
+                    'verage kit skincare': 'Veráge Collection —',
+                    'verage creme hidratante': 'Veráge® Creme Hidratante',
+                    'verage hidratante': 'Veráge® Creme Hidratante',
+                    'verage solucao de limpeza': 'Veráge® Solução de Limpeza Facial',
+                    'verage soluçao de limpeza': 'Veráge® Solução de Limpeza Facial',
+                    'veráge solução de limpeza': 'Veráge® Solução de Limpeza Facial',
+                    'verage tonico': 'Verage Tônico Facial',
+                    'verage tônico': 'Verage Tônico Facial',
+                    'veráge tônico': 'Verage Tônico Facial',
+                    'yarrow pom': {
+                        '15ml': 'Yarrow | Pom',
+                        '30ml': 'Yarrow | Pom - Ativo Botânico Duo'
+                    },
+                    'yarrow|pom': {
+                        '15ml': 'Yarrow | Pom',
+                        '30ml': 'Yarrow | Pom - Ativo Botânico Duo'
+                    },
+                    'yarrow pom serum firmador': "dōTERRA Collector's Kit - Box",
+                    'condicionador diario': 'Conditioner Hair Care - Condicionador',
+                    'condicionador sem enxague': 'Conditioner Leave-in - Condicionador Leave-in',
+                    'condicionador sem enxágue': 'Conditioner Leave-in - Condicionador Leave-in',
+                    'shampoo protetor': 'Shampoo Protetor',
+                    'spa loção para mãos e corpo': 'dōTERRA® Spa Loção para Mãos e Corpo',
+                    'loção spa mãos e corpo': 'dōTERRA® Spa Loção para Mãos e Corpo',
+                    'spa sabonete hidratante': 'dōTERRA® Spa Sabonete Hidratante',
+                    'sabonete líquido spa': 'dōTERRA® Spa Sabonete Hidratante',
+                    'pinho siberiano': 'Siberian Fir - Pinheiro-siberiano',
+                    'abeto siberiano': 'Siberian Fir - Pinheiro-siberiano',
+                    'laranja doce (wild orange)': 'Wild Orange - Laranja-selvagem',
+                    'laranja doce': 'Wild Orange - Laranja-selvagem',
+                    'melaleuca (tea tree)': 'Tea Tree - Melaleuca',
+                    'melaleuca': 'Tea Tree - Melaleuca',
+                    'lavanda (lavender)': 'Lavender - Lavanda',
+                    'lavanda': 'Lavender - Lavanda',
+                    'hortela-pimenta (peppermint)': 'Peppermint - Hortelã-pimenta',
+                    'hortela-pimenta': 'Peppermint - Hortelã-pimenta',
+                    'hortelã-pimenta (peppermint)': 'Peppermint - Hortelã-pimenta',
+                    'hortelã-pimenta': 'Peppermint - Hortelã-pimenta',
+                    'olibano (frankincense)': 'Frankincense - Olíbano',
+                    'olibano': 'Frankincense - Olíbano',
+                    'olíbano (frankincense)': 'Frankincense - Olíbano',
+                    'olíbano': 'Frankincense - Olíbano',
+                    'limão siciliano (lemon)': 'Lemon - Limão-siciliano',
+                    'limao siciliano': 'Lemon - Limão-siciliano',
+                    'limão siciliano': 'Lemon - Limão-siciliano',
+                    'gengibre (ginger)': 'Ginger - Gengibre',
+                    'gengibre': 'Ginger - Gengibre',
+                    'alecrim (rosemary)': 'Rosemary - Alecrim',
+                    'alecrim': 'Rosemary - Alecrim',
+                    'canela (cinnamon bark)': 'Cinnamon Bark - Canela',
+                    'canela': 'Cinnamon Bark - Canela',
+                    'rosa (rose)': 'Rose - Rosa',
+                    'rosa': 'Rose - Rosa',
+                    'mirra (myrrh)': 'Myrrh - Mirra',
+                    'mirra': 'Myrrh - Mirra',
+                    'cedro (cedarwood)': 'Cedarwood - Cedro',
+                    'cedro': 'Cedarwood - Cedro',
+                    'pimenta preta (black pepper)': 'Black Pepper - Pimenta-negra',
+                    'pimenta preta': 'Black Pepper - Pimenta-negra',
+                    'salvia esclareia (clary sage)': 'Clary Sage - Sálvia-esclareia',
+                    'salvia esclareia': 'Clary Sage - Sálvia-esclareia',
+                    'sálvia esclareia (clary sage)': 'Clary Sage - Sálvia-esclareia',
+                    'sálvia esclareia': 'Clary Sage - Sálvia-esclareia',
+                    'sandalo havaiano (hawaiian sandalwood)': 'Hawaiian Sandalwood - Sândalo-havaiano',
+                    'sandalo havaiano': 'Hawaiian Sandalwood - Sândalo-havaiano',
+                    'sândalo havaiano (hawaiian sandalwood)': 'Hawaiian Sandalwood - Sândalo-havaiano',
+                    'sândalo havaiano': 'Hawaiian Sandalwood - Sândalo-havaiano',
+                    'cravo (clove)': 'Clove - Cravo-da-índia',
+                    'cravo': 'Clove - Cravo-da-índia',
+                    'toranja (grapefruit)': 'Grapefruit - Toranja',
+                    'toranja': 'Grapefruit - Toranja',
+                    'capim-limao (lemongrass)': 'Lemongrass - Capim-limão',
+                    'capim-limão (lemongrass)': 'Lemongrass - Capim-limão',
+                    'capim limao': 'Lemongrass - Capim-limão',
+                    'capim-limão': 'Lemongrass - Capim-limão',
+                    'erva doce (fennel)': 'Fennel - Funcho',
+                    'erva doce': 'Fennel - Funcho',
+                    'tomilho (thyme)': 'Thyme - Tomilho',
+                    'tomilho': 'Thyme - Tomilho',
+                    'cipreste (cypress)': 'Cypress - Cipreste',
+                    'cipreste': 'Cypress - Cipreste',
+                    'zimbro (juniper berry)': 'Juniper Berry - Zimbro',
+                    'zimbro': 'Juniper Berry - Zimbro',
+                    'basil (manjericão)': 'Basil - Manjericão',
+                    'basil (manjericao)': 'Basil - Manjericão',
+                    'basil': 'Basil - Manjericão',
+                    'manjericao': 'Basil - Manjericão',
+                    'manjericão': 'Basil - Manjericão',
+                    'coentro (coriander)': 'Coriander - Coentro',
+                    'coentro': 'Coriander - Coentro',
+                    'camomila romana (roman chamomile)': 'Roman Chamomile - Camomila-romana',
+                    'camomila romana': 'Roman Chamomile - Camomila-romana',
+                    'geranio (geranium)': 'Geranium - Gerânio',
+                    'geranio': 'Geranium - Gerânio',
+                    'gerânio (geranium)': 'Geranium - Gerânio',
+                    'gerânio': 'Geranium - Gerânio',
+                    'helicriso (helichrysum)': 'Helichrysum - Helicriso',
+                    'helicriso': 'Helichrysum - Helicriso',
+                    'on guard (mix protetor)': 'On Guard®',
+                    'on guard': 'On Guard®',
+                    'breathe / clarify (mix respiratorio)': 'Breathe®',
+                    'breathe / clarify (mix respiratório)': 'Breathe®',
+                    'breathe': 'Breathe®',
+                    'deep blue (mix suavizante)': 'dōTERRA Deep Blue®',
+                    'deep blue': 'dōTERRA Deep Blue®',
+                    'zengest / digestzen (mix digestivo)': 'ZenGest®',
+                    'zengest': 'ZenGest®',
+                    'serenity (mix repousante)': 'Serenity®',
+                    'serenity': 'Serenity®',
+                    'balance (mix aterrador)': 'Balance®',
+                    'balance': 'Balance®',
+                    'citrus bliss (mix revigorante)': 'Citrus Bliss®',
+                    'citrus bliss': 'Citrus Bliss®',
+                    'purify (mix purificador)': 'Purify®',
+                    'purify': 'Purify®',
+                    'pasttense (mix tensao)': 'PastTense®',
+                    'pasttense': 'PastTense®',
+                    'intune (mix foco)': 'InTune®',
+                    'intune': 'InTune®',
+                    'clarycalm (mix mensal mulher)': 'Clarycalm®',
+                    'clarycalm': 'Clarycalm®',
+                    'cheer (mix animador)': 'Cheer®',
+                    'cheer': 'Cheer®',
+                    'motivate (mix encorajador)': 'Motivate®',
+                    'motivate': 'Motivate®',
+                    'peace (mix tranquilizador)': 'Peace®',
+                    'peace': 'Peace®',
+                    'zendocrine (mix desintoxicante)': 'Zendocrine®',
+                    'zendocrine': 'Zendocrine®',
+                    'metapwr blend': 'MetaPWR™ Aroma Natural de Especiarias',
+                    'metapwr': 'MetaPWR™ Aroma Natural de Especiarias',
+                    'metapwr aroma': 'MetaPWR™ Aroma Natural de Especiarias',
+                    'terrashield (mix repelente)': 'TerraShield®',
+                    'terrashield': 'TerraShield®',
+                    'whisper (mix para mulheres)': 'Whisper®',
+                    'whisper': 'Whisper®',
+                    'passion (mix inspirador)': 'Passion®',
+                    'passion': 'Passion®',
+                    'forgive (mix renovador)': 'Forgive®',
+                    'forgive': 'Forgive®',
+                    'console (mix consolador)': 'Console®',
+                    'console': 'Console®',
+                    'slim & sassy (mix metabolico)': 'MetaPWR™ Aroma Natural de Especiarias',
+                    'slim & sassy': 'MetaPWR™ Aroma Natural de Especiarias',
+                    'smart & sassy': 'MetaPWR™ Aroma Natural de Especiarias',
+                    'slim sassy': 'MetaPWR™ Aroma Natural de Especiarias',
+                    'thinker (kids)': 'dōTERRA Thinker®',
+                    'calmer (kids)': 'dōTERRA Calmer®',
+                    'stronger (kids)': 'dōTERRA Stronger®',
+                    'rescuer (kids)': 'dōTERRA Rescuer®',
+                    'steady (kids)': 'dōTERRA Steady®',
+                    'brave (kids)': 'dōTERRA Brave®',
+                    'tamer (kids)': 'dōTERRA Tamer®',
+                    'copaiba softgels': 'Copaíba Softgels',
+                    'peppermint softgels': 'Copaíba Softgels',
+                    'zengest softgels': 'Copaíba Softgels',
+                    'on guard softgels': 'On Guard® Beadlets',
+                    'balas breathe': 'Breathe Balm Stick',
+                    'breathe balas': 'Breathe Balm Stick',
+                    'balas on guard': 'On Guard® Creme Dental Clareador Natural',
+                    'on guard balas': 'On Guard® Creme Dental Clareador Natural',
+                    'difusor petal 2.0': 'Petal 2.0 Kit',
+                    'difusor pebble': 'Kit com Difusor Pebble™',
+                };
+
+                const MANUAL_MAPPINGS = {};
+                for (let k in RAW_MANUAL_MAPPINGS) {
+                    MANUAL_MAPPINGS[cleanString(k)] = RAW_MANUAL_MAPPINGS[k];
+                }
+
+                const matchesSize = (pSize, iSize) => {
+                    if (!iSize) return false;
+                    const ps = pSize.toLowerCase().trim();
+                    const is = iSize.toLowerCase().trim();
+                    if (is === '15ml') return ps === '15 ml';
+                    if (is === '5ml') return ps === '5 ml';
+                    if (is === '30ml') return ps === '30 ml';
+                    if (is === '10ml touch' || is === '10ml') return ps.includes('10 ml');
+                    if (is === 'cápsulas') return ps.includes('capsula') || ps.includes('cápsula') || ps.includes('pastilha') || ps.includes('unidades');
+                    if (is === 'unidade / kit') {
+                        return !ps.includes('ml') || ps.includes('kit') || ps.includes('unidade');
+                    }
+                    return false;
+                };
+
+                const { rows } = await pool.query('SELECT id, nome_produto, ml_tamanho, categoria FROM estoque');
+                console.log(`[016_sync_all_prices_2026] Sincronizando \${rows.length} itens do estoque...`);
+
+                const targetSupplements = new Set([
+                    "on guard pastilhas",
+                    "on guard beadlets",
+                    "peppermint beadlets",
+                    "supermint beadlets",
+                    "balas breathe",
+                    "balas ginger",
+                    "balas on guard"
+                ]);
+
+                const targetPersonalCare = new Set([
+                    "creme dental on guard",
+                    "pasta de dente on guard",
+                    "on guard creme dental clareador natural"
+                ]);
+
+                let updatedCount = 0;
+                for (let row of rows) {
+                    let matchedProduct = null;
+                    const key = row.nome_produto;
+                    const size = row.ml_tamanho || 'Unidade / Kit';
+                    
+                    const cleanKey = cleanString(key);
+                    let mappedName = MANUAL_MAPPINGS[cleanKey];
+                    if (mappedName) {
+                        if (typeof mappedName === 'object') {
+                            mappedName = mappedName[size.toLowerCase()];
+                        }
+                        if (mappedName) {
+                            matchedProduct = parsed.find(p => cleanString(p.name) === cleanString(mappedName) && matchesSize(p.size, size));
+                            if (!matchedProduct) {
+                                matchedProduct = parsed.find(p => cleanString(p.name) === cleanString(mappedName));
+                            }
+                        }
+                    }
+                    if (!matchedProduct) {
+                        matchedProduct = parsed.find(p => cleanString(p.name) === cleanKey && matchesSize(p.size, size));
+                    }
+                    if (!matchedProduct) {
+                        const possible = parsed.filter(p => matchesSize(p.size, size));
+                        for (let p of possible) {
+                            const cleanPName = cleanString(p.name);
+                            if (cleanPName === cleanKey || cleanPName.includes(cleanKey) || cleanKey.includes(cleanPName)) {
+                                if (cleanKey.includes('pastilha') && !cleanPName.includes('pastilha')) continue;
+                                if (cleanKey.includes('beadlet') && !cleanPName.includes('beadlet')) continue;
+                                if (cleanKey.includes('creme dental') && !cleanPName.includes('creme dental') && !cleanPName.includes('dental')) continue;
+                                
+                                matchedProduct = p;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (matchedProduct) {
+                        let newCategory = row.categoria;
+                        if (targetSupplements.has(cleanKey)) {
+                            newCategory = 'Suplemento';
+                        } else if (targetPersonalCare.has(cleanKey)) {
+                            newCategory = 'Personal Care';
+                        }
+
+                        await pool.query(
+                            'UPDATE estoque SET preco_venda = $1, preco_custo = $2, categoria = $3 WHERE id = $4',
+                            [matchedProduct.reg, matchedProduct.mem, newCategory, row.id]
+                        );
+                        updatedCount++;
+                    }
+                }
+                console.log(`[016_sync_all_prices_2026] \${updatedCount} itens atualizados com sucesso.`);
+            } catch (e) {
+                console.error("Erro na migração de preços 2026:", e);
             }
         }
     }

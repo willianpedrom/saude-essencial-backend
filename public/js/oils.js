@@ -144,9 +144,9 @@ export const OILS_DATABASE = {
     'ZenGest Cápsulas': { nameEn: 'ZenGest Softgels', cat: 'supplement', fn: 'Suporte digestivo sistêmico', uses: 'Má digestão, azia, desconforto intestinal', topical: 'Uso oral (cápsula)', aromatic: 'Não aplicável' },
     'Cúrcuma Cápsulas': { nameEn: 'Turmeric Softgels', cat: 'supplement', fn: 'Anti-inflamatório sistêmico', uses: 'Dores articulares, inflamação celular, cognição', topical: 'Uso oral (cápsula)', aromatic: 'Não aplicável' },
     'Copaíba Pastilha': { nameEn: 'Copaiba Pastilha', cat: 'supplement', fn: 'Apoio sistêmico, antioxidante e anti-inflamatório', uses: 'Aroma natural de copaíba, dietas com ingestão controlada de açúcares, praticidade', topical: 'Uso oral (pastilha)', aromatic: 'Não aplicável', sizes: [{"size": "60 unidades", "regular": 252.0, "member": 189.0, "pv": 0}] },
-    'Balas Breathe': { nameEn: 'Breathe Respiratory Drops', cat: 'other', fn: 'Alívio respiratório rápido', uses: 'Garganta irritada, tosse, vias congestionadas', topical: 'Uso oral (chupar)', aromatic: 'Não aplicável' },
-    'Balas Ginger': { nameEn: 'Ginger Drops', cat: 'other', fn: 'Alívio digestivo e enjoo', uses: 'Náusea, digestão, viagens', topical: 'Uso oral (chupar)', aromatic: 'Não aplicável' },
-    'Balas On Guard': { nameEn: 'On Guard Protecting Throat Drops', cat: 'other', fn: 'Defesa e alívio da garganta', uses: 'Garganta inflamada, proteção imunológica', topical: 'Uso oral (chupar)', aromatic: 'Não aplicável' },
+    'Balas Breathe': { nameEn: 'Breathe Respiratory Drops', cat: 'supplement', fn: 'Alívio respiratório rápido', uses: 'Garganta irritada, tosse, vias congestionadas', topical: 'Uso oral (chupar)', aromatic: 'Não aplicável' },
+    'Balas Ginger': { nameEn: 'Ginger Drops', cat: 'supplement', fn: 'Alívio digestivo e enjoo', uses: 'Náusea, digestão, viagens', topical: 'Uso oral (chupar)', aromatic: 'Não aplicável' },
+    'Balas On Guard': { nameEn: 'On Guard Protecting Throat Drops', cat: 'supplement', fn: 'Defesa e alívio da garganta', uses: 'Garganta inflamada, proteção imunológica', topical: 'Uso oral (chupar)', aromatic: 'Não aplicável' },
 
     // ── Mais Óleos e Blends ────────────────────────────────────────
     'Blue Tansy': { nameEn: 'Blue Tansy', cat: 'single', fn: 'Calmante para pele, músculos, emoções', uses: 'Pele irritada, manchas, dores musculares', topical: 'Rosto, áreas afetadas (muita diluição)', aromatic: 'Difusor' },
