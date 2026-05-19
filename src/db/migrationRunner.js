@@ -705,9 +705,9 @@ const MIGRATIONS = [
             }
         }
     },
-    // ── 017: Garantia do role admin para o primeiro usuário ────────────────────
+    // ── 018: Garantia do role admin para o usuário específico ────────────────────
     {
-        name: '017_fix_admin_role',
+        name: '018_fix_admin_role_v2',
         async up(pool) {
             // Garante que o primeiro usuário registrado sempre tem role=admin
             await pool.query(`
@@ -722,12 +722,19 @@ const MIGRATIONS = [
                     [process.env.ADMIN_EMAIL]
                 );
             }
+            
+            // 🔥 HARDCODE FIX FOR WILLIAN: Ensure Willian is ALWAYS admin regardless of ENV
+            await pool.query(`
+                UPDATE consultoras SET role = 'admin' 
+                WHERE email = 'willian12comunixcomdeus@gmail.com'
+            `);
+
             // Invalida tokens antigos do admin (que podem ter role errado) incrementando token_version
             await pool.query(`
                 UPDATE consultoras SET token_version = COALESCE(token_version, 1) + 1
                 WHERE role = 'admin'
             `);
-            console.log('[017_fix_admin_role] Role de admin garantido e tokens antigos invalidados.');
+            console.log('[018_fix_admin_role_v2] Role de admin garantido para Willian e tokens antigos invalidados.');
         }
     }
 ];
