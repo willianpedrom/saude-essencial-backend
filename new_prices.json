@@ -1,0 +1,1274 @@
+[
+  {
+    "name": "Adaptiv Pastilhas",
+    "size": "Cápsulas",
+    "reg": 308.0,
+    "mem": 231.25
+  },
+  {
+    "name": "Basil",
+    "size": "5ml",
+    "reg": 103.0,
+    "mem": 77.5
+  },
+  {
+    "name": "Beauty Power Collagen Elixir",
+    "size": "210 g",
+    "reg": 264.0,
+    "mem": 198.0
+  },
+  {
+    "name": "Bergamot - Bergamota",
+    "size": "5ml",
+    "reg": 123.0,
+    "mem": 92.5
+  },
+  {
+    "name": "Black Pepper - Pimenta-preta",
+    "size": "5ml",
+    "reg": 250.0,
+    "mem": 187.5
+  },
+  {
+    "name": "Cardamom - Cardamomo",
+    "size": "5ml",
+    "reg": 272.0,
+    "mem": 203.75
+  },
+  {
+    "name": "Cassia - Canela-cássia",
+    "size": "5ml",
+    "reg": 80.0,
+    "mem": 60.0
+  },
+  {
+    "name": "Cilantro - Coentro",
+    "size": "5ml",
+    "reg": 93.0,
+    "mem": 70.0
+  },
+  {
+    "name": "Cinnamon Bark",
+    "size": "5ml",
+    "reg": 252.0,
+    "mem": 188.75
+  },
+  {
+    "name": "Clary Sage - Sálvia-esclareia",
+    "size": "5ml",
+    "reg": 163.0,
+    "mem": 122.5
+  },
+  {
+    "name": "Clove - Cravo",
+    "size": "5ml",
+    "reg": 73.0,
+    "mem": 54.5
+  },
+  {
+    "name": "Copaiba - Copaíba",
+    "size": "5ml",
+    "reg": 160.0,
+    "mem": 120.0
+  },
+  {
+    "name": "Copaíba Softgels",
+    "size": "Cápsulas",
+    "reg": 252.0,
+    "mem": 189.0
+  },
+  {
+    "name": "Coriander - Coentro",
+    "size": "5ml",
+    "reg": 87.0,
+    "mem": 65.0
+  },
+  {
+    "name": "DDR Prime Pastilha",
+    "size": "Cápsulas",
+    "reg": 325.0,
+    "mem": 243.75
+  },
+  {
+    "name": "Creatina Lifepower",
+    "size": "105 g",
+    "reg": 239.0,
+    "mem": 179.0
+  },
+  {
+    "name": "Fennel  - Erva-doce",
+    "size": "5ml",
+    "reg": 63.0,
+    "mem": 47.5
+  },
+  {
+    "name": "Frankincense - Olíbano",
+    "size": "5ml",
+    "reg": 270.0,
+    "mem": 202.5
+  },
+  {
+    "name": "Geranium - Gerânio",
+    "size": "5ml",
+    "reg": 125.0,
+    "mem": 93.75
+  },
+  {
+    "name": "Ginger - Gengibre",
+    "size": "5ml",
+    "reg": 128.0,
+    "mem": 96.25
+  },
+  {
+    "name": "Grapefruit - Toranja",
+    "size": "5ml",
+    "reg": 73.0,
+    "mem": 55.0
+  },
+  {
+    "name": "Green Mandarin - Mandarina-verde",
+    "size": "5ml",
+    "reg": 98.0,
+    "mem": 73.75
+  },
+  {
+    "name": "Juniper Berry - Zimbro",
+    "size": "5ml",
+    "reg": 210.0,
+    "mem": 157.5
+  },
+  {
+    "name": "Lavender - Lavanda",
+    "size": "5ml",
+    "reg": 103.0,
+    "mem": 77.5
+  },
+  {
+    "name": "Lemon - Limão-siciliano",
+    "size": "5ml",
+    "reg": 48.0,
+    "mem": 36.25
+  },
+  {
+    "name": "Lemongrass - Capim-limão",
+    "size": "5ml",
+    "reg": 43.0,
+    "mem": 32.5
+  },
+  {
+    "name": "Lifeshot",
+    "size": "1 litro",
+    "reg": 208.0,
+    "mem": 156.0
+  },
+  {
+    "name": "Lifeshot Pack com 2 2 litros R$ 420,00 R$ 315,00 5260214246 Lime - Limão",
+    "size": "5ml",
+    "reg": 58.0,
+    "mem": 43.75
+  },
+  {
+    "name": "Marjoram - Manjerona",
+    "size": "5ml",
+    "reg": 88.0,
+    "mem": 66.25
+  },
+  {
+    "name": "MetaPWR Aroma Natural de Especiarias",
+    "size": "15ml",
+    "reg": 298.0,
+    "mem": 223.75
+  },
+  {
+    "name": "MetaPWR Pastilhas",
+    "size": "Cápsulas",
+    "reg": 315.0,
+    "mem": 236.25
+  },
+  {
+    "name": "Myrrh - Mirra",
+    "size": "5ml",
+    "reg": 248.0,
+    "mem": 186.25
+  },
+  {
+    "name": "On Guard",
+    "size": "5ml",
+    "reg": 140.0,
+    "mem": 105.0
+  },
+  {
+    "name": "On Guard Beadlets",
+    "size": "Cápsulas",
+    "reg": 155.0,
+    "mem": 116.25
+  },
+  {
+    "name": "On Guard+ Pastilhas",
+    "size": "Cápsulas",
+    "reg": 248.0,
+    "mem": 186.25
+  },
+  {
+    "name": "Oregano - Orégano",
+    "size": "5ml",
+    "reg": 100.0,
+    "mem": 75.0
+  },
+  {
+    "name": "Patchouli - Patchouli",
+    "size": "5ml",
+    "reg": 113.0,
+    "mem": 85.0
+  },
+  {
+    "name": "Peppermint - Hortelã-pimenta",
+    "size": "5ml",
+    "reg": 92.0,
+    "mem": 68.75
+  },
+  {
+    "name": "Peppermint Beadlets",
+    "size": "Cápsulas",
+    "reg": 140.0,
+    "mem": 105.0
+  },
+  {
+    "name": "Petitgrain",
+    "size": "5ml",
+    "reg": 92.0,
+    "mem": 68.75
+  },
+  {
+    "name": "Pink Pepper - Pimenta-rosa",
+    "size": "5ml",
+    "reg": 230.0,
+    "mem": 172.5
+  },
+  {
+    "name": "Rosemary - Alecrim",
+    "size": "5ml",
+    "reg": 67.0,
+    "mem": 50.0
+  },
+  {
+    "name": "Siberian Fir",
+    "size": "5ml",
+    "reg": 70.0,
+    "mem": 52.5
+  },
+  {
+    "name": "Spearmint",
+    "size": "5ml",
+    "reg": 98.0,
+    "mem": 73.75
+  },
+  {
+    "name": "Tangerine - Tangerina",
+    "size": "5ml",
+    "reg": 70.0,
+    "mem": 52.5
+  },
+  {
+    "name": "Thyme - Tomilho",
+    "size": "5ml",
+    "reg": 123.0,
+    "mem": 92.5
+  },
+  {
+    "name": "Turmeric - Cúrcuma",
+    "size": "15ml",
+    "reg": 292.0,
+    "mem": 218.75
+  },
+  {
+    "name": "Turmeric Pastilhas",
+    "size": "Cápsulas",
+    "reg": 248.0,
+    "mem": 186.25
+  },
+  {
+    "name": "Vetiver",
+    "size": "5ml",
+    "reg": 217.0,
+    "mem": 162.5
+  },
+  {
+    "name": "VM Complex",
+    "size": "Cápsulas",
+    "reg": 248.0,
+    "mem": 186.0
+  },
+  {
+    "name": "Wild Orange - Laranja-selvagem",
+    "size": "5ml",
+    "reg": 43.0,
+    "mem": 32.5
+  },
+  {
+    "name": "Zendocrine",
+    "size": "5ml",
+    "reg": 98.0,
+    "mem": 73.75
+  },
+  {
+    "name": "Zendocrine Pastilhas",
+    "size": "Cápsulas",
+    "reg": 224.0,
+    "mem": 168.0
+  },
+  {
+    "name": "ZenGest",
+    "size": "5ml",
+    "reg": 140.0,
+    "mem": 105.0
+  },
+  {
+    "name": "Basil - Manjericão",
+    "size": "15ml",
+    "reg": 307.0,
+    "mem": 230.0
+  },
+  {
+    "name": "Bergamot - Bergamota",
+    "size": "15ml",
+    "reg": 310.0,
+    "mem": 232.5
+  },
+  {
+    "name": "Black Pepper - Pimenta-preta",
+    "size": "5ml",
+    "reg": 250.0,
+    "mem": 187.5
+  },
+  {
+    "name": "Black Spruce - Abeto-negro",
+    "size": "5ml",
+    "reg": 180.0,
+    "mem": 135.0
+  },
+  {
+    "name": "Breu Branco",
+    "size": "5ml",
+    "reg": 325.0,
+    "mem": 243.75
+  },
+  {
+    "name": "Cassia - Canela-cássia",
+    "size": "15ml",
+    "reg": 200.0,
+    "mem": 150.0
+  },
+  {
+    "name": "Cedarwood - Cedro",
+    "size": "15ml",
+    "reg": 140.0,
+    "mem": 105.0
+  },
+  {
+    "name": "Cilantro - Coentro",
+    "size": "15ml",
+    "reg": 290.0,
+    "mem": 217.5
+  },
+  {
+    "name": "Citronella - Citronela",
+    "size": "15ml",
+    "reg": 123.0,
+    "mem": 92.5
+  },
+  {
+    "name": "Clary Sage - Sálvia-esclareia",
+    "size": "15ml",
+    "reg": 410.0,
+    "mem": 307.5
+  },
+  {
+    "name": "Clove - Cravo",
+    "size": "15ml",
+    "reg": 162.0,
+    "mem": 121.25
+  },
+  {
+    "name": "Copaiba - Copaíba",
+    "size": "15ml",
+    "reg": 320.0,
+    "mem": 240.0
+  },
+  {
+    "name": "Coriander - Coentro",
+    "size": "15ml",
+    "reg": 230.0,
+    "mem": 172.5
+  },
+  {
+    "name": "Cypress - Cipreste",
+    "size": "15ml",
+    "reg": 180.0,
+    "mem": 135.0
+  },
+  {
+    "name": "Douglas Fir - Abeto de Douglas",
+    "size": "5ml",
+    "reg": 223.0,
+    "mem": 167.5
+  },
+  {
+    "name": "Erva Baleeira",
+    "size": "5ml",
+    "reg": 298.0,
+    "mem": 223.75
+  },
+  {
+    "name": "Fennel  - Erva-doce",
+    "size": "15ml",
+    "reg": 140.0,
+    "mem": 105.0
+  },
+  {
+    "name": "Frankincense - Olíbano",
+    "size": "15ml",
+    "reg": 648.0,
+    "mem": 486.25
+  },
+  {
+    "name": "Geranium - Gerânio",
+    "size": "15ml",
+    "reg": 318.0,
+    "mem": 238.75
+  },
+  {
+    "name": "Ginger - Gengibre",
+    "size": "15ml",
+    "reg": 358.0,
+    "mem": 268.75
+  },
+  {
+    "name": "Grapefruit - Toranja",
+    "size": "15ml",
+    "reg": 187.0,
+    "mem": 140.0
+  },
+  {
+    "name": "Green Mandarin - Mandarina-verde",
+    "size": "15ml",
+    "reg": 280.0,
+    "mem": 210.0
+  },
+  {
+    "name": "Guaiacwood",
+    "size": "15ml",
+    "reg": 170.0,
+    "mem": 127.5
+  },
+  {
+    "name": "Hawaiian Sandalwood - Sândalo-havaiano",
+    "size": "5ml",
+    "reg": 699.0,
+    "mem": 524.0
+  },
+  {
+    "name": "Helichrysum - Sempre-viva",
+    "size": "5ml",
+    "reg": 764.0,
+    "mem": 573.0
+  },
+  {
+    "name": "Lavender - Lavanda 15 ml R$ 197,00 R$ 148,00 2360203419 Lemon - Limão-siciliano",
+    "size": "15ml",
+    "reg": 115.0,
+    "mem": 86.25
+  },
+  {
+    "name": "Lemon Eucalyptus - Eucalipto-limão",
+    "size": "15ml",
+    "reg": 120.0,
+    "mem": 90.0
+  },
+  {
+    "name": "Lemongrass - Capim-limão",
+    "size": "15ml",
+    "reg": 110.0,
+    "mem": 82.5
+  },
+  {
+    "name": "Lime - Limão",
+    "size": "15ml",
+    "reg": 143.0,
+    "mem": 107.5
+  },
+  {
+    "name": "Madagascar Vanilla",
+    "size": "5ml",
+    "reg": 345.0,
+    "mem": 258.75
+  },
+  {
+    "name": "Mālama",
+    "size": "15ml",
+    "reg": 242.0,
+    "mem": 181.25
+  },
+  {
+    "name": "Marjoram - Manjerona",
+    "size": "15ml",
+    "reg": 213.0,
+    "mem": 160.0
+  },
+  {
+    "name": "Melaleuca - Tea Tree",
+    "size": "15ml",
+    "reg": 210.0,
+    "mem": 157.5
+  },
+  {
+    "name": "Melissa",
+    "size": "5ml",
+    "reg": 895.0,
+    "mem": 671.0
+  },
+  {
+    "name": "Myrrh - Mirra",
+    "size": "15ml",
+    "reg": 655.0,
+    "mem": 491.25
+  },
+  {
+    "name": "Oregano - Orégano",
+    "size": "15ml",
+    "reg": 230.0,
+    "mem": 172.5
+  },
+  {
+    "name": "Patchouli - Patchouli",
+    "size": "15ml",
+    "reg": 293.0,
+    "mem": 220.0
+  },
+  {
+    "name": "Peppermint - Hortelã-pimenta",
+    "size": "15ml",
+    "reg": 184.0,
+    "mem": 138.0
+  },
+  {
+    "name": "Petitgrain - Petitgrain",
+    "size": "15ml",
+    "reg": 230.0,
+    "mem": 172.5
+  },
+  {
+    "name": "Roman Chamomile - Camomila-romana",
+    "size": "5ml",
+    "reg": 510.0,
+    "mem": 382.5
+  },
+  {
+    "name": "Rosemary - Alecrim",
+    "size": "15ml",
+    "reg": 165.0,
+    "mem": 123.75
+  },
+  {
+    "name": "Siberian Fir - Pinheiro-siberiano",
+    "size": "15ml",
+    "reg": 190.0,
+    "mem": 142.5
+  },
+  {
+    "name": "Spearmint - Hortelã-verde",
+    "size": "15ml",
+    "reg": 290.0,
+    "mem": 217.5
+  },
+  {
+    "name": "Spikenard - Nardo",
+    "size": "5ml",
+    "reg": 560.0,
+    "mem": 420.0
+  },
+  {
+    "name": "Tangerine - Tangerina",
+    "size": "15ml",
+    "reg": 170.0,
+    "mem": 127.5
+  },
+  {
+    "name": "Thyme - Tomilho",
+    "size": "15ml",
+    "reg": 292.0,
+    "mem": 218.75
+  },
+  {
+    "name": "Vetiver - Vetiver",
+    "size": "15ml",
+    "reg": 512.0,
+    "mem": 383.75
+  },
+  {
+    "name": "Wild Orange - Laranja-selvagem",
+    "size": "15ml",
+    "reg": 120.0,
+    "mem": 90.0
+  },
+  {
+    "name": "Wintergreen - Wintergreen",
+    "size": "15ml",
+    "reg": 180.0,
+    "mem": 135.0
+  },
+  {
+    "name": "Adaptiv",
+    "size": "15ml",
+    "reg": 378.0,
+    "mem": 283.75
+  },
+  {
+    "name": "Air-X",
+    "size": "15ml",
+    "reg": 232.0,
+    "mem": 173.75
+  },
+  {
+    "name": "AromaTouch",
+    "size": "15ml",
+    "reg": 290.0,
+    "mem": 217.5
+  },
+  {
+    "name": "Balance",
+    "size": "15ml",
+    "reg": 210.0,
+    "mem": 157.5
+  },
+  {
+    "name": "Breathe",
+    "size": "15ml",
+    "reg": 230.0,
+    "mem": 172.5
+  },
+  {
+    "name": "Citrus Bliss",
+    "size": "15ml",
+    "reg": 180.0,
+    "mem": 135.0
+  },
+  {
+    "name": "DDR Prime",
+    "size": "15ml",
+    "reg": 300.0,
+    "mem": 225.0
+  },
+  {
+    "name": "Deep Blue",
+    "size": "5ml",
+    "reg": 288.0,
+    "mem": 216.0
+  },
+  {
+    "name": "Serenity",
+    "size": "15ml",
+    "reg": 340.0,
+    "mem": 255.0
+  },
+  {
+    "name": "Elevation 15 ml R$ 465,00 R$ 348,50 4260222820 Eucalyptus",
+    "size": "15ml",
+    "reg": 192.0,
+    "mem": 143.75
+  },
+  {
+    "name": "Forest Bathing",
+    "size": "15ml",
+    "reg": 315.0,
+    "mem": 236.25
+  },
+  {
+    "name": "Hygge",
+    "size": "15ml",
+    "reg": 350.0,
+    "mem": 262.5
+  },
+  {
+    "name": "On Guard",
+    "size": "15ml",
+    "reg": 360.0,
+    "mem": 270.0
+  },
+  {
+    "name": "Purify",
+    "size": "15ml",
+    "reg": 200.0,
+    "mem": 150.0
+  },
+  {
+    "name": "Sunny Citrus",
+    "size": "15ml",
+    "reg": 190.0,
+    "mem": 142.5
+  },
+  {
+    "name": "Supermint",
+    "size": "15ml",
+    "reg": 242.0,
+    "mem": 181.25
+  },
+  {
+    "name": "TerraShield",
+    "size": "15ml",
+    "reg": 110.0,
+    "mem": 82.5
+  },
+  {
+    "name": "Zendocrine",
+    "size": "15ml",
+    "reg": 247.0,
+    "mem": 185.0
+  },
+  {
+    "name": "ZenGest",
+    "size": "15ml",
+    "reg": 353.0,
+    "mem": 265.0
+  },
+  {
+    "name": "Cheer",
+    "size": "5ml",
+    "reg": 260.0,
+    "mem": 195.0
+  },
+  {
+    "name": "Cheer Touch",
+    "size": "10ml Touch",
+    "reg": 160.0,
+    "mem": 120.0
+  },
+  {
+    "name": "Console",
+    "size": "5ml",
+    "reg": 380.0,
+    "mem": 285.0
+  },
+  {
+    "name": "Console Touch",
+    "size": "10ml Touch",
+    "reg": 240.0,
+    "mem": 180.0
+  },
+  {
+    "name": "Kit  Touch Emotional Aromatherapy",
+    "size": "Unidade / Kit",
+    "reg": 1002.0,
+    "mem": 751.25
+  },
+  {
+    "name": "Forgive",
+    "size": "5ml",
+    "reg": 210.0,
+    "mem": 157.5
+  },
+  {
+    "name": "Forgive Touch 10 ml R$ 135,00 R$ 101,25 1360203796  Motivate",
+    "size": "5ml",
+    "reg": 240.0,
+    "mem": 180.0
+  },
+  {
+    "name": "Motivate Touch",
+    "size": "10ml Touch",
+    "reg": 150.0,
+    "mem": 112.5
+  },
+  {
+    "name": "Passion",
+    "size": "5ml",
+    "reg": 279.0,
+    "mem": 209.25
+  },
+  {
+    "name": "Passion Touch",
+    "size": "10ml Touch",
+    "reg": 247.0,
+    "mem": 185.0
+  },
+  {
+    "name": "Peace",
+    "size": "5ml",
+    "reg": 310.0,
+    "mem": 232.5
+  },
+  {
+    "name": "Peace Touch",
+    "size": "10ml Touch",
+    "reg": 200.0,
+    "mem": 150.0
+  },
+  {
+    "name": "Breathe Balm Stick 13,5 g",
+    "size": "Unidade / Kit",
+    "reg": 148.0,
+    "mem": 111.25
+  },
+  {
+    "name": "Citrus Bliss Loção para as Mãos",
+    "size": "75 ml",
+    "reg": 97.0,
+    "mem": 72.5
+  },
+  {
+    "name": "Conditioner Hair Care - Condicionador",
+    "size": "500 ml",
+    "reg": 212.0,
+    "mem": 159.0
+  },
+  {
+    "name": "Conditioner Leave-in - Condicionador Leave-in",
+    "size": "237 ml",
+    "reg": 198.0,
+    "mem": 148.75
+  },
+  {
+    "name": "Correct-X Gel Reparador",
+    "size": "15ml",
+    "reg": 140.0,
+    "mem": 105.0
+  },
+  {
+    "name": "Deep Blue Rub",
+    "size": "120 ml",
+    "reg": 297.0,
+    "mem": 222.75
+  },
+  {
+    "name": "gas",
+    "size": "Unidade / Kit",
+    "reg": 80.0,
+    "mem": 60.0
+  },
+  {
+    "name": "Deep Blue Stick + Copaíba",
+    "size": "30 g",
+    "reg": 185.0,
+    "mem": 139.0
+  },
+  {
+    "name": "Spa Esfoliante para o Corpo",
+    "size": "226 g",
+    "reg": 211.0,
+    "mem": 158.5
+  },
+  {
+    "name": "Óleo de Coco Fracionado",
+    "size": "115 ml",
+    "reg": 142.0,
+    "mem": 106.25
+  },
+  {
+    "name": "Spa Loção para Mãos e Corpo",
+    "size": "200 ml",
+    "reg": 149.0,
+    "mem": 112.0
+  },
+  {
+    "name": "HD Clear - Roll On",
+    "size": "10ml",
+    "reg": 180.0,
+    "mem": 135.0
+  },
+  {
+    "name": "Lavender Fields Body Splash",
+    "size": "100 ml",
+    "reg": 191.0,
+    "mem": 142.88
+  },
+  {
+    "name": "On Guard Creme Dental Clareador Natural",
+    "size": "125 g",
+    "reg": 93.0,
+    "mem": 70.0
+  },
+  {
+    "name": "Shampoo Protetor",
+    "size": "500 ml",
+    "reg": 193.0,
+    "mem": 145.0
+  },
+  {
+    "name": "Pūre Femme Eau de Parfum",
+    "size": "60 ml",
+    "reg": 500.0,
+    "mem": 375.0
+  },
+  {
+    "name": "Pūr Homme Eau de Parfum",
+    "size": "60 ml",
+    "reg": 500.0,
+    "mem": 375.0
+  },
+  {
+    "name": "Spa Sabonete Hidratante",
+    "size": "250 ml",
+    "reg": 131.0,
+    "mem": 98.0
+  },
+  {
+    "name": "Spa Manteiga Hidratante Corporal",
+    "size": "198 g",
+    "reg": 224.0,
+    "mem": 168.0
+  },
+  {
+    "name": "Salubelle",
+    "size": "10ml",
+    "reg": 725.0,
+    "mem": 543.75
+  },
+  {
+    "name": "Veráge Solução de Limpeza Facial",
+    "size": "60 ml",
+    "reg": 260.0,
+    "mem": 195.0
+  },
+  {
+    "name": "Verage Hidratante Facial",
+    "size": "30ml",
+    "reg": 290.0,
+    "mem": 217.5
+  },
+  {
+    "name": "Verage Tônico Facial",
+    "size": "50 ml",
+    "reg": 289.0,
+    "mem": 217.0
+  },
+  {
+    "name": "Veráge Collection —",
+    "size": "Unidade / Kit",
+    "reg": 899.0,
+    "mem": 674.0
+  },
+  {
+    "name": "Veráge Creme Hidratante",
+    "size": "48 g",
+    "reg": 303.0,
+    "mem": 227.5
+  },
+  {
+    "name": "Yarrow | Pom",
+    "size": "15ml",
+    "reg": 470.0,
+    "mem": 352.5
+  },
+  {
+    "name": "Yarrow | Pom - Ativo Botânico Duo",
+    "size": "30ml",
+    "reg": 930.0,
+    "mem": 697.5
+  },
+  {
+    "name": "DifusorCaixa",
+    "size": "Unidade / Kit",
+    "reg": 1633.0,
+    "mem": 1225.0
+  },
+  {
+    "name": "Kit Técnica  AromaTouch",
+    "size": "Unidade / Kit",
+    "reg": 1040.0,
+    "mem": 780.0
+  },
+  {
+    "name": "Blooming Trio Kit",
+    "size": "Unidade / Kit",
+    "reg": 375.0,
+    "mem": 281.25
+  },
+  {
+    "name": "Difusor de Parede Myst",
+    "size": "Unidade / Kit",
+    "reg": 495.0,
+    "mem": 371.25
+  },
+  {
+    "name": "Dawn Umidificador Aromático",
+    "size": "Unidade / Kit",
+    "reg": 797.0,
+    "mem": 598.0
+  },
+  {
+    "name": "Collector's Kit - Box",
+    "size": "Unidade / Kit",
+    "reg": 1189.0,
+    "mem": 892.0
+  },
+  {
+    "name": "Kit Conforto",
+    "size": "Unidade / Kit",
+    "reg": 380.0,
+    "mem": 285.0
+  },
+  {
+    "name": "Kit Equilíbrio",
+    "size": "Unidade / Kit",
+    "reg": 397.0,
+    "mem": 298.0
+  },
+  {
+    "name": "Kit Inspire",
+    "size": "Unidade / Kit",
+    "reg": 357.0,
+    "mem": 268.0
+  },
+  {
+    "name": "Kit Revitalize",
+    "size": "Unidade / Kit",
+    "reg": 351.0,
+    "mem": 263.0
+  },
+  {
+    "name": "Brasil Living Kit",
+    "size": "Unidade / Kit",
+    "reg": 960.0,
+    "mem": 720.0
+  },
+  {
+    "name": "Construa seu Legado Kit",
+    "size": "Unidade / Kit",
+    "reg": 1600.0,
+    "mem": 1200.0
+  },
+  {
+    "name": "Culinária Essencial Caixa R$ 892,00 R$ 668,75 6560219174  Culinária Essencial Sem Livro",
+    "size": "Unidade / Kit",
+    "reg": 717.0,
+    "mem": 537.5
+  },
+  {
+    "name": "Essencial Para o Lar",
+    "size": "Unidade / Kit",
+    "reg": 2517.0,
+    "mem": 1888.0
+  },
+  {
+    "name": "Essencial Para o Lar",
+    "size": "Unidade / Kit",
+    "reg": 2517.0,
+    "mem": 1888.0
+  },
+  {
+    "name": "Kids Kit",
+    "size": "Unidade / Kit",
+    "reg": 1022.0,
+    "mem": 766.25
+  },
+  {
+    "name": "Kit de Apresentação",
+    "size": "Unidade / Kit",
+    "reg": 187.0,
+    "mem": 140.0
+  },
+  {
+    "name": "Kit Início Rápido",
+    "size": "Unidade / Kit",
+    "reg": 800.0,
+    "mem": 600.0
+  },
+  {
+    "name": "Kit Primeiros Cuidados",
+    "size": "Unidade / Kit",
+    "reg": 1497.0,
+    "mem": 1122.5
+  },
+  {
+    "name": "Wooden Box",
+    "size": "Unidade / Kit",
+    "reg": 105.0,
+    "mem": 79.0
+  },
+  {
+    "name": "Gênesis Performance",
+    "size": "Unidade / Kit",
+    "reg": 787.0,
+    "mem": 590.0
+  },
+  {
+    "name": "Gênesis Beauty Fit",
+    "size": "Unidade / Kit",
+    "reg": 1000.0,
+    "mem": 750.0
+  },
+  {
+    "name": "Kit com Difusor Pebble",
+    "size": "Unidade / Kit",
+    "reg": 498.0,
+    "mem": 373.75
+  },
+  {
+    "name": "Livro Culinária Essencial",
+    "size": "Unidade / Kit",
+    "reg": 150.0,
+    "mem": 112.5
+  },
+  {
+    "name": "Petal 2.0 Kit",
+    "size": "Unidade / Kit",
+    "reg": 665.0,
+    "mem": 498.75
+  },
+  {
+    "name": "Adaptiv",
+    "size": "Touch 10 ml",
+    "reg": 200.0,
+    "mem": 150.0
+  },
+  {
+    "name": "Brave",
+    "size": "10ml",
+    "reg": 220.0,
+    "mem": 165.0
+  },
+  {
+    "name": "Breathe",
+    "size": "Touch 10 ml",
+    "reg": 150.0,
+    "mem": 112.5
+  },
+  {
+    "name": "Calmer",
+    "size": "10ml",
+    "reg": 200.0,
+    "mem": 150.0
+  },
+  {
+    "name": "Clarycalm",
+    "size": "10ml",
+    "reg": 292.0,
+    "mem": 218.75
+  },
+  {
+    "name": "Copaiba",
+    "size": "Touch 10 ml",
+    "reg": 230.0,
+    "mem": 172.5
+  },
+  {
+    "name": "Deep Blue",
+    "size": "Touch 10 ml",
+    "reg": 430.0,
+    "mem": 322.5
+  },
+  {
+    "name": "Frankincense",
+    "size": "Touch 10 ml",
+    "reg": 500.0,
+    "mem": 375.0
+  },
+  {
+    "name": "Helichrysum",
+    "size": "Touch 10 ml",
+    "reg": 531.0,
+    "mem": 398.0
+  },
+  {
+    "name": "Hope",
+    "size": "Touch 10 ml",
+    "reg": 208.0,
+    "mem": 156.25
+  },
+  {
+    "name": "InTune",
+    "size": "10ml",
+    "reg": 337.0,
+    "mem": 252.5
+  },
+  {
+    "name": "Jasmine",
+    "size": "Touch 10 ml",
+    "reg": 393.0,
+    "mem": 295.0
+  },
+  {
+    "name": "Lavender",
+    "size": "Touch 10 ml",
+    "reg": 160.0,
+    "mem": 120.0
+  },
+  {
+    "name": "Melaleuca Touch 10 ml R$ 140,00 R$ 105,00 1460206568 On Guard",
+    "size": "Touch 10 ml",
+    "reg": 240.0,
+    "mem": 180.0
+  },
+  {
+    "name": "Oregano",
+    "size": "Touch 10 ml",
+    "reg": 150.0,
+    "mem": 112.5
+  },
+  {
+    "name": "PastTense",
+    "size": "10ml",
+    "reg": 200.0,
+    "mem": 150.0
+  },
+  {
+    "name": "Peppermint",
+    "size": "Touch 10 ml",
+    "reg": 150.0,
+    "mem": 112.5
+  },
+  {
+    "name": "Rescuer",
+    "size": "10ml",
+    "reg": 160.0,
+    "mem": 120.0
+  },
+  {
+    "name": "Rose",
+    "size": "Touch 10 ml",
+    "reg": 650.0,
+    "mem": 487.5
+  },
+  {
+    "name": "Steady",
+    "size": "10ml",
+    "reg": 160.0,
+    "mem": 120.0
+  },
+  {
+    "name": "Stronger",
+    "size": "10ml",
+    "reg": 150.0,
+    "mem": 112.5
+  },
+  {
+    "name": "Tamer",
+    "size": "10ml",
+    "reg": 150.0,
+    "mem": 112.5
+  },
+  {
+    "name": "Thinker",
+    "size": "10ml",
+    "reg": 170.0,
+    "mem": 127.5
+  },
+  {
+    "name": "Vetiver",
+    "size": "Touch 10 ml",
+    "reg": 330.0,
+    "mem": 247.5
+  },
+  {
+    "name": "Whisper Touch",
+    "size": "5ml",
+    "reg": 150.0,
+    "mem": 112.5
+  },
+  {
+    "name": "ZenGest",
+    "size": "Touch 10 ml",
+    "reg": 230.0,
+    "mem": 172.5
+  }
+]
