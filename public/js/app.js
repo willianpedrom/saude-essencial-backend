@@ -2,8 +2,8 @@
    APP.JS – Orquestrador principal do Sistema Saúde Essencial
    ============================================================ */
 
-import { auth } from './store.js?v=1009';
-import { Router, setupGlobalShortcuts } from './utils.js?v=1009';
+import { auth } from './store.js?v=1010';
+import { Router, setupGlobalShortcuts } from './utils.js?v=1010';
 // Pages are now dynamically imported in the router// Boot
 auth.init();
 setupGlobalShortcuts();
@@ -14,7 +14,7 @@ document.addEventListener('open-anamnese', async (e) => {
     const client = e.detail?.client;
     const anamneseOverride = e.detail?.anamneseOverride || null;
     if (client) {
-        const { showAnamneseModal } = await import('./pages/Clients.js?v=1009');
+        const { showAnamneseModal } = await import('./pages/Clients.js?v=1010');
         showAnamneseModal(client, router, anamneseOverride);
     }
 });
@@ -76,122 +76,122 @@ window.addEventListener('subscription:required', () => {
 const router = new Router({
     '/': async (p) => {
         if (auth.isLoggedIn) return router.navigate('/dashboard');
-        const { renderLogin } = await import('./pages/Login.js?v=1009');
+        const { renderLogin } = await import('./pages/Login.js?v=1010');
         renderLogin(router);
     },
     '/dashboard': guard(async (params) => {
-        const { renderDashboard } = await import('./pages/Dashboard.js?v=1009');
+        const { renderDashboard } = await import('./pages/Dashboard.js?v=1010');
         renderDashboard(router, params);
     }),
     '/clients': guard(async (params) => {
-        const { renderClients } = await import('./pages/Clients.js?v=1009');
+        const { renderClients } = await import('./pages/Clients.js?v=1010');
         renderClients(router, params);
     }),
     '/links': guard(async (params) => {
-        const { renderLinks } = await import('./pages/Links.js?v=1009');
+        const { renderLinks } = await import('./pages/Links.js?v=1010');
         renderLinks(router, params);
     }),
     '/anamnesis': guard(async (params) => {
-        const { renderAnamnesisList } = await import('./pages/Anamneses.js?v=1009');
+        const { renderAnamnesisList } = await import('./pages/Anamneses.js?v=1010');
         renderAnamnesisList(router, params);
     }),
     '/schedule': guard(async () => {
-        const { renderSchedule } = await import('./pages/Schedule.js?v=1009');
+        const { renderSchedule } = await import('./pages/Schedule.js?v=1010');
         renderSchedule(router);
     }),
     '/followup': guard(async () => {
         router.navigate('/schedule');
     }),
     '/testimonials': guard(async () => {
-        const { renderTestimonials } = await import('./pages/Extras.js?v=1009');
+        const { renderTestimonials } = await import('./pages/Extras.js?v=1010');
         renderTestimonials(router);
     }),
     '/purchases': guard(async () => {
-        const { renderPurchases } = await import('./pages/Extras.js?v=1009');
+        const { renderPurchases } = await import('./pages/Extras.js?v=1010');
         renderPurchases(router);
     }),
     '/assinatura': guard(async () => {
-        const { renderAssinatura } = await import('./pages/Assinatura.js?v=1009');
+        const { renderAssinatura } = await import('./pages/Assinatura.js?v=1010');
         renderAssinatura(router);
     }),
     '/profile': guard(async () => {
-        const { renderProfile } = await import('./pages/ProfileV31.js?v=1009');
+        const { renderProfile } = await import('./pages/ProfileV31.js?v=1010');
         renderProfile(router);
     }),
     '/admin': guard(async () => {
-        const { renderAdmin } = await import('./pages/Admin.js?v=1009');
+        const { renderAdmin } = await import('./pages/Admin.js?v=1010');
         renderAdmin(router);
     }),
     '/pipeline': guard(async () => {
-        const { renderPipeline } = await import('./pages/Pipeline.js?v=1009');
+        const { renderPipeline } = await import('./pages/Pipeline.js?v=1010');
         renderPipeline(router);
     }),
     '/insights': guard(async () => {
-        const { renderInsights } = await import('./pages/Insights.js?v=1009');
+        const { renderInsights } = await import('./pages/Insights.js?v=1010');
         renderInsights(router);
     }),
     '/integrations': guard(async () => {
-        const { renderIntegrations } = await import('./pages/Integracoes.js?v=1009');
+        const { renderIntegrations } = await import('./pages/Integracoes.js?v=1010');
         renderIntegrations(router);
     }),
     '/prospecting': guard(async () => {
-        const { renderProspecting } = await import('./pages/Prospecting.js?v=1009');
+        const { renderProspecting } = await import('./pages/Prospecting.js?v=1010');
         renderProspecting(router);
     }),
     '/estoque': guard(async () => {
-        const { renderInventory } = await import('./pages/Inventory.js?v=1009');
+        const { renderInventory } = await import('./pages/Inventory.js?v=1010');
         renderInventory(router);
     }),
 
     // Public routes (no auth required)
     '/anamnese/:token': async ({ token }) => {
-        const { renderPublicAnamnesis } = await import('./pages/PublicAnamnesis.js?v=1009');
+        const { renderPublicAnamnesis } = await import('./pages/PublicAnamnesis.js?v=1010');
         renderPublicAnamnesis(router, token);
     },
     '/vendas/capture/:token': async ({ token }) => {
-        const { renderSalesAnamnesis } = await import('./pages/SalesAnamnesis.js?v=1009');
+        const { renderSalesAnamnesis } = await import('./pages/SalesAnamnesis.js?v=1010');
         renderSalesAnamnesis(router, token);
     },
     '/protocolo': async (params) => {
-        const { renderReport } = await import('./pages/Report.js?v=1009');
+        const { renderReport } = await import('./pages/Report.js?v=1010');
         renderReport(router, params?.data);
     },
     '/laudo/:hash': async ({ hash }) => {
-        const { renderReport } = await import('./pages/Report.js?v=1009');
+        const { renderReport } = await import('./pages/Report.js?v=1010');
         renderReport(router, null, hash);
     },
     '/business-report': async (params) => {
-        const { renderBusinessReport } = await import('./pages/BusinessReport.js?v=1009');
+        const { renderBusinessReport } = await import('./pages/BusinessReport.js?v=1010');
         renderBusinessReport(router, params?.data);
     },
     '/recomendacao-uau': async (params) => {
-        const { renderRecomendacaoUau } = await import('./pages/RecomendacaoUau.js?v=1009');
+        const { renderRecomendacaoUau } = await import('./pages/RecomendacaoUau.js?v=1010');
         renderRecomendacaoUau(router, params?.data);
     },
     '/depoimento/:slug': async ({ slug }) => {
-        const { renderPublicTestimonial } = await import('./pages/PublicTestimonial.js?v=1009');
+        const { renderPublicTestimonial } = await import('./pages/PublicTestimonial.js?v=1010');
         renderPublicTestimonial(router, slug);
     },
     '/p/:slug': async ({ slug }) => {
-        const { renderPublicProfile } = await import('./pages/PublicProfile.js?v=1009');
+        const { renderPublicProfile } = await import('./pages/PublicProfile.js?v=1010');
         renderPublicProfile(router, slug);
     },
     '/vendas': async () => {
-        const { renderLandingPage } = await import('./pages/LandingPage.js?v=1009');
+        const { renderLandingPage } = await import('./pages/LandingPage.js?v=1010');
         renderLandingPage(router);
     },
     'vendas': async () => {
-        const { renderLandingPage } = await import('./pages/LandingPage.js?v=1009');
+        const { renderLandingPage } = await import('./pages/LandingPage.js?v=1010');
         renderLandingPage(router);
     },
     '/reset-password': async () => {
-        const { renderResetPassword } = await import('./pages/Login.js?v=1009');
+        const { renderResetPassword } = await import('./pages/Login.js?v=1010');
         renderResetPassword(router);
     },
 
     '*': async () => {
         if (auth.isLoggedIn) return router.navigate('/dashboard');
-        const { renderLogin } = await import('./pages/Login.js?v=1009');
+        const { renderLogin } = await import('./pages/Login.js?v=1010');
         renderLogin(router);
     },
 });

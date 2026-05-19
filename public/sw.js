@@ -1,6 +1,6 @@
 // Minimal Service Worker — required for PWA install prompt
 // v9: 2026-05 — forçar atualização do cache para carregar os novos protocolos infantis
-const CACHE_NAME = 'gota-app-v9';
+const CACHE_NAME = 'gota-app-v10';
 const PRECACHE = ['/', '/css/index.css', '/logo.png'];
 
 self.addEventListener('install', e => {

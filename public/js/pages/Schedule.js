@@ -1,6 +1,6 @@
-import { auth, store } from '../store.js?v=1009';
-import { renderLayout } from './Dashboard.js?v=1009';
-import { formatDate, toast, modal } from '../utils.js?v=1009';
+import { auth, store } from '../store.js?v=1010';
+import { renderLayout } from './Dashboard.js?v=1010';
+import { formatDate, toast, modal } from '../utils.js?v=1010';
 
 // ───────────── AGENDA INTELIGENTE (Agendamentos + Follow-ups) ─────────────
 export async function renderSchedule(router) {

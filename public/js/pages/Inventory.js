@@ -1,6 +1,6 @@
-import { store } from '../store.js?v=1009';
-import { toast } from '../utils.js?v=1009';
-import { renderLayout } from './Dashboard.js?v=1009';
+import { store } from '../store.js?v=1010';
+import { toast } from '../utils.js?v=1010';
+import { renderLayout } from './Dashboard.js?v=1010';
 
 const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
