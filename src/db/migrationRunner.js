@@ -604,6 +604,8 @@ const MIGRATIONS = [
                     'on guard balas': 'On Guard® Creme Dental Clareador Natural',
                     'difusor petal 2.0': 'Petal 2.0 Kit',
                     'difusor pebble': 'Kit com Difusor Pebble™',
+                    'malama': 'Mālama',
+                    'mãlama': 'Mālama',
                 };
 
                 const MANUAL_MAPPINGS = {};

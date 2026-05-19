@@ -215,6 +215,9 @@ const DOTERRA_PRODUCTS = [
     { nome: "Loção Spa Mãos e Corpo", cat: "Personal Care" },
     { nome: "Sabonete Líquido Spa", cat: "Personal Care" },
     { nome: "Veráge Kit Skincare", cat: "Kit" },
+    { nome: "Mālama", cat: "Blend" },
+    { nome: "Mãlama", cat: "Blend" },
+    { nome: "Malama", cat: "Blend" },
 ];
 
 // ── Tabela de Preços Oficiais doTERRA (por produto + tamanho) ──────────────
@@ -471,6 +474,15 @@ const DOTERRA_PRICES = {
     },
     'Melissa': {
         '5ml': { r: 895, m: 671 },
+    },
+    'Mālama': {
+        '15ml': { r: 242, m: 181.25 },
+    },
+    'Mãlama': {
+        '15ml': { r: 242, m: 181.25 },
+    },
+    'Malama': {
+        '15ml': { r: 242, m: 181.25 },
     },
     'Mirra (Myrrh)': {
         '15ml': { r: 655, m: 491.25 },
@@ -1238,6 +1250,8 @@ const DOTERRA_ALIASES = {
     'citrus bliss': 'Citrus Bliss (Mix Revigorante)',
     'onguard': 'On Guard (Mix Protetor)',
     'on guard': 'On Guard (Mix Protetor)',
+    'malama': 'Mālama',
+    'mãlama': 'Mālama',
     'breathe': 'Breathe / Clarify (Mix Respiratório)',
     'clarify': 'Breathe / Clarify (Mix Respiratório)',
     'deepblue': 'Deep Blue (Mix Suavizante)',
