@@ -124,6 +124,7 @@ const DOTERRA_PRODUCTS = [
     { nome: "Beauty Power (Colágeno)", cat: "Suplemento" },
     { nome: "MetaPWR Advantage (Colágeno)", cat: "Suplemento" },
     { nome: "MetaPWR Assist", cat: "Suplemento" },
+    { nome: "Adaptiv Pastilhas", cat: "Suplemento" },
     { nome: "Deep Blue Polyphenol Complex", cat: "Suplemento" },
     { nome: "Peppermint Softgels", cat: "Suplemento" },
     { nome: "ZenGest Softgels", cat: "Suplemento" },
@@ -1321,8 +1322,22 @@ function getDotPrices(nomeProduto, tamanho) {
     }
 
     if (!entry) return null;
-    // Retorna o tamanho exato; se não existe, retorna null (não usa fallback)
-    return entry[tamanho] || null;
+    
+    // Retorna o tamanho exato
+    const exactMatch = entry[tamanho];
+    if (exactMatch) return exactMatch;
+
+    // Fallbacks para incompatibilidade de nomenclatura de tamanhos
+    const keys = Object.keys(entry);
+    if (keys.length === 1) return entry[keys[0]]; // Se só tem 1 tamanho cadastrado, retorna ele
+
+    // Mapeamentos comuns para suplementos e pastilhas
+    if (tamanho === 'Cápsulas' && entry['Unidade / Kit']) return entry['Unidade / Kit'];
+    if (tamanho === 'Unidade / Kit' && entry['Cápsulas']) return entry['Cápsulas'];
+    if (tamanho === '60 pastilhas' && entry['Unidade / Kit']) return entry['Unidade / Kit'];
+    if (tamanho === '60 pastilhas' && entry['Cápsulas']) return entry['Cápsulas'];
+
+    return null;
 }
 
 /** Retorna todos os tamanhos disponíveis para um produto */
