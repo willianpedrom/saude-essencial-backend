@@ -414,9 +414,11 @@ const DOTERRA_PRICES = {
     },
     'Helicriso (Helichrysum)': {
         '5ml': { r: 764, m: 573 },
+        '10ml Touch': { r: 531, m: 398 },
     },
     'Helicriso': {
-        '5ml': { r: 651, m: 488 },
+        '5ml': { r: 764, m: 573 },
+        '10ml Touch': { r: 531, m: 398 },
     },
     'Zimbro (Juniper Berry)': {
         '5ml': { r: 210, m: 157.5 },
@@ -577,6 +579,7 @@ const DOTERRA_PRICES = {
     },
     'Ylang Ylang': {
         '15ml': { r: 373, m: 280 },
+        '5ml': { r: 123, m: 92 },
     },
     'Cúrcuma (Turmeric)': {
         '15ml': { r: 292, m: 218.75 },
@@ -1334,7 +1337,19 @@ function getDotPrices(nomeProduto, tamanho) {
 
     // Fallbacks para incompatibilidade de nomenclatura de tamanhos
     const keys = Object.keys(entry);
-    if (keys.length === 1) return entry[keys[0]]; // Se só tem 1 tamanho cadastrado, retorna ele
+    // Só faz fallback de tamanho único se o tamanho solicitado e o disponível forem compatíveis
+    // (evita mostrar preço de 5ml para quem pediu 15ml ou 10ml Touch)
+    if (keys.length === 1) {
+        const available = keys[0];
+        const reqIsTouch = tamanho.toLowerCase().includes('touch');
+        const avlIsTouch = available.toLowerCase().includes('touch');
+        const reqIsCaps  = ['cápsulas','unidade / kit','gramas'].includes(tamanho.toLowerCase());
+        const avlIsCaps  = ['cápsulas','unidade / kit','gramas'].includes(available.toLowerCase());
+        // só usa fallback se ambos são da mesma "família" de tamanho
+        if (reqIsTouch === avlIsTouch && reqIsCaps === avlIsCaps) {
+            return entry[available];
+        }
+    }
 
     // Mapeamentos comuns para suplementos e pastilhas
     if (tamanho === 'Cápsulas' && entry['Unidade / Kit']) return entry['Unidade / Kit'];
