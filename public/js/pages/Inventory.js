@@ -271,9 +271,11 @@ const DOTERRA_PRICES = {
     },
     'Cássia (Cassia)': {
         '15ml': { r: 200, m: 150 },
+        '5ml': { r: 80, m: 60 },
     },
     'Cássia': {
         '15ml': { r: 200, m: 150 },
+        '5ml': { r: 80, m: 60 },
     },
     'Cedro (Cedarwood)': {
         '15ml': { r: 140, m: 105 },
@@ -335,7 +337,7 @@ const DOTERRA_PRICES = {
         '5ml': { r: 223, m: 167.5 },
     },
     'Erva Baleeira': {
-        '15ml': { r: 140, m: 105 },
+        '5ml': { r: 298, m: 223.75 },
     },
     'Eucalipto': {
         '15ml': { r: 120, m: 90 },
@@ -443,9 +445,11 @@ const DOTERRA_PRICES = {
     },
     'Capim-Limão (Lemongrass)': {
         '15ml': { r: 110, m: 82.5 },
+        '5ml': { r: 43, m: 32.5 },
     },
     'Capim-Limão': {
         '15ml': { r: 110, m: 82.5 },
+        '5ml': { r: 43, m: 32.5 },
     },
     'Limão Tahiti (Lime)': {
         '15ml': { r: 143, m: 107.5 },
@@ -501,6 +505,7 @@ const DOTERRA_PRICES = {
     },
     'Patchouli': {
         '15ml': { r: 293, m: 220 },
+        '5ml': { r: 113, m: 85 },
     },
     'Hortelã-Pimenta (Peppermint)': {
         '15ml': { r: 184, m: 138 },
@@ -622,7 +627,7 @@ const DOTERRA_PRICES = {
         '5ml': { r: 60, m: 45 },
     },
     'Breathe / Clarify (Mix Respiratório)': {
-        '15ml': { r: 232, m: 173.75 },
+        '15ml': { r: 230, m: 172.5 },
         '5ml': { r: 70, m: 53 },
     },
     'Citrus Bliss (Mix Revigorante)': {
@@ -749,7 +754,7 @@ const DOTERRA_PRICES = {
         '10ml Touch': { r: 200, m: 150 },
     },
     'Brave Touch': {
-        '10ml Touch': { r: 164, m: 123 },
+        '10ml Touch': { r: 220, m: 165 },
     },
     'Brave (Kids)': {
         '10ml Touch': { r: 220, m: 165 },
@@ -758,7 +763,7 @@ const DOTERRA_PRICES = {
         '10ml Touch': { r: 150, m: 112.5 },
     },
     'Calmer Touch': {
-        '10ml Touch': { r: 145, m: 109 },
+        '10ml Touch': { r: 200, m: 150 },
     },
     'Calmer (Kids)': {
         '10ml Touch': { r: 200, m: 150 },
@@ -806,7 +811,7 @@ const DOTERRA_PRICES = {
         '10ml Touch': { r: 150, m: 112.5 },
     },
     'Rescuer Touch': {
-        '10ml Touch': { r: 120, m: 90 },
+        '10ml Touch': { r: 160, m: 120 },
     },
     'Rescuer (Kids)': {
         '10ml Touch': { r: 160, m: 120 },
@@ -815,25 +820,25 @@ const DOTERRA_PRICES = {
         '10ml Touch': { r: 650, m: 487.5 },
     },
     'Steady Touch': {
-        '10ml Touch': { r: 121, m: 91 },
+        '10ml Touch': { r: 160, m: 120 },
     },
     'Steady (Kids)': {
         '10ml Touch': { r: 160, m: 120 },
     },
     'Stronger Touch': {
-        '10ml Touch': { r: 115, m: 86 },
+        '10ml Touch': { r: 150, m: 112.5 },
     },
     'Stronger (Kids)': {
         '10ml Touch': { r: 150, m: 112.5 },
     },
     'Tamer Touch': {
-        '10ml Touch': { r: 113, m: 85 },
+        '10ml Touch': { r: 150, m: 112.5 },
     },
     'Tamer (Kids)': {
         '10ml Touch': { r: 150, m: 112.5 },
     },
     'Thinker Touch': {
-        '10ml Touch': { r: 128, m: 96 },
+        '10ml Touch': { r: 170, m: 127.5 },
     },
     'Thinker (Kids)': {
         '10ml Touch': { r: 170, m: 127.5 },
