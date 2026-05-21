@@ -1383,8 +1383,8 @@ function getDotPrices(nomeProduto, tamanho) {
         const available = keys[0];
         const reqIsTouch = tamanho.toLowerCase().includes('touch');
         const avlIsTouch = available.toLowerCase().includes('touch');
-        const reqIsCaps  = ['cápsulas','unidade / kit','gramas'].includes(tamanho.toLowerCase());
-        const avlIsCaps  = ['cápsulas','unidade / kit','gramas'].includes(available.toLowerCase());
+        const reqIsCaps  = ['cápsulas','unidade / kit','gramas','105g','120 cápsulas'].includes(tamanho.toLowerCase());
+        const avlIsCaps  = ['cápsulas','unidade / kit','gramas','105g','120 cápsulas'].includes(available.toLowerCase());
         // só usa fallback se ambos são da mesma "família" de tamanho
         if (reqIsTouch === avlIsTouch && reqIsCaps === avlIsCaps) {
             return entry[available];
