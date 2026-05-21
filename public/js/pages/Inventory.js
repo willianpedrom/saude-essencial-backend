@@ -148,6 +148,7 @@ const DOTERRA_PRODUCTS = [
     { nome: "On Guard Softgels", cat: "Suplemento" },
     { nome: "Copaíba Softgels", cat: "Suplemento" },
     { nome: "Mito2Max", cat: "Suplemento" },
+    { nome: "Creatina Lifepower", cat: "Suplemento" },
     { nome: "Enxaguante Bucal On Guard", cat: "Personal Care" },
     { nome: "Sabonete Líquido On Guard", cat: "Personal Care" },
     { nome: "Pomada Deep Blue Rub", cat: "Personal Care" },
@@ -1086,6 +1087,9 @@ const DOTERRA_PRICES = {
     },
     'Mito2Max': {
         'Cápsulas': { r: 159, m: 119 },
+    },
+    'Creatina Lifepower': {
+        '105g': { r: 239, m: 179 },
     },
     'Peppermint Softgels': {
         'Cápsulas': { r: 252, m: 189 },
