@@ -236,6 +236,7 @@ const DOTERRA_PRODUCTS = [
     { nome: "On Guard Beadlets", cat: "Suplemento" },
     { nome: "Peppermint Beadlets", cat: "Suplemento" },
     { nome: "SuperMint Beadlets", cat: "Suplemento" },
+    { nome: "SuperMint", cat: "Blend" },
     { nome: "Balas Breathe", cat: "Suplemento" },
     { nome: "Balas Ginger", cat: "Suplemento" },
     { nome: "Balas On Guard", cat: "Suplemento" },
