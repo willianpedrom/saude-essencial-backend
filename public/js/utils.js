@@ -248,7 +248,15 @@ export function btnLoading(btn, loadingText = 'Salvando...') {
 
 export function formatDate(iso, opts = {}) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', ...opts });
+  let dateObj;
+  if (typeof iso === 'string' && iso.length === 10) {
+    dateObj = new Date(iso + 'T12:00:00Z');
+  } else if (typeof iso === 'string' && iso.endsWith('T00:00:00.000Z')) {
+    dateObj = new Date(iso.replace('T00:00:00.000Z', 'T12:00:00.000Z'));
+  } else {
+    dateObj = new Date(iso);
+  }
+  return dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', ...opts });
 }
 
 export function formatCurrency(val) {
@@ -263,7 +271,14 @@ export function getInitials(name) {
 export function daysUntilBirthday(birthdateStr) {
   if (!birthdateStr) return null;
   const today = new Date();
-  const bd = new Date(birthdateStr);
+  let bd;
+  if (typeof birthdateStr === 'string' && birthdateStr.length === 10) {
+    bd = new Date(birthdateStr + 'T12:00:00Z');
+  } else if (typeof birthdateStr === 'string' && birthdateStr.endsWith('T00:00:00.000Z')) {
+    bd = new Date(birthdateStr.replace('T00:00:00.000Z', 'T12:00:00.000Z'));
+  } else {
+    bd = new Date(birthdateStr);
+  }
   const next = new Date(today.getFullYear(), bd.getMonth(), bd.getDate());
   if (next < today) next.setFullYear(today.getFullYear() + 1);
   return Math.ceil((next - today) / (1000 * 60 * 60 * 24));
