@@ -664,8 +664,15 @@ export async function renderAdmin(router) {
   }
 
   function applyFilters(list) {
+    const now = new Date();
     return list.filter(u => {
-      if (filterStatus && u.plano_status !== filterStatus) return false;
+      let computedStatus = u.plano_status;
+      if (computedStatus === 'trial') {
+        const isExpired = u.trial_fim ? new Date(u.trial_fim) < now : true;
+        if (isExpired) computedStatus = 'expired';
+      }
+      
+      if (filterStatus && computedStatus !== filterStatus) return false;
       if (filterPlano && u.plano !== filterPlano) return false;
       return true;
     });
@@ -679,7 +686,12 @@ export async function renderAdmin(router) {
       const initials = (u.nome || '').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
       const isMe = u.id === auth.current?.id;
       const isAdmin = u.role === 'admin';
-      const statusColor = STATUS_COLORS[u.plano_status] || '#64748b';
+      let computedStatus = u.plano_status;
+      if (computedStatus === 'trial') {
+        const isExpired = u.trial_fim ? new Date(u.trial_fim) < now : true;
+        if (isExpired) computedStatus = 'expired';
+      }
+      const statusColor = STATUS_COLORS[computedStatus] || '#64748b';
 
       // Vencimento
       const venceFim = u.plano_status === 'trial' ? u.trial_fim : u.periodo_fim;
@@ -710,7 +722,7 @@ export async function renderAdmin(router) {
           <td>
             <div style="font-size:0.82rem">
               <div style="font-weight:600">${PLAN_LABELS[u.plano] || u.plano || '—'}</div>
-              <div style="font-size:0.72rem;color:${statusColor}">${PLAN_STATUS_LABELS[u.plano_status] || u.plano_status || '—'}</div>
+              <div style="font-size:0.72rem;color:${statusColor}">${PLAN_STATUS_LABELS[computedStatus] || computedStatus || '—'}</div>
             </div>
           </td>
           <td style="text-align:center;">
