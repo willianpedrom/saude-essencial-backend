@@ -670,6 +670,9 @@ export async function renderAdmin(router) {
       if (computedStatus === 'trial') {
         const isExpired = u.trial_fim ? new Date(u.trial_fim) < now : true;
         if (isExpired) computedStatus = 'expired';
+      } else if (computedStatus === 'active' || computedStatus === 'overdue') {
+        const isExpired = u.periodo_fim ? new Date(u.periodo_fim) < now : false;
+        if (isExpired) computedStatus = 'expired';
       }
       
       if (filterStatus && computedStatus !== filterStatus) return false;
@@ -689,6 +692,9 @@ export async function renderAdmin(router) {
       let computedStatus = u.plano_status;
       if (computedStatus === 'trial') {
         const isExpired = u.trial_fim ? new Date(u.trial_fim) < now : true;
+        if (isExpired) computedStatus = 'expired';
+      } else if (computedStatus === 'active' || computedStatus === 'overdue') {
+        const isExpired = u.periodo_fim ? new Date(u.periodo_fim) < now : false;
         if (isExpired) computedStatus = 'expired';
       }
       const statusColor = STATUS_COLORS[computedStatus] || '#64748b';
