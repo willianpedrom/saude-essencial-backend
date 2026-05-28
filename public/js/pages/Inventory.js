@@ -243,6 +243,7 @@ const DOTERRA_PRODUCTS = [
     { nome: "Creme Dental On Guard", cat: "Personal Care" },
     { nome: "Loção Spa Mãos e Corpo", cat: "Personal Care" },
     { nome: "Sabonete Líquido Spa", cat: "Personal Care" },
+    { nome: "Correct-X", cat: "Personal Care" },
     { nome: "Veráge Kit Skincare", cat: "Kit" },
     { nome: "Mālama", cat: "Blend" },
     { nome: "Mãlama", cat: "Blend" },
@@ -930,6 +931,10 @@ const DOTERRA_PRICES = {
     },
     'Pomada Deep Blue Rub': {
         'Unidade / Kit': { r: 297, m: 222.75 },
+    },
+    'Correct-X': {
+        'Unidade / Kit': { r: 140, m: 105 },
+        '15ml': { r: 140, m: 105 },
     },
     'HD Clear': {
         '10ml Touch': { r: 180, m: 135 },

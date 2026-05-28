@@ -167,6 +167,7 @@ export const OILS_DATABASE = {
 
     // ── Cuidados Pessoais e Skincare ──────────────────────────────
     'Deep Blue Rub': { nameEn: 'Deep Blue Rub', cat: 'personal_care', fn: 'Creme para alívio muscular e articular', uses: 'Dores crônicas, recuperação esportiva, tensão', topical: 'Massagem local profunda', aromatic: 'Não aplicável' , sizes: [{"size": "120 ml", "regular": 297, "member": 222.75, "pv": 33}] },
+    'Correct-X': { nameEn: 'Correct-X', cat: 'personal_care', fn: 'Gel creme reparador', uses: 'Cicatrização, feridas, proteção da pele, queimaduras', topical: 'Aplicar diretamente na pele limpa', aromatic: 'Não aplicável', sizes: [{"size": "15 ml", "regular": 140, "member": 105, "pv": 12}] },
     'Creme Dental On Guard': { nameEn: 'On Guard Toothpaste', cat: 'personal_care', fn: 'Creme dental clareador sem flúor', uses: 'Higiene bucal diária, gengivite', topical: 'Uso diário (escovação)', aromatic: 'Não aplicável' , sizes: [{"size": "Unidade / Kit", "regular": 93, "member": 70, "pv": 0}] },
     'Enxaguante Bucal On Guard': { nameEn: 'On Guard Mouthwash', cat: 'personal_care', fn: 'Higiene e proteção oral', uses: 'Hálito fresco, saúde gengival', topical: 'Bochecho', aromatic: 'Não aplicável' },
     'Loção Spa Mãos e Corpo': { nameEn: 'Spa Hand & Body Lotion', cat: 'personal_care', fn: 'Hidratante carreador neutro', uses: 'Pele seca, ótimo para misturar com óleos', topical: 'Todo o corpo', aromatic: 'Não aplicável' , sizes: [{"size": "Unidade / Kit", "regular": 149, "member": 112, "pv": 0}] },
