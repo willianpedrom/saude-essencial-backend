@@ -824,7 +824,7 @@ const DOTERRA_PRICES = {
         '10ml Touch': { r: 393, m: 295 },
     },
     'Lavanda Touch': {
-        '10ml Touch': { r: 125, m: 94 },
+        '10ml Touch': { r: 160, m: 120 },
     },
     'Melaleuca Touch': {
         '10ml Touch': { r: 140, m: 105 },

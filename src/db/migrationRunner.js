@@ -736,6 +736,19 @@ const MIGRATIONS = [
             `);
             console.log('[018_fix_admin_role_v2] Role de admin garantido para Willian e tokens antigos invalidados.');
         }
+    },
+    // ── 019: Ajuste do preço do Lavanda Touch no estoque ─────────────────────────
+    {
+        name: '019_fix_lavanda_touch_price_2026',
+        async up(pool) {
+            await pool.query(
+                `UPDATE estoque 
+                 SET preco_venda = 160.00, preco_custo = 120.00 
+                 WHERE nome_produto ILIKE '%lavanda touch%' 
+                    OR nome_produto ILIKE '%lavender touch%'`
+            );
+            console.log('[019_fix_lavanda_touch_price_2026] Preço de Lavanda Touch ajustado no estoque.');
+        }
     }
 ];
 
