@@ -814,11 +814,19 @@ export function openClientOffcanvas(client) {
 
              // Safari (iOS) require synchronous definition of clipboard.write using Promises
              if (navigator.clipboard && window.ClipboardItem) {
+                 let failed = false;
+                 let errorMsg = '';
                  try {
                      const fetchHash = async () => {
-                         const { api } = await import('./store.js?v=1010');
-                         const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
-                         return window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
+                         try {
+                             const { api } = await import('./store.js?v=1010');
+                             const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
+                             return window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
+                         } catch (err) {
+                             failed = true;
+                             errorMsg = err.message;
+                             return '';
+                         }
                      };
                      
                      const promiseBlob = fetchHash().then(text => new Blob([text], { type: 'text/plain' }));
@@ -826,6 +834,10 @@ export function openClientOffcanvas(client) {
                      await navigator.clipboard.write([
                          new ClipboardItem({ 'text/plain': promiseBlob })
                      ]);
+                     
+                     if (failed) {
+                         throw new Error(errorMsg || 'Erro ao gerar link');
+                     }
                      
                      btnLink.innerHTML = '<span style="color:#10b981">✅ Copiado!</span>';
                      // Não usamos o fallback caso este de cima funcione

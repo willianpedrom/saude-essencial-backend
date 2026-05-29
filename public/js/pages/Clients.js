@@ -336,18 +336,26 @@ export async function showAnamneseModal(client, router, anamneseOverride = null)
         openProtocolEditor(client, a, protocols, analysisResultados);
       });
     },
-    onConfirm: async () => {
-      const btnLink = document.querySelector('.modal-footer [data-confirm]');
+    onConfirm: async (modalEl) => {
+      const btnLink = modalEl ? modalEl.querySelector('[data-confirm]') : document.querySelector('.modal-footer [data-confirm]');
       const origText = btnLink ? btnLink.innerHTML : '🔗 Copiar Link do Protocolo';
       if(btnLink) btnLink.innerHTML = 'Gerando...';
 
       // Lógica idêntica ao utils.js para garantir funcionamento no iOS Safari
       if (navigator.clipboard && window.ClipboardItem) {
+        let failed = false;
+        let errorMsg = '';
         try {
           const fetchHash = async () => {
-            const { api } = await import('../store.js?v=1010');
-            const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
-            return window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
+            try {
+              const { api } = await import('../store.js?v=1010');
+              const res = await api('POST', '/api/anamneses/' + a.id + '/hash');
+              return window.location.origin + window.location.pathname + '#/laudo/' + res.hash;
+            } catch (err) {
+              failed = true;
+              errorMsg = err.message;
+              return '';
+            }
           };
           
           const promiseBlob = fetchHash().then(text => new Blob([text], { type: 'text/plain' }));
@@ -355,6 +363,10 @@ export async function showAnamneseModal(client, router, anamneseOverride = null)
           await navigator.clipboard.write([
               new ClipboardItem({ 'text/plain': promiseBlob })
           ]);
+          
+          if (failed) {
+            throw new Error(errorMsg || 'Erro ao gerar link');
+          }
           
           if(btnLink) btnLink.innerHTML = '<span style="color:#fff">✅ Copiado!</span>';
           setTimeout(() => { if(btnLink) btnLink.innerHTML = origText; }, 3000);
