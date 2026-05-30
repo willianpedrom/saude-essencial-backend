@@ -379,15 +379,51 @@ export async function renderPublicAnamnesis(router, token) {
     document.getElementById('btn-next').addEventListener('click', () => {
       // General validation for required fields on current step
       let isValid = true;
+      let formatErrorShown = false;
       (QUESTIONS[stepDef.id].fields || []).forEach(f => {
         if (f.showIf && !f.showIf(answers)) return;
+        const el = document.getElementById('field-' + (f.name||f.key));
+        const val = el ? el.value.trim() : '';
+
         if (f.required) {
           if (f.type === 'radio') {
             if (!document.querySelector(`input[name="${f.name||f.key}"]:checked`)) isValid = false;
           } else if (f.type === 'scale') {
             if (!document.querySelector(`[data-scale-key="${f.name||f.key}"] .scale-btn.selected`)) isValid = false;
           } else {
-            if (!document.getElementById('field-' + (f.name||f.key))?.value?.trim()) isValid = false;
+            if (!val) isValid = false;
+          }
+        }
+
+        if (val) {
+          if (f.type === 'birthdate') {
+            const cleanVal = val.replace(/\D/g, '');
+            if (cleanVal.length !== 8) {
+              isValid = false;
+              formatErrorShown = true;
+              toast('Digite a data de nascimento completa (DD/MM/AAAA).', 'error');
+            } else {
+              const day = parseInt(cleanVal.slice(0, 2), 10);
+              const month = parseInt(cleanVal.slice(2, 4), 10);
+              const year = parseInt(cleanVal.slice(4, 8), 10);
+              const currentYear = new Date().getFullYear();
+              const isValidDate = (y, m, d) => {
+                const date = new Date(y, m - 1, d);
+                return date.getFullYear() === y && (date.getMonth() + 1) === m && date.getDate() === d;
+              };
+              if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || year > currentYear || !isValidDate(year, month, day)) {
+                isValid = false;
+                formatErrorShown = true;
+                toast('Insira uma data de nascimento válida.', 'error');
+              }
+            }
+          } else if (f.type === 'email') {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(val)) {
+              isValid = false;
+              formatErrorShown = true;
+              toast('Insira um e-mail válido.', 'error');
+            }
           }
         }
       });
@@ -405,7 +441,12 @@ export async function renderPublicAnamnesis(router, token) {
         }
       });
       
-      if (!isValid) { toast('Preencha as informações obrigatórias para continuar.', 'error'); return; }
+      if (!isValid) {
+        if (!formatErrorShown) {
+          toast('Preencha as informações obrigatórias para continuar.', 'error');
+        }
+        return;
+      }
 
       collectAnswers(stepDef.id);
 
@@ -581,12 +622,26 @@ export async function renderPublicAnamnesis(router, token) {
           const el = document.getElementById('field-' + key);
           if (el) {
             let val = el.value;
-            // Normalize birthdate from DD/MM/YYYY to YYYY-MM-DD
-            if (f.type === 'birthdate' && val.includes('/')) {
-               const parts = val.split('/');
-               if (parts.length === 3) {
-                  const [d, m, y] = parts;
-                  if (y.length === 4) val = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+            // Normalize birthdate from DD/MM/YYYY or DD-MM-YYYY to YYYY-MM-DD
+            if (f.type === 'birthdate' && val) {
+               const cleanVal = val.trim();
+               const match = cleanVal.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+               if (match) {
+                  let [_, d, m, y] = match;
+                  d = d.padStart(2, '0');
+                  m = m.padStart(2, '0');
+                  if (y.length === 2) {
+                     const currentYearLastTwo = new Date().getFullYear() % 100;
+                     const parsedY = parseInt(y, 10);
+                     if (parsedY > currentYearLastTwo + 5) {
+                        y = '19' + y;
+                     } else {
+                        y = '20' + y;
+                     }
+                  }
+                  if (y.length === 4) {
+                     val = `${y}-${m}-${d}`;
+                  }
                }
             }
             data[key] = val;

@@ -153,6 +153,77 @@ router.post('/public/:token/partial', async (req, res) => {
     }
 });
 
+/**
+ * Helper to safely parse and normalize various date formats to YYYY-MM-DD
+ * Returns null if parsing fails or values are out of realistic bounds.
+ */
+function parseDateToISO(dateStr) {
+    if (!dateStr || typeof dateStr !== 'string') return null;
+    dateStr = dateStr.trim();
+    
+    const isValidDate = (y, m, d) => {
+        const date = new Date(y, m - 1, d);
+        return date.getFullYear() === y && (date.getMonth() + 1) === m && date.getDate() === d;
+    };
+    
+    // 1. Matches YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        if (y >= 1900 && y <= new Date().getFullYear() + 1 && isValidDate(y, m, d)) {
+            return dateStr;
+        }
+    }
+    
+    // 2. Matches ISO string starting with YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}T/.test(dateStr)) {
+        const isoDate = dateStr.slice(0, 10);
+        const [y, m, d] = isoDate.split('-').map(Number);
+        if (y >= 1900 && y <= new Date().getFullYear() + 1 && isValidDate(y, m, d)) {
+            return isoDate;
+        }
+    }
+    
+    // 3. Matches DD/MM/YYYY or DD-MM-YYYY or DD/MM/YY
+    const dmyMatch = dateStr.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+    if (dmyMatch) {
+        let [_, day, month, year] = dmyMatch;
+        let d = parseInt(day, 10);
+        let m = parseInt(month, 10);
+        let y = parseInt(year, 10);
+        
+        if (year.length === 2) {
+            const currentYearLastTwo = new Date().getFullYear() % 100;
+            if (y > currentYearLastTwo + 5) {
+                y += 1900;
+            } else {
+                y += 2000;
+            }
+        }
+        
+        if (y >= 1900 && y <= new Date().getFullYear() + 1 && isValidDate(y, m, d)) {
+            return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        }
+    }
+    
+    // 4. Try JS Date parser fallback
+    try {
+        const parsed = Date.parse(dateStr);
+        if (!isNaN(parsed)) {
+            const dObj = new Date(parsed);
+            const y = dObj.getFullYear();
+            const m = dObj.getMonth() + 1;
+            const d = dObj.getDate();
+            if (y >= 1900 && y <= new Date().getFullYear() + 1 && isValidDate(y, m, d)) {
+                return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            }
+        }
+    } catch (e) {
+        // ignore
+    }
+    
+    return null;
+}
+
 // PUT /api/anamneses/public/:token  (client submits the form)
 router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) => {
     const { dados } = req.body;
@@ -219,7 +290,7 @@ router.put('/public/:token', validate(schemas.submitAnamnese), async (req, res) 
         const nome = pData.child_name || pData.full_name || pData.nome || 'Cliente';
         const email = pData.email || null;
         const telefone = pData.phone || pData.telefone || null;
-        const data_nasc = (pData.birthdate && pData.birthdate.length > 5) ? pData.birthdate : null;
+        const data_nasc = parseDateToISO(pData.birthdate);
         const cidade = pData.city || pData.cidade || null;
         const genero = (pData.gender || pData.genero || 'feminino').toLowerCase().trim();
 
