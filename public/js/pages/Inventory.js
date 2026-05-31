@@ -253,6 +253,8 @@ const DOTERRA_PRODUCTS = [
     { nome: "Collector's Kit Revitalize", cat: "Kit" },
     { nome: "Collector's Kit Conforto", cat: "Kit" },
     { nome: "Coleção Collector's", cat: "Kit" },
+    { nome: "doTERRA Pūr Homme", cat: "Personal Care" },
+    { nome: "doTERRA Pūr Femme", cat: "Personal Care" },
 ];
 
 // ── Tabela de Preços Oficiais doTERRA (por produto + tamanho) ──────────────
@@ -1195,6 +1197,12 @@ const DOTERRA_PRICES = {
     'Coleção Collector\'s': {
         'Unidade / Kit': { r: 1189, m: 892 },
     },
+    'doTERRA Pūr Homme': {
+        '60ml': { r: 500, m: 375 },
+    },
+    'doTERRA Pūr Femme': {
+        '60ml': { r: 500, m: 345 },
+    },
     'Wooden Box': {
         'Unidade / Kit': { r: 105, m: 79 },
     },
@@ -1368,6 +1376,12 @@ const DOTERRA_ALIASES = {
     'kit conforto': 'Collector\'s Kit Conforto',
     'coleção collector\'s': 'Coleção Collector\'s',
     'colecao collector\'s': 'Coleção Collector\'s',
+    'pur homme': 'doTERRA Pūr Homme',
+    'pur femme': 'doTERRA Pūr Femme',
+    'doterra pur homme': 'doTERRA Pūr Homme',
+    'doterra pur femme': 'doTERRA Pūr Femme',
+    'perfume pur homme': 'doTERRA Pūr Homme',
+    'perfume pur femme': 'doTERRA Pūr Femme',
 };
 
 /** Retorna preços doTERRA para produto+tamanho: { r, m } ou null se o tamanho não existe para este produto */

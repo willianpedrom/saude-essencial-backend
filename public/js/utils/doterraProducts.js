@@ -120,6 +120,8 @@ export const doterraProducts = [
     { nome: "Sabonete em Barra Serenity", categoria: "Personal Care" },
     { nome: "Shampoo Protetor doTERRA Salon Essentials", categoria: "Personal Care" },
     { nome: "Condicionador Suavizante doTERRA", categoria: "Personal Care" },
+    { nome: "doTERRA Pūr Homme", categoria: "Personal Care" },
+    { nome: "doTERRA Pūr Femme", categoria: "Personal Care" },
 
     // Suplementos & Nutrição
     { nome: "Lifelong Vitality Pack (LLV) - Kit", categoria: "Suplemento" },
