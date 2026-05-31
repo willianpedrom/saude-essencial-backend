@@ -148,6 +148,11 @@ export const doterraProducts = [
     { nome: "Kit AromaTouch", categoria: "Kit" },
     { nome: "Kit Soluções Naturais", categoria: "Kit" },
     { nome: "Kit Básico Familiar", categoria: "Kit" },
+    { nome: "Collector's Kit Inspire", categoria: "Kit" },
+    { nome: "Collector's Kit Equilíbrio", categoria: "Kit" },
+    { nome: "Collector's Kit Revitalize", categoria: "Kit" },
+    { nome: "Collector's Kit Conforto", categoria: "Kit" },
+    { nome: "Coleção Collector's", categoria: "Kit" },
     
     // Acessórios e Difusores
     { nome: "Óleo de Coco Fracionado (115ml)", categoria: "Acessório" },

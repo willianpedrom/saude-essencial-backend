@@ -248,6 +248,11 @@ const DOTERRA_PRODUCTS = [
     { nome: "Mālama", cat: "Blend" },
     { nome: "Mãlama", cat: "Blend" },
     { nome: "Malama", cat: "Blend" },
+    { nome: "Collector's Kit Inspire", cat: "Kit" },
+    { nome: "Collector's Kit Equilíbrio", cat: "Kit" },
+    { nome: "Collector's Kit Revitalize", cat: "Kit" },
+    { nome: "Collector's Kit Conforto", cat: "Kit" },
+    { nome: "Coleção Collector's", cat: "Kit" },
 ];
 
 // ── Tabela de Preços Oficiais doTERRA (por produto + tamanho) ──────────────
@@ -1175,6 +1180,21 @@ const DOTERRA_PRICES = {
     'Soluções Naturais': {
         'Unidade / Kit': { r: 3987, m: 2990 },
     },
+    'Collector\'s Kit Inspire': {
+        'Unidade / Kit': { r: 357, m: 268 },
+    },
+    'Collector\'s Kit Equilíbrio': {
+        'Unidade / Kit': { r: 397, m: 298 },
+    },
+    'Collector\'s Kit Revitalize': {
+        'Unidade / Kit': { r: 351, m: 263 },
+    },
+    'Collector\'s Kit Conforto': {
+        'Unidade / Kit': { r: 380, m: 285 },
+    },
+    'Coleção Collector\'s': {
+        'Unidade / Kit': { r: 1189, m: 892 },
+    },
     'Wooden Box': {
         'Unidade / Kit': { r: 105, m: 79 },
     },
@@ -1334,6 +1354,20 @@ const DOTERRA_ALIASES = {
     'kit aromatouch': 'AromaTouch Kit',
     'kit aromatouch com difusor': 'AromaTouch com Difusor',
     'kit diamond': 'Diamond',
+    'collector kit inspire': 'Collector\'s Kit Inspire',
+    'collector\'s kit inspire': 'Collector\'s Kit Inspire',
+    'kit inspire': 'Collector\'s Kit Inspire',
+    'collector kit equilibrio': 'Collector\'s Kit Equilíbrio',
+    'collector\'s kit equilíbrio': 'Collector\'s Kit Equilíbrio',
+    'kit equilibrio': 'Collector\'s Kit Equilíbrio',
+    'collector kit revitalize': 'Collector\'s Kit Revitalize',
+    'collector\'s kit revitalize': 'Collector\'s Kit Revitalize',
+    'kit revitalize': 'Collector\'s Kit Revitalize',
+    'collector kit conforto': 'Collector\'s Kit Conforto',
+    'collector\'s kit conforto': 'Collector\'s Kit Conforto',
+    'kit conforto': 'Collector\'s Kit Conforto',
+    'coleção collector\'s': 'Coleção Collector\'s',
+    'colecao collector\'s': 'Coleção Collector\'s',
 };
 
 /** Retorna preços doTERRA para produto+tamanho: { r, m } ou null se o tamanho não existe para este produto */
