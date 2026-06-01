@@ -428,6 +428,7 @@ async function renderLeaderDashboard(router, equipe) {
                             <option value="link_material">🔗 Material / Arquivo (Catálogos, PDFs)</option>
                             <option value="script_vendas">✍️ Roteiro / Script de Vendas</option>
                             <option value="script_cadastro">💼 Roteiro / Script de Cadastro</option>
+                            <option value="script_objecoes">🛡️ Quebra de Objeções</option>
                         </select>
                     </div>
                     <div class="form-group" style="margin-bottom:12px">
@@ -451,7 +452,14 @@ async function renderLeaderDashboard(router, equipe) {
 
                 <!-- Resources List -->
                 <div class="card" style="padding:24px">
-                    <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:16px;">Biblioteca Compartilhada</h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px; border-bottom:1.5px solid var(--border); padding-bottom:12px;">
+                        <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin:0;">Biblioteca Compartilhada</h3>
+                        <div class="sub-tabs-lider-container" style="display:flex; gap:6px;">
+                            <button class="btn btn-sm btn-sub-tab active" data-type="video" style="padding:6px 12px; border-radius:20px; font-weight:600; font-size:0.8rem; background:var(--green-600); color:white; border:none; cursor:pointer;">🎥 Vídeos</button>
+                            <button class="btn btn-sm btn-sub-tab" data-type="material" style="padding:6px 12px; border-radius:20px; font-weight:600; font-size:0.8rem; background:#f1f5f9; color:#475569; border:none; cursor:pointer;">📂 Materiais</button>
+                            <button class="btn btn-sm btn-sub-tab" data-type="script" style="padding:6px 12px; border-radius:20px; font-weight:600; font-size:0.8rem; background:#f1f5f9; color:#475569; border:none; cursor:pointer;">✍️ Roteiros DISC</button>
+                        </div>
+                    </div>
                     <div id="list-biblioteca-lider" style="display:flex; flex-direction:column; gap:16px">
                         <div style="text-align:center; color:var(--text-muted); padding:20px;">Carregando biblioteca...</div>
                     </div>
@@ -750,7 +758,14 @@ async function renderMemberDashboard(router, equipe) {
         <!-- Tab 2: Resource Library -->
         <div id="tab-biblioteca-membro" class="tab-content">
             <div class="card" style="padding:24px">
-                <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:16px;">Materiais Educacionais e Roteiros</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px; border-bottom:1.5px solid var(--border); padding-bottom:12px;">
+                    <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin:0;">Materiais Educacionais e Roteiros</h3>
+                    <div class="sub-tabs-membro-container" style="display:flex; gap:6px;">
+                        <button class="btn btn-sm btn-sub-tab-membro active" data-type="video" style="padding:6px 12px; border-radius:20px; font-weight:600; font-size:0.8rem; background:var(--green-600); color:white; border:none; cursor:pointer;">🎥 Vídeos</button>
+                        <button class="btn btn-sm btn-sub-tab-membro" data-type="material" style="padding:6px 12px; border-radius:20px; font-weight:600; font-size:0.8rem; background:#f1f5f9; color:#475569; border:none; cursor:pointer;">📂 Materiais</button>
+                        <button class="btn btn-sm btn-sub-tab-membro" data-type="script" style="padding:6px 12px; border-radius:20px; font-weight:600; font-size:0.8rem; background:#f1f5f9; color:#475569; border:none; cursor:pointer;">✍️ Roteiros DISC</button>
+                    </div>
+                </div>
                 <div id="list-biblioteca-membro" style="display:flex; flex-direction:column; gap:16px">
                     <div style="text-align:center; color:var(--text-muted); padding:20px;">Carregando biblioteca...</div>
                 </div>
@@ -953,18 +968,91 @@ async function loadBibliotecaLider() {
     const container = document.getElementById('list-biblioteca-lider');
     if (!container) return;
 
-    try {
-        const biblioteca = await api('GET', '/api/equipe/biblioteca');
-        if (biblioteca.length === 0) {
-            container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:20px;">Nenhum material cadastrado na biblioteca.</div>`;
-            return;
-        }
+    // Bind sub tab clicks
+    const subTabContainer = container.previousElementSibling?.querySelector('.sub-tabs-lider-container');
+    if (subTabContainer && !subTabContainer.dataset.bound) {
+        subTabContainer.dataset.bound = 'true';
+        subTabContainer.querySelectorAll('.btn-sub-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                subTabContainer.querySelectorAll('.btn-sub-tab').forEach(b => {
+                    b.classList.remove('active');
+                    b.style.background = '#f1f5f9';
+                    b.style.color = '#475569';
+                });
+                btn.classList.add('active');
+                btn.style.background = 'var(--green-600)';
+                btn.style.color = 'white';
+                
+                currentSubTabLider = btn.dataset.type;
+                renderFilteredBibliotecaLider();
+            });
+        });
+    }
 
-        container.innerHTML = biblioteca.map(b => {
+    try {
+        cachedBibliotecaLider = await api('GET', '/api/equipe/biblioteca');
+        renderFilteredBibliotecaLider();
+    } catch (e) {
+        container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar biblioteca: ${e.message}</div>`;
+    }
+}
+
+function renderFilteredBibliotecaLider() {
+    const container = document.getElementById('list-biblioteca-lider');
+    if (!container) return;
+
+    let filtered = [];
+    if (currentSubTabLider === 'video') {
+        filtered = cachedBibliotecaLider.filter(b => b.categoria === 'video_treinamento');
+    } else if (currentSubTabLider === 'material') {
+        filtered = cachedBibliotecaLider.filter(b => b.categoria === 'link_material');
+    } else {
+        filtered = cachedBibliotecaLider.filter(b => b.categoria.startsWith('script'));
+    }
+
+    let html = '';
+    
+    if (currentSubTabLider === 'script') {
+        html += `
+            <div class="disc-filters" style="background:#f1f5f9; padding:16px; border-radius:var(--radius-md); border:1px solid #cbd5e1; margin-bottom:20px;">
+                <h4 style="margin:0 0 12px; font-size:0.9rem; font-weight:700; color:var(--green-950); display:flex; align-items:center; gap:6px;">💡 Roteiros Prontos DISC (Gota App)</h4>
+                <div style="display:flex; flex-wrap:wrap; gap:12px;">
+                    <div style="flex:1; min-width:180px;">
+                        <label style="font-size:0.75rem; font-weight:700; color:#475569; display:block; margin-bottom:4px;">Objetivo / Finalidade</label>
+                        <select id="disc-filter-finalidade" class="form-input" style="padding:6px 10px; font-size:0.83rem; background:white; border:1px solid #cbd5e1; color:#0f172a; height:34px;">
+                            <option value="vendas" ${currentDiscFinalidadeLider === 'vendas' ? 'selected' : ''}>✍️ Roteiros de Vendas</option>
+                            <option value="cadastro" ${currentDiscFinalidadeLider === 'cadastro' ? 'selected' : ''}>💼 Roteiros de Cadastro / Recrutamento</option>
+                            <option value="objecoes" ${currentDiscFinalidadeLider === 'objecoes' ? 'selected' : ''}>🛡️ Quebra de Objeções</option>
+                        </select>
+                    </div>
+                    <div style="flex:1; min-width:180px;">
+                        <label style="font-size:0.75rem; font-weight:700; color:#475569; display:block; margin-bottom:4px;">Perfil Comportamental (DISC)</label>
+                        <select id="disc-filter-perfil" class="form-input" style="padding:6px 10px; font-size:0.83rem; background:white; border:1px solid #cbd5e1; color:#0f172a; height:34px;">
+                            <option value="dominante" ${currentDiscPerfilLider === 'dominante' ? 'selected' : ''}>⚡ Perfil Dominante (D) - Objetividade e Resultados</option>
+                            <option value="influente" ${currentDiscPerfilLider === 'influente' ? 'selected' : ''}>🔥 Perfil Influente (I) - Conexão e Energia</option>
+                            <option value="estavel" ${currentDiscPerfilLider === 'estavel' ? 'selected' : ''}>🌱 Perfil Estável (S) - Segurança e Cuidado</option>
+                            <option value="analitico" ${currentDiscPerfilLider === 'analitico' ? 'selected' : ''}>🔬 Perfil Analítico (C) - Ciência e Fatos</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="disc-template-container" style="margin-top:16px;">
+                    ${renderSelectedDiscTemplate('lider')}
+                </div>
+            </div>
+            <h4 style="margin:24px 0 12px; font-size:1rem; font-weight:700; color:var(--green-950); border-bottom:1px solid var(--border); padding-bottom:6px;">✍️ Scripts Customizados da Equipe</h4>
+        `;
+    }
+
+    if (filtered.length === 0) {
+        html += `<div style="text-align:center; color:var(--text-muted); padding:20px;">Nenhum material nesta categoria.</div>`;
+    } else {
+        html += filtered.map(b => {
             const isScript = b.categoria.startsWith('script');
             const catLabel = b.categoria === 'video_treinamento' ? '🎥 Treinamento em Vídeo' :
                              b.categoria === 'link_material' ? '🔗 Material / Link Externo' :
-                             b.categoria === 'script_vendas' ? '✍️ Script de Vendas' : '💼 Script de Recrutamento';
+                             b.categoria === 'script_vendas' ? '✍️ Script de Vendas' : 
+                             b.categoria === 'script_cadastro' ? '💼 Script de Recrutamento' : '🛡️ Quebra de Objeções';
 
             return `
                 <div style="padding:14px; border:1px solid var(--border); border-radius:var(--radius-md); background:#f8fafc; position:relative;">
@@ -990,83 +1078,106 @@ async function loadBibliotecaLider() {
                 </div>
             `;
         }).join('');
-
-        // Bind delete resource
-        container.querySelectorAll('.btn-delete-bib').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.dataset.bibId;
-                if (!confirm('Deseja excluir esse material?')) return;
-                try {
-                    await api('DELETE', `/api/equipe/biblioteca/${id}`);
-                    toast('Material removido!', 'success');
-                    loadBibliotecaLider();
-                } catch (e) {
-                    toast(e.message || 'Erro ao remover material.', 'danger');
-                }
-            });
-        });
-
-        // Bind use model
-        container.querySelectorAll('.btn-use-model').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = btn.dataset.bibId;
-                const b = biblioteca.find(item => item.id === id);
-                if (b) {
-                    document.getElementById('bib-categoria').value = b.categoria;
-                    document.getElementById('bib-titulo').value = b.titulo;
-                    document.getElementById('bib-descricao').value = b.descricao || '';
-                    
-                    const grpUrl = document.getElementById('bib-group-url');
-                    const grpTexto = document.getElementById('bib-group-texto');
-                    
-                    if (b.categoria.startsWith('script')) {
-                        grpUrl.style.display = 'none';
-                        grpTexto.style.display = 'block';
-                        document.getElementById('bib-texto').value = b.conteudo_texto || '';
-                    } else {
-                        grpUrl.style.display = 'block';
-                        grpTexto.style.display = 'none';
-                        document.getElementById('bib-url').value = b.url_midia || '';
-                    }
-                    
-                    toast('Dados copiados para o formulário de cadastro. Você pode editar e salvar.', 'info');
-                    document.getElementById('bib-categoria')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-            });
-        });
-
-        // Bind script copies for leader
-        container.querySelectorAll('.btn-copy-script').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const text = decodeURIComponent(btn.dataset.scriptText);
-                
-                import('../utils.js?v=1010').then(({ modal }) => {
-                    const m = modal('✍️ Copiar Script Inteligente', `
-                        <div style="padding:10px 0">
-                            <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:14px;">Preencha os campos abaixo para autocompletar as variáveis do roteiro antes de copiá-lo para a conversa.</p>
-                            <div class="form-group" style="margin-bottom:12px">
-                                <label class="form-label" style="color:var(--text-dark)">Nome do Cliente</label>
-                                <input type="text" id="script-var-cliente-lider" class="form-input" placeholder="Ex: Maria" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
-                            </div>
-                            <button class="btn btn-primary" id="btn-do-copy-lider" style="width:100%">📋 Copiar Mensagem Personalizada</button>
-                        </div>
-                    `);
-
-                    m.el.querySelector('#btn-do-copy-lider').addEventListener('click', () => {
-                        const nomeCl = m.el.querySelector('#script-var-cliente-lider').value?.trim() || 'Amiga(o)';
-                        let parsedText = text.replace(/{{nome_cliente}}/g, nomeCl);
-                        parsedText = parsedText.replace(/{{nome_consultor}}/g, auth.current?.nome?.split(' ')[0] || 'Consultor');
-                        
-                        navigator.clipboard.writeText(parsedText);
-                        toast('Script personalizado copiado!', 'success');
-                        m.close();
-                    });
-                });
-            });
-        });
-    } catch (e) {
-        container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar biblioteca: ${e.message}</div>`;
     }
+
+    container.innerHTML = html;
+    bindBibliotecaLiderEvents(container);
+}
+
+function bindBibliotecaLiderEvents(container) {
+    const selFinalidade = container.querySelector('#disc-filter-finalidade');
+    const selPerfil = container.querySelector('#disc-filter-perfil');
+    if (selFinalidade && selPerfil) {
+        selFinalidade.addEventListener('change', (e) => {
+            currentDiscFinalidadeLider = e.target.value;
+            const tplContainer = container.querySelector('#disc-template-container');
+            if (tplContainer) tplContainer.innerHTML = renderSelectedDiscTemplate('lider');
+            bindBibliotecaLiderEvents(container);
+        });
+        
+        selPerfil.addEventListener('change', (e) => {
+            currentDiscPerfilLider = e.target.value;
+            const tplContainer = container.querySelector('#disc-template-container');
+            if (tplContainer) tplContainer.innerHTML = renderSelectedDiscTemplate('lider');
+            bindBibliotecaLiderEvents(container);
+        });
+    }
+
+    container.querySelectorAll('.btn-copy-disc').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const text = decodeURIComponent(btn.dataset.scriptText);
+            openSmartCopyModal(text);
+        });
+    });
+
+    container.querySelectorAll('.btn-use-disc-model').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const text = decodeURIComponent(btn.dataset.scriptText);
+            const titulo = decodeURIComponent(btn.dataset.titulo);
+            const desc = decodeURIComponent(btn.dataset.desc);
+            
+            document.getElementById('bib-categoria').value = 'script_vendas';
+            document.getElementById('bib-titulo').value = titulo;
+            document.getElementById('bib-descricao').value = desc;
+            
+            document.getElementById('bib-group-url').style.display = 'none';
+            const grpTexto = document.getElementById('bib-group-texto');
+            grpTexto.style.display = 'block';
+            document.getElementById('bib-texto').value = text;
+            
+            toast('Modelo copiado para o formulário. Você pode personalizar e salvar!', 'info');
+            document.getElementById('bib-categoria')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+    });
+
+    container.querySelectorAll('.btn-delete-bib').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const id = btn.dataset.bibId;
+            if (!confirm('Deseja excluir esse material?')) return;
+            try {
+                await api('DELETE', `/api/equipe/biblioteca/${id}`);
+                toast('Material removido!', 'success');
+                loadBibliotecaLider();
+            } catch (e) {
+                toast(e.message || 'Erro ao remover material.', 'danger');
+            }
+        });
+    });
+
+    container.querySelectorAll('.btn-use-model').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.bibId;
+            const b = cachedBibliotecaLider.find(item => item.id === id);
+            if (b) {
+                document.getElementById('bib-categoria').value = b.categoria;
+                document.getElementById('bib-titulo').value = b.titulo;
+                document.getElementById('bib-descricao').value = b.descricao || '';
+                
+                const grpUrl = document.getElementById('bib-group-url');
+                const grpTexto = document.getElementById('bib-group-texto');
+                
+                if (b.categoria.startsWith('script')) {
+                    grpUrl.style.display = 'none';
+                    grpTexto.style.display = 'block';
+                    document.getElementById('bib-texto').value = b.conteudo_texto || '';
+                } else {
+                    grpUrl.style.display = 'block';
+                    grpTexto.style.display = 'none';
+                    document.getElementById('bib-url').value = b.url_midia || '';
+                }
+                
+                toast('Dados copiados para o formulário de cadastro. Você pode editar e salvar.', 'info');
+                document.getElementById('bib-categoria')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        });
+    });
+
+    container.querySelectorAll('.btn-copy-script').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const text = decodeURIComponent(btn.dataset.scriptText);
+            openSmartCopyModal(text);
+        });
+    });
 }
 
 // ── Helper: Load Delegacoes (Leader View) ─────────────────────
@@ -1147,54 +1258,95 @@ async function loadAvisosMembro() {
                                 <span style="font-size:0.8rem; background:#e2e8f0; padding:4px 8px; border-radius:6px; font-weight:600;">📅 ${dateStr}</span>
                                 ${a.link_reuniao ? `<a href="${a.link_reuniao}" target="_blank" class="btn btn-sm btn-secondary" style="font-weight:600; padding:5px 12px; border-radius:6px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">🔗 Entrar</a>` : ''}
                                 ${!a.confirmado ? `
-                                    <button class="btn-confirmar-presenca btn btn-sm btn-primary" data-aviso-id="${a.id}" style="font-weight:600; padding:5px 12px; border-radius:6px; border:none; background:var(--gold-500); color:var(--green-950)">
-                                        ✓ Vou Participar
-                                    </button>
-                                ` : `
-                                    <span style="font-size:0.82rem; color:#16a34a; font-weight:600;">✓ Presença Confirmada!</span>
-                                `}
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        // Bind confirmar
-        container.querySelectorAll('.btn-confirmar-presenca').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.dataset.avisoId;
-                try {
-                    await api('POST', `/api/equipe/avisos/${id}/confirmar`);
-                    toast('Presença confirmada! 🎉', 'success');
-                    loadAvisosMembro();
-                } catch (e) {
-                    toast(e.message || 'Erro ao confirmar presença.', 'danger');
-                }
-            });
-        });
-    } catch (e) {
-        container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar avisos: ${e.message}</div>`;
-    }
-}
-
-// ── Helper: Load Biblioteca (Member View) ─────────────────────
-async function loadBibliotecaMembro() {
+                                    <button class="btn-confirmar-presenca btn btn-sm btn-primary" data-aviso-id="${a.id}" style=async function loadBibliotecaMembro() {
     const container = document.getElementById('list-biblioteca-membro');
     if (!container) return;
 
-    try {
-        const biblioteca = await api('GET', '/api/equipe/biblioteca');
-        if (biblioteca.length === 0) {
-            container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:20px;">Nenhum material compartilhado pelo líder ainda.</div>`;
-            return;
-        }
+    // Bind sub tab clicks
+    const subTabContainer = container.previousElementSibling?.querySelector('.sub-tabs-membro-container');
+    if (subTabContainer && !subTabContainer.dataset.bound) {
+        subTabContainer.dataset.bound = 'true';
+        subTabContainer.querySelectorAll('.btn-sub-tab-membro').forEach(btn => {
+            btn.addEventListener('click', () => {
+                subTabContainer.querySelectorAll('.btn-sub-tab-membro').forEach(b => {
+                    b.classList.remove('active');
+                    b.style.background = '#f1f5f9';
+                    b.style.color = '#475569';
+                });
+                btn.classList.add('active');
+                btn.style.background = 'var(--green-600)';
+                btn.style.color = 'white';
+                
+                currentSubTabMembro = btn.dataset.type;
+                renderFilteredBibliotecaMembro();
+            });
+        });
+    }
 
-        container.innerHTML = biblioteca.map(b => {
+    try {
+        cachedBibliotecaMembro = await api('GET', '/api/equipe/biblioteca');
+        renderFilteredBibliotecaMembro();
+    } catch (e) {
+        container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar biblioteca: ${e.message}</div>`;
+    }
+}
+
+function renderFilteredBibliotecaMembro() {
+    const container = document.getElementById('list-biblioteca-membro');
+    if (!container) return;
+
+    let filtered = [];
+    if (currentSubTabMembro === 'video') {
+        filtered = cachedBibliotecaMembro.filter(b => b.categoria === 'video_treinamento');
+    } else if (currentSubTabMembro === 'material') {
+        filtered = cachedBibliotecaMembro.filter(b => b.categoria === 'link_material');
+    } else {
+        filtered = cachedBibliotecaMembro.filter(b => b.categoria.startsWith('script'));
+    }
+
+    let html = '';
+
+    if (currentSubTabMembro === 'script') {
+        html += `
+            <div class="disc-filters" style="background:#f1f5f9; padding:16px; border-radius:var(--radius-md); border:1px solid #cbd5e1; margin-bottom:20px;">
+                <h4 style="margin:0 0 12px; font-size:0.9rem; font-weight:700; color:var(--green-950); display:flex; align-items:center; gap:6px;">💡 Roteiros Prontos DISC (Gota App)</h4>
+                <div style="display:flex; flex-wrap:wrap; gap:12px;">
+                    <div style="flex:1; min-width:180px;">
+                        <label style="font-size:0.75rem; font-weight:700; color:#475569; display:block; margin-bottom:4px;">Objetivo / Finalidade</label>
+                        <select id="disc-filter-finalidade" class="form-input" style="padding:6px 10px; font-size:0.83rem; background:white; border:1px solid #cbd5e1; color:#0f172a; height:34px;">
+                            <option value="vendas" ${currentDiscFinalidadeMembro === 'vendas' ? 'selected' : ''}>✍️ Roteiros de Vendas</option>
+                            <option value="cadastro" ${currentDiscFinalidadeMembro === 'cadastro' ? 'selected' : ''}>💼 Roteiros de Cadastro / Recrutamento</option>
+                            <option value="objecoes" ${currentDiscFinalidadeMembro === 'objecoes' ? 'selected' : ''}>🛡️ Quebra de Objeções</option>
+                        </select>
+                    </div>
+                    <div style="flex:1; min-width:180px;">
+                        <label style="font-size:0.75rem; font-weight:700; color:#475569; display:block; margin-bottom:4px;">Perfil Comportamental (DISC)</label>
+                        <select id="disc-filter-perfil" class="form-input" style="padding:6px 10px; font-size:0.83rem; background:white; border:1px solid #cbd5e1; color:#0f172a; height:34px;">
+                            <option value="dominante" ${currentDiscPerfilMembro === 'dominante' ? 'selected' : ''}>⚡ Perfil Dominante (D) - Objetividade e Resultados</option>
+                            <option value="influente" ${currentDiscPerfilMembro === 'influente' ? 'selected' : ''}>🔥 Perfil Influente (I) - Conexão e Energia</option>
+                            <option value="estavel" ${currentDiscPerfilMembro === 'estavel' ? 'selected' : ''}>🌱 Perfil Estável (S) - Segurança e Cuidado</option>
+                            <option value="analitico" ${currentDiscPerfilMembro === 'analitico' ? 'selected' : ''}>🔬 Perfil Analítico (C) - Ciência e Fatos</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="disc-template-container" style="margin-top:16px;">
+                    ${renderSelectedDiscTemplate('membro')}
+                </div>
+            </div>
+            <h4 style="margin:24px 0 12px; font-size:1rem; font-weight:700; color:var(--green-950); border-bottom:1px solid var(--border); padding-bottom:6px;">✍️ Scripts Compartilhados pelo Líder</h4>
+        `;
+    }
+
+    if (filtered.length === 0) {
+        html += `<div style="text-align:center; color:var(--text-muted); padding:20px;">Nenhum material nesta categoria.</div>`;
+    } else {
+        html += filtered.map(b => {
             const isScript = b.categoria.startsWith('script');
             const catLabel = b.categoria === 'video_treinamento' ? '🎥 Treinamento em Vídeo' :
                              b.categoria === 'link_material' ? '🔗 Material / Link de Apoio' :
-                             b.categoria === 'script_vendas' ? '✍️ Roteiro de Vendas' : '💼 Roteiro de Recrutamento';
+                             b.categoria === 'script_vendas' ? '✍️ Roteiro de Vendas' : 
+                             b.categoria === 'script_cadastro' ? '💼 Roteiro de Recrutamento' : '🛡️ Quebra de Objeções';
 
             return `
                 <div style="padding:16px 20px; border:1px solid var(--border); border-radius:var(--radius-md); background:#f8fafc;">
@@ -1214,18 +1366,11 @@ async function loadBibliotecaMembro() {
                 </div>
             `;
         }).join('');
+    }
 
-        // Bind script copies
-        container.querySelectorAll('.btn-copy-script').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const text = decodeURIComponent(btn.dataset.scriptText);
-                
-                // Prompt/Modal to replace dynamics
-                import('../utils.js?v=1010').then(({ modal }) => {
-                    const m = modal('✍️ Copiar Script Inteligente', `
-                        <div style="padding:10px 0">
-                            <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:14px;">Preencha os campos abaixo para autocompletar as variáveis do roteiro antes de copiá-lo para a conversa.</p>
-                            <div class="form-group" style="margin-bottom:12px">
+    container.innerHTML = html;
+    bindBibliotecaMembroEvents(container);
+}                            <div class="form-group" style="margin-bottom:12px">
                                 <label class="form-label" style="color:var(--text-dark)">Nome do Cliente</label>
                                 <input type="text" id="script-var-cliente" class="form-input" placeholder="Ex: Maria" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
                             </div>
@@ -1516,4 +1661,171 @@ function getVideoPlayerMarkup(url) {
             📺 Link de vídeo não pôde ser incorporado diretamente.
         </div>
     `;
+}
+
+// ── Globals & Helper functions for Library Sub-tabs and DISC scripts ──────────
+let cachedBibliotecaLider = [];
+let currentSubTabLider = 'video';
+let currentDiscFinalidadeLider = 'vendas';
+let currentDiscPerfilLider = 'dominante';
+
+let cachedBibliotecaMembro = [];
+let currentSubTabMembro = 'video';
+let currentDiscFinalidadeMembro = 'vendas';
+let currentDiscPerfilMembro = 'dominante';
+
+const DISC_TEMPLATES = [
+    {
+        finalidade: 'vendas',
+        perfil: 'dominante',
+        perfilLabel: 'Dominante (D)',
+        titulo: 'Vendas Peppermint/Lavanda - Perfil Dominante ⚡',
+        descricao: 'Foco em resultados imediatos, rapidez e objetividade. Não use jargões longos.',
+        conteudo_texto: 'Olá {{nome_cliente}}, tudo bem? Aqui é a {{nome_consultor}} do Gota App.\n\nVi na sua anamnese que você busca resolver [Inserir Queixa, ex: insônia/ansiedade]. O óleo essencial de Lavanda pura doTERRA é o calmante natural mais rápido e potente do mercado. Você sente o relaxamento e o alívio físico em menos de 2 minutos, sem efeitos colaterais.\n\nVamos agendar uma ligação rápida de 3 minutos amanhã às 14h para eu te explicar o uso e como você pode adquirir direto da fábrica com 25% de desconto?'
+    },
+    {
+        finalidade: 'vendas',
+        perfil: 'influente',
+        perfilLabel: 'Influente (I)',
+        titulo: 'Vendas Soluções de Bem-estar - Perfil Influente 🔥',
+        descricao: 'Foco em entusiasmo, conexão pessoal, novidade e depoimentos.',
+        conteudo_texto: 'Oi {{nome_cliente}}! Que alegria falar com você! Aqui é a {{nome_consultor}}.\n\nFiquei super empolgada ao ver suas respostas na anamnese e já visualizei uma rotina de bem-estar incrível para você se sentir com muito mais energia! O estilo de vida doTERRA é maravilhoso e transformou completamente a minha energia diária e a de milhares de pessoas.\n\nToparia fazermos uma videochamada rápida de 5 minutos amanhã para eu te mostrar como usar e te passar umas dicas sensacionais de autocuidado? Você vai amar!'
+    },
+    {
+        finalidade: 'vendas',
+        perfil: 'estavel',
+        perfilLabel: 'Estável (S)',
+        titulo: 'Vendas Cuidado Familiar - Perfil Estável 🌱',
+        descricao: 'Foco em segurança, saúde da família, cuidado e bem-estar do lar.',
+        conteudo_texto: 'Olá {{nome_cliente}}, tudo bem? Aqui é a {{nome_consultor}}.\n\nAnalisei sua anamnese com muito carinho e notei que você busca mais qualidade de vida e cuidado natural para a sua família. Os óleos essenciais doTERRA são 100% puros e certificados, seguros para uso em crianças e idosos com total tranquilidade, trazendo saúde para dentro do seu lar.\n\nQueria agendar um bate-papo calmo de 10 minutos para te orientar sobre o uso preventivo e seguro dessas soluções naturais na sua rotina familiar. O que acha de quinta-feira?'
+    },
+    {
+        finalidade: 'vendas',
+        perfil: 'analitico',
+        perfilLabel: 'Analítico (C)',
+        titulo: 'Vendas Base Científica - Perfil Analítico 🔬',
+        descricao: 'Foco em ciência, pureza certificada CPTG, dados e custo-benefício.',
+        conteudo_texto: 'Olá {{nome_cliente}}, como vai? Aqui é a {{nome_consultor}}.\n\nCom base nas informações da sua anamnese, selecionei os óleos essenciais com os compostos químicos ativos mais adequados para a sua queixa. Os óleos doTERRA possuem o selo CPTG (Certificado de Pureza Testada e Garantida), passando por 54 testes rígidos de laboratório que garantem 100% de eficácia terapêutica.\n\nComo cada gota é extremamente concentrada (1 gota de Peppermint equivale a 28 xícaras de chá), o custo por dose terapêutica é de cerca de R$ 0,40. Gostaria de agendar uma conversa de 10 minutos para te apresentar os estudos de eficácia e a análise de custo-benefício? Qual o melhor horário?'
+    },
+    {
+        finalidade: 'cadastro',
+        perfil: 'dominante',
+        perfilLabel: 'Dominante (D)',
+        titulo: 'Recrutamento Oportunidade - Perfil Dominante 📈',
+        descricao: 'Foco em crescimento financeiro, independência e liderança de mercado.',
+        conteudo_texto: 'Olá {{nome_cliente}}, tudo bem? Aqui é a {{nome_consultor}}.\n\nAtuo na expansão de mercado da doTERRA no Brasil. Identifiquei seu perfil de liderança e vejo potencial para você encabeçar uma equipe na sua região. O mercado de bem-estar cresce dois dígitos ao ano e nosso plano de carreira paga bônus de liderança agressivos e comissões recorrentes por volume.\n\nQueria te apresentar os números da empresa e o plano de compensação em uma chamada objetiva de 10 minutos no Zoom. Quinta às 19h funciona para você?'
+    },
+    {
+        finalidade: 'cadastro',
+        perfil: 'influente',
+        perfilLabel: 'Influente (I)',
+        titulo: 'Recrutamento Comunidade - Perfil Influente ✈️',
+        descricao: 'Foco em viagens, estilo de vida livre, reconhecimento e time.',
+        conteudo_texto: 'Oi {{nome_cliente}}, tudo bem? Aqui é a {{nome_consultor}}!\n\nEstou trabalhando com um projeto lindo na doTERRA que tem tudo a ver com você! É uma oportunidade de trabalhar com total liberdade geográfica e de tempo, viajar para eventos incríveis e crescer profissionalmente fazendo novos amigos.\n\nNosso time é super animado e nos apoiamos muito em convenções e treinamentos. Vamos bater um papo rápido no Zoom de 15 minutos para eu te apresentar esse estilo de vida incrível? Você vai amar a nossa comunidade!'
+    },
+    {
+        finalidade: 'cadastro',
+        perfil: 'estavel',
+        perfilLabel: 'Estável (S)',
+        titulo: 'Recrutamento Suporte e Parceria - Perfil Estável 🤝',
+        descricao: 'Foco em suporte passo a passo, segurança de renda e espírito de equipe.',
+        conteudo_texto: 'Olá {{nome_cliente}}, como vai? Aqui é a {{nome_consultor}}.\n\nEstou desenvolvendo um projeto muito especial com a doTERRA focado em levar bem-estar e saúde para as famílias. É um trabalho com um propósito lindo, onde ajudamos pessoas a transformarem suas vidas financeiras de forma ética, segura e com suporte mútuo constante.\n\nVocê nunca estará sozinha, pois temos um sistema de treinamento passo a passo e nos ajudamos como família. Toparia conversarmos 15 minutos para conhecer a empresa e ver como pode construir uma renda segura para o seu lar no seu ritmo?'
+    },
+    {
+        finalidade: 'cadastro',
+        perfil: 'analitico',
+        perfilLabel: 'Analítico (C)',
+        titulo: 'Recrutamento Solidez e Retenção - Perfil Analítico 📊',
+        descricao: 'Foco em solidez da empresa, taxa de retenção de 65% e plano detalhado.',
+        conteudo_texto: 'Olá {{nome_cliente}}, como vai? Aqui é a {{nome_consultor}}.\n\nGostaria de apresentar os dados financeiros do modelo de negócios da doTERRA. Trata-se da maior empresa de óleos essenciais do mundo, com uma taxa de retenção de clientes de 65% (a média do mercado é de apenas 15%). Isso garante uma receita recorrente sólida baseada no consumo real.\n\nPosso enviar um PDF com a apresentação institucional e o plano de compensação detalhado para agendarmos uma conversa de 15 minutos para tirar dúvidas técnicas sobre as projeções de crescimento? Qual o melhor dia?'
+    },
+    {
+        finalidade: 'objecoes',
+        perfil: 'dominante',
+        perfilLabel: 'Dominante (D)',
+        titulo: 'Objeção "Achei Caro" - Perfil Dominante 💰',
+        descricao: 'Contorna a objeção de preço focando em custo por dose e retorno imediato.',
+        conteudo_texto: 'Entendo perfeitamente seu ponto de vista, {{nome_cliente}}.\n\nMas deixa eu te mostrar os números reais: um frasco de 15ml doTERRA vem com cerca de 250 gotas. Como a dosagem padrão é de apenas 1 a 2 gotas por uso devido à pureza CPTG, cada dose terapêutica custa menos de R$ 0,40. É muito mais barato do que comprar remédios tradicionais ou pagar consultas.\n\nVale a pena o investimento imediato pelo alívio imediato. Vamos fechar seu kit básico hoje com 25% de desconto?'
+    },
+    {
+        finalidade: 'objecoes',
+        perfil: 'influente',
+        perfilLabel: 'Influente (I)',
+        titulo: 'Objeção "Achei Caro" - Perfil Influente ✨',
+        descricao: 'Contorna a objeção focando em valor pessoal, prioridade e benefícios de bem-estar.',
+        conteudo_texto: 'Eu também achava isso no início, {{nome_cliente}}!\n\nMas depois que comecei a usar, vi que o valor é insignificante perto do bem-estar que ele traz. Nós gastamos tanto com coisas supérfluas no dia a dia, não é? Investir na nossa saúde, autoestima e no bem-estar de quem amamos é a melhor escolha.\n\nAlém disso, com o cadastro de membro você economiza 25% em tudo e ganha produtos grátis no programa de fidelidade! Você merece esse cuidado!'
+    },
+    {
+        finalidade: 'objecoes',
+        perfil: 'estavel',
+        perfilLabel: 'Estável (S)',
+        titulo: 'Objeção "Achei Caro" - Perfil Estável 🏡',
+        descricao: 'Contorna a objeção focando em prevenção de saúde e proteção familiar.',
+        conteudo_texto: 'Compreendo a sua preocupação com o orçamento familiar, {{nome_cliente}}.\n\nMas veja os óleos essenciais como uma farmácia natural preventiva em casa. Tratar a insônia ou imunidade de forma natural evita gastos futuros com medicamentos fortes na farmácia e protege a saúde da sua família a longo prazo, sem efeitos colaterais.\n\nO kit se paga rapidamente pela saúde e economia no lar. Vamos começar devagar com as opções mais essenciais para sua família?'
+    },
+    {
+        finalidade: 'objecoes',
+        perfil: 'analitico',
+        perfilLabel: 'Analítico (C)',
+        titulo: 'Objeção "Achei Caro" - Perfil Analítico 🔬',
+        descricao: 'Contorna a objeção mostrando estatísticas, concentração e tabela comparativa.',
+        conteudo_texto: 'Compreendo, {{nome_cliente}}.\n\nVamos fazer uma análise analítica do custo por dose. O óleo de Peppermint de 15ml custa R$ X para membros e contém 250 gotas. Uma aplicação de 1 gota equivale a R$ X. Para obtermos a mesma quantidade do componente ativo L-mentol de uma única gota doTERRA com chás ou outras marcas não certificadas, o custo financeiro e o tempo seriam consideravelmente maiores.\n\nA pureza CPTG garante a máxima concentração de ativos, tornando a dose terapêutica doTERRA a mais barata e eficiente do mercado. Gostaria que eu te enviasse essa planilha comparativa de custos?'
+    }
+];
+
+function renderSelectedDiscTemplate(view) {
+    const finalidade = view === 'lider' ? currentDiscFinalidadeLider : currentDiscFinalidadeMembro;
+    const perfil = view === 'lider' ? currentDiscPerfilLider : currentDiscPerfilMembro;
+    
+    const template = DISC_TEMPLATES.find(t => t.finalidade === finalidade && t.perfil === perfil);
+    if (!template) return '<div style="color:var(--text-muted)">Nenhum modelo selecionado</div>';
+    
+    const badgeColor = perfil === 'dominante' ? '#ef4444' : perfil === 'influente' ? '#f59e0b' : perfil === 'estavel' ? '#10b981' : '#3b82f6';
+    
+    return `
+        <div style="background:white; border:1px solid #e2e8f0; padding:16px; border-radius:var(--radius-md); box-shadow:0 1px 3px rgba(0,0,0,0.05); position:relative;">
+            <span style="font-size:0.7rem; font-weight:700; color:white; background:${badgeColor}; padding:3px 8px; border-radius:12px; text-transform:uppercase; display:inline-block; margin-bottom:8px;">
+                ${template.perfilLabel}
+            </span>
+            <h5 style="margin:0 0 6px; font-size:0.95rem; font-weight:700; color:var(--green-950);">${template.titulo}</h5>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin:0 0 12px; font-style:italic;"><strong>Dica de Abordagem:</strong> ${template.descricao}</p>
+            <div style="background:#f8fafc; border:1px solid var(--border-light); border-radius:8px; padding:12px; font-size:0.84rem; font-family:monospace; color:#334155; white-space:pre-wrap; max-height:160px; overflow-y:auto; margin-bottom:12px;">${template.conteudo_texto}</div>
+            
+            <div style="display:flex; gap:8px;">
+                <button class="btn-copy-disc btn btn-secondary btn-sm" data-script-text="${encodeURIComponent(template.conteudo_texto)}" style="display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:0.75rem;">
+                    📋 Copiar Roteiro Personalizado
+                </button>
+                ${view === 'lider' ? `
+                    <button class="btn-use-disc-model btn btn-secondary btn-sm" data-script-text="${encodeURIComponent(template.conteudo_texto)}" data-titulo="${encodeURIComponent(template.titulo)}" data-desc="${encodeURIComponent(template.descricao)}" style="display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:0.75rem;">
+                        ✏️ Usar como Modelo (Editar)
+                    </button>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function openSmartCopyModal(text) {
+    import('../utils.js?v=1010').then(({ modal }) => {
+        const m = modal('✍️ Copiar Script Inteligente', `
+            <div style="padding:10px 0">
+                <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:14px;">Preencha os campos abaixo para autocompletar as variáveis do roteiro antes de copiá-lo para a conversa.</p>
+                <div class="form-group" style="margin-bottom:12px">
+                    <label class="form-label" style="color:var(--text-dark)">Nome do Cliente</label>
+                    <input type="text" id="script-var-cliente-modal" class="form-input" placeholder="Ex: Maria" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
+                </div>
+                <button class="btn btn-primary" id="btn-do-copy-modal" style="width:100%">📋 Copiar Mensagem Personalizada</button>
+            </div>
+        `);
+
+        m.el.querySelector('#btn-do-copy-modal').addEventListener('click', () => {
+            const nomeCl = m.el.querySelector('#script-var-cliente-modal').value?.trim() || 'Amiga(o)';
+            let parsedText = text.replace(/{{nome_cliente}}/g, nomeCl);
+            parsedText = parsedText.replace(/{{nome_consultor}}/g, auth.current?.nome?.split(' ')[0] || 'Consultor');
+            
+            navigator.clipboard.writeText(parsedText);
+            toast('Script personalizado copiado!', 'success');
+            m.close();
+        });
+    });
 }
