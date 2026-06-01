@@ -6,6 +6,32 @@ const { sendPushNotification } = require('../lib/push');
 
 const router = express.Router();
 
+// Public route for Service Worker click tracking
+router.post('/push/track-click', async (req, res) => {
+    const { teamPushId, consultoraId } = req.body;
+    if (!teamPushId || !consultoraId) return res.status(400).json({ error: 'Missing data' });
+
+    try {
+        await pool.query(`
+            INSERT INTO equipe_push_clicks (push_id, consultora_id)
+            VALUES ($1, $2)
+            ON CONFLICT (push_id, consultora_id) DO NOTHING
+        `, [teamPushId, consultoraId]);
+
+        // Update total clicks in history
+        await pool.query(`
+            UPDATE equipe_push_historico 
+            SET cliques_qtd = (SELECT COUNT(*) FROM equipe_push_clicks WHERE push_id = $1)
+            WHERE id = $1
+        `, [teamPushId]);
+
+        res.json({ ok: true });
+    } catch (err) {
+        console.error('[TrackTeamPushClick] Error:', err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 // Todos os endpoints necessitam de autenticação e assinatura ativa
 router.use(auth, checkSub);
 
@@ -777,7 +803,7 @@ router.delete('/biblioteca/:id', async (req, res) => {
 
 /**
  * POST /api/equipe/push-direto
- * Líder envia uma mensagem de Web Push imediata para toda a equipe
+ * Líder envia uma mensagem de Web Push imediata para toda a equipe e registra no histórico
  */
 router.post('/push-direto', async (req, res) => {
     try {
@@ -806,13 +832,25 @@ router.post('/push-direto', async (req, res) => {
             [equipe.id, userId]
         );
 
+        // Cria o registro no histórico de push
+        const { rows: pushRows } = await pool.query(
+            `INSERT INTO equipe_push_historico (equipe_id, mensagem, total_enviados)
+             VALUES ($1, $2, $3) RETURNING id`,
+            [equipe.id, mensagem.trim(), membros.length]
+        );
+        const pushId = pushRows[0].id;
+
         let count = 0;
         for (const membro of membros) {
             try {
                 await sendPushNotification(membro.id, {
                     title: `Mensagem da Liderança (${equipe.nome_equipe}) 🤝`,
                     body: mensagem.trim(),
-                    data: { url: '/equipe' }
+                    data: { 
+                        url: '/equipe',
+                        teamPushId: pushId,
+                        consultoraId: membro.id
+                    }
                 });
                 count++;
             } catch (err) {
@@ -820,10 +858,53 @@ router.post('/push-direto', async (req, res) => {
             }
         }
 
+        // Se por algum motivo o número enviado de fato foi diferente, atualiza
+        if (count !== membros.length) {
+            await pool.query(
+                'UPDATE equipe_push_historico SET total_enviados = $1 WHERE id = $2',
+                [count, pushId]
+            );
+        }
+
         res.json({ success: true, membros_notificados: count });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erro ao enviar push para a equipe.' });
+    }
+});
+
+/**
+ * GET /api/equipe/push-historico
+ * Retorna o histórico de mensagens push enviadas pelo líder logado com contagem de leituras
+ */
+router.get('/push-historico', async (req, res) => {
+    try {
+        const userId = req.consultora.id;
+
+        // Verifica se é líder e pega a equipe
+        const { rows: equipeRows } = await pool.query(
+            'SELECT id FROM equipes WHERE lider_id = $1',
+            [userId]
+        );
+
+        if (equipeRows.length === 0) {
+            return res.status(403).json({ error: 'Apenas líderes de equipe possuem histórico de push.' });
+        }
+
+        const equipeId = equipeRows[0].id;
+
+        const { rows: historico } = await pool.query(
+            `SELECT * FROM equipe_push_historico 
+             WHERE equipe_id = $1 
+             ORDER BY criado_em DESC 
+             LIMIT 15`,
+            [equipeId]
+        );
+
+        res.json(historico);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao buscar histórico de push.' });
     }
 });
 

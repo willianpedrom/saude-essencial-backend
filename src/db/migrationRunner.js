@@ -844,6 +844,36 @@ const MIGRATIONS = [
 
             console.log('[020_modulo_equipe] Tabelas e campos do módulo de equipes inicializados com sucesso.');
         }
+    },
+    // ── 021: Histórico de Web Push e Cliques por Equipe ─────────────────────────
+    {
+        name: '021_equipe_push_historico',
+        async up(pool) {
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS equipe_push_historico (
+                  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                  equipe_id      UUID NOT NULL REFERENCES equipes(id) ON DELETE CASCADE,
+                  mensagem       TEXT NOT NULL,
+                  total_enviados INT DEFAULT 0,
+                  cliques_qtd       INT DEFAULT 0,
+                  criado_em      TIMESTAMPTZ DEFAULT NOW()
+                )
+            `);
+
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS equipe_push_clicks (
+                  push_id       UUID NOT NULL REFERENCES equipe_push_historico(id) ON DELETE CASCADE,
+                  consultora_id UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+                  clicado_em    TIMESTAMPTZ DEFAULT NOW(),
+                  PRIMARY KEY (push_id, consultora_id)
+                )
+            `);
+
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_equipe_push_hist ON equipe_push_historico(equipe_id)`);
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_equipe_push_clicks ON equipe_push_clicks(push_id)`);
+            
+            console.log('[021_equipe_push_historico] Tabelas de histórico e cliques de push criadas.');
+        }
     }
 ];
 

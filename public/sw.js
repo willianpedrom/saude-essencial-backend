@@ -70,6 +70,20 @@ self.addEventListener('notificationclick', e => {
         );
     }
 
+    // Rastreamento de Cliques (Métricas de Equipe)
+    if (data.teamPushId && data.consultoraId) {
+        e.waitUntil(
+            fetch('/api/equipe/push/track-click', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    teamPushId: data.teamPushId,
+                    consultoraId: data.consultoraId
+                })
+            }).catch(err => console.error('[SW] Track team push click error:', err))
+        );
+    }
+
     e.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
             for (let client of windowClients) {

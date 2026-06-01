@@ -395,6 +395,14 @@ async function renderLeaderDashboard(router, equipe) {
                         
                         <button id="btn-send-push-direto" class="btn btn-primary" style="width:100%; background:var(--green-600); color:white;">⚡ Disparar Push da Equipe</button>
                     </div>
+
+                    <!-- Histórico de Push -->
+                    <div class="card" style="padding:24px">
+                        <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:12px;">📊 Histórico de Envios</h3>
+                        <div id="list-push-historico" style="display:flex; flex-direction:column; gap:12px; max-height:300px; overflow-y:auto;">
+                            <div style="text-align:center; color:var(--text-muted); padding:10px; font-size:0.85rem;">Carregando histórico...</div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- notice List -->
@@ -501,6 +509,7 @@ async function renderLeaderDashboard(router, equipe) {
     loadAvisosLider();
     loadBibliotecaLider();
     loadDelegacoesLider();
+    loadPushHistorico();
 
     // ── Actions: cadastrar aviso ─────────────────────────────
     document.getElementById('btn-save-aviso')?.addEventListener('click', async () => {
@@ -613,6 +622,7 @@ async function renderLeaderDashboard(router, equipe) {
             document.getElementById('push-template').value = '';
             btn.disabled = false;
             btn.textContent = '⚡ Disparar Push da Equipe';
+            loadPushHistorico();
         } catch (e) {
             document.getElementById('btn-send-push-direto').disabled = false;
             document.getElementById('btn-send-push-direto').textContent = '⚡ Disparar Push da Equipe';
@@ -1404,5 +1414,46 @@ async function openDelegarLeadModal(equipeId) {
 
     } catch (e) {
         toast('Erro ao abrir painel de delegação.', 'danger');
+    }
+}
+
+// ── Helper: Load Push History (Leader View) ──────────────────
+async function loadPushHistorico() {
+    const container = document.getElementById('list-push-historico');
+    if (!container) return;
+
+    try {
+        const historico = await api('GET', '/api/equipe/push-historico');
+        if (!historico || historico.length === 0) {
+            container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:15px; font-size:0.85rem;">Nenhum push enviado recentemente.</div>`;
+            return;
+        }
+
+        container.innerHTML = historico.map(item => {
+            const dateStr = new Date(item.criado_em).toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            const totalEnviados = item.total_enviados || 0;
+            const cliquesQtd = item.cliques_qtd || 0;
+            const percentage = totalEnviados > 0 ? Math.round((cliquesQtd / totalEnviados) * 100) : 0;
+
+            return `
+                <div style="padding:14px; border:1px solid var(--border); border-radius:var(--radius-md); background:#f8fafc; display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+                        <span style="font-size:0.75rem; font-weight:700; color:var(--green-600);">${dateStr}</span>
+                        <span style="font-size:0.75rem; font-weight:700; color:var(--text-dark);">${cliquesQtd} / ${totalEnviados} lido(s) (${percentage}%)</span>
+                    </div>
+                    <p style="font-size:0.82rem; color:var(--text-dark); white-space:pre-wrap; margin:0; line-height:1.4;">${item.mensagem}</p>
+                    <div style="width:100%; background:#e2e8f0; height:6px; border-radius:3px; overflow:hidden;">
+                        <div style="width:${percentage}%; background:linear-gradient(90deg, var(--green-600), var(--green-800)); height:100%; transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (e) {
+        container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:15px; font-size:0.85rem;">Erro ao carregar histórico: ${e.message}</div>`;
     }
 }
