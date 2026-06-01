@@ -1258,7 +1258,39 @@ async function loadAvisosMembro() {
                                 <span style="font-size:0.8rem; background:#e2e8f0; padding:4px 8px; border-radius:6px; font-weight:600;">📅 ${dateStr}</span>
                                 ${a.link_reuniao ? `<a href="${a.link_reuniao}" target="_blank" class="btn btn-sm btn-secondary" style="font-weight:600; padding:5px 12px; border-radius:6px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">🔗 Entrar</a>` : ''}
                                 ${!a.confirmado ? `
-                                    <button class="btn-confirmar-presenca btn btn-sm btn-primary" data-aviso-id="${a.id}" style=async function loadBibliotecaMembro() {
+                                    <button class="btn-confirmar-presenca btn btn-sm btn-primary" data-aviso-id="${a.id}" style="font-weight:600; padding:5px 12px; border-radius:6px; border:none; background:var(--gold-500); color:var(--green-950)">
+                                        ✓ Vou Participar
+                                    </button>
+                                ` : `
+                                    <span style="font-size:0.82rem; color:#16a34a; font-weight:600;">✓ Presença Confirmada!</span>
+                                `}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Bind confirmar
+        container.querySelectorAll('.btn-confirmar-presenca').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.dataset.avisoId;
+                try {
+                    await api('POST', `/api/equipe/avisos/${id}/confirmar`);
+                    toast('Presença confirmada! 🎉', 'success');
+                    loadAvisosMembro();
+                } catch (e) {
+                    toast(e.message || 'Erro ao confirmar presença.', 'danger');
+                }
+            });
+        });
+    } catch (e) {
+        container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar avisos: ${e.message}</div>`;
+    }
+}
+
+// ── Helper: Load Biblioteca (Member View) ─────────────────────
+async function loadBibliotecaMembro() {
     const container = document.getElementById('list-biblioteca-membro');
     if (!container) return;
 
@@ -1370,29 +1402,40 @@ function renderFilteredBibliotecaMembro() {
 
     container.innerHTML = html;
     bindBibliotecaMembroEvents(container);
-}                            <div class="form-group" style="margin-bottom:12px">
-                                <label class="form-label" style="color:var(--text-dark)">Nome do Cliente</label>
-                                <input type="text" id="script-var-cliente" class="form-input" placeholder="Ex: Maria" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
-                            </div>
-                            <button class="btn btn-primary" id="btn-do-copy" style="width:100%">📋 Copiar Mensagem Personalizada</button>
-                        </div>
-                    `);
+}
 
-                    m.el.querySelector('#btn-do-copy').addEventListener('click', () => {
-                        const nomeCl = m.el.querySelector('#script-var-cliente').value?.trim() || 'Amiga(o)';
-                        let parsedText = text.replace(/{{nome_cliente}}/g, nomeCl);
-                        parsedText = parsedText.replace(/{{nome_consultor}}/g, auth.current?.nome?.split(' ')[0] || 'Consultor');
-                        
-                        navigator.clipboard.writeText(parsedText);
-                        toast('Script personalizado copiado!', 'success');
-                        m.close();
-                    });
-                });
-            });
+function bindBibliotecaMembroEvents(container) {
+    const selFinalidade = container.querySelector('#disc-filter-finalidade');
+    const selPerfil = container.querySelector('#disc-filter-perfil');
+    if (selFinalidade && selPerfil) {
+        selFinalidade.addEventListener('change', (e) => {
+            currentDiscFinalidadeMembro = e.target.value;
+            const tplContainer = container.querySelector('#disc-template-container');
+            if (tplContainer) tplContainer.innerHTML = renderSelectedDiscTemplate('membro');
+            bindBibliotecaMembroEvents(container);
         });
-    } catch (e) {
-        container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar biblioteca: ${e.message}</div>`;
+        
+        selPerfil.addEventListener('change', (e) => {
+            currentDiscPerfilMembro = e.target.value;
+            const tplContainer = container.querySelector('#disc-template-container');
+            if (tplContainer) tplContainer.innerHTML = renderSelectedDiscTemplate('membro');
+            bindBibliotecaMembroEvents(container);
+        });
     }
+
+    container.querySelectorAll('.btn-copy-disc').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const text = decodeURIComponent(btn.dataset.scriptText);
+            openSmartCopyModal(text);
+        });
+    });
+
+    container.querySelectorAll('.btn-copy-script').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const text = decodeURIComponent(btn.dataset.scriptText);
+            openSmartCopyModal(text);
+        });
+    });
 }
 
 // ── Helper: Load Delegacoes (Member View) ─────────────────────
