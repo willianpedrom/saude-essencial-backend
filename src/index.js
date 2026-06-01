@@ -202,6 +202,7 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/admin-notifications', require('./routes/admin_notifications'));
 app.use('/api/compras', require('./routes/compras'));
 app.use('/api/sales', require('./routes/sales'));
+app.use('/api/equipe', require('./routes/equipe'));
 
 // Rota pública raiz para SEO / Open Graph (Prévias de Link)
 app.use('/convite', require('./routes/share'));

@@ -1,4 +1,4 @@
-import { auth, store } from '../store.js?v=1010';
+import { auth, store, api } from '../store.js?v=1010';
 import { formatDate, formatCurrency, getInitials, toast, getConsultantTitle } from '../utils.js?v=1010';
 
 // ── Helper: get consultant's display name ────────────────────
@@ -24,6 +24,22 @@ window.dismissBanner = async (id) => {
   if (!dismissed.includes(id)) {
     dismissed.push(id);
     localStorage.setItem('dismissed_banners', JSON.stringify(dismissed));
+  }
+};
+
+window.confirmarPresencaReuniao = async (id) => {
+  try {
+    await api('POST', `/api/equipe/avisos/${id}/confirmar`);
+    toast('Presença confirmada! 🎉', 'success');
+    const btn = document.getElementById('btn-conf-' + id);
+    if (btn) {
+      const span = document.createElement('span');
+      span.style.cssText = 'font-size:0.82rem; color:var(--green-200); font-weight:600;';
+      span.textContent = '✓ Presença Confirmada!';
+      btn.replaceWith(span);
+    }
+  } catch (e) {
+    toast(e.message || 'Erro ao confirmar presença.', 'danger');
   }
 };
 
@@ -82,6 +98,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
     { id: 'profile', icon: '👤', label: 'Meu Perfil' },
     { id: 'prospecting', icon: '🛰️', label: 'Radar de Leads' },
     { id: 'estoque', icon: '📦', label: 'Meu Estoque' },
+    { id: 'equipe', icon: '🤝', label: 'Minha Equipe' },
     { id: 'support', icon: '🎧', label: 'Suporte (Ajuda)' },
   ];
   if (auth.isAdmin) navItems.push({ id: 'admin', icon: '⚙️', label: 'Administração' });
@@ -184,7 +201,8 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
         'integrations': { flag: 'tem_integracoes', name: 'Integrações Pro (Pixel/GA)' },
         'prospecting': { flag: 'tem_radar', name: 'Radar de Leads' },
         'estoque': { flag: 'tem_estoque', name: 'Meu Estoque / Inventário' },
-        'testimonials': { flag: 'tem_depoimentos', name: 'Gestão de Depoimentos' }
+        'testimonials': { flag: 'tem_depoimentos', name: 'Gestão de Depoimentos' },
+        'equipe': { flag: 'tem_equipe', name: 'Gestão de Equipe (Liderança)' }
       };
       
       const req = lockedRoutes[btn.dataset.nav];
@@ -669,6 +687,46 @@ export async function renderDashboard(router) {
 
     const { summary = {}, anamneses = [], agendamentos = [], aniversariantes = [], avisosBanner: avisosBanners = [], avisosModais = [], followups: followupsArr = [], leads_abandonados = [] } = boot;
 
+    // ── Prepara Banners de Avisos da Equipe ──
+    let teamBannersHtml = '';
+    try {
+      const teamAvisos = await api('GET', '/api/equipe/avisos');
+      if (Array.isArray(teamAvisos) && teamAvisos.length > 0) {
+        teamBannersHtml = teamAvisos.map(a => {
+          const isMeeting = !!a.data_reuniao;
+          const dateStr = isMeeting ? new Date(a.data_reuniao).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+          
+          return `
+            <div id="team-aviso-${a.id}" style="background: linear-gradient(135deg, var(--green-900), var(--green-700));
+                        border: 1px solid var(--border-gold);
+                        padding: 16px 20px; margin-bottom: 20px; border-radius: var(--radius-md); display:flex; gap:16px; align-items:flex-start; box-shadow: var(--shadow-sm); color: white;">
+              <span style="font-size:1.8rem">${isMeeting ? '📅' : '📢'}</span>
+              <div style="flex:1">
+                <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; color:var(--gold-300); font-weight:700;">Aviso da Equipe ${isMeeting ? '• Reunião' : ''}</span>
+                <h4 style="margin:4px 0; font-size:1.05rem; font-weight:700; color:white;">${a.titulo}</h4>
+                <p style="margin:6px 0 0; font-size:0.88rem; color:rgba(255,255,255,0.85); white-space:pre-wrap;">${autoLinkify(a.mensagem)}</p>
+                ${isMeeting ? `
+                  <div style="margin-top: 12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                    <span style="font-size:0.82rem; background:rgba(255,255,255,0.15); padding:4px 10px; border-radius:6px; color:white; font-weight:600;">📅 ${dateStr}</span>
+                    ${a.link_reuniao ? `<a href="${a.link_reuniao}" target="_blank" class="btn btn-sm" style="background:var(--gold-400); color:var(--green-950); font-weight:700; border:none; padding:5px 12px; border-radius:6px; display:inline-flex; align-items:center; gap:6px; text-decoration:none;">🔗 Entrar na Reunião</a>` : ''}
+                    ${!a.confirmado ? `
+                      <button onclick="window.confirmarPresencaReuniao('${a.id}')" id="btn-conf-${a.id}" class="btn btn-sm" style="border:1px solid rgba(255,255,255,0.3); background:transparent; color:white; font-weight:600; padding:5px 12px; border-radius:6px; cursor:pointer;">
+                        ✓ Confirmar Presença
+                      </button>
+                    ` : `
+                      <span style="font-size:0.82rem; color:var(--green-200); font-weight:600;">✓ Presença Confirmada!</span>
+                    `}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    } catch (e) {
+      console.warn('Erro ao buscar avisos da equipe no dashboard:', e);
+    }
+
     // Destructure pre-computed summary fields (no full client list needed)
     const {
       totalClients = 0,
@@ -897,6 +955,7 @@ export async function renderDashboard(router) {
     ` : '';
 
     const contentHtml = `
+  ${teamBannersHtml}
   ${bannersHtml}
   ${onboardingHtml}
   

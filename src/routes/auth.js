@@ -90,7 +90,7 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
                     p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar,
                     p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes,
                     p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario,
-                    p.tem_relatorios, p.tem_estoque, p.tem_depoimentos
+                    p.tem_relatorios, p.tem_estoque, p.tem_depoimentos, p.tem_equipe
              FROM consultoras c
              LEFT JOIN assinaturas a ON a.consultora_id = c.id
              LEFT JOIN planos p ON a.plano = p.slug AND p.ativo = TRUE
@@ -131,6 +131,7 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
             tem_relatorios: row.tem_relatorios,
             tem_estoque: row.tem_estoque,
             tem_depoimentos: row.tem_depoimentos,
+            tem_equipe: row.tem_equipe,
         };
 
         const tv = row.token_version ?? 1;
@@ -184,7 +185,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
                     p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar,
                     p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes,
                     p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario,
-                    p.tem_relatorios, p.tem_estoque, p.tem_depoimentos
+                    p.tem_relatorios, p.tem_estoque, p.tem_depoimentos, p.tem_equipe
              FROM consultoras c
              LEFT JOIN assinaturas a ON a.consultora_id = c.id
              LEFT JOIN planos p ON a.plano = p.slug AND p.ativo = TRUE
@@ -203,7 +204,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
             tem_radar: row.tem_radar, tem_agenda: row.tem_agenda, tem_links: row.tem_links,
             tem_anamneses: row.tem_anamneses, tem_clientes: row.tem_clientes, tem_integracoes: row.tem_integracoes,
             tem_pipeline: row.tem_pipeline, tem_multiusuario: row.tem_multiusuario, tem_relatorios: row.tem_relatorios,
-            tem_estoque: row.tem_estoque, tem_depoimentos: row.tem_depoimentos,
+            tem_estoque: row.tem_estoque, tem_depoimentos: row.tem_depoimentos, tem_equipe: row.tem_equipe,
         };
 
         const consultoraData = {
@@ -523,14 +524,14 @@ router.post('/accept-terms', async (req, res, next) => {
         const subResult = await pool.query(
             `SELECT a.plano, a.status, a.trial_fim, a.periodo_fim,
                     p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes, p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario, p.tem_relatorios,
-                    p.tem_estoque, p.tem_depoimentos
+                    p.tem_estoque, p.tem_depoimentos, p.tem_equipe
              FROM assinaturas a
              LEFT JOIN planos p ON a.plano = p.slug
              WHERE a.consultora_id = $1
              ORDER BY a.criado_em DESC LIMIT 1`,
             [consultora.id]
         );
-        const sub = subResult.rows[0] || { plano: 'none', status: 'none' };
+        const sub = subResult.rows[0] || { plano: 'none', status: 'none', tem_equipe: false };
 
         const { rows: tvRows } = await pool.query(
             'SELECT token_version FROM consultoras WHERE id = $1', [consultora.id]

@@ -749,6 +749,101 @@ const MIGRATIONS = [
             );
             console.log('[019_fix_lavanda_touch_price_2026] Preço de Lavanda Touch ajustado no estoque.');
         }
+    },
+    // ── 020: Módulo de equipes e tabelas relacionadas ─────────────────────────────
+    {
+        name: '020_modulo_equipe',
+        async up(pool) {
+            // 1. Tabela de Equipes
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS equipes (
+                  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                  lider_id       UUID NOT NULL UNIQUE REFERENCES consultoras(id) ON DELETE CASCADE,
+                  nome_equipe    VARCHAR(150) NOT NULL,
+                  codigo_convite VARCHAR(30) UNIQUE NOT NULL,
+                  criado_em      TIMESTAMPTZ DEFAULT NOW(),
+                  atualizado_em  TIMESTAMPTZ DEFAULT NOW()
+                )
+            `);
+
+            // 2. Colunas de equipe em consultoras
+            await pool.query(`
+                ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS equipe_id UUID REFERENCES equipes(id) ON DELETE SET NULL
+            `);
+            await pool.query(`
+                ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS rank_doterra VARCHAR(50) DEFAULT 'Consultor'
+            `);
+
+            // 3. Controle de Delegações
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS equipe_delegacoes (
+                  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                  cliente_id            UUID NOT NULL REFERENCES clientes(id) ON DELETE CASCADE,
+                  lider_id              UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+                  liderado_id           UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+                  status_devolutiva     VARCHAR(30) DEFAULT 'pendente',
+                  notas_lider           TEXT,
+                  criado_em             TIMESTAMPTZ DEFAULT NOW(),
+                  atualizado_em         TIMESTAMPTZ DEFAULT NOW()
+                )
+            `);
+
+            // 4. Suporte em clientes
+            await pool.query(`
+                ALTER TABLE clientes ADD COLUMN IF NOT EXISTS compartilhado_de_lider_id UUID REFERENCES consultoras(id) ON DELETE SET NULL
+            `);
+            await pool.query(`
+                ALTER TABLE clientes ADD COLUMN IF NOT EXISTS delegacao_id UUID REFERENCES equipe_delegacoes(id) ON DELETE SET NULL
+            `);
+
+            // 5. Mural de Avisos
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS equipe_avisos (
+                  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                  equipe_id      UUID NOT NULL REFERENCES equipes(id) ON DELETE CASCADE,
+                  titulo         VARCHAR(150) NOT NULL,
+                  mensagem       TEXT NOT NULL,
+                  data_reuniao   TIMESTAMPTZ,
+                  link_reuniao   VARCHAR(255),
+                  criado_em      TIMESTAMPTZ DEFAULT NOW()
+                )
+            `);
+
+            // Confirmações
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS equipe_aviso_confirmacoes (
+                  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                  aviso_id       UUID NOT NULL REFERENCES equipe_avisos(id) ON DELETE CASCADE,
+                  consultora_id  UUID NOT NULL REFERENCES consultoras(id) ON DELETE CASCADE,
+                  confirmado_em  TIMESTAMPTZ DEFAULT NOW(),
+                  UNIQUE(aviso_id, consultora_id)
+                )
+            `);
+
+            // 6. Biblioteca
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS equipe_biblioteca (
+                  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                  equipe_id      UUID NOT NULL REFERENCES equipes(id) ON DELETE CASCADE,
+                  categoria      VARCHAR(50) NOT NULL,
+                  titulo         VARCHAR(150) NOT NULL,
+                  descricao      TEXT,
+                  url_midia      VARCHAR(255),
+                  conteudo_texto TEXT,
+                  criado_em      TIMESTAMPTZ DEFAULT NOW()
+                )
+            `);
+
+            // 7. Campo tem_equipe em planos
+            await pool.query(`
+                ALTER TABLE planos ADD COLUMN IF NOT EXISTS tem_equipe BOOLEAN DEFAULT FALSE
+            `);
+            await pool.query(`
+                UPDATE planos SET tem_equipe = TRUE WHERE slug IN ('pro', 'enterprise')
+            `);
+
+            console.log('[020_modulo_equipe] Tabelas e campos do módulo de equipes inicializados com sucesso.');
+        }
     }
 ];
 

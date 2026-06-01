@@ -142,6 +142,10 @@ const router = new Router({
         const { renderInventory } = await import('./pages/Inventory.js?v=1010');
         renderInventory(router);
     }),
+    '/equipe': guard(async () => {
+        const { renderEquipe } = await import('./pages/Equipe.js?v=1010');
+        renderEquipe(router);
+    }),
 
     // Public routes (no auth required)
     '/anamnese/:token': async ({ token }) => {
