@@ -345,30 +345,56 @@ async function renderLeaderDashboard(router, equipe) {
         <!-- Tab 2: notices / murals -->
         <div id="tab-mural" class="tab-content">
             <div style="display:grid; grid-template-columns:350px 1fr; gap:20px; align-items:start;">
-                <!-- Form notice -->
-                <div class="card" style="padding:24px">
-                    <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:16px;">📢 Novo Aviso no Mural</h3>
-                    <div class="form-group" style="margin-bottom:12px">
-                        <label class="form-label" style="color:var(--text-dark)">Título do Comunicado</label>
-                        <input type="text" id="aviso-titulo" class="form-input" placeholder="Ex: Treinamento Especial HOJE!" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
+                <div style="display:flex; flex-direction:column; gap:20px;">
+                    <!-- Form notice -->
+                    <div class="card" style="padding:24px">
+                        <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:16px;">📢 Novo Aviso no Mural</h3>
+                        <div class="form-group" style="margin-bottom:12px">
+                            <label class="form-label" style="color:var(--text-dark)">Título do Comunicado</label>
+                            <input type="text" id="aviso-titulo" class="form-input" placeholder="Ex: Treinamento Especial HOJE!" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
+                        </div>
+                        <div class="form-group" style="margin-bottom:12px">
+                            <label class="form-label" style="color:var(--text-dark)">Mensagem detalhada</label>
+                            <textarea id="aviso-mensagem" class="form-input" rows="4" placeholder="Escreva o aviso oficial para a rede..." style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; font-family:inherit;"></textarea>
+                        </div>
+                        <div class="form-group" style="margin-bottom:12px">
+                            <label class="form-label" style="color:var(--text-dark)">Data da Reunião (Opcional)</label>
+                            <input type="datetime-local" id="aviso-data-reuniao" class="form-input" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
+                        </div>
+                        <div class="form-group" style="margin-bottom:16px">
+                            <label class="form-label" style="color:var(--text-dark)">Link da Reunião Zoom/Meet (Opcional)</label>
+                            <input type="url" id="aviso-link-reuniao" class="form-input" placeholder="Ex: https://zoom.us/j/..." style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
+                        </div>
+                        <div class="form-group" style="margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                            <input type="checkbox" id="aviso-disparar-push" style="width:18px; height:18px; cursor:pointer;" checked />
+                            <label for="aviso-disparar-push" style="font-size:0.85rem; color:var(--text-dark); font-weight:600; cursor:pointer;">Disparar Web Push Urgente 📲</label>
+                        </div>
+                        <button id="btn-save-aviso" class="btn btn-primary" style="width:100%">✓ Publicar no Mural</button>
                     </div>
-                    <div class="form-group" style="margin-bottom:12px">
-                        <label class="form-label" style="color:var(--text-dark)">Mensagem detalhada</label>
-                        <textarea id="aviso-mensagem" class="form-input" rows="4" placeholder="Escreva o aviso oficial para a rede..." style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; font-family:inherit;"></textarea>
+
+                    <!-- Central de Push -->
+                    <div class="card" style="padding:24px">
+                        <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:16px;">📲 Central de Push da Equipe</h3>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:16px;">Envie mensagens instantâneas para as telas dos seus consultores.</p>
+                        
+                        <div class="form-group" style="margin-bottom:12px">
+                            <label class="form-label" style="color:var(--text-dark)">Mensagens Pré-programadas</label>
+                            <select id="push-template" class="form-input" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;">
+                                <option value="">-- Escrever Mensagem Livre --</option>
+                                <option value="1">🎓 Lembrete de Treinamento Geral</option>
+                                <option value="2">🔥 Promoção BOGO Iniciada</option>
+                                <option value="3">🎯 Foco nas Metas do Mês</option>
+                                <option value="4">📚 Novo Roteiro na Biblioteca</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom:16px">
+                            <label class="form-label" style="color:var(--text-dark)">Mensagem do Push</label>
+                            <textarea id="push-mensagem" class="form-input" rows="3" placeholder="Digite a mensagem específica..." style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; font-family:inherit;"></textarea>
+                        </div>
+                        
+                        <button id="btn-send-push-direto" class="btn btn-primary" style="width:100%; background:var(--green-600); color:white;">⚡ Disparar Push da Equipe</button>
                     </div>
-                    <div class="form-group" style="margin-bottom:12px">
-                        <label class="form-label" style="color:var(--text-dark)">Data da Reunião (Opcional)</label>
-                        <input type="datetime-local" id="aviso-data-reuniao" class="form-input" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
-                    </div>
-                    <div class="form-group" style="margin-bottom:16px">
-                        <label class="form-label" style="color:var(--text-dark)">Link da Reunião Zoom/Meet (Opcional)</label>
-                        <input type="url" id="aviso-link-reuniao" class="form-input" placeholder="Ex: https://zoom.us/j/..." style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
-                    </div>
-                    <div class="form-group" style="margin-bottom:16px; display:flex; align-items:center; gap:8px;">
-                        <input type="checkbox" id="aviso-disparar-push" style="width:18px; height:18px; cursor:pointer;" checked />
-                        <label for="aviso-disparar-push" style="font-size:0.85rem; color:var(--text-dark); font-weight:600; cursor:pointer;">Disparar Web Push Urgente 📲</label>
-                    </div>
-                    <button id="btn-save-aviso" class="btn btn-primary" style="width:100%">✓ Publicar no Mural</button>
                 </div>
 
                 <!-- notice List -->
@@ -552,6 +578,45 @@ async function renderLeaderDashboard(router, equipe) {
             document.getElementById('btn-save-bib').disabled = false;
             document.getElementById('btn-save-bib').textContent = '✓ Adicionar à Biblioteca';
             toast(e.message || 'Erro ao salvar material.', 'danger');
+        }
+    });
+
+    // ── Actions: Central de Push ──────────────────────────────
+    const pushTemplates = {
+        '1': 'Lembrete: Nosso treinamento de equipe inicia em 15 minutos! Venha aprender estratégias de vendas.',
+        '2': 'ATENÇÃO TIME: A nova promoção BOGO doTERRA começou! Confira a biblioteca para ver as dicas de divulgação.',
+        '3': 'Foco no Fechamento: Reta final do mês! Vamos revisar nossas metas e ajudar nossa rede. Qualquer dúvida, me chamem!',
+        '4': 'Novidade: Acabo de disponibilizar um novo roteiro/script de vendas na biblioteca da equipe. Usem nas abordagens!'
+    };
+
+    document.getElementById('push-template')?.addEventListener('change', (e) => {
+        const val = e.target.value;
+        const textarea = document.getElementById('push-mensagem');
+        if (textarea) {
+            textarea.value = pushTemplates[val] || '';
+        }
+    });
+
+    document.getElementById('btn-send-push-direto')?.addEventListener('click', async () => {
+        const msg = document.getElementById('push-mensagem')?.value?.trim();
+        if (!msg) return toast('Escreva a mensagem do push.', 'warning');
+
+        try {
+            const btn = document.getElementById('btn-send-push-direto');
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+
+            const res = await api('POST', '/api/equipe/push-direto', { mensagem: msg });
+            toast(`Sucesso! ${res.membros_notificados} membro(s) notificados via push.`, 'success');
+
+            document.getElementById('push-mensagem').value = '';
+            document.getElementById('push-template').value = '';
+            btn.disabled = false;
+            btn.textContent = '⚡ Disparar Push da Equipe';
+        } catch (e) {
+            document.getElementById('btn-send-push-direto').disabled = false;
+            document.getElementById('btn-send-push-direto').textContent = '⚡ Disparar Push da Equipe';
+            toast(e.message || 'Erro ao enviar push.', 'danger');
         }
     });
 
@@ -900,6 +965,14 @@ async function loadBibliotecaLider() {
                     
                     ${isScript ? `
                         <div style="background:white; border:1px solid var(--border-light); border-radius:8px; padding:10px; font-size:0.83rem; font-family:monospace; color:#334155; white-space:pre-wrap; max-height:120px; overflow-y:auto; margin-bottom:8px;">${b.conteudo_texto}</div>
+                        <div style="display:flex; gap:8px; margin-top:8px;">
+                            <button class="btn-copy-script btn btn-secondary btn-sm" data-script-text="${encodeURIComponent(b.conteudo_texto)}" style="display:inline-flex; align-items:center; gap:6px; font-weight:600; padding:4px 10px; font-size:0.75rem;">
+                                📋 Copiar Personalizado
+                            </button>
+                            <button class="btn-use-model btn btn-secondary btn-sm" data-bib-id="${b.id}" style="display:inline-flex; align-items:center; gap:6px; font-weight:600; padding:4px 10px; font-size:0.75rem;">
+                                ✏️ Usar como Modelo (Editar)
+                            </button>
+                        </div>
                     ` : `
                         ${b.url_midia ? `<a href="${b.url_midia}" target="_blank" style="font-size:0.82rem; color:var(--green-600); text-decoration:underline; font-weight:600;">🔗 Acessar Link Externo</a>` : ''}
                     `}
@@ -919,6 +992,65 @@ async function loadBibliotecaLider() {
                 } catch (e) {
                     toast(e.message || 'Erro ao remover material.', 'danger');
                 }
+            });
+        });
+
+        // Bind use model
+        container.querySelectorAll('.btn-use-model').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.bibId;
+                const b = biblioteca.find(item => item.id === id);
+                if (b) {
+                    document.getElementById('bib-categoria').value = b.categoria;
+                    document.getElementById('bib-titulo').value = b.titulo;
+                    document.getElementById('bib-descricao').value = b.descricao || '';
+                    
+                    const grpUrl = document.getElementById('bib-group-url');
+                    const grpTexto = document.getElementById('bib-group-texto');
+                    
+                    if (b.categoria.startsWith('script')) {
+                        grpUrl.style.display = 'none';
+                        grpTexto.style.display = 'block';
+                        document.getElementById('bib-texto').value = b.conteudo_texto || '';
+                    } else {
+                        grpUrl.style.display = 'block';
+                        grpTexto.style.display = 'none';
+                        document.getElementById('bib-url').value = b.url_midia || '';
+                    }
+                    
+                    toast('Dados copiados para o formulário de cadastro. Você pode editar e salvar.', 'info');
+                    document.getElementById('bib-categoria')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+        });
+
+        // Bind script copies for leader
+        container.querySelectorAll('.btn-copy-script').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const text = decodeURIComponent(btn.dataset.scriptText);
+                
+                import('../utils.js?v=1010').then(({ modal }) => {
+                    const m = modal('✍️ Copiar Script Inteligente', `
+                        <div style="padding:10px 0">
+                            <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:14px;">Preencha os campos abaixo para autocompletar as variáveis do roteiro antes de copiá-lo para a conversa.</p>
+                            <div class="form-group" style="margin-bottom:12px">
+                                <label class="form-label" style="color:var(--text-dark)">Nome do Cliente</label>
+                                <input type="text" id="script-var-cliente-lider" class="form-input" placeholder="Ex: Maria" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
+                            </div>
+                            <button class="btn btn-primary" id="btn-do-copy-lider" style="width:100%">📋 Copiar Mensagem Personalizada</button>
+                        </div>
+                    `);
+
+                    m.el.querySelector('#btn-do-copy-lider').addEventListener('click', () => {
+                        const nomeCl = m.el.querySelector('#script-var-cliente-lider').value?.trim() || 'Amiga(o)';
+                        let parsedText = text.replace(/{{nome_cliente}}/g, nomeCl);
+                        parsedText = parsedText.replace(/{{nome_consultor}}/g, auth.current?.nome?.split(' ')[0] || 'Consultor');
+                        
+                        navigator.clipboard.writeText(parsedText);
+                        toast('Script personalizado copiado!', 'success');
+                        m.close();
+                    });
+                });
             });
         });
     } catch (e) {

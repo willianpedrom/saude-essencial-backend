@@ -688,7 +688,13 @@ export async function renderDashboard(router) {
 
     // ── Prepara Banners de Avisos da Equipe ──
     let teamBannersHtml = '';
+    let teamNotificationCardHtml = '';
     try {
+      const meData = await api('GET', '/api/equipe/me');
+      const hasTeam = meData && meData.equipe;
+      const teamRole = meData ? meData.role : null;
+      const teamName = hasTeam ? meData.equipe.nome_equipe : '';
+
       const teamAvisos = await api('GET', '/api/equipe/avisos');
       if (Array.isArray(teamAvisos) && teamAvisos.length > 0) {
         teamBannersHtml = teamAvisos.map(a => {
@@ -721,6 +727,59 @@ export async function renderDashboard(router) {
             </div>
           `;
         }).join('');
+      }
+
+      // If liderado, check delegated leads that are pending/in_progress
+      let pendingLeadsCount = 0;
+      if (hasTeam && teamRole === 'liderado') {
+        try {
+          const delegacoes = await api('GET', '/api/equipe/delegacoes');
+          if (Array.isArray(delegacoes)) {
+            pendingLeadsCount = delegacoes.filter(d => d.status_devolutiva === 'pendente' || d.status_devolutiva === 'em_andamento').length;
+          }
+        } catch (e) {
+          console.warn('Erro ao buscar delegações no dashboard:', e);
+        }
+      }
+
+      // Add a sidebar badge if there are active team notices or pending delegated leads
+      if (hasTeam && (teamAvisos.length > 0 || pendingLeadsCount > 0)) {
+        setTimeout(() => {
+          const btnEquipe = document.querySelector('[data-nav="equipe"]');
+          if (btnEquipe && !btnEquipe.querySelector('.sidebar-badge')) {
+            const badge = document.createElement('span');
+            badge.className = 'sidebar-badge';
+            badge.style.cssText = 'background: #ef4444; color: white; border-radius: 50%; width: 8px; height: 8px; display: inline-block; margin-left: auto; margin-right: 4px;';
+            btnEquipe.appendChild(badge);
+          }
+        }, 100);
+      }
+
+      // Build notification/reminder card for downlines to prompt them to check team area
+      if (hasTeam && teamRole === 'liderado' && (teamAvisos.length > 0 || pendingLeadsCount > 0)) {
+        let msgText = '';
+        if (teamAvisos.length > 0 && pendingLeadsCount > 0) {
+          msgText = `Você tem <strong>${teamAvisos.length} aviso(s)</strong> do líder e <strong>${pendingLeadsCount} cliente(s)</strong> pendente(s) de atendimento.`;
+        } else if (teamAvisos.length > 0) {
+          msgText = `Seu líder publicou <strong>${teamAvisos.length} novo(s) comunicado(s)</strong> ou reuniões.`;
+        } else {
+          msgText = `Você possui <strong>${pendingLeadsCount} cliente(s) compartilhado(s)</strong> pelo líder aguardando sua devolutiva.`;
+        }
+
+        teamNotificationCardHtml = `
+          <div class="team-alert-card" style="background: linear-gradient(135deg, #fffbeb, #fef3c7);
+                      border: 1.5px solid #f59e0b; border-radius: var(--radius-md);
+                      padding: 16px 20px; margin-bottom: 20px; display: flex; gap: 16px; align-items: center; box-shadow: var(--shadow-sm); color: #92400e;">
+            <span style="font-size: 1.8rem;">🔔</span>
+            <div style="flex: 1;">
+              <h4 style="margin: 0 0 4px; font-size: 0.95rem; font-weight: 700; color: #78350f;">Novidades da Equipe "${teamName}"</h4>
+              <p style="margin: 0; font-size: 0.84rem; color: #92400e;">${msgText} Acesse a área de equipe para verificar as atividades e materiais.</p>
+            </div>
+            <button onclick="location.hash='#/equipe'" class="btn btn-sm" style="background: #f59e0b; color: white; border: none; font-weight: 700; padding: 8px 16px; border-radius: 8px; cursor: pointer; white-space: nowrap; transition: background 0.2s;" onmouseover="this.style.background='#d97706'" onmouseout="this.style.background='#f59e0b'">
+              Ver Atividades
+            </button>
+          </div>
+        `;
       }
     } catch (e) {
       console.warn('Erro ao buscar avisos da equipe no dashboard:', e);
@@ -955,6 +1014,7 @@ export async function renderDashboard(router) {
 
     const contentHtml = `
   ${teamBannersHtml}
+  ${teamNotificationCardHtml}
   ${bannersHtml}
   ${onboardingHtml}
   
