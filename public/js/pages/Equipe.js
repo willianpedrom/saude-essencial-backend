@@ -984,7 +984,8 @@ async function loadBibliotecaLider() {
                             </button>
                         </div>
                     ` : `
-                        ${b.url_midia ? `<a href="${b.url_midia}" target="_blank" style="font-size:0.82rem; color:var(--green-600); text-decoration:underline; font-weight:600;">🔗 Acessar Link Externo</a>` : ''}
+                        ${b.categoria === 'video_treinamento' && b.url_midia ? getVideoPlayerMarkup(b.url_midia) : ''}
+                        ${b.url_midia ? `<a href="${b.url_midia}" target="_blank" style="font-size:0.82rem; color:var(--green-600); text-decoration:underline; font-weight:600; display:inline-block; margin-top:4px;">🔗 Acessar Link Externo</a>` : ''}
                     `}
                 </div>
             `;
@@ -1207,6 +1208,7 @@ async function loadBibliotecaMembro() {
                             📋 Copiar Roteiro Personalizado
                         </button>
                     ` : `
+                        ${b.categoria === 'video_treinamento' && b.url_midia ? getVideoPlayerMarkup(b.url_midia) : ''}
                         ${b.url_midia ? `<a href="${b.url_midia}" target="_blank" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px; font-weight:600; text-decoration:none; margin-top:4px;">🔗 Acessar Material</a>` : ''}
                     `}
                 </div>
@@ -1456,4 +1458,62 @@ async function loadPushHistorico() {
     } catch (e) {
         container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:15px; font-size:0.85rem;">Erro ao carregar histórico: ${e.message}</div>`;
     }
+}
+
+// ── Helpers: Video Player Parsing & Embedding ────────────────
+function getYouTubeId(url) {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function getVimeoId(url) {
+    if (!url) return null;
+    const regExp = /vimeo\.com\/(?:video\/|channels\/staffpicks\/|channels\/[\w\-]+\/|groups\/[\w\-]+\/forum\/topic\/|)?(\d+)?/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+}
+
+function isDirectVideo(url) {
+    if (!url) return false;
+    const cleanUrl = url.split('?')[0].split('#')[0].toLowerCase();
+    return cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.webm') || cleanUrl.endsWith('.ogg');
+}
+
+function getVideoPlayerMarkup(url) {
+    if (!url) return '';
+    
+    const ytId = getYouTubeId(url);
+    if (ytId) {
+        return `
+            <div class="video-container" style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:var(--radius-md); border:1px solid var(--border); background:#000; margin-bottom:10px;">
+                <iframe src="https://www.youtube.com/embed/${ytId}" style="position:absolute; top:0; left:0; width:100%; height:100%;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+        `;
+    }
+    
+    const vimeoId = getVimeoId(url);
+    if (vimeoId) {
+        return `
+            <div class="video-container" style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:var(--radius-md); border:1px solid var(--border); background:#000; margin-bottom:10px;">
+                <iframe src="https://player.vimeo.com/video/${vimeoId}" style="position:absolute; top:0; left:0; width:100%; height:100%;" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        `;
+    }
+    
+    if (isDirectVideo(url)) {
+        return `
+            <div style="margin-bottom:10px;">
+                <video src="${url}" controls style="width:100%; max-height:360px; background:#000; border-radius:var(--radius-md); border:1px solid var(--border); display:block;"></video>
+            </div>
+        `;
+    }
+    
+    // Fallback if URL is set but doesn't match standard video formats
+    return `
+        <div style="margin-bottom:10px; padding:10px; border:1px dashed var(--border); border-radius:var(--radius-sm); background:#f8fafc; font-size:0.8rem; text-align:center;">
+            📺 Link de vídeo não pôde ser incorporado diretamente.
+        </div>
+    `;
 }
