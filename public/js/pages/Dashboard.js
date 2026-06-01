@@ -201,8 +201,7 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
         'integrations': { flag: 'tem_integracoes', name: 'Integrações Pro (Pixel/GA)' },
         'prospecting': { flag: 'tem_radar', name: 'Radar de Leads' },
         'estoque': { flag: 'tem_estoque', name: 'Meu Estoque / Inventário' },
-        'testimonials': { flag: 'tem_depoimentos', name: 'Gestão de Depoimentos' },
-        'equipe': { flag: 'tem_equipe', name: 'Gestão de Equipe (Liderança)' }
+        'testimonials': { flag: 'tem_depoimentos', name: 'Gestão de Depoimentos' }
       };
       
       const req = lockedRoutes[btn.dataset.nav];
