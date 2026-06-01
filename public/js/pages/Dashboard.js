@@ -860,28 +860,35 @@ export async function renderDashboard(router) {
     if (urgentFollowups.length > 0) metaText = `Você tem <strong>${urgentFollowups.length} clientes</strong> precisando do seu contato urgente agora! 🔥`;
     else if (anamnesesPendentes.length > 0) metaText = `Você recebeu novas anamneses! Há <strong>${anamnesesPendentes.length} pendentes</strong> esperando sua revisão. 📋`;
 
-    const abandonedHtml = leads_abandonados && leads_abandonados.length > 0 ? `
-      <div class="dash-item full-width" style="margin-bottom: 20px;">
+    // ── Prepara Leads Abandonados não dispensados ──
+    const dismissedLeads = JSON.parse(localStorage.getItem('dismissed_abandoned_leads') || '[]');
+    const activeAbandonLeads = leads_abandonados.filter(l => !dismissedLeads.includes(String(l.id)));
+
+    const abandonedHtml = activeAbandonLeads && activeAbandonLeads.length > 0 ? `
+      <div id="abandoned-leads-box" class="dash-item full-width" style="margin-bottom: 20px; transition: opacity 0.3s ease, max-height 0.3s ease;">
         <div class="card" style="border: 2px solid #ef4444; background: linear-gradient(to right, #fef2f2, #ffffff); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);">
           <div class="card-header" style="padding: 16px 20px; border-bottom: 1px solid #fecaca; display:flex; justify-content:space-between; align-items:center;">
             <h3 style="font-size: 1.1rem; color: #dc2626; display:flex; align-items:center; gap:8px;">
               <span style="animation: pulse 1.5s infinite">🚨</span> Análises Incompletas (Últimas 48h)
             </h3>
-            <span style="background:#ef4444; color:white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold">${leads_abandonados.length} Abandonos</span>
+            <span style="background:#ef4444; color:white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold">${activeAbandonLeads.length} Abandonos</span>
           </div>
           <div class="card-body" style="padding:20px;">
             <p style="font-size: 0.9rem; color: #7f1d1d; margin-bottom: 16px;"><strong>Leads Quentes!</strong> Estas pessoas começaram o teste, mas pararam antes de finalizar e revelar as queixas de saúde. Não deixe esfriar:</p>
-            ${leads_abandonados.map(lead => `
-              <div style="display:flex; align-items:center; justify-content:space-between; padding: 12px; background: white; border: 1px solid #fca5a5; border-radius: 8px; margin-bottom: 10px;">
+            ${activeAbandonLeads.map(lead => `
+              <div class="abandoned-lead-item" data-lead-id="${lead.id}" style="display:flex; align-items:center; justify-content:space-between; padding: 12px; background: white; border: 1px solid #fca5a5; border-radius: 8px; margin-bottom: 10px; transition: opacity 0.3s ease, max-height 0.3s ease;">
                 <div>
                   <div style="font-weight: bold; color: #991b1b; font-size: 0.95rem;">🔥 ${lead.nome || 'Lead (Sem Nome)'}</div>
                   <div style="font-size: 0.8rem; color: #b91c1c;">Iniciou em ${new Date(lead.criado_em).toLocaleString('pt-BR')}</div>
                 </div>
-                ${lead.whatsapp_link ? `
-                  <a href="${lead.whatsapp_link}" target="_blank" class="btn btn-sm" style="background:#25D366; color:white; font-weight: bold; text-decoration:none; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 5px rgba(37,211,102,0.3);">
-                    Chamar no Zap 🟢
-                  </a>
-                ` : `<span style="font-size: 0.8rem; color: #dc2626;">Sem Zap</span>`}
+                <div style="display:flex; gap:8px; align-items:center;">
+                  ${lead.whatsapp_link ? `
+                    <a href="${lead.whatsapp_link}" target="_blank" class="btn btn-sm" style="background:#25D366; color:white; font-weight: bold; text-decoration:none; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 5px rgba(37,211,102,0.3);">
+                      Chamar no Zap 🟢
+                    </a>
+                  ` : `<span style="font-size: 0.8rem; color: #dc2626;">Sem Zap</span>`}
+                  <button class="btn-dismiss-abandon" data-lead-id="${lead.id}" style="background:#f3f4f6; border:1px solid #d1d5db; border-radius:8px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem; color:#4b5563; font-weight:bold; transition: background 0.2s, color 0.2s" onmouseover="this.style.background='#e5e7eb';this.style.color='#111827';" onmouseout="this.style.background='#f3f4f6';this.style.color='#4b5563';" title="Dispensar">×</button>
+                </div>
               </div>
             `).join('')}
           </div>
@@ -1089,6 +1096,48 @@ export async function renderDashboard(router) {
           item.style.overflow = 'hidden';
           setTimeout(() => { item.style.opacity = '0'; item.style.maxHeight = '0'; item.style.paddingBottom = '0'; item.style.marginBottom = '0'; }, 100);
           setTimeout(() => { item.remove(); }, 600);
+        }
+      });
+    });
+
+    // ── Botão "Dispensar Análise Incompleta" ──────────
+    pc?.querySelectorAll('.btn-dismiss-abandon').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = String(btn.dataset.leadId);
+        let dismissed = [];
+        try { dismissed = JSON.parse(localStorage.getItem('dismissed_abandoned_leads') || '[]'); } catch { }
+        if (!dismissed.includes(id)) dismissed.push(id);
+        localStorage.setItem('dismissed_abandoned_leads', JSON.stringify(dismissed));
+
+        // Feedback visual: fade e collapse do item
+        const item = btn.closest('.abandoned-lead-item');
+        if (item) {
+          item.style.transition = 'opacity 0.4s, max-height 0.4s, padding 0.4s, margin 0.4s';
+          item.style.overflow = 'hidden';
+          setTimeout(() => {
+            item.style.opacity = '0';
+            item.style.maxHeight = '0';
+            item.style.padding = '0';
+            item.style.margin = '0';
+          }, 100);
+          setTimeout(() => {
+            item.remove();
+            // Se não restar mais nenhum lead incompleto, removemos o card vermelho por completo
+            const remaining = pc.querySelectorAll('.abandoned-lead-item');
+            if (remaining.length === 0) {
+              const container = document.getElementById('abandoned-leads-box');
+              if (container) {
+                container.style.transition = 'opacity 0.4s, max-height 0.4s, margin 0.4s';
+                container.style.overflow = 'hidden';
+                setTimeout(() => {
+                  container.style.opacity = '0';
+                  container.style.maxHeight = '0';
+                  container.style.margin = '0';
+                }, 100);
+                setTimeout(() => container.remove(), 600);
+              }
+            }
+          }, 600);
         }
       });
     });
