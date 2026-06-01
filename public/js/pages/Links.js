@@ -1,5 +1,5 @@
 import { auth, store } from '../store.js?v=1010';
-import { renderLayout } from './Dashboard.js?v=1010';
+import { renderLayout } from './Dashboard.js?v=1012';
 import { toast, modal, getConsultantTitle, copyToClipboard } from '../utils.js?v=1010';
 
 export async function renderLinks(router) {

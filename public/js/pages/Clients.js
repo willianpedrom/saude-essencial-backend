@@ -1,5 +1,5 @@
 import { auth, store } from '../store.js?v=1010';
-import { renderLayout } from './Dashboard.js?v=1010';
+import { renderLayout } from './Dashboard.js?v=1012';
 import { formatDate, getInitials, toast, modal, openClientOffcanvas } from '../utils.js?v=1010';
 import { analyzeAnamnesis, analyzeBusinessProfile } from '../analysis.js?v=1010';
 import { PROTOCOLS } from '../protocols.js?v=1010';

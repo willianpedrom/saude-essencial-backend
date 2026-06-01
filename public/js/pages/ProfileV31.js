@@ -1,5 +1,5 @@
 import { auth, store, api, urlBase64ToUint8Array } from '../store.js?v=1010';
-import { renderLayout } from './Dashboard.js?v=1010';
+import { renderLayout } from './Dashboard.js?v=1012';
 import { toast, btnLoading, copyToClipboard, ARCHETYPE_THEMES } from '../utils.js?v=1010';
 
 

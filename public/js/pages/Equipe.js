@@ -1,5 +1,5 @@
 import { api, auth } from '../store.js?v=1010';
-import { renderLayout } from './Dashboard.js?v=1010';
+import { renderLayout } from './Dashboard.js?v=1012';
 import { toast, modal, formatDate } from '../utils.js?v=1010';
 
 export async function renderEquipe(router) {
