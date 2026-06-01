@@ -94,6 +94,36 @@ router.post('/criar', async (req, res) => {
             [newEquipe[0].id, userId]
         );
 
+        // Auto-seed de 3 roteiros/scripts padrão na biblioteca do time
+        const defaultScripts = [
+            {
+                categoria: 'script_vendas',
+                titulo: 'Abordagem Vendas: Lavanda para Sono/Ansiedade 😴',
+                descricao: 'Script modelo para abordar clientes que reclamaram de insônia ou ansiedade na anamnese.',
+                conteudo_texto: 'Olá {{nome_cliente}}, tudo bem? Aqui é a {{nome_consultor}} do Gota App. Vi que você respondeu à nossa avaliação de saúde e mencionou dificuldades para dormir ou ansiedade.\n\nSabia que o óleo essencial de Lavanda pura doTERRA possui propriedades calmantes cientificamente comprovadas que ajudam a relaxar e induzir ao sono profundo, sem efeitos colaterais?\n\nVamos agendar um papo rápido de 5 minutos amanhã para eu te ensinar como usar esse óleo de forma segura para melhorar sua noite de sono?'
+            },
+            {
+                categoria: 'script_cadastro',
+                titulo: 'Abordagem Recrutamento: Oportunidade doTERRA 💼',
+                descricao: 'Script modelo para convidar potenciais parceiros a assistirem uma apresentação de negócios.',
+                conteudo_texto: 'Olá {{nome_cliente}}, como vai? Aqui é a {{nome_consultor}}.\n\nTrabalho com a doTERRA expandindo o mercado de bem-estar natural no Brasil com um modelo profissional de alta retenção e ganhos recorrentes.\n\nVi seu perfil e achei sua energia excelente para essa área de liderança. Toparia assistir a uma chamada rápida no Zoom de 15 minutos nesta semana para eu te mostrar como funciona o nosso modelo de trabalho?'
+            },
+            {
+                categoria: 'script_vendas',
+                titulo: 'Lembrete de Classe / Evento de Óleos Essenciais 📅',
+                descricao: 'Script para lembrar convidados no dia da sua classe online de óleos.',
+                conteudo_texto: 'Olá {{nome_cliente}}! Passando para te lembrar que hoje às 20h acontecerá nosso Workshop online gratuito: Introdução às Soluções Naturais.\n\nNesta classe rápida, vou ensinar os 12 óleos básicos que servem como farmácia natural para qualquer família.\n\nSepare papel e caneta! Nos vemos às 20h neste link: [Inserir Link do Zoom]'
+            }
+        ];
+
+        for (const s of defaultScripts) {
+            await pool.query(
+                `INSERT INTO equipe_biblioteca (equipe_id, categoria, titulo, descricao, conteudo_texto)
+                 VALUES ($1, $2, $3, $4, $5)`,
+                [newEquipe[0].id, s.categoria, s.titulo, s.descricao, s.conteudo_texto]
+            );
+        }
+
         res.status(201).json(newEquipe[0]);
     } catch (err) {
         console.error(err);
@@ -742,6 +772,58 @@ router.delete('/biblioteca/:id', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erro ao remover material.' });
+    }
+});
+
+/**
+ * POST /api/equipe/push-direto
+ * Líder envia uma mensagem de Web Push imediata para toda a equipe
+ */
+router.post('/push-direto', async (req, res) => {
+    try {
+        const userId = req.consultora.id;
+        const { mensagem } = req.body;
+
+        if (!mensagem || mensagem.trim() === '') {
+            return res.status(400).json({ error: 'A mensagem do push é obrigatória.' });
+        }
+
+        // Verifica se o usuário é líder de alguma equipe
+        const { rows: equipeRows } = await pool.query(
+            'SELECT id, nome_equipe FROM equipes WHERE lider_id = $1',
+            [userId]
+        );
+
+        if (equipeRows.length === 0) {
+            return res.status(403).json({ error: 'Apenas líderes de equipe podem enviar notificações push.' });
+        }
+
+        const equipe = equipeRows[0];
+
+        // Busca todos os liderados vinculados
+        const { rows: membros } = await pool.query(
+            'SELECT id FROM consultoras WHERE equipe_id = $1 AND id != $2',
+            [equipe.id, userId]
+        );
+
+        let count = 0;
+        for (const membro of membros) {
+            try {
+                await sendPushNotification(membro.id, {
+                    title: `Mensagem da Liderança (${equipe.nome_equipe}) 🤝`,
+                    body: mensagem.trim(),
+                    data: { url: '/equipe' }
+                });
+                count++;
+            } catch (err) {
+                console.error(`Erro ao enviar push para membro ${membro.id}:`, err);
+            }
+        }
+
+        res.json({ success: true, membros_notificados: count });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao enviar push para a equipe.' });
     }
 });
 
