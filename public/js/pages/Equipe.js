@@ -293,6 +293,48 @@ async function renderLeaderDashboard(router, equipe) {
                 font-size: 0.76rem;
                 font-weight: 700;
             }
+
+            .aviso-card-lider {
+                padding: 18px;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-md);
+                background: white;
+                position: relative;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            .aviso-card-lider:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.03);
+            }
+            .aviso-card-lider.comunicado {
+                border-top: 4px solid var(--green-600);
+            }
+            .aviso-card-lider.reuniao {
+                border-top: 4px solid var(--gold-500);
+            }
+            
+            .push-card-lider {
+                padding: 16px;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-md);
+                background: white;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+                display: flex;
+                flex-direction: column;
+            }
+            .push-card-lider:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            }
+
+            .creation-tab-btn:hover {
+                background: rgba(0,0,0,0.02) !important;
+            }
+            .creation-tab-btn.active {
+                background: white !important;
+            }
         </style>
 
         <div class="team-header">
@@ -347,72 +389,103 @@ async function renderLeaderDashboard(router, equipe) {
 
         <!-- Tab 2: notices / murals -->
         <div id="tab-mural" class="tab-content">
-            <div style="display:grid; grid-template-columns:350px 1fr; gap:20px; align-items:start;">
-                <div style="display:flex; flex-direction:column; gap:20px;">
-                    <!-- Form notice -->
-                    <div class="card" style="padding:24px">
-                        <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:16px;">📢 Novo Aviso no Mural</h3>
-                        <div class="form-group" style="margin-bottom:12px">
-                            <label class="form-label" style="color:var(--text-dark)">Título do Comunicado</label>
-                            <input type="text" id="aviso-titulo" class="form-input" placeholder="Ex: Treinamento Especial HOJE!" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
+            <div style="display:grid; grid-template-columns:400px 1fr; gap:24px; align-items:start;">
+                <!-- Left Column: Creation Control Panel -->
+                <div style="display:flex; flex-direction:column; gap:24px;">
+                    <div class="card" style="padding:0; overflow:hidden; border:1px solid var(--border); box-shadow:0 10px 15px -3px rgba(0,0,0,0.05);">
+                        <!-- Segmented Switcher Header -->
+                        <div style="display:flex; background:#f8fafc; border-bottom:1px solid var(--border);">
+                            <button id="btn-switch-mural-tab" class="creation-tab-btn active" style="flex:1; padding:14px; border:none; background:transparent; font-weight:700; font-size:0.88rem; color:var(--green-950); border-bottom:3px solid var(--green-600); cursor:pointer; transition:all 0.2s;">
+                                📢 Aviso no Mural
+                            </button>
+                            <button id="btn-switch-push-tab" class="creation-tab-btn" style="flex:1; padding:14px; border:none; background:transparent; font-weight:600; font-size:0.88rem; color:var(--text-muted); border-bottom:3px solid transparent; cursor:pointer; transition:all 0.2s;">
+                                📲 Disparo Push
+                            </button>
                         </div>
-                        <div class="form-group" style="margin-bottom:12px">
-                            <label class="form-label" style="color:var(--text-dark)">Mensagem detalhada</label>
-                            <textarea id="aviso-mensagem" class="form-input" rows="4" placeholder="Escreva o aviso oficial para a rede..." style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; font-family:inherit;"></textarea>
-                        </div>
-                        <div class="form-group" style="margin-bottom:12px">
-                            <label class="form-label" style="color:var(--text-dark)">Data da Reunião (Opcional)</label>
-                            <input type="datetime-local" id="aviso-data-reuniao" class="form-input" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
-                        </div>
-                        <div class="form-group" style="margin-bottom:16px">
-                            <label class="form-label" style="color:var(--text-dark)">Link da Reunião Zoom/Meet (Opcional)</label>
-                            <input type="url" id="aviso-link-reuniao" class="form-input" placeholder="Ex: https://zoom.us/j/..." style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
-                        </div>
-                        <div class="form-group" style="margin-bottom:16px; display:flex; align-items:center; gap:8px;">
-                            <input type="checkbox" id="aviso-disparar-push" style="width:18px; height:18px; cursor:pointer;" checked />
-                            <label for="aviso-disparar-push" style="font-size:0.85rem; color:var(--text-dark); font-weight:600; cursor:pointer;">Disparar Web Push Urgente 📲</label>
-                        </div>
-                        <button id="btn-save-aviso" class="btn btn-primary" style="width:100%">✓ Publicar no Mural</button>
-                    </div>
 
-                    <!-- Central de Push -->
-                    <div class="card" style="padding:24px">
-                        <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:16px;">📲 Central de Push da Equipe</h3>
-                        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:16px;">Envie mensagens instantâneas para as telas dos seus consultores.</p>
-                        
-                        <div class="form-group" style="margin-bottom:12px">
-                            <label class="form-label" style="color:var(--text-dark)">Mensagens Pré-programadas</label>
-                            <select id="push-template" class="form-input" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;">
-                                <option value="">-- Escrever Mensagem Livre --</option>
-                                <option value="1">🎓 Lembrete de Treinamento Geral</option>
-                                <option value="2">🔥 Promoção BOGO Iniciada</option>
-                                <option value="3">🎯 Foco nas Metas do Mês</option>
-                                <option value="4">📚 Novo Roteiro na Biblioteca</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group" style="margin-bottom:16px">
-                            <label class="form-label" style="color:var(--text-dark)">Mensagem do Push</label>
-                            <textarea id="push-mensagem" class="form-input" rows="3" placeholder="Digite a mensagem específica..." style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; font-family:inherit;"></textarea>
-                        </div>
-                        
-                        <button id="btn-send-push-direto" class="btn btn-primary" style="width:100%; background:var(--green-600); color:white;">⚡ Disparar Push da Equipe</button>
-                    </div>
+                        <!-- Panel 1: Add Mural Notice -->
+                        <div id="panel-creation-mural" style="padding:24px; display:block;">
+                            <h3 style="font-size:1.1rem; font-weight:700; color:var(--green-950); margin:0 0 16px;">📢 Novo Aviso / Reunião</h3>
+                            
+                            <div class="form-group" style="margin-bottom:12px">
+                                <label class="form-label" style="color:var(--text-dark); font-size:0.78rem; font-weight:700;">Título do Comunicado</label>
+                                <input type="text" id="aviso-titulo" class="form-input" placeholder="Ex: Treinamento Especial HOJE!" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; height:36px; padding:6px 12px; font-size:0.85rem;" />
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom:12px">
+                                <label class="form-label" style="color:var(--text-dark); font-size:0.78rem; font-weight:700;">Mensagem detalhada</label>
+                                <textarea id="aviso-mensagem" class="form-input" rows="4" placeholder="Escreva o aviso oficial para a rede..." style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; font-family:inherit; font-size:0.85rem; padding:8px 12px;"></textarea>
+                            </div>
+                            
+                            <div style="background:#f1f5f9; border-radius:8px; padding:12px; margin-bottom:14px; border:1px dashed #cbd5e1;">
+                                <span style="font-size:0.72rem; font-weight:700; color:var(--green-800); text-transform:uppercase; display:block; margin-bottom:8px;">📅 Agendar como Reunião (Opcional)</span>
+                                
+                                <div class="form-group" style="margin-bottom:10px">
+                                    <label class="form-label" style="color:var(--text-dark); font-size:0.72rem; font-weight:600;">Data e Hora</label>
+                                    <input type="datetime-local" id="aviso-data-reuniao" class="form-input" style="background:white; border:1px solid #cbd5e1; color:#0f172a; height:34px; font-size:0.8rem; padding:4px 8px;" />
+                                </div>
+                                <div class="form-group" style="margin-bottom:4px">
+                                    <label class="form-label" style="color:var(--text-dark); font-size:0.72rem; font-weight:600;">Link de Acesso (Zoom, Meet, Youtube)</label>
+                                    <input type="url" id="aviso-link-reuniao" class="form-input" placeholder="https://zoom.us/j/..." style="background:white; border:1px solid #cbd5e1; color:#0f172a; height:34px; font-size:0.8rem; padding:4px 8px;" />
+                                </div>
+                            </div>
 
-                    <!-- Histórico de Push -->
-                    <div class="card" style="padding:24px">
-                        <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:12px;">📊 Histórico de Envios</h3>
-                        <div id="list-push-historico" style="display:flex; flex-direction:column; gap:12px; max-height:300px; overflow-y:auto;">
-                            <div style="text-align:center; color:var(--text-muted); padding:10px; font-size:0.85rem;">Carregando histórico...</div>
+                            <div class="form-group" style="margin-bottom:16px; display:flex; align-items:center; gap:8px; background:#f0fdf4; padding:10px; border-radius:6px; border:1px solid #bbf7d0;">
+                                <input type="checkbox" id="aviso-disparar-push" style="width:16px; height:16px; cursor:pointer;" checked />
+                                <label for="aviso-disparar-push" style="font-size:0.82rem; color:var(--green-950); font-weight:700; cursor:pointer; user-select:none;">Notificar equipe via Push 📲</label>
+                            </div>
+                            
+                            <button id="btn-save-aviso" class="btn btn-primary" style="width:100%; font-weight:700; letter-spacing:0.3px; height:38px;">✓ Publicar no Mural</button>
+                        </div>
+
+                        <!-- Panel 2: Central de Push -->
+                        <div id="panel-creation-push" style="padding:24px; display:none;">
+                            <h3 style="font-size:1.1rem; font-weight:700; color:var(--green-950); margin:0 0 12px;">📲 Notificação Instantânea</h3>
+                            <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 16px; line-height:1.4;">Envie alertas curtos direto para os celulares e computadores de todos da equipe.</p>
+                            
+                            <div class="form-group" style="margin-bottom:12px">
+                                <label class="form-label" style="color:var(--text-dark); font-size:0.78rem; font-weight:700;">Modelos Prontos doTERRA</label>
+                                <select id="push-template" class="form-input" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; height:36px; font-size:0.82rem; padding:4px 10px;">
+                                    <option value="">✍️ Escrever Mensagem Personalizada...</option>
+                                    <option value="1">🎓 Lembrete de Treinamento Geral</option>
+                                    <option value="2">🔥 Promoção BOGO Iniciada</option>
+                                    <option value="3">🎯 Foco nas Metas do Mês</option>
+                                    <option value="4">📚 Novo Roteiro na Biblioteca</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom:16px">
+                                <label class="form-label" style="color:var(--text-dark); font-size:0.78rem; font-weight:700;">Texto do Alerta</label>
+                                <textarea id="push-mensagem" class="form-input" rows="4" placeholder="Escreva a mensagem curta..." style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; font-family:inherit; font-size:0.85rem; padding:8px 12px;"></textarea>
+                            </div>
+                            
+                            <button id="btn-send-push-direto" class="btn btn-primary" style="width:100%; background:var(--green-600); color:white; font-weight:700; letter-spacing:0.3px; height:38px;">⚡ Disparar Push da Equipe</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- notice List -->
-                <div class="card" style="padding:24px">
-                    <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:16px;">Mural de Avisos Ativos</h3>
-                    <div id="list-avisos-lider" style="display:flex; flex-direction:column; gap:16px">
-                        <div style="text-align:center; color:var(--text-muted); padding:20px;">Carregando mural...</div>
+                <!-- Right Column: notices mural & Push History -->
+                <div style="display:flex; flex-direction:column; gap:24px;">
+                    <!-- Mural de Avisos Ativos -->
+                    <div class="card" style="padding:24px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.05);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1.5px solid var(--border); padding-bottom:12px;">
+                            <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin:0;">Mural de Avisos Ativos</h3>
+                            <span style="background:var(--green-100); color:var(--green-700); font-weight:700; font-size:0.72rem; padding:3px 8px; border-radius:12px;" id="lbl-total-avisos">0 ativo(s)</span>
+                        </div>
+                        <div id="list-avisos-lider" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+                            <div style="text-align:center; color:var(--text-muted); padding:20px; grid-column: 1 / -1;">Carregando mural...</div>
+                        </div>
+                    </div>
+
+                    <!-- Histórico de Envios de Push -->
+                    <div class="card" style="padding:24px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.05);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1.5px solid var(--border); padding-bottom:12px;">
+                            <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin:0;">📊 Histórico de Alertas Push</h3>
+                            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">Taxa de Leitura em tempo real</span>
+                        </div>
+                        <div id="list-push-historico" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px; max-height:450px; overflow-y:auto; padding-right:4px;">
+                            <div style="text-align:center; color:var(--text-muted); padding:20px; grid-column: 1 / -1;">Carregando histórico...</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -505,6 +578,44 @@ async function renderLeaderDashboard(router, equipe) {
     document.getElementById('btn-edit-team-name')?.addEventListener('click', () => {
         openEditarNomeEquipeModal(equipe.nome_equipe);
     });
+
+    // ── Creation Panel Switcher (Mural vs Push) ──────────────
+    const btnSwitchMural = document.getElementById('btn-switch-mural-tab');
+    const btnSwitchPush = document.getElementById('btn-switch-push-tab');
+    const panelMural = document.getElementById('panel-creation-mural');
+    const panelPush = document.getElementById('panel-creation-push');
+
+    if (btnSwitchMural && btnSwitchPush && panelMural && panelPush) {
+        btnSwitchMural.addEventListener('click', () => {
+            btnSwitchMural.classList.add('active');
+            btnSwitchMural.style.color = 'var(--green-950)';
+            btnSwitchMural.style.fontWeight = '700';
+            btnSwitchMural.style.borderBottomColor = 'var(--green-600)';
+
+            btnSwitchPush.classList.remove('active');
+            btnSwitchPush.style.color = 'var(--text-muted)';
+            btnSwitchPush.style.fontWeight = '600';
+            btnSwitchPush.style.borderBottomColor = 'transparent';
+
+            panelMural.style.display = 'block';
+            panelPush.style.display = 'none';
+        });
+
+        btnSwitchPush.addEventListener('click', () => {
+            btnSwitchPush.classList.add('active');
+            btnSwitchPush.style.color = 'var(--green-950)';
+            btnSwitchPush.style.fontWeight = '700';
+            btnSwitchPush.style.borderBottomColor = 'var(--green-600)';
+
+            btnSwitchMural.classList.remove('active');
+            btnSwitchMural.style.color = 'var(--text-muted)';
+            btnSwitchMural.style.fontWeight = '600';
+            btnSwitchMural.style.borderBottomColor = 'transparent';
+
+            panelMural.style.display = 'none';
+            panelPush.style.display = 'block';
+        });
+    }
 
     // ── Biblioteca Form Change Categoria ─────────────────────
     document.getElementById('bib-categoria')?.addEventListener('change', (e) => {
@@ -908,8 +1019,15 @@ async function loadAvisosLider() {
 
     try {
         const avisos = await api('GET', '/api/equipe/avisos');
+        
+        // Update total avisos badge
+        const lblTotal = document.getElementById('lbl-total-avisos');
+        if (lblTotal) {
+            lblTotal.textContent = `${avisos.length} ativo(s)`;
+        }
+
         if (avisos.length === 0) {
-            container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:20px;">Nenhum aviso publicado no mural.</div>`;
+            container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:20px; grid-column: 1 / -1;">Nenhum aviso publicado no mural.</div>`;
             return;
         }
 
@@ -918,16 +1036,18 @@ async function loadAvisosLider() {
             const dateStr = isMeeting ? new Date(a.data_reuniao).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
 
             return `
-                <div id="leader-aviso-${a.id}" style="padding:14px; border:1px solid var(--border); border-radius:var(--radius-md); background:#f8fafc; position:relative;">
-                    <button class="btn-delete-aviso" data-aviso-id="${a.id}" style="position:absolute; top:10px; right:12px; background:transparent; border:none; color:#ef4444; cursor:pointer; font-weight:bold; font-size:1.15rem;" title="Remover Aviso">×</button>
-                    <span style="font-size:0.7rem; text-transform:uppercase; font-weight:700; color:var(--green-600);">${isMeeting ? '📅 Reunião Agendada' : '📢 Comunicado'}</span>
-                    <h4 style="margin:4px 0; font-size:0.95rem; font-weight:700; color:var(--green-950);">${a.titulo}</h4>
-                    <p style="font-size:0.82rem; color:var(--text-muted); white-space:pre-wrap; margin-bottom:8px;">${a.mensagem}</p>
+                <div id="leader-aviso-${a.id}" class="aviso-card-lider ${isMeeting ? 'reuniao' : 'comunicado'}">
+                    <button class="btn-delete-aviso" data-aviso-id="${a.id}" style="position:absolute; top:10px; right:12px; background:transparent; border:none; color:#ef4444; cursor:pointer; font-weight:bold; font-size:1.3rem; padding:0 4px; line-height:1;" title="Remover Aviso">×</button>
+                    <span style="font-size:0.68rem; text-transform:uppercase; font-weight:800; color:${isMeeting ? 'var(--gold-600)' : 'var(--green-600)'}; letter-spacing:0.5px; display:block; margin-bottom:4px;">
+                        ${isMeeting ? '📅 Reunião Agendada' : '📢 Comunicado Oficial'}
+                    </span>
+                    <h4 style="margin:0 0 6px; font-size:0.98rem; font-weight:700; color:var(--green-950); padding-right:20px;">${a.titulo}</h4>
+                    <p style="font-size:0.83rem; color:var(--text-dark); white-space:pre-wrap; margin-bottom:12px; line-height:1.4;">${a.mensagem}</p>
                     ${isMeeting ? `
-                        <div style="font-size:0.78rem; display:flex; gap:8px; align-items:center; flex-wrap:wrap; color:var(--text-dark);">
-                            <span>📅 <strong>${dateStr}</strong></span>
-                            ${a.link_reuniao ? `<a href="${a.link_reuniao}" target="_blank" style="color:var(--green-600); text-decoration:underline;">Link da Sala</a>` : ''}
-                            <button class="btn-view-confirmados" data-aviso-id="${a.id}" style="background:transparent; border:none; color:var(--green-700); cursor:pointer; font-weight:700; text-decoration:underline; font-size:0.78rem; padding:0;">(Ver Confirmados)</button>
+                        <div style="font-size:0.78rem; display:flex; gap:8px; align-items:center; flex-wrap:wrap; border-top:1px solid #f1f5f9; padding-top:10px; margin-top:8px;">
+                            <span style="display:inline-flex; align-items:center; gap:4px; color:#475569; font-weight:600;">📅 ${dateStr}</span>
+                            ${a.link_reuniao ? `<a href="${a.link_reuniao}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.74rem; font-weight:600; padding:3px 8px; border-radius:4px; text-decoration:none; display:inline-flex; align-items:center; gap:3px;">🔗 Entrar</a>` : ''}
+                            <button class="btn-view-confirmados btn btn-secondary btn-sm" data-aviso-id="${a.id}" style="font-size:0.74rem; font-weight:600; padding:3px 8px; border-radius:4px; color:var(--green-700); background:#f0fdf4; border:1px solid #bbf7d0;">👥 Confirmados</button>
                         </div>
                     ` : ''}
                 </div>
@@ -956,10 +1076,32 @@ async function loadAvisosLider() {
                 try {
                     const confirmados = await api('GET', `/api/equipe/avisos/${id}/confirmacoes`);
                     if (confirmados.length === 0) {
-                        return alert('Nenhum consultor confirmou presença nesta reunião ainda.');
+                        return toast('Nenhum consultor confirmou presença nesta reunião ainda.', 'info');
                     }
-                    const listStr = confirmados.map(c => `• ${c.nome} (${new Date(c.confirmado_em).toLocaleDateString('pt-BR')})`).join('\n');
-                    alert(`Membros que Confirmaram Presença:\n\n${listStr}`);
+                    
+                    const m = modal('📅 Presenças Confirmadas', `
+                        <div style="padding:10px 0; max-height:400px; overflow-y:auto;">
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">Lista de consultores que confirmaram presença nesta reunião:</p>
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                ${confirmados.map(c => {
+                                    const init = (c.nome || 'C').charAt(0).toUpperCase();
+                                    const dateStr = new Date(c.confirmado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                                    return `
+                                        <div style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+                                            <div style="width:30px; height:30px; border-radius:50%; background:var(--green-100); color:var(--green-700); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem;">
+                                                ${init}
+                                            </div>
+                                            <div style="flex:1">
+                                                <span style="font-size:0.88rem; font-weight:600; color:var(--text-dark); display:block;">${c.nome}</span>
+                                                <span style="font-size:0.72rem; color:var(--text-muted);">Confirmado em: ${dateStr}</span>
+                                            </div>
+                                            <span style="font-size:1.1rem;">✅</span>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `);
                 } catch (e) {
                     toast(e.message || 'Erro ao listar confirmados.', 'danger');
                 }
@@ -967,7 +1109,7 @@ async function loadAvisosLider() {
         });
 
     } catch (e) {
-        container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar mural: ${e.message}</div>`;
+        container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px; grid-column: 1 / -1;">Erro ao carregar mural: ${e.message}</div>`;
     }
 }
 
@@ -1623,7 +1765,7 @@ async function loadPushHistorico() {
     try {
         const historico = await api('GET', '/api/equipe/push-historico');
         if (!historico || historico.length === 0) {
-            container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:15px; font-size:0.85rem;">Nenhum push enviado recentemente.</div>`;
+            container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:15px; font-size:0.85rem; grid-column: 1 / -1;">Nenhum push enviado recentemente.</div>`;
             return;
         }
 
@@ -1639,20 +1781,22 @@ async function loadPushHistorico() {
             const percentage = totalEnviados > 0 ? Math.round((cliquesQtd / totalEnviados) * 100) : 0;
 
             return `
-                <div style="padding:14px; border:1px solid var(--border); border-radius:var(--radius-md); background:#f8fafc; display:flex; flex-direction:column; gap:8px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
-                        <span style="font-size:0.75rem; font-weight:700; color:var(--green-600);">${dateStr}</span>
-                        <span style="font-size:0.75rem; font-weight:700; color:var(--text-dark);">${cliquesQtd} / ${totalEnviados} lido(s) (${percentage}%)</span>
+                <div class="push-card-lider">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; border-bottom:1px solid #f1f5f9; padding-bottom:6px; margin-bottom:4px;">
+                        <span style="font-size:0.75rem; font-weight:700; color:var(--green-600);">📅 ${dateStr}</span>
+                        <span style="font-size:0.74rem; font-weight:800; background:#f0fdf4; color:var(--green-700); padding:2px 8px; border-radius:10px; border:1px solid #bbf7d0;">
+                            👥 ${cliquesQtd} de ${totalEnviados} lido(s) (${percentage}%)
+                        </span>
                     </div>
-                    <p style="font-size:0.82rem; color:var(--text-dark); white-space:pre-wrap; margin:0; line-height:1.4;">${item.mensagem}</p>
-                    <div style="width:100%; background:#e2e8f0; height:6px; border-radius:3px; overflow:hidden;">
-                        <div style="width:${percentage}%; background:linear-gradient(90deg, var(--green-600), var(--green-800)); height:100%; transition: width 0.3s ease;"></div>
+                    <p style="font-size:0.82rem; color:var(--text-dark); white-space:pre-wrap; margin:6px 0 10px; line-height:1.45;">${item.mensagem}</p>
+                    <div style="width:100%; background:#f1f5f9; height:8px; border-radius:4px; overflow:hidden; border:1px solid #e2e8f0; margin-top:auto;">
+                        <div style="width:${percentage}%; background:linear-gradient(90deg, var(--green-600), var(--green-800)); height:100%; border-radius:4px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                     </div>
                 </div>
             `;
         }).join('');
     } catch (e) {
-        container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:15px; font-size:0.85rem;">Erro ao carregar histórico: ${e.message}</div>`;
+        container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:15px; font-size:0.85rem; grid-column: 1 / -1;">Erro ao carregar histórico: ${e.message}</div>`;
     }
 }
 
