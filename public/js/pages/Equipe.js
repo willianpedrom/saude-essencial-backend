@@ -297,7 +297,10 @@ async function renderLeaderDashboard(router, equipe) {
 
         <div class="team-header">
             <div class="th-info">
-                <h2>Equipe: ${equipe.nome_equipe}</h2>
+                <h2 style="display:inline-flex; align-items:center; gap:8px;">
+                    Equipe: <span id="team-name-display">${equipe.nome_equipe}</span>
+                    <button class="btn-edit-team-name" id="btn-edit-team-name" style="background:transparent; border:none; cursor:pointer; font-size:1.15rem; padding:4px 6px; line-height:1; display:inline-flex; align-items:center; color:rgba(255,255,255,0.7); transition:color 0.2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.7)'" title="Editar Nome da Equipe">✏️</button>
+                </h2>
                 <p>Gerencie seus consultores liderados, compartilhe leads e publique comunicados.</p>
             </div>
             <div class="th-code">
@@ -496,6 +499,11 @@ async function renderLeaderDashboard(router, equipe) {
     document.getElementById('btn-copy-convite')?.addEventListener('click', () => {
         navigator.clipboard.writeText(equipe.codigo_convite);
         toast('Código copiado para a área de transferência!', 'success');
+    });
+
+    // ── Edit Team Name ──────────────────────────────────────
+    document.getElementById('btn-edit-team-name')?.addEventListener('click', () => {
+        openEditarNomeEquipeModal(equipe.nome_equipe);
     });
 
     // ── Biblioteca Form Change Categoria ─────────────────────
@@ -1872,3 +1880,44 @@ function openSmartCopyModal(text) {
         });
     });
 }
+
+function openEditarNomeEquipeModal(currentName) {
+    const m = modal('✏️ Editar Nome da Equipe', `
+        <div style="padding:10px 0">
+            <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:14px;">Digite o novo nome para a sua equipe no campo abaixo.</p>
+            <div class="form-group" style="margin-bottom:16px">
+                <label class="form-label" style="color:var(--text-dark)">Nome da Equipe</label>
+                <input type="text" id="edit-team-name-input" class="form-input" value="${currentName}" placeholder="Ex: Elite doTERRA" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
+            </div>
+            <button class="btn btn-primary" id="btn-submit-edit-team-name" style="width:100%">Salvar Nome</button>
+        </div>
+    `);
+
+    m.el.querySelector('#btn-submit-edit-team-name').addEventListener('click', async () => {
+        const name = m.el.querySelector('#edit-team-name-input').value?.trim();
+        if (!name) {
+            return toast('O nome da equipe não pode ser vazio.', 'danger');
+        }
+
+        try {
+            const btn = m.el.querySelector('#btn-submit-edit-team-name');
+            btn.disabled = true;
+            btn.textContent = 'Salvando...';
+
+            await api('PUT', '/api/equipe/nome', { nome_equipe: name });
+            toast('Nome da equipe atualizado com sucesso!', 'success');
+            m.close();
+            
+            // Reload page view
+            const data = await api('GET', '/api/equipe/me');
+            if (data.equipe) {
+                renderLiderView(data.equipe);
+            }
+        } catch (err) {
+            m.el.querySelector('#btn-submit-edit-team-name').disabled = false;
+            m.el.querySelector('#btn-submit-edit-team-name').textContent = 'Salvar Nome';
+            toast(err.message || 'Erro ao atualizar nome da equipe.', 'danger');
+        }
+    });
+}
+

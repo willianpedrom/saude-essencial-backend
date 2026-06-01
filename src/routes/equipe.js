@@ -158,6 +158,47 @@ router.post('/criar', async (req, res) => {
 });
 
 /**
+ * PUT /api/equipe/nome
+ * Atualiza o nome da equipe do líder logado
+ */
+router.put('/nome', async (req, res) => {
+    try {
+        const userId = req.consultora.id;
+        const { nome_equipe } = req.body;
+
+        if (!nome_equipe || nome_equipe.trim() === '') {
+            return res.status(400).json({ error: 'O nome da equipe é obrigatório.' });
+        }
+
+        // 1. Verifica se quem logou é líder de alguma equipe
+        const { rows: equipeRows } = await pool.query(
+            'SELECT id FROM equipes WHERE lider_id = $1',
+            [userId]
+        );
+
+        if (equipeRows.length === 0) {
+            return res.status(403).json({ error: 'Apenas líderes podem editar o nome da equipe.' });
+        }
+
+        const equipeId = equipeRows[0].id;
+
+        // 2. Atualiza o nome da equipe
+        const { rows: updated } = await pool.query(
+            `UPDATE equipes 
+             SET nome_equipe = $1
+             WHERE id = $2
+             RETURNING *`,
+            [nome_equipe.trim(), equipeId]
+        );
+
+        res.json({ success: true, equipe: updated[0] });
+    } catch (err) {
+        console.error('[UpdateTeamName] Error:', err.message);
+        res.status(500).json({ error: 'Erro ao atualizar o nome da equipe.' });
+    }
+});
+
+/**
  * POST /api/equipe/entrar
  * Liderado entra em uma equipe informando o código de convite
  */
