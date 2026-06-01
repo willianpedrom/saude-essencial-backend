@@ -80,7 +80,7 @@ const router = new Router({
         renderLogin(router);
     },
     '/dashboard': guard(async (params) => {
-        const { renderDashboard } = await import('./pages/Dashboard.js?v=1010');
+        const { renderDashboard } = await import('./pages/Dashboard.js?v=1011');
         renderDashboard(router, params);
     }),
     '/clients': guard(async (params) => {

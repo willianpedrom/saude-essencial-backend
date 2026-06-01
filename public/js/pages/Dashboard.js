@@ -27,6 +27,20 @@ window.dismissBanner = async (id) => {
   }
 };
 
+window.dismissTeamAviso = async (id) => {
+  const el = document.getElementById('team-aviso-' + id);
+  if (el) {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => el.style.display = 'none', 300);
+  }
+  const dismissed = JSON.parse(localStorage.getItem('dismissed_team_avisos') || '[]');
+  if (!dismissed.includes(id)) {
+    dismissed.push(id);
+    localStorage.setItem('dismissed_team_avisos', JSON.stringify(dismissed));
+  }
+};
+
 window.confirmarPresencaReuniao = async (id) => {
   try {
     await api('POST', `/api/equipe/avisos/${id}/confirmar`);
@@ -37,6 +51,20 @@ window.confirmarPresencaReuniao = async (id) => {
       span.style.cssText = 'font-size:0.82rem; color:var(--green-200); font-weight:600;';
       span.textContent = '✓ Presença Confirmada!';
       btn.replaceWith(span);
+    }
+    
+    // Dynamically append the dismiss button to the banner card immediately
+    const banner = document.getElementById('team-aviso-' + id);
+    if (banner && !banner.querySelector('.btn-close-team-aviso')) {
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'btn-close-team-aviso';
+      closeBtn.onclick = () => window.dismissTeamAviso(id);
+      closeBtn.style.cssText = 'position:absolute; top:10px; right:12px; background:transparent; border:none; font-size:1.3rem; color:rgba(255,255,255,0.7); cursor:pointer; padding:0 4px; line-height:1; transition:color 0.2s';
+      closeBtn.innerHTML = '×';
+      closeBtn.title = 'Fechar';
+      closeBtn.onmouseover = () => closeBtn.style.color = '#fff';
+      closeBtn.onmouseout = () => closeBtn.style.color = 'rgba(255,255,255,0.7)';
+      banner.appendChild(closeBtn);
     }
   } catch (e) {
     toast(e.message || 'Erro ao confirmar presença.', 'danger');
@@ -696,15 +724,21 @@ export async function renderDashboard(router) {
       const teamName = hasTeam ? meData.equipe.nome_equipe : '';
 
       const teamAvisos = await api('GET', '/api/equipe/avisos');
-      if (Array.isArray(teamAvisos) && teamAvisos.length > 0) {
-        teamBannersHtml = teamAvisos.map(a => {
+      const dismissedTeamAvisos = JSON.parse(localStorage.getItem('dismissed_team_avisos') || '[]');
+      const teamAvisosToShow = Array.isArray(teamAvisos) ? teamAvisos.filter(a => !dismissedTeamAvisos.includes(a.id)) : [];
+
+      if (teamAvisosToShow.length > 0) {
+        teamBannersHtml = teamAvisosToShow.map(a => {
           const isMeeting = !!a.data_reuniao;
           const dateStr = isMeeting ? new Date(a.data_reuniao).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
           
           return `
-            <div id="team-aviso-${a.id}" style="background: linear-gradient(135deg, var(--green-900), var(--green-700));
+            <div id="team-aviso-${a.id}" style="position:relative; background: linear-gradient(135deg, var(--green-900), var(--green-700));
                         border: 1px solid var(--border-gold);
-                        padding: 16px 20px; margin-bottom: 20px; border-radius: var(--radius-md); display:flex; gap:16px; align-items:flex-start; box-shadow: var(--shadow-sm); color: white;">
+                        padding: 16px 20px; margin-bottom: 20px; border-radius: var(--radius-md); display:flex; gap:16px; align-items:flex-start; box-shadow: var(--shadow-sm); color: white; transition: opacity 0.3s ease;">
+              ${(!isMeeting || a.confirmado) ? `
+                <button onclick="window.dismissTeamAviso('${a.id}')" class="btn-close-team-aviso" style="position:absolute; top:10px; right:12px; background:transparent; border:none; font-size:1.3rem; color:rgba(255,255,255,0.7); cursor:pointer; padding:0 4px; line-height:1; transition:color 0.2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.7)'" title="Fechar">×</button>
+              ` : ''}
               <span style="font-size:1.8rem">${isMeeting ? '📅' : '📢'}</span>
               <div style="flex:1">
                 <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; color:var(--gold-300); font-weight:700;">Aviso da Equipe ${isMeeting ? '• Reunião' : ''}</span>
@@ -743,7 +777,7 @@ export async function renderDashboard(router) {
       }
 
       // Add a sidebar badge if there are active team notices or pending delegated leads
-      if (hasTeam && (teamAvisos.length > 0 || pendingLeadsCount > 0)) {
+      if (hasTeam && (teamAvisosToShow.length > 0 || pendingLeadsCount > 0)) {
         setTimeout(() => {
           const btnEquipe = document.querySelector('[data-nav="equipe"]');
           if (btnEquipe && !btnEquipe.querySelector('.sidebar-badge')) {
@@ -756,12 +790,12 @@ export async function renderDashboard(router) {
       }
 
       // Build notification/reminder card for downlines to prompt them to check team area
-      if (hasTeam && teamRole === 'liderado' && (teamAvisos.length > 0 || pendingLeadsCount > 0)) {
+      if (hasTeam && teamRole === 'liderado' && (teamAvisosToShow.length > 0 || pendingLeadsCount > 0)) {
         let msgText = '';
-        if (teamAvisos.length > 0 && pendingLeadsCount > 0) {
-          msgText = `Você tem <strong>${teamAvisos.length} aviso(s)</strong> do líder e <strong>${pendingLeadsCount} cliente(s)</strong> pendente(s) de atendimento.`;
-        } else if (teamAvisos.length > 0) {
-          msgText = `Seu líder publicou <strong>${teamAvisos.length} novo(s) comunicado(s)</strong> ou reuniões.`;
+        if (teamAvisosToShow.length > 0 && pendingLeadsCount > 0) {
+          msgText = `Você tem <strong>${teamAvisosToShow.length} aviso(s)</strong> do líder e <strong>${pendingLeadsCount} cliente(s)</strong> pendente(s) de atendimento.`;
+        } else if (teamAvisosToShow.length > 0) {
+          msgText = `Seu líder publicou <strong>${teamAvisosToShow.length} novo(s) comunicado(s)</strong> ou reuniões.`;
         } else {
           msgText = `Você possui <strong>${pendingLeadsCount} cliente(s) compartilhado(s)</strong> pelo líder aguardando sua devolutiva.`;
         }
