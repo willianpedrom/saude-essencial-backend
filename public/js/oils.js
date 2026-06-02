@@ -180,6 +180,204 @@ export const OILS_DATABASE = {
     'Umidificador Dawn': { nameEn: 'Dawn Aroma Humidifier', cat: 'accessory', fn: 'Umidificador de alta capacidade', uses: 'Umidificar e aromatizar ambientes amplos, uso noturno', topical: 'Não aplicável', aromatic: 'Umidificador' , sizes: [{"size":"Unidade / Kit","regular":797,"member":598,"pv":0}] },
     'Caixa de Madeira': { nameEn: 'Wooden Box', cat: 'accessory', fn: 'Organizadora com 25 compartimentos', uses: 'Armazenamento seguro e estético para os óleos', topical: 'Não aplicável', aromatic: 'Não aplicável' , sizes: [{"size":"Unidade","regular":105,"member":79,"pv":0}] },
     'Óleo de Coco Fracionado': { nameEn: 'Fractionated Coconut Oil', cat: 'accessory', fn: 'Óleo carreador premium', uses: 'Diluição de óleos essenciais para aplicação tópica segura e massagens', topical: 'Carreador Tópico', aromatic: 'Inodoro' , sizes: [{"size": "115 ml", "regular": 142, "member": 106.25, "pv": 12}] },
+    'Kit Brasil Living (10 óleos 5ml)': {
+        nameEn: 'Brazil Living Kit',
+        cat: 'kit',
+        fn: 'Kit de Óleos Essenciais Brasil Living',
+        uses: 'Suporte diário de bem-estar para toda a família',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 960, member: 720, pv: 120 }
+        ]
+    },
+    'Kit Essencial para o Lar': {
+        nameEn: 'Home Essentials Kit',
+        cat: 'kit',
+        fn: 'Kit de Óleos Essenciais com difusor Petal',
+        uses: 'Suporte diário e soluções naturais para o lar',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 2517, member: 1888, pv: 200 }
+        ]
+    },
+    'Kit Kids Completo (7 unidades)': {
+        nameEn: 'Kids Collection',
+        cat: 'kit',
+        fn: 'Kit de Óleos Essenciais Infantil',
+        uses: 'Suporte diário emocional e físico para crianças',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 1022, member: 766.25, pv: 89 }
+        ]
+    },
+    'Kit Soluções Naturais': {
+        nameEn: 'Natural Solutions Kit',
+        cat: 'kit',
+        fn: 'Kit completo de bem-estar e soluções naturais',
+        uses: 'Cuidados pessoais, suplementos e óleos essenciais',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 3987, member: 2990, pv: 400 }
+        ]
+    },
+    'Kit Início Rápido': {
+        nameEn: 'Quick Start Kit',
+        cat: 'kit',
+        fn: 'Kit início rápido doTERRA',
+        uses: 'Soluções rápidas e práticas de bem-estar',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 800, member: 600, pv: 100 }
+        ]
+    },
+    'Kit Primeiros Cuidados': {
+        nameEn: 'First Care Kit',
+        cat: 'kit',
+        fn: 'Kit de primeiros cuidados doTERRA',
+        uses: 'Suporte a pequenos acidentes e cuidados diários',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 580, member: 435, pv: 50 }
+        ]
+    },
+    'Kit Colecionador': {
+        nameEn: 'Collector\'s Kit',
+        cat: 'kit',
+        fn: 'Kit colecionador de óleos essenciais doTERRA',
+        uses: 'Coleção completa de fragrâncias e soluções',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 7993, member: 5995, pv: 800 }
+        ]
+    },
+    'Kit Culinária Essencial': {
+        nameEn: 'Essential Cooking Kit',
+        cat: 'kit',
+        fn: 'Kit culinária essencial com óleos essenciais',
+        uses: 'Aromas culinários e temperos naturais',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 892, member: 668.75, pv: 90 }
+        ]
+    },
+    'Kit de Apresentação': {
+        nameEn: 'Introductory Kit',
+        cat: 'kit',
+        fn: 'Kit de apresentação triplo (Lavanda, Lemon, Peppermint)',
+        uses: 'Introdução à aromaterapia e bem-estar',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 187, member: 140, pv: 15 }
+        ]
+    },
+    'Kit MetaPWR': {
+        nameEn: 'MetaPWR System Kit',
+        cat: 'kit',
+        fn: 'Kit sistema metabólico MetaPWR doTERRA',
+        uses: 'Apoio à saúde metabólica e energia',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 1320, member: 990, pv: 100 }
+        ]
+    },
+    'Kit AromaTouch': {
+        nameEn: 'AromaTouch Kit',
+        cat: 'kit',
+        fn: 'Kit técnica AromaTouch com óleos essenciais',
+        uses: 'Massagem, relaxamento e equilíbrio corporal',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 1040, member: 780, pv: 100 }
+        ]
+    },
+    'Kit AromaTouch com Difusor': {
+        nameEn: 'AromaTouch Diffuser Kit',
+        cat: 'kit',
+        fn: 'Kit técnica AromaTouch com difusor',
+        uses: 'Massagem e aromatização de ambientes',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 1633, member: 1225, pv: 150 }
+        ]
+    },
+    'Kit Diamond': {
+        nameEn: 'Diamond Kit',
+        cat: 'kit',
+        fn: 'Kit Diamond doTERRA completo',
+        uses: 'A mais completa seleção de óleos e produtos',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 15993, member: 11995, pv: 1000 }
+        ]
+    },
+    'Collector\'s Kit Inspire': {
+        nameEn: 'Collector\'s Kit Inspire',
+        cat: 'kit',
+        fn: 'Kit Collector\'s Inspire',
+        uses: 'Inspiração e motivação diária',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 357, member: 268, pv: 30 }
+        ]
+    },
+    'Collector\'s Kit Equilíbrio': {
+        nameEn: 'Collector\'s Kit Balance',
+        cat: 'kit',
+        fn: 'Kit Collector\'s Equilíbrio',
+        uses: 'Estabilidade emocional e aterramento',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 397, member: 298, pv: 35 }
+        ]
+    },
+    'Collector\'s Kit Revitalize': {
+        nameEn: 'Collector\'s Kit Revitalize',
+        cat: 'kit',
+        fn: 'Kit Collector\'s Revitalize',
+        uses: 'Energia e vitalidade física',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 351, member: 263, pv: 30 }
+        ]
+    },
+    'Collector\'s Kit Conforto': {
+        nameEn: 'Collector\'s Kit Comfort',
+        cat: 'kit',
+        fn: 'Kit Collector\'s Conforto',
+        uses: 'Acolhimento e suporte emocional',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 380, member: 285, pv: 30 }
+        ]
+    },
+    'Coleção Collector\'s': {
+        nameEn: 'Collector\'s Collection',
+        cat: 'kit',
+        fn: 'Coleção completa Collector\'s',
+        uses: 'Variedade e suporte aromático completo',
+        topical: 'Diversos',
+        aromatic: 'Diversos',
+        sizes: [
+            { size: 'Unidade / Kit', regular: 1189, member: 892, pv: 100 }
+        ]
+    },
 };
 
 export const LIVING_KIT = new Set([

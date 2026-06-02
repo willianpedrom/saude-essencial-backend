@@ -2,6 +2,7 @@ import { auth, store } from '../store.js?v=1010';
 import { OILS_DATABASE } from '../oils.js?v=1010';
 import { renderLayout } from './Dashboard.js?v=1012';
 import { formatDate, formatCurrency, toast, modal, copyToClipboard } from '../utils.js?v=1010';
+import { DOTERRA_PRODUCTS, DOTERRA_PRICES } from './Inventory.js?v=1010';
 
 // Helper to remove accents for better searching
 function normalize(str) {
@@ -513,6 +514,70 @@ export async function renderPurchases(router) {
               price: 0,
               source: 'doterra',
               search: normalize(name + ' ' + nameEn)
+            });
+          }
+        }
+      });
+    }
+    // 3. Da base global de autocompletar do estoque (DOTERRA_PRODUCTS)
+    if (typeof DOTERRA_PRODUCTS !== 'undefined' && Array.isArray(DOTERRA_PRODUCTS)) {
+      DOTERRA_PRODUCTS.forEach(p => {
+        if (!p.nome) return;
+        const name = p.nome;
+        const cat = p.cat || '';
+        
+        // Find if this product has defined prices/sizes in DOTERRA_PRICES
+        let priceEntry = typeof DOTERRA_PRICES !== 'undefined' ? DOTERRA_PRICES[name] : null;
+        if (!priceEntry && typeof DOTERRA_PRICES !== 'undefined') {
+          // Try case-insensitive
+          const lower = name.toLowerCase();
+          for (const key of Object.keys(DOTERRA_PRICES)) {
+            if (key.toLowerCase() === lower) {
+              priceEntry = DOTERRA_PRICES[key];
+              break;
+            }
+          }
+        }
+        
+        // If still not found, try stripping parentheses
+        if (!priceEntry && typeof DOTERRA_PRICES !== 'undefined') {
+          const lower = name.toLowerCase();
+          const stripped = lower.replace(/\s*\(.*?\)\s*/g, '').trim();
+          for (const key of Object.keys(DOTERRA_PRICES)) {
+            const kl = key.toLowerCase().replace(/\s*\(.*?\)\s*/g, '').trim();
+            if (kl === stripped || kl.startsWith(lower) || lower.startsWith(kl) || kl.includes(lower) || lower.includes(kl)) {
+              priceEntry = DOTERRA_PRICES[key];
+              break;
+            }
+          }
+        }
+        
+        if (priceEntry) {
+          // If we found price sizes, add them
+          Object.entries(priceEntry).forEach(([size, prices]) => {
+            const fullName = `${name}${size ? ' ('+size+')' : ''}`;
+            if (!productCatalog.find(c => c.name === fullName)) {
+              productCatalog.push({
+                name: fullName,
+                price: Number(prices.m || prices.r || 0),
+                source: 'doterra',
+                search: normalize(name + ' ' + size)
+              });
+            }
+          });
+        } else {
+          // Fallback if no prices found: determine default size
+          const size = cat.includes('Touch') ? '10ml Touch'
+              : ['Difusor','Kit','Personal Care','Acessório'].includes(cat) ? 'Unidade / Kit'
+              : ['Suplemento'].includes(cat) ? 'Cápsulas'
+              : '15ml';
+          const fullName = `${name}${size ? ' ('+size+')' : ''}`;
+          if (!productCatalog.find(c => c.name === fullName)) {
+            productCatalog.push({
+              name: fullName,
+              price: 0,
+              source: 'doterra',
+              search: normalize(name + ' ' + size)
             });
           }
         }

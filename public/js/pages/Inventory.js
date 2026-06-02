@@ -26,7 +26,7 @@ const days_until = s => {
     return Math.ceil((d - today) / 86400000);
 };
 
-const DOTERRA_PRODUCTS = [
+export const DOTERRA_PRODUCTS = [
     { nome: "Lavanda (Lavender)", cat: "Óleo Essencial" },
     { nome: "Hortelã-Pimenta (Peppermint)", cat: "Óleo Essencial" },
     { nome: "Olíbano (Frankincense)", cat: "Óleo Essencial" },
@@ -260,7 +260,7 @@ const DOTERRA_PRODUCTS = [
 // ── Tabela de Preços Oficiais doTERRA (por produto + tamanho) ──────────────
 // Fonte: Lista de Preços P BR V36_27mai25 (Oficial doTERRA Brasil)
 // Formato: { 'Nome Produto': { '15ml': { r: preço_regular, m: preço_membro } } }
-const DOTERRA_PRICES = {
+export const DOTERRA_PRICES = {
     'Arborvitae': {
         '5ml': { r: 193, m: 145 },
     },
@@ -1352,6 +1352,8 @@ const DOTERRA_ALIASES = {
     'anchor': 'Anchor (Yoga)',
     'align': 'Align (Yoga)',
     'arise': 'Arise (Yoga)',
+    'kit brasil living (10 óleos 5ml)': 'Brasil Living Kit',
+    'kit brasil living': 'Brasil Living Kit',
     'kit soluções naturais': 'Soluções Naturais',
     'kit início rápido': 'Início Rápido',
     'kit primeiros cuidados': 'Primeiros Cuidados',
