@@ -135,7 +135,7 @@ const router = new Router({
         renderIntegrations(router);
     }),
     '/prospecting': guard(async () => {
-        const { renderProspecting } = await import('./pages/Prospecting.js?v=1010');
+        const { renderProspecting } = await import('./pages/Prospecting.js?v=1011');
         renderProspecting(router);
     }),
     '/estoque': guard(async () => {

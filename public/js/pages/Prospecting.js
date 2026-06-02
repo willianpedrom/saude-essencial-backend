@@ -83,6 +83,7 @@ export async function renderProspecting(router) {
                     </div>
                     
                     <button id="btn-save-details" class="btn-save-main">Atualizar Contatos</button>
+                    <button id="btn-delete-lead" class="btn-delete-main">⚠️ Excluir Lead</button>
 
                     <div class="section-divider"></div>
                     
@@ -150,6 +151,8 @@ export async function renderProspecting(router) {
             .edit-field label { display: block; font-size: 0.7rem; color: var(--p-gray); margin-bottom: 4px; }
             .edit-field input { width: 100%; height: 38px; border-radius: 8px; border: 1px solid var(--p-border); padding: 0 10px; font-size: 0.85rem; }
             .btn-save-main { width: 100%; height: 42px; background: var(--p-secondary); color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
+            .btn-delete-main { width: 100%; height: 42px; background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+            .btn-delete-main:hover { background: #fecaca; }
             .section-divider { height: 1px; background: var(--p-border); margin: 20px 0; }
             
             .timeline-compact { max-height: 150px; overflow-y: auto; padding-right: 5px; }
@@ -415,6 +418,25 @@ export async function renderProspecting(router) {
                         saveBtn.disabled = false; saveBtn.textContent = 'Atualizar Contatos'; 
                     }
                 };
+
+                const deleteBtn = document.getElementById('btn-delete-lead');
+                if (deleteBtn) {
+                    deleteBtn.onclick = async () => {
+                        if (!confirm(`Deseja realmente excluir o lead "${p.nome}"?`)) return;
+                        deleteBtn.disabled = true;
+                        deleteBtn.textContent = 'Excluindo...';
+                        try {
+                            await api('DELETE', `/api/prospects/${p.id}`);
+                            toast('Lead excluído com sucesso!');
+                            modal.style.display = 'none';
+                            renderMyProspects();
+                        } catch (err) {
+                            toast('Erro ao excluir lead: ' + (err.message || 'tente novamente'), 'danger');
+                            deleteBtn.disabled = false;
+                            deleteBtn.textContent = '⚠️ Excluir Lead';
+                        }
+                    };
+                }
 
                 const history = p.historico || [];
                 const histList = document.getElementById('history-list');
