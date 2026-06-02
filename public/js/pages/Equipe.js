@@ -2817,17 +2817,60 @@ async function loadLeaderboard(type) {
             return;
         }
 
+        // Option 1: Rules explanation box
+        const rulesHtml = `
+            <div class="rules-card" style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:var(--radius-md); padding:16px; margin-bottom:20px; box-shadow: var(--shadow-sm);">
+                <h4 style="margin:0 0 10px; font-size:0.88rem; font-weight:700; color:var(--green-950); display:flex; align-items:center; gap:6px;">📈 Como acumular pontos este mês:</h4>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px; font-size:0.78rem; color:var(--text-dark);">
+                    <div style="display:flex; align-items:center; gap:6px;">👥 <strong>Novo Cliente:</strong> +10 pts</div>
+                    <div style="display:flex; align-items:center; gap:6px;">📝 <strong>Anamnese:</strong> +15 pts</div>
+                    <div style="display:flex; align-items:center; gap:6px;">💰 <strong>Venda:</strong> +20 pts</div>
+                    <div style="display:flex; align-items:center; gap:6px;">📦 <strong>Item no Estoque:</strong> +5 pts</div>
+                </div>
+            </div>
+        `;
+
+        // Option A: Overtake Target box
+        const myUserId = auth.current?.id;
+        const myIndex = leaderboard.findIndex(u => u.id === myUserId);
+        let overtakeHtml = '';
+        if (myIndex !== -1) {
+            const me = leaderboard[myIndex];
+            if (myIndex > 0) {
+                const nextUp = leaderboard[myIndex - 1];
+                const diff = nextUp.pontos - me.pontos;
+                overtakeHtml = `
+                    <div class="overtake-card" style="background:#fff7ed; border:1px solid #ffedd5; border-radius:var(--radius-md); padding:12px 16px; margin-bottom:20px; display:flex; align-items:center; gap:10px; box-shadow: var(--shadow-sm);">
+                        <span style="font-size:1.3rem;">🚀</span>
+                        <div style="font-size:0.8rem; color:#c2410c; line-height:1.45;">
+                            Você está em <strong>${myIndex + 1}º lugar</strong> com <strong>${me.pontos} pts</strong>. Faltam apenas <strong>${diff} pts</strong> para ultrapassar <strong>${nextUp.nome.split(' ')[0]}</strong> e assumir o ${myIndex}º lugar no ranking!
+                        </div>
+                    </div>
+                `;
+            } else {
+                overtakeHtml = `
+                    <div class="overtake-card" style="background:#fef3c7; border:1px solid #fde68a; border-radius:var(--radius-md); padding:12px 16px; margin-bottom:20px; display:flex; align-items:center; gap:10px; box-shadow: var(--shadow-sm);">
+                        <span style="font-size:1.3rem;">🏆</span>
+                        <div style="font-size:0.8rem; color:#b45309; line-height:1.45;">
+                            Parabéns! Você está em <strong>1º lugar</strong> com <strong>${me.pontos} pts</strong>. Liderando com excelência!
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
         const top3 = leaderboard.slice(0, 3);
         const others = leaderboard.slice(3);
 
-        let podiumHtml = `<div class="podium-container">`;
+        let podiumHtml = rulesHtml + overtakeHtml + `<div style="font-size:0.82rem; font-weight:700; color:var(--text-muted); margin-bottom:10px; padding-left:4px;">PÓDIO DA EQUIPE (Clique nos membros para ver detalhes)</div>`;
+        podiumHtml += `<div class="podium-container" style="position:relative;">`;
         
         // 2º Lugar
         if (top3[1]) {
             const m = top3[1];
             const initials = (m.nome || '?').charAt(0).toUpperCase();
             podiumHtml += `
-                <div class="podium-column silver">
+                <div class="podium-column silver" style="cursor:pointer;" onclick="const d = this.querySelector('.podium-details'); if(d) { d.style.display = d.style.display === 'block' ? 'none' : 'block'; event.stopPropagation(); }">
                     <div class="podium-avatar">
                         ${m.foto_url ? `<img src="${m.foto_url}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />` : initials}
                         <div class="podium-badge">🥈</div>
@@ -2835,6 +2878,15 @@ async function loadLeaderboard(type) {
                     <div class="podium-name" title="${m.nome}">${m.nome.split(' ')[0]}</div>
                     <div class="podium-bar">2º</div>
                     <div class="podium-points">${m.pontos} pts</div>
+                    
+                    <div class="podium-details" style="display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%); background:white; border:1px solid var(--border); border-radius:8px; padding:12px; width:200px; z-index:20; box-shadow:var(--shadow-md); font-size:0.76rem; color:var(--text-dark); text-align:left; margin-top:8px;">
+                        <strong style="display:block;margin-bottom:6px;color:var(--green-950);">${m.nome}</strong>
+                        👥 ${m.clientes_qtd} Clientes (+${m.clientes_qtd * 10} pts)<br>
+                        📝 ${m.anamneses_qtd} Anamneses (+${m.anamneses_qtd * 15} pts)<br>
+                        💰 ${m.vendas_qtd} Vendas (+${m.vendas_qtd * 20} pts)<br>
+                        📦 ${m.estoque_qtd} Estoque (+${m.estoque_qtd * 5} pts)
+                        <div style="border-top:1px solid #cbd5e1; margin-top:6px; padding-top:4px; font-weight:700; color:var(--green-600);">Total: ${m.pontos} pts</div>
+                    </div>
                 </div>
             `;
         } else {
@@ -2846,7 +2898,7 @@ async function loadLeaderboard(type) {
             const m = top3[0];
             const initials = (m.nome || '?').charAt(0).toUpperCase();
             podiumHtml += `
-                <div class="podium-column gold">
+                <div class="podium-column gold" style="cursor:pointer;" onclick="const d = this.querySelector('.podium-details'); if(d) { d.style.display = d.style.display === 'block' ? 'none' : 'block'; event.stopPropagation(); }">
                     <div class="podium-avatar">
                         ${m.foto_url ? `<img src="${m.foto_url}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />` : initials}
                         <div class="podium-badge">🥇</div>
@@ -2854,6 +2906,15 @@ async function loadLeaderboard(type) {
                     <div class="podium-name" title="${m.nome}">${m.nome.split(' ')[0]}</div>
                     <div class="podium-bar">1º</div>
                     <div class="podium-points" style="font-weight:700; color:var(--gold-600);">${m.pontos} pts</div>
+                    
+                    <div class="podium-details" style="display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%); background:white; border:1px solid var(--border); border-radius:8px; padding:12px; width:200px; z-index:20; box-shadow:var(--shadow-md); font-size:0.76rem; color:var(--text-dark); text-align:left; margin-top:8px;">
+                        <strong style="display:block;margin-bottom:6px;color:var(--green-950);">${m.nome}</strong>
+                        👥 ${m.clientes_qtd} Clientes (+${m.clientes_qtd * 10} pts)<br>
+                        📝 ${m.anamneses_qtd} Anamneses (+${m.anamneses_qtd * 15} pts)<br>
+                        💰 ${m.vendas_qtd} Vendas (+${m.vendas_qtd * 20} pts)<br>
+                        📦 ${m.estoque_qtd} Estoque (+${m.estoque_qtd * 5} pts)
+                        <div style="border-top:1px solid #cbd5e1; margin-top:6px; padding-top:4px; font-weight:700; color:var(--green-600);">Total: ${m.pontos} pts</div>
+                    </div>
                 </div>
             `;
         }
@@ -2863,7 +2924,7 @@ async function loadLeaderboard(type) {
             const m = top3[2];
             const initials = (m.nome || '?').charAt(0).toUpperCase();
             podiumHtml += `
-                <div class="podium-column bronze">
+                <div class="podium-column bronze" style="cursor:pointer;" onclick="const d = this.querySelector('.podium-details'); if(d) { d.style.display = d.style.display === 'block' ? 'none' : 'block'; event.stopPropagation(); }">
                     <div class="podium-avatar">
                         ${m.foto_url ? `<img src="${m.foto_url}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />` : initials}
                         <div class="podium-badge">🥉</div>
@@ -2871,6 +2932,15 @@ async function loadLeaderboard(type) {
                     <div class="podium-name" title="${m.nome}">${m.nome.split(' ')[0]}</div>
                     <div class="podium-bar">3º</div>
                     <div class="podium-points">${m.pontos} pts</div>
+                    
+                    <div class="podium-details" style="display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%); background:white; border:1px solid var(--border); border-radius:8px; padding:12px; width:200px; z-index:20; box-shadow:var(--shadow-md); font-size:0.76rem; color:var(--text-dark); text-align:left; margin-top:8px;">
+                        <strong style="display:block;margin-bottom:6px;color:var(--green-950);">${m.nome}</strong>
+                        👥 ${m.clientes_qtd} Clientes (+${m.clientes_qtd * 10} pts)<br>
+                        📝 ${m.anamneses_qtd} Anamneses (+${m.anamneses_qtd * 15} pts)<br>
+                        💰 ${m.vendas_qtd} Vendas (+${m.vendas_qtd * 20} pts)<br>
+                        📦 ${m.estoque_qtd} Estoque (+${m.estoque_qtd * 5} pts)
+                        <div style="border-top:1px solid #cbd5e1; margin-top:6px; padding-top:4px; font-weight:700; color:var(--green-600);">Total: ${m.pontos} pts</div>
+                    </div>
                 </div>
             `;
         } else {
@@ -2885,24 +2955,34 @@ async function loadLeaderboard(type) {
                 listContainer.innerHTML = '';
             } else {
                 let listHtml = `
-                    <div style="font-size:0.82rem; font-weight:700; color:var(--text-muted); margin-bottom:10px; padding-left:4px;">OUTROS MEMBROS</div>
+                    <div style="font-size:0.82rem; font-weight:700; color:var(--text-muted); margin-bottom:10px; padding-left:4px;">OUTROS MEMBROS (Clique na linha para ver detalhes)</div>
                     <div class="leaderboard-list">
                 `;
                 listHtml += others.map((m, idx) => {
                     const pos = idx + 4;
                     const initials = (m.nome || '?').charAt(0).toUpperCase();
                     return `
-                        <div class="leaderboard-item">
-                            <div class="leaderboard-position">${pos}º</div>
-                            <div style="width:30px; height:30px; border-radius:50%; background:var(--green-100); color:var(--green-700); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8rem; overflow:hidden;">
-                                ${m.foto_url ? `<img src="${m.foto_url}" style="width:100%; height:100%; object-fit:cover;" />` : initials}
+                        <div class="leaderboard-item" style="cursor:pointer; flex-direction:column; align-items:stretch;" onclick="const d = this.querySelector('.leaderboard-details'); if(d) { d.style.display = d.style.display === 'block' ? 'none' : 'block'; }">
+                            <div style="display:flex; align-items:center; gap:12px; width:100%;">
+                                <div class="leaderboard-position">${pos}º</div>
+                                <div style="width:30px; height:30px; border-radius:50%; background:var(--green-100); color:var(--green-700); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8rem; overflow:hidden;">
+                                    ${m.foto_url ? `<img src="${m.foto_url}" style="width:100%; height:100%; object-fit:cover;" />` : initials}
+                                </div>
+                                <div class="leaderboard-name">${m.nome}</div>
+                                <div style="font-size:0.72rem; color:var(--text-muted); margin-right:12px; text-align:right;">
+                                    Ver Detalhes 🔍
+                                </div>
+                                <div class="leaderboard-points">${m.pontos} pts</div>
                             </div>
-                            <div class="leaderboard-name">${m.nome}</div>
-                            <div style="font-size:0.75rem; color:var(--text-muted); margin-right:12px; text-align:right; line-height:1.2;">
-                                <span style="display:block;">👤 ${m.clientes_qtd} Clientes</span>
-                                <span style="display:block;">📝 ${m.anamneses_qtd} Anamneses</span>
+                            <div class="leaderboard-details" style="display:none; border-top:1px dashed #cbd5e1; margin-top:8px; padding-top:8px; font-size:0.78rem; color:var(--text-muted);">
+                                <strong style="color:var(--green-950); display:block; margin-bottom:4px;">Decomposição dos pontos deste mês:</strong>
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                                    <span>👥 Clientes: ${m.clientes_qtd} (+${m.clientes_qtd * 10} pts)</span>
+                                    <span>📝 Anamneses: ${m.anamneses_qtd} (+${m.anamneses_qtd * 15} pts)</span>
+                                    <span>💰 Vendas: ${m.vendas_qtd} (+${m.vendas_qtd * 20} pts)</span>
+                                    <span>📦 Estoque: ${m.estoque_qtd} (+${m.estoque_qtd * 5} pts)</span>
+                                </div>
                             </div>
-                            <div class="leaderboard-points">${m.pontos} pts</div>
                         </div>
                     `;
                 }).join('');
@@ -3005,6 +3085,36 @@ async function loadDesafios(type) {
             });
         }
 
+        // Confetti check for newly completed challenges
+        const userId = auth.current?.id;
+        if (userId) {
+            const storageKey = `completed_challenges_${userId}`;
+            const previouslyCompleted = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            
+            const newlyCompleted = [];
+            desafios.forEach(d => {
+                if (d.concluido && !previouslyCompleted.includes(d.id)) {
+                    newlyCompleted.push(d.id);
+                }
+            });
+
+            if (newlyCompleted.length > 0) {
+                setTimeout(() => {
+                    triggerConfetti();
+                    newlyCompleted.forEach(id => {
+                        const dObj = desafios.find(item => item.id === id);
+                        toast(`🎯 Desafio da Equipe Concluído: "${dObj?.titulo || ''}"! 🎉`, 'success');
+                    });
+                }, 600);
+
+                const allCompleted = [...previouslyCompleted, ...newlyCompleted];
+                localStorage.setItem(storageKey, JSON.stringify(allCompleted));
+            } else {
+                const allCurrentCompleted = desafios.filter(d => d.concluido).map(d => d.id);
+                localStorage.setItem(storageKey, JSON.stringify(allCurrentCompleted));
+            }
+        }
+
     } catch (e) {
         container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px; grid-column: 1 / -1;">Erro ao carregar desafios: ${e.message}</div>`;
     }
@@ -3051,8 +3161,136 @@ async function loadConquistas() {
                 </div>
             `;
         }).join('');
+
+        // Confetti check for newly unlocked achievements
+        const userId = auth.current?.id;
+        if (userId) {
+            const storageKey = `unlocked_badges_${userId}`;
+            const previouslyUnlocked = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            
+            const newlyUnlocked = [];
+            conquistas.forEach(c => {
+                if (c.desbloqueada && !previouslyUnlocked.includes(c.id)) {
+                    newlyUnlocked.push(c.id);
+                }
+            });
+
+            if (newlyUnlocked.length > 0) {
+                setTimeout(() => {
+                    triggerConfetti();
+                    newlyUnlocked.forEach(id => {
+                        const cObj = conquistas.find(item => item.id === id);
+                        toast(`🏅 Conquista desbloqueada: ${cObj?.titulo || id}! Parabéns! 🎉`, 'success');
+                    });
+                }, 500);
+
+                const allUnlocked = [...previouslyUnlocked, ...newlyUnlocked];
+                localStorage.setItem(storageKey, JSON.stringify(allUnlocked));
+            } else {
+                const allCurrentUnlocked = conquistas.filter(c => c.desbloqueada).map(c => c.id);
+                localStorage.setItem(storageKey, JSON.stringify(allCurrentUnlocked));
+            }
+        }
+
     } catch (e) {
         container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar conquistas: ${e.message}</div>`;
     }
 }
+
+// ── Native Canvas Confetti Animation & Popover dismisser ───────────
+
+window.addEventListener('click', () => {
+    document.querySelectorAll('.podium-details').forEach(el => el.style.display = 'none');
+});
+
+function triggerConfetti() {
+    if (document.getElementById('confetti-canvas')) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.id = 'confetti-canvas';
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '99999';
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#ef4444'];
+    const particles = [];
+
+    // Cannon-style shots from bottom corners
+    for (let i = 0; i < 60; i++) {
+        particles.push({
+            x: 0,
+            y: canvas.height,
+            vx: Math.random() * 8 + 4,
+            vy: -(Math.random() * 12 + 10),
+            r: Math.random() * 6 + 4,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            tilt: Math.random() * 10 - 5,
+            tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+            tiltAngle: 0
+        });
+        particles.push({
+            x: canvas.width,
+            y: canvas.height,
+            vx: -(Math.random() * 8 + 4),
+            vy: -(Math.random() * 12 + 10),
+            r: Math.random() * 6 + 4,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            tilt: Math.random() * 10 - 5,
+            tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+            tiltAngle: 0
+        });
+    }
+
+    const gravity = 0.3;
+    const drag = 0.98;
+    let animationFrame;
+    let ticks = 0;
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = false;
+
+        particles.forEach(p => {
+            p.vy += gravity;
+            p.vx *= drag;
+            p.vy *= drag;
+            p.x += p.vx;
+            p.y += p.vy;
+
+            p.tiltAngle += p.tiltAngleIncremental;
+            p.tilt = Math.sin(p.tiltAngle) * 12;
+
+            if (p.y < canvas.height && p.x > 0 && p.x < canvas.width) {
+                active = true;
+            }
+
+            ctx.beginPath();
+            ctx.lineWidth = p.r;
+            ctx.strokeStyle = p.color;
+            ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+            ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+            ctx.stroke();
+        });
+
+        ticks++;
+
+        if (!active || ticks > 300) {
+            cancelAnimationFrame(animationFrame);
+            canvas.remove();
+        } else {
+            animationFrame = requestAnimationFrame(draw);
+        }
+    }
+    draw();
+}
+
 
