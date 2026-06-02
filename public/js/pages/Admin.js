@@ -1352,10 +1352,10 @@ export async function renderAdmin(router) {
             <table class="clients-table">
               <thead><tr>
                 <th>Slug</th><th>Nome</th><th>Preço/mês</th><th>Clientes</th><th>Anamneses/mês</th>
-                <th>Integrações</th><th>Pipeline</th><th>Multi-usuário</th><th>Hotmart Offer ID</th><th>Ativo</th><th>Ações</th>
+                <th>Integrações</th><th>Pipeline</th><th>Multi-usuário</th><th>Equipe</th><th>Hotmart Offer ID</th><th>Ativo</th><th>Ações</th>
               </tr></thead>
               <tbody>
-                ${planos.length === 0 ? '<tr><td colspan="11" style="text-align:center;padding:30px">Nenhum plano cadastrado</td></tr>' : planos.map(p => `
+                ${planos.length === 0 ? '<tr><td colspan="12" style="text-align:center;padding:30px">Nenhum plano cadastrado</td></tr>' : planos.map(p => `
                   <tr>
                     <td><code style="font-size:0.78rem;background:#f1f5f9;padding:2px 6px;border-radius:4px">${p.slug}</code></td>
                     <td><strong>${p.nome}</strong></td>
@@ -1365,6 +1365,7 @@ export async function renderAdmin(router) {
                     <td style="text-align:center">${feat(p.tem_integracoes)}</td>
                     <td style="text-align:center">${feat(p.tem_pipeline)}</td>
                     <td style="text-align:center">${feat(p.tem_multiusuario)}</td>
+                    <td>${p.tem_equipe ? `Sim (${p.limite_membros_equipe ? `${p.limite_membros_equipe} memb.` : '∞'})` : 'Não'}</td>
                     <td style="font-size:0.75rem;color:var(--text-muted)">${p.hotmart_offer_id || '—'}</td>
                     <td style="text-align:center">${p.ativo ? '✅' : '⛔'}</td>
                     <td>
@@ -1423,6 +1424,10 @@ export async function renderAdmin(router) {
             <input class="field-input" id="pp-anamneses" type="number" min="1" value="${p.anamneses_mes_max || ''}" placeholder="Ilimitado" />
           </div>
           <div class="form-group">
+            <label class="field-label">Máx. Membros na Equipe (vazio = ilimitado)</label>
+            <input class="field-input" id="pp-limite-membros-equipe" type="number" min="1" value="${p.limite_membros_equipe || ''}" placeholder="Ilimitado" />
+          </div>
+          <div class="form-group">
             <label class="field-label">Hotmart Offer ID (opcional)</label>
             <input class="field-input" id="pp-hotmart" value="${p.hotmart_offer_id || ''}" placeholder="Ex: OFR-XXXXXX" />
           </div>
@@ -1430,7 +1435,7 @@ export async function renderAdmin(router) {
             ${[['tem_integracoes', 'Integrações (Pixel/GA)'], ['tem_pipeline', 'Pipeline/Fluxo'], ['tem_multiusuario', 'Multi-usuário'], ['tem_relatorios', 'Relatórios'],
                 ['tem_pagina_pessoal', 'Página Pessoal (Vitrine)'], ['tem_raiox', 'Raio-X (Anamnese B2B)'], ['tem_minhas_vendas', 'Minhas Vendas'], ['tem_radar', 'Radar de Leads'],
                 ['tem_agenda', 'Agenda/Follow-up'], ['tem_links', 'Links de Captação'], ['tem_anamneses', 'Laudos/Anamneses'], ['tem_clientes', 'Gestão de Clientes'],
-                ['tem_estoque', 'Meu Estoque'], ['tem_depoimentos', 'Depoimentos']
+                ['tem_estoque', 'Meu Estoque'], ['tem_depoimentos', 'Depoimentos'], ['tem_equipe', 'Recurso de Equipe']
               ].map(([k, l]) =>
         `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85rem;padding:4px;width:calc(50% - 8px)">
                 <input type="checkbox" id="pp-${k}" ${p[k] !== false ? 'checked' : ''} style="width:16px;height:16px"> ${l}
@@ -1448,6 +1453,7 @@ export async function renderAdmin(router) {
             dias_trial: parseInt(document.getElementById('pp-trial')?.value) || 0,
             clientes_max: parseInt(document.getElementById('pp-clientes')?.value) || null,
             anamneses_mes_max: parseInt(document.getElementById('pp-anamneses')?.value) || null,
+            limite_membros_equipe: parseInt(document.getElementById('pp-limite-membros-equipe')?.value) || null,
             hotmart_offer_id: document.getElementById('pp-hotmart')?.value?.trim() || null,
             tem_integracoes: document.getElementById('pp-tem_integracoes')?.checked,
             tem_pipeline: document.getElementById('pp-tem_pipeline')?.checked,
@@ -1463,6 +1469,7 @@ export async function renderAdmin(router) {
             tem_clientes: document.getElementById('pp-tem_clientes')?.checked,
             tem_estoque: document.getElementById('pp-tem_estoque')?.checked,
             tem_depoimentos: document.getElementById('pp-tem_depoimentos')?.checked,
+            tem_equipe: document.getElementById('pp-tem_equipe')?.checked,
             ativo: true,
           };
           if (!data.slug || !data.nome) { toast('Slug e Nome são obrigatórios.', 'error'); return false; }

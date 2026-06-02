@@ -202,6 +202,8 @@ CREATE TABLE IF NOT EXISTS planos (
   tem_clientes         BOOLEAN DEFAULT TRUE,
   tem_estoque          BOOLEAN DEFAULT TRUE,
   tem_depoimentos      BOOLEAN DEFAULT TRUE,
+  tem_equipe          BOOLEAN DEFAULT FALSE,
+  limite_membros_equipe INT DEFAULT NULL,
   hotmart_offer_id    TEXT,                          -- ID da oferta na Hotmart
   ativo               BOOLEAN DEFAULT TRUE,
   criado_em           TIMESTAMPTZ DEFAULT NOW(),
@@ -211,11 +213,11 @@ CREATE TABLE IF NOT EXISTS planos (
 CREATE INDEX IF NOT EXISTS idx_planos_slug ON planos(slug);
 
 -- Seed dos planos padrão (idempotente)
-INSERT INTO planos (slug, nome, preco_mensal, clientes_max, anamneses_mes_max, tem_integracoes, tem_pipeline, tem_multiusuario, tem_estoque, tem_depoimentos)
+INSERT INTO planos (slug, nome, preco_mensal, clientes_max, anamneses_mes_max, tem_integracoes, tem_pipeline, tem_multiusuario, tem_estoque, tem_depoimentos, tem_equipe, limite_membros_equipe)
 VALUES
-  ('starter',    'Starter',    49.00,  30,   5,    false, true,  false, true, true),
-  ('pro',        'Pro',        97.00,  NULL, NULL, true,  true,  false, true, true),
-  ('enterprise', 'Enterprise', 197.00, NULL, NULL, true,  true,  true,  true, true)
+  ('starter',    'Starter',    49.00,  30,   5,    false, true,  false, true, true, false, NULL),
+  ('pro',        'Pro',        97.00,  NULL, NULL, true,  true,  false, true, true, true,  5),
+  ('enterprise', 'Enterprise', 197.00, NULL, NULL, true,  true,  true,  true, true, true,  20)
 ON CONFLICT (slug) DO NOTHING;
 
 -- Migrations novas em assinaturas

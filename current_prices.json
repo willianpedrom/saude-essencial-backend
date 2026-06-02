@@ -1,0 +1,2024 @@
+{
+  "Arborvitae": {
+    "5ml": {
+      "r": 193,
+      "m": 145
+    }
+  },
+  "Basil (Manjericão)": {
+    "15ml": {
+      "r": 307,
+      "m": 230
+    }
+  },
+  "Basil": {
+    "15ml": {
+      "r": 307,
+      "m": 230
+    }
+  },
+  "Manjericão": {
+    "15ml": {
+      "r": 307,
+      "m": 230
+    }
+  },
+  "Bergamota": {
+    "15ml": {
+      "r": 310,
+      "m": 232.5
+    },
+    "5ml": {
+      "r": 123,
+      "m": 92.5
+    }
+  },
+  "Bergamot": {
+    "15ml": {
+      "r": 310,
+      "m": 232.5
+    },
+    "5ml": {
+      "r": 123,
+      "m": 92.5
+    }
+  },
+  "Pimenta Preta (Black Pepper)": {
+    "5ml": {
+      "r": 250,
+      "m": 187.5
+    }
+  },
+  "Pimenta Preta": {
+    "5ml": {
+      "r": 250,
+      "m": 187.5
+    }
+  },
+  "Black Spruce": {
+    "5ml": {
+      "r": 180,
+      "m": 135
+    }
+  },
+  "Abeto Negro": {
+    "5ml": {
+      "r": 180,
+      "m": 135
+    }
+  },
+  "Blue Tansy": {
+    "5ml": {
+      "r": 532,
+      "m": 399
+    }
+  },
+  "Breu Branco": {
+    "5ml": {
+      "r": 325,
+      "m": 243.75
+    }
+  },
+  "Cardamomo (Cardamom)": {
+    "5ml": {
+      "r": 272,
+      "m": 203.75
+    }
+  },
+  "Cardamomo": {
+    "5ml": {
+      "r": 272,
+      "m": 203.75
+    }
+  },
+  "Cássia (Cassia)": {
+    "15ml": {
+      "r": 200,
+      "m": 150
+    }
+  },
+  "Cássia": {
+    "15ml": {
+      "r": 148,
+      "m": 111
+    }
+  },
+  "Cedro (Cedarwood)": {
+    "15ml": {
+      "r": 140,
+      "m": 105
+    },
+    "5ml": {
+      "r": 62,
+      "m": 47
+    }
+  },
+  "Cedro": {
+    "15ml": {
+      "r": 140,
+      "m": 105
+    },
+    "5ml": {
+      "r": 62,
+      "m": 47
+    }
+  },
+  "Celery Seed": {
+    "15ml": {
+      "r": 255,
+      "m": 191
+    }
+  },
+  "Cilantro": {
+    "15ml": {
+      "r": 290,
+      "m": 217.5
+    }
+  },
+  "Citronela": {
+    "15ml": {
+      "r": 123,
+      "m": 92.5
+    }
+  },
+  "Sálvia (Clary Sage)": {
+    "15ml": {
+      "r": 410,
+      "m": 307.5
+    }
+  },
+  "Sálvia Esclareia": {
+    "15ml": {
+      "r": 410,
+      "m": 307.5
+    }
+  },
+  "Clary Sage": {
+    "15ml": {
+      "r": 410,
+      "m": 307.5
+    }
+  },
+  "Cravo (Clove)": {
+    "15ml": {
+      "r": 162,
+      "m": 121.25
+    },
+    "5ml": {
+      "r": 73,
+      "m": 54.5
+    }
+  },
+  "Cravo": {
+    "15ml": {
+      "r": 162,
+      "m": 121.25
+    },
+    "5ml": {
+      "r": 73,
+      "m": 54.5
+    }
+  },
+  "Copaíba": {
+    "15ml": {
+      "r": 320,
+      "m": 240
+    },
+    "5ml": {
+      "r": 160,
+      "m": 120
+    }
+  },
+  "Copaíba (Copaiba)": {
+    "15ml": {
+      "r": 320,
+      "m": 240
+    },
+    "5ml": {
+      "r": 160,
+      "m": 120
+    }
+  },
+  "Coentro (Coriander)": {
+    "15ml": {
+      "r": 290,
+      "m": 217.5
+    }
+  },
+  "Coentro": {
+    "15ml": {
+      "r": 290,
+      "m": 217.5
+    }
+  },
+  "Cipreste (Cypress)": {
+    "15ml": {
+      "r": 180,
+      "m": 135
+    },
+    "5ml": {
+      "r": 77,
+      "m": 58
+    }
+  },
+  "Cipreste": {
+    "15ml": {
+      "r": 180,
+      "m": 135
+    },
+    "5ml": {
+      "r": 77,
+      "m": 58
+    }
+  },
+  "Douglas Fir": {
+    "5ml": {
+      "r": 223,
+      "m": 167.5
+    }
+  },
+  "Erva Baleeira": {
+    "15ml": {
+      "r": 140,
+      "m": 105
+    }
+  },
+  "Eucalipto": {
+    "15ml": {
+      "r": 120,
+      "m": 90
+    },
+    "5ml": {
+      "r": 84,
+      "m": 63
+    }
+  },
+  "Eucalipto Radiata": {
+    "15ml": {
+      "r": 120,
+      "m": 90
+    },
+    "5ml": {
+      "r": 84,
+      "m": 63
+    }
+  },
+  "Eucalyptus": {
+    "15ml": {
+      "r": 120,
+      "m": 90
+    },
+    "5ml": {
+      "r": 84,
+      "m": 63
+    }
+  },
+  "Erva Doce (Fennel)": {
+    "15ml": {
+      "r": 140,
+      "m": 105
+    },
+    "5ml": {
+      "r": 63,
+      "m": 47.5
+    }
+  },
+  "Erva Doce": {
+    "15ml": {
+      "r": 140,
+      "m": 105
+    },
+    "5ml": {
+      "r": 63,
+      "m": 47.5
+    }
+  },
+  "Fennel": {
+    "15ml": {
+      "r": 140,
+      "m": 105
+    },
+    "5ml": {
+      "r": 63,
+      "m": 47.5
+    }
+  },
+  "Olíbano (Frankincense)": {
+    "15ml": {
+      "r": 648,
+      "m": 486.25
+    },
+    "5ml": {
+      "r": 270,
+      "m": 202.5
+    }
+  },
+  "Olíbano": {
+    "15ml": {
+      "r": 648,
+      "m": 486.25
+    },
+    "5ml": {
+      "r": 270,
+      "m": 202.5
+    }
+  },
+  "Frankincense": {
+    "15ml": {
+      "r": 648,
+      "m": 486.25
+    },
+    "5ml": {
+      "r": 270,
+      "m": 202.5
+    }
+  },
+  "Gerânio (Geranium)": {
+    "15ml": {
+      "r": 318,
+      "m": 238.75
+    },
+    "5ml": {
+      "r": 125,
+      "m": 93.75
+    }
+  },
+  "Gerânio": {
+    "15ml": {
+      "r": 318,
+      "m": 238.75
+    },
+    "5ml": {
+      "r": 125,
+      "m": 93.75
+    }
+  },
+  "Gengibre (Ginger)": {
+    "15ml": {
+      "r": 358,
+      "m": 268.75
+    },
+    "5ml": {
+      "r": 128,
+      "m": 96.25
+    }
+  },
+  "Gengibre": {
+    "15ml": {
+      "r": 358,
+      "m": 268.75
+    },
+    "5ml": {
+      "r": 128,
+      "m": 96.25
+    }
+  },
+  "Toranja (Grapefruit)": {
+    "15ml": {
+      "r": 187,
+      "m": 140
+    }
+  },
+  "Toranja": {
+    "15ml": {
+      "r": 187,
+      "m": 140
+    }
+  },
+  "Green Mandarin": {
+    "15ml": {
+      "r": 280,
+      "m": 210
+    }
+  },
+  "Guaiacwood": {
+    "15ml": {
+      "r": 170,
+      "m": 127.5
+    }
+  },
+  "Sândalo": {
+    "5ml": {
+      "r": 699,
+      "m": 524
+    }
+  },
+  "Sándalo Havaiano": {
+    "5ml": {
+      "r": 567,
+      "m": 425
+    }
+  },
+  "Hawaiian Sandalwood": {
+    "5ml": {
+      "r": 699,
+      "m": 524
+    }
+  },
+  "Helicriso (Helichrysum)": {
+    "5ml": {
+      "r": 764,
+      "m": 573
+    }
+  },
+  "Helicriso": {
+    "5ml": {
+      "r": 651,
+      "m": 488
+    }
+  },
+  "Zimbro (Juniper Berry)": {
+    "5ml": {
+      "r": 210,
+      "m": 157.5
+    }
+  },
+  "Zimbro": {
+    "5ml": {
+      "r": 210,
+      "m": 157.5
+    }
+  },
+  "Lavanda (Lavender)": {
+    "15ml": {
+      "r": 115,
+      "m": 86.25
+    },
+    "5ml": {
+      "r": 103,
+      "m": 77.5
+    }
+  },
+  "Lavanda": {
+    "15ml": {
+      "r": 115,
+      "m": 86.25
+    },
+    "5ml": {
+      "r": 103,
+      "m": 77.5
+    }
+  },
+  "Limão Siciliano (Lemon)": {
+    "15ml": {
+      "r": 115,
+      "m": 86.25
+    },
+    "5ml": {
+      "r": 48,
+      "m": 36.25
+    }
+  },
+  "Limão Siciliano": {
+    "15ml": {
+      "r": 143,
+      "m": 107.5
+    },
+    "5ml": {
+      "r": 48,
+      "m": 36.25
+    }
+  },
+  "Lemon Eucalyptus": {
+    "15ml": {
+      "r": 120,
+      "m": 90
+    }
+  },
+  "Capim-Limão (Lemongrass)": {
+    "15ml": {
+      "r": 110,
+      "m": 82.5
+    }
+  },
+  "Capim-Limão": {
+    "15ml": {
+      "r": 110,
+      "m": 82.5
+    }
+  },
+  "Limão Tahiti (Lime)": {
+    "15ml": {
+      "r": 143,
+      "m": 107.5
+    }
+  },
+  "Limão Tahiti": {
+    "15ml": {
+      "r": 143,
+      "m": 107.5
+    }
+  },
+  "Lime": {
+    "15ml": {
+      "r": 143,
+      "m": 107.5
+    }
+  },
+  "Madagascar Vanilla": {
+    "5ml": {
+      "r": 345,
+      "m": 258.75
+    }
+  },
+  "Manjerona (Marjoram)": {
+    "15ml": {
+      "r": 213,
+      "m": 160
+    }
+  },
+  "Manjerona": {
+    "15ml": {
+      "r": 213,
+      "m": 160
+    }
+  },
+  "Melaleuca (Tea Tree)": {
+    "15ml": {
+      "r": 210,
+      "m": 157.5
+    },
+    "5ml": {
+      "r": 75,
+      "m": 56
+    }
+  },
+  "Melaleuca": {
+    "15ml": {
+      "r": 210,
+      "m": 157.5
+    },
+    "5ml": {
+      "r": 75,
+      "m": 56
+    }
+  },
+  "Melissa": {
+    "5ml": {
+      "r": 895,
+      "m": 671
+    }
+  },
+  "Mirra (Myrrh)": {
+    "15ml": {
+      "r": 655,
+      "m": 491.25
+    }
+  },
+  "Mirra": {
+    "15ml": {
+      "r": 655,
+      "m": 491.25
+    }
+  },
+  "Orégano (Oregano)": {
+    "15ml": {
+      "r": 230,
+      "m": 172.5
+    },
+    "5ml": {
+      "r": 100,
+      "m": 75
+    }
+  },
+  "Orégano": {
+    "15ml": {
+      "r": 230,
+      "m": 172.5
+    },
+    "5ml": {
+      "r": 100,
+      "m": 75
+    }
+  },
+  "Patchouli": {
+    "15ml": {
+      "r": 293,
+      "m": 220
+    }
+  },
+  "Hortelã-Pimenta (Peppermint)": {
+    "15ml": {
+      "r": 184,
+      "m": 138
+    },
+    "5ml": {
+      "r": 250,
+      "m": 187.5
+    }
+  },
+  "Hortelã-Pimenta": {
+    "15ml": {
+      "r": 184,
+      "m": 138
+    },
+    "5ml": {
+      "r": 250,
+      "m": 187.5
+    }
+  },
+  "Petitgrain": {
+    "15ml": {
+      "r": 230,
+      "m": 172.5
+    }
+  },
+  "Camomila Romana": {
+    "5ml": {
+      "r": 510,
+      "m": 382.5
+    }
+  },
+  "Camomila (Roman Chamomile)": {
+    "5ml": {
+      "r": 510,
+      "m": 382.5
+    }
+  },
+  "Alecrim (Rosemary)": {
+    "15ml": {
+      "r": 165,
+      "m": 123.75
+    },
+    "5ml": {
+      "r": 67,
+      "m": 50
+    }
+  },
+  "Alecrim": {
+    "15ml": {
+      "r": 165,
+      "m": 123.75
+    },
+    "5ml": {
+      "r": 67,
+      "m": 50
+    }
+  },
+  "Siberian Fir": {
+    "15ml": {
+      "r": 190,
+      "m": 142.5
+    }
+  },
+  "Abeto Siberiano": {
+    "15ml": {
+      "r": 136,
+      "m": 102
+    }
+  },
+  "Pinho Siberiano": {
+    "15ml": {
+      "r": 136,
+      "m": 102
+    }
+  },
+  "Spearmint": {
+    "15ml": {
+      "r": 290,
+      "m": 217.5
+    }
+  },
+  "Spikenard": {
+    "5ml": {
+      "r": 560,
+      "m": 420
+    }
+  },
+  "Tangerina": {
+    "15ml": {
+      "r": 170,
+      "m": 127.5
+    },
+    "5ml": {
+      "r": 70,
+      "m": 52.5
+    }
+  },
+  "Tangerine": {
+    "15ml": {
+      "r": 170,
+      "m": 127.5
+    },
+    "5ml": {
+      "r": 70,
+      "m": 52.5
+    }
+  },
+  "Tomilho (Thyme)": {
+    "15ml": {
+      "r": 292,
+      "m": 218.75
+    }
+  },
+  "Tomilho": {
+    "15ml": {
+      "r": 292,
+      "m": 218.75
+    }
+  },
+  "Vetiver": {
+    "15ml": {
+      "r": 512,
+      "m": 383.75
+    }
+  },
+  "Laranja Doce (Wild Orange)": {
+    "15ml": {
+      "r": 120,
+      "m": 90
+    },
+    "5ml": {
+      "r": 43,
+      "m": 32.5
+    }
+  },
+  "Laranja Doce": {
+    "15ml": {
+      "r": 120,
+      "m": 90
+    },
+    "5ml": {
+      "r": 43,
+      "m": 32.5
+    }
+  },
+  "Wintergreen": {
+    "15ml": {
+      "r": 180,
+      "m": 135
+    }
+  },
+  "Ylang Ylang": {
+    "15ml": {
+      "r": 299,
+      "m": 224
+    }
+  },
+  "Cúrcuma (Turmeric)": {
+    "15ml": {
+      "r": 292,
+      "m": 218.75
+    }
+  },
+  "Cúrcuma": {
+    "15ml": {
+      "r": 292,
+      "m": 218.75
+    }
+  },
+  "Curcuma": {
+    "15ml": {
+      "r": 233,
+      "m": 175
+    }
+  },
+  "Turmeric": {
+    "15ml": {
+      "r": 292,
+      "m": 218.75
+    }
+  },
+  "Pimenta Rosa (Pink Pepper)": {
+    "5ml": {
+      "r": 250,
+      "m": 187.5
+    }
+  },
+  "Pimenta Rosa": {
+    "5ml": {
+      "r": 250,
+      "m": 187.5
+    }
+  },
+  "Rosa (Rose)": {
+    "5ml": {
+      "r": 67,
+      "m": 50
+    }
+  },
+  "Canela (Cinnamon Bark)": {
+    "15ml": {
+      "r": 200,
+      "m": 150
+    }
+  },
+  "Noz-Moscada (Nutmeg)": {
+    "15ml": {
+      "r": 176,
+      "m": 132
+    }
+  },
+  "Noz-moscada": {
+    "15ml": {
+      "r": 176,
+      "m": 132
+    }
+  },
+  "Adaptiv": {
+    "15ml": {
+      "r": 378,
+      "m": 283.75
+    },
+    "10ml Touch": {
+      "r": 200,
+      "m": 150
+    }
+  },
+  "Air-X": {
+    "15ml": {
+      "r": 232,
+      "m": 173.75
+    }
+  },
+  "AromaTouch": {
+    "15ml": {
+      "r": 290,
+      "m": 217.5
+    }
+  },
+  "Balance (Mix Aterrador)": {
+    "15ml": {
+      "r": 210,
+      "m": 157.5
+    },
+    "5ml": {
+      "r": 60,
+      "m": 45
+    }
+  },
+  "Balance": {
+    "15ml": {
+      "r": 210,
+      "m": 157.5
+    },
+    "5ml": {
+      "r": 60,
+      "m": 45
+    }
+  },
+  "Breathe / Clarify (Mix Respiratório)": {
+    "15ml": {
+      "r": 232,
+      "m": 173.75
+    },
+    "5ml": {
+      "r": 70,
+      "m": 53
+    }
+  },
+  "Citrus Bliss (Mix Revigorante)": {
+    "15ml": {
+      "r": 180,
+      "m": 135
+    }
+  },
+  "Citrus Bliss": {
+    "15ml": {
+      "r": 180,
+      "m": 135
+    }
+  },
+  "DDR Prime": {
+    "15ml": {
+      "r": 300,
+      "m": 225
+    }
+  },
+  "Deep Blue (Mix Suavizante)": {
+    "5ml": {
+      "r": 288,
+      "m": 216
+    }
+  },
+  "Elevation (Mix Alegre)": {
+    "15ml": {
+      "r": 232,
+      "m": 173.75
+    }
+  },
+  "Hygge": {
+    "15ml": {
+      "r": 350,
+      "m": 262.5
+    }
+  },
+  "On Guard (Mix Protetor)": {
+    "15ml": {
+      "r": 360,
+      "m": 270
+    },
+    "5ml": {
+      "r": 140,
+      "m": 105
+    }
+  },
+  "Purify (Mix Purificador)": {
+    "15ml": {
+      "r": 200,
+      "m": 150
+    }
+  },
+  "Purify": {
+    "15ml": {
+      "r": 200,
+      "m": 150
+    }
+  },
+  "Serenity (Mix Repousante)": {
+    "15ml": {
+      "r": 340,
+      "m": 255
+    }
+  },
+  "Smart & Sassy": {
+    "15ml": {
+      "r": 220,
+      "m": 165
+    }
+  },
+  "Slim & Sassy (Mix Metabólico)": {
+    "15ml": {
+      "r": 232,
+      "m": 173.75
+    }
+  },
+  "Slim & Sassy": {
+    "15ml": {
+      "r": 220,
+      "m": 165
+    }
+  },
+  "SuperMint": {
+    "15ml": {
+      "r": 242,
+      "m": 181.25
+    }
+  },
+  "TerraShield (Mix Repelente)": {
+    "15ml": {
+      "r": 110,
+      "m": 82.5
+    }
+  },
+  "TerraShield": {
+    "15ml": {
+      "r": 110,
+      "m": 82.5
+    }
+  },
+  "Zendocrine (Mix Desintoxicante)": {
+    "15ml": {
+      "r": 247,
+      "m": 185
+    }
+  },
+  "Zendocrine": {
+    "15ml": {
+      "r": 247,
+      "m": 185
+    }
+  },
+  "ZenGest / DigestZen (Mix Digestivo)": {
+    "15ml": {
+      "r": 232,
+      "m": 173.75
+    },
+    "5ml": {
+      "r": 140,
+      "m": 105
+    }
+  },
+  "ZenGest": {
+    "15ml": {
+      "r": 353,
+      "m": 265
+    },
+    "5ml": {
+      "r": 140,
+      "m": 105
+    }
+  },
+  "MetaPWR Blend": {
+    "15ml": {
+      "r": 239,
+      "m": 179
+    }
+  },
+  "InTune (Mix Foco)": {
+    "10ml Touch": {
+      "r": 269,
+      "m": 202
+    }
+  },
+  "PastTense (Mix Tensão)": {
+    "10ml Touch": {
+      "r": 164,
+      "m": 123
+    }
+  },
+  "ClaryCalm (Mix Mensal Mulher)": {
+    "10ml Touch": {
+      "r": 233,
+      "m": 175
+    }
+  },
+  "Whisper (Mix para Mulheres)": {
+    "5ml": {
+      "r": 150,
+      "m": 112.5
+    }
+  },
+  "Whisper": {
+    "5ml": {
+      "r": 150,
+      "m": 112.5
+    }
+  },
+  "Cheer (Mix Animador)": {
+    "5ml": {
+      "r": 260,
+      "m": 195
+    }
+  },
+  "Cheer": {
+    "5ml": {
+      "r": 260,
+      "m": 195
+    }
+  },
+  "Console (Mix Consolador)": {
+    "5ml": {
+      "r": 380,
+      "m": 285
+    }
+  },
+  "Console": {
+    "5ml": {
+      "r": 380,
+      "m": 285
+    }
+  },
+  "Forgive (Mix Renovador)": {
+    "5ml": {
+      "r": 210,
+      "m": 157.5
+    }
+  },
+  "Forgive": {
+    "5ml": {
+      "r": 210,
+      "m": 157.5
+    }
+  },
+  "Motivate (Mix Encorajador)": {
+    "5ml": {
+      "r": 240,
+      "m": 180
+    }
+  },
+  "Motivate": {
+    "5ml": {
+      "r": 240,
+      "m": 180
+    }
+  },
+  "Motive (Mix Motivador)": {
+    "5ml": {
+      "r": 180,
+      "m": 135
+    }
+  },
+  "Passion (Mix Inspirador)": {
+    "5ml": {
+      "r": 279,
+      "m": 209.25
+    }
+  },
+  "Passion": {
+    "5ml": {
+      "r": 279,
+      "m": 209.25
+    }
+  },
+  "Peace (Mix Tranquilizador)": {
+    "5ml": {
+      "r": 310,
+      "m": 232.5
+    }
+  },
+  "Peace": {
+    "5ml": {
+      "r": 310,
+      "m": 232.5
+    }
+  },
+  "Adaptiv Touch": {
+    "10ml Touch": {
+      "r": 200,
+      "m": 150
+    }
+  },
+  "Brave Touch": {
+    "10ml Touch": {
+      "r": 164,
+      "m": 123
+    }
+  },
+  "Brave (Kids)": {
+    "10ml Touch": {
+      "r": 164,
+      "m": 123
+    }
+  },
+  "Breathe Touch": {
+    "10ml Touch": {
+      "r": 150,
+      "m": 112.5
+    }
+  },
+  "Calmer Touch": {
+    "10ml Touch": {
+      "r": 145,
+      "m": 109
+    }
+  },
+  "Calmer (Kids)": {
+    "10ml Touch": {
+      "r": 145,
+      "m": 109
+    }
+  },
+  "ClaryCalm Touch": {
+    "10ml Touch": {
+      "r": 233,
+      "m": 175
+    }
+  },
+  "Copaíba Touch": {
+    "10ml Touch": {
+      "r": 172,
+      "m": 129
+    }
+  },
+  "Deep Blue Touch": {
+    "10ml Touch": {
+      "r": 430,
+      "m": 322.5
+    }
+  },
+  "Helichrysum Touch": {
+    "10ml Touch": {
+      "r": 531,
+      "m": 398
+    }
+  },
+  "Hope Touch": {
+    "10ml Touch": {
+      "r": 208,
+      "m": 156.25
+    }
+  },
+  "Hope": {
+    "10ml Touch": {
+      "r": 208,
+      "m": 156.25
+    }
+  },
+  "InTune Touch": {
+    "10ml Touch": {
+      "r": 269,
+      "m": 202
+    }
+  },
+  "Jasmine Touch": {
+    "10ml Touch": {
+      "r": 393,
+      "m": 295
+    }
+  },
+  "Lavanda Touch": {
+    "10ml Touch": {
+      "r": 160,
+      "m": 120
+    }
+  },
+  "Melaleuca Touch": {
+    "10ml Touch": {
+      "r": 240,
+      "m": 180
+    }
+  },
+  "On Guard Touch": {
+    "10ml Touch": {
+      "r": 171,
+      "m": 128
+    }
+  },
+  "Oregano Touch": {
+    "10ml Touch": {
+      "r": 150,
+      "m": 112.5
+    }
+  },
+  "PastTense Touch": {
+    "10ml Touch": {
+      "r": 164,
+      "m": 123
+    }
+  },
+  "Peppermint Touch": {
+    "10ml Touch": {
+      "r": 150,
+      "m": 112.5
+    }
+  },
+  "Rescuer Touch": {
+    "10ml Touch": {
+      "r": 120,
+      "m": 90
+    }
+  },
+  "Rescuer (Kids)": {
+    "10ml Touch": {
+      "r": 120,
+      "m": 90
+    }
+  },
+  "Rose Touch": {
+    "10ml Touch": {
+      "r": 650,
+      "m": 487.5
+    }
+  },
+  "Steady Touch": {
+    "10ml Touch": {
+      "r": 121,
+      "m": 91
+    }
+  },
+  "Steady (Kids)": {
+    "10ml Touch": {
+      "r": 121,
+      "m": 91
+    }
+  },
+  "Stronger Touch": {
+    "10ml Touch": {
+      "r": 115,
+      "m": 86
+    }
+  },
+  "Stronger (Kids)": {
+    "10ml Touch": {
+      "r": 115,
+      "m": 86
+    }
+  },
+  "Tamer Touch": {
+    "10ml Touch": {
+      "r": 113,
+      "m": 85
+    }
+  },
+  "Tamer (Kids)": {
+    "10ml Touch": {
+      "r": 113,
+      "m": 85
+    }
+  },
+  "Thinker Touch": {
+    "10ml Touch": {
+      "r": 128,
+      "m": 96
+    }
+  },
+  "Thinker (Kids)": {
+    "10ml Touch": {
+      "r": 128,
+      "m": 96
+    }
+  },
+  "Vetiver Touch": {
+    "10ml Touch": {
+      "r": 330,
+      "m": 247.5
+    }
+  },
+  "ZenGest Touch": {
+    "10ml Touch": {
+      "r": 230,
+      "m": 172.5
+    }
+  },
+  "Whisper Touch": {
+    "10ml Touch": {
+      "r": 119,
+      "m": 89
+    }
+  },
+  "Frankincense Touch": {
+    "10ml Touch": {
+      "r": 500,
+      "m": 375
+    }
+  },
+  "Neroli Touch": {
+    "10ml Touch": {
+      "r": 152,
+      "m": 114
+    }
+  },
+  "Magnolia Touch": {
+    "10ml Touch": {
+      "r": 125,
+      "m": 94
+    }
+  },
+  "Salubelle Touch": {
+    "10ml Touch": {
+      "r": 580,
+      "m": 435
+    }
+  },
+  "Salubelle": {
+    "10ml Touch": {
+      "r": 580,
+      "m": 435
+    }
+  },
+  "Immortelle": {
+    "15ml": {
+      "r": 485,
+      "m": 364
+    }
+  },
+  "Cheer Touch": {
+    "10ml Touch": {
+      "r": 160,
+      "m": 120
+    }
+  },
+  "Console Touch": {
+    "10ml Touch": {
+      "r": 240,
+      "m": 180
+    }
+  },
+  "Forgive Touch": {
+    "10ml Touch": {
+      "r": 108,
+      "m": 81
+    }
+  },
+  "Motivate Touch": {
+    "10ml Touch": {
+      "r": 150,
+      "m": 112.5
+    }
+  },
+  "Passion Touch": {
+    "10ml Touch": {
+      "r": 247,
+      "m": 185
+    }
+  },
+  "Peace Touch": {
+    "10ml Touch": {
+      "r": 200,
+      "m": 150
+    }
+  },
+  "Condicionador Diário": {
+    "Unidade / Kit": {
+      "r": 212,
+      "m": 159
+    }
+  },
+  "Condicionador Sem Enxágue": {
+    "Unidade / Kit": {
+      "r": 159,
+      "m": 119
+    }
+  },
+  "Deep Blue Rub": {
+    "Unidade / Kit": {
+      "r": 280,
+      "m": 210
+    }
+  },
+  "Pomada Deep Blue Rub": {
+    "Unidade / Kit": {
+      "r": 280,
+      "m": 210
+    }
+  },
+  "HD Clear": {
+    "10ml Touch": {
+      "r": 143,
+      "m": 107
+    }
+  },
+  "Óleo de Coco Fracionado (115ml)": {
+    "Unidade / Kit": {
+      "r": 113,
+      "m": 85
+    }
+  },
+  "Pasta de Dente On Guard": {
+    "Unidade / Kit": {
+      "r": 75,
+      "m": 56
+    }
+  },
+  "Creme Dental On Guard": {
+    "Unidade / Kit": {
+      "r": 75,
+      "m": 56
+    }
+  },
+  "On Guard Creme Dental Clareador Natural": {
+    "Unidade / Kit": {
+      "r": 93,
+      "m": 70
+    }
+  },
+  "Shampoo Protetor": {
+    "Unidade / Kit": {
+      "r": 193,
+      "m": 145
+    }
+  },
+  "Spa Citrus Bliss Loção": {
+    "Unidade / Kit": {
+      "r": 85,
+      "m": 64
+    }
+  },
+  "Spa Esfoliante para o Corpo": {
+    "Unidade / Kit": {
+      "r": 211,
+      "m": 158.5
+    }
+  },
+  "Spa Loção para Mãos e Corpo": {
+    "Unidade / Kit": {
+      "r": 132,
+      "m": 99
+    }
+  },
+  "Loção Spa Mãos e Corpo": {
+    "Unidade / Kit": {
+      "r": 132,
+      "m": 99
+    }
+  },
+  "Spa Manteiga Hidratante": {
+    "Unidade / Kit": {
+      "r": 224,
+      "m": 168
+    }
+  },
+  "Spa Sabonete Hidratante": {
+    "Unidade / Kit": {
+      "r": 105,
+      "m": 79
+    }
+  },
+  "Sabonete Líquido Spa": {
+    "Unidade / Kit": {
+      "r": 105,
+      "m": 79
+    }
+  },
+  "Veráge Hidratante": {
+    "Unidade / Kit": {
+      "r": 211,
+      "m": 158
+    }
+  },
+  "Veráge Salubelle Sérum": {
+    "Unidade / Kit": {
+      "r": 452,
+      "m": 339
+    }
+  },
+  "Veráge Solução de Limpeza": {
+    "Unidade / Kit": {
+      "r": 216,
+      "m": 162
+    }
+  },
+  "Veráge Tônico": {
+    "Unidade / Kit": {
+      "r": 289,
+      "m": 217
+    }
+  },
+  "Veráge Kit Skincare": {
+    "Unidade / Kit": {
+      "r": 731,
+      "m": 548
+    }
+  },
+  "Yarrow Pom": {
+    "30ml": {
+      "r": 728,
+      "m": 546
+    },
+    "15ml": {
+      "r": 360,
+      "m": 270
+    }
+  },
+  "Yarrow|Pom": {
+    "30ml": {
+      "r": 728,
+      "m": 546
+    },
+    "15ml": {
+      "r": 360,
+      "m": 270
+    }
+  },
+  "Yarrow Pom Sérum Firmador": {
+    "Unidade / Kit": {
+      "r": 553,
+      "m": 415
+    }
+  },
+  "Adaptiv Pastilhas": {
+    "Unidade / Kit": {
+      "r": 308,
+      "m": 231.25
+    }
+  },
+  "On Guard Beadlets": {
+    "Unidade / Kit": {
+      "r": 155,
+      "m": 116.25
+    }
+  },
+  "On Guard Pastilhas": {
+    "Unidade / Kit": {
+      "r": 248,
+      "m": 186.25
+    }
+  },
+  "Peppermint Beadlets": {
+    "Unidade / Kit": {
+      "r": 140,
+      "m": 105
+    }
+  },
+  "SuperMint Beadlets": {
+    "Unidade / Kit": {
+      "r": 145,
+      "m": 109
+    }
+  },
+  "DDR Prime Pastilha": {
+    "Unidade / Kit": {
+      "r": 325,
+      "m": 243.75
+    }
+  },
+  "DDR Prime Cápsulas": {
+    "Cápsulas": {
+      "r": 260,
+      "m": 195
+    }
+  },
+  "TriEase": {
+    "Cápsulas": {
+      "r": 237,
+      "m": 178
+    }
+  },
+  "Cúrcuma Cápsulas": {
+    "Cápsulas": {
+      "r": 199,
+      "m": 149
+    }
+  },
+  "Turmeric Pastilhas": {
+    "Cápsulas": {
+      "r": 248,
+      "m": 186.25
+    }
+  },
+  "VM Complex": {
+    "Cápsulas": {
+      "r": 248,
+      "m": 186
+    }
+  },
+  "xEO Mega": {
+    "Cápsulas": {
+      "r": 360,
+      "m": 270
+    }
+  },
+  "Zendocrine Pastilhas": {
+    "Unidade / Kit": {
+      "r": 224,
+      "m": 168
+    }
+  },
+  "ZenGest Cápsulas": {
+    "Cápsulas": {
+      "r": 172,
+      "m": 129
+    }
+  },
+  "ZenGest Pastilhas": {
+    "Unidade / Kit": {
+      "r": 215,
+      "m": 161.25
+    }
+  },
+  "MetaPWR Advantage (Colágeno)": {
+    "Unidade / Kit": {
+      "r": 664,
+      "m": 498
+    }
+  },
+  "MetaPWR Aroma": {
+    "Unidade / Kit": {
+      "r": 239,
+      "m": 179
+    }
+  },
+  "MetaPWR FiberUP": {
+    "Unidade / Kit": {
+      "r": 296,
+      "m": 222
+    }
+  },
+  "MetaPWR Pastilhas": {
+    "Unidade / Kit": {
+      "r": 315,
+      "m": 236.25
+    }
+  },
+  "MetaPWR Assist": {
+    "Cápsulas": {
+      "r": 97,
+      "m": 73
+    }
+  },
+  "On Guard Balas": {
+    "Unidade / Kit": {
+      "r": 120,
+      "m": 90
+    }
+  },
+  "Balas On Guard": {
+    "Unidade / Kit": {
+      "r": 120,
+      "m": 90
+    }
+  },
+  "Breathe Balas": {
+    "Unidade / Kit": {
+      "r": 120,
+      "m": 90
+    }
+  },
+  "Balas Breathe": {
+    "Unidade / Kit": {
+      "r": 120,
+      "m": 90
+    }
+  },
+  "Balas Ginger": {
+    "Unidade / Kit": {
+      "r": 120,
+      "m": 90
+    }
+  },
+  "Lifelong Vitality Pack (LLV)": {
+    "Unidade / Kit": {
+      "r": 467,
+      "m": 350
+    }
+  },
+  "Microplex VMz": {
+    "Cápsulas": {
+      "r": 265,
+      "m": 199
+    }
+  },
+  "Alpha CRS+": {
+    "Cápsulas": {
+      "r": 267,
+      "m": 200
+    }
+  },
+  "PB Assist+ (Probiótico)": {
+    "Cápsulas": {
+      "r": 215,
+      "m": 161
+    }
+  },
+  "TerraZyme": {
+    "Cápsulas": {
+      "r": 207,
+      "m": 155
+    }
+  },
+  "Mito2Max": {
+    "Cápsulas": {
+      "r": 159,
+      "m": 119
+    }
+  },
+  "Peppermint Softgels": {
+    "Cápsulas": {
+      "r": 73,
+      "m": 55
+    }
+  },
+  "ZenGest Softgels": {
+    "Cápsulas": {
+      "r": 172,
+      "m": 129
+    }
+  },
+  "On Guard Softgels": {
+    "Cápsulas": {
+      "r": 100,
+      "m": 75
+    }
+  },
+  "Copaíba Softgels": {
+    "Cápsulas": {
+      "r": 252,
+      "m": 189
+    }
+  },
+  "Deep Blue Polyphenol": {
+    "Cápsulas": {
+      "r": 189,
+      "m": 142
+    }
+  },
+  "xEO Mega Omega": {
+    "Cápsulas": {
+      "r": 360,
+      "m": 270
+    }
+  },
+  "Slim & Sassy TrimShake Vanilla": {
+    "Unidade / Kit": {
+      "r": 211,
+      "m": 158
+    }
+  },
+  "TrimShake Vanilla": {
+    "Unidade / Kit": {
+      "r": 211,
+      "m": 158
+    }
+  },
+  "Slim & Sassy TrimShake Chocolate": {
+    "Unidade / Kit": {
+      "r": 211,
+      "m": 158
+    }
+  },
+  "TrimShake Chocolate": {
+    "Unidade / Kit": {
+      "r": 211,
+      "m": 158
+    }
+  },
+  "Lifeshōt": {
+    "Unidade / Kit": {
+      "r": 203,
+      "m": 152
+    }
+  },
+  "Beauty Power (Colágeno)": {
+    "Unidade / Kit": {
+      "r": 264,
+      "m": 198
+    }
+  },
+  "Beauty Power": {
+    "Unidade / Kit": {
+      "r": 264,
+      "m": 198
+    }
+  },
+  "Brasil Living Kit": {
+    "Unidade / Kit": {
+      "r": 960,
+      "m": 720
+    }
+  },
+  "Colecionador": {
+    "Unidade / Kit": {
+      "r": 7993,
+      "m": 5995
+    }
+  },
+  "Culinária Essencial": {
+    "Unidade / Kit": {
+      "r": 717,
+      "m": 537.5
+    }
+  },
+  "Essencial Para o Lar": {
+    "Unidade / Kit": {
+      "r": 2517,
+      "m": 1888
+    }
+  },
+  "Kit de Apresentação": {
+    "Unidade / Kit": {
+      "r": 187,
+      "m": 140
+    }
+  },
+  "Kit Cuidados Pele Veráge": {
+    "Unidade / Kit": {
+      "r": 731,
+      "m": 548
+    }
+  },
+  "Kids Kit": {
+    "Unidade / Kit": {
+      "r": 1022,
+      "m": 766.25
+    }
+  },
+  "MetaPWR Kit": {
+    "Unidade / Kit": {
+      "r": 1320,
+      "m": 990
+    }
+  },
+  "AromaTouch Kit": {
+    "Unidade / Kit": {
+      "r": 873,
+      "m": 655
+    }
+  },
+  "AromaTouch com Difusor": {
+    "Unidade / Kit": {
+      "r": 1307,
+      "m": 980
+    }
+  },
+  "Livro Culinária Essencial": {
+    "Unidade / Kit": {
+      "r": 150,
+      "m": 112.5
+    }
+  },
+  "Livro Spa Essencial": {
+    "Unidade / Kit": {
+      "r": 120,
+      "m": 90
+    }
+  },
+  "Soluções Naturais": {
+    "Unidade / Kit": {
+      "r": 3987,
+      "m": 2990
+    }
+  },
+  "Wooden Box": {
+    "Unidade / Kit": {
+      "r": 105,
+      "m": 79
+    }
+  },
+  "Diamond": {
+    "Unidade / Kit": {
+      "r": 15993,
+      "m": 11995
+    }
+  },
+  "Difusor Pebble": {
+    "Unidade / Kit": {
+      "r": 498,
+      "m": 373.75
+    }
+  },
+  "Difusor Petal 2.0": {
+    "Unidade / Kit": {
+      "r": 532,
+      "m": 399
+    }
+  },
+  "Difusor Volo Mármore": {
+    "Unidade / Kit": {
+      "r": 567,
+      "m": 425
+    }
+  },
+  "Difusor Volo Ônix": {
+    "Unidade / Kit": {
+      "r": 567,
+      "m": 425
+    }
+  },
+  "Dawn Umidificador": {
+    "Unidade / Kit": {
+      "r": 797,
+      "m": 598
+    }
+  },
+  "Início Rápido": {
+    "Unidade / Kit": {
+      "r": 800,
+      "m": 600
+    }
+  },
+  "Primeiros Cuidados": {
+    "Unidade / Kit": {
+      "r": 1497,
+      "m": 1122.5
+    }
+  },
+  "Melão Amargo": {
+    "15ml": {
+      "r": 176,
+      "m": 132
+    }
+  },
+  "Island Mint": {
+    "15ml": {
+      "r": 177,
+      "m": 133
+    }
+  },
+  "Holiday Peace": {
+    "15ml": {
+      "r": 192,
+      "m": 144
+    }
+  },
+  "Holiday Joy": {
+    "15ml": {
+      "r": 192,
+      "m": 144
+    }
+  },
+  "Slim Sassy": {
+    "15ml": {
+      "r": 220,
+      "m": 165
+    }
+  },
+  "Forest Bathing": {
+    "15ml": {
+      "r": 315,
+      "m": 236.25
+    }
+  },
+  "Citrus Bloom": {
+    "15ml": {
+      "r": 192,
+      "m": 144
+    }
+  },
+  "Anchor (Yoga)": {
+    "15ml": {
+      "r": 177,
+      "m": 133
+    }
+  },
+  "Anchor": {
+    "15ml": {
+      "r": 177,
+      "m": 133
+    }
+  },
+  "Align (Yoga)": {
+    "15ml": {
+      "r": 177,
+      "m": 133
+    }
+  },
+  "Align": {
+    "15ml": {
+      "r": 177,
+      "m": 133
+    }
+  },
+  "Arise (Yoga)": {
+    "15ml": {
+      "r": 177,
+      "m": 133
+    }
+  },
+  "Arise": {
+    "15ml": {
+      "r": 177,
+      "m": 133
+    }
+  }
+}

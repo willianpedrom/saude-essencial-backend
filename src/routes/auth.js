@@ -90,7 +90,8 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
                     p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar,
                     p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes,
                     p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario,
-                    p.tem_relatorios, p.tem_estoque, p.tem_depoimentos, p.tem_equipe
+                    p.tem_relatorios, p.tem_estoque, p.tem_depoimentos, p.tem_equipe,
+                    p.limite_membros_equipe
              FROM consultoras c
              LEFT JOIN assinaturas a ON a.consultora_id = c.id
              LEFT JOIN planos p ON a.plano = p.slug AND p.ativo = TRUE
@@ -132,6 +133,7 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
             tem_estoque: row.tem_estoque,
             tem_depoimentos: row.tem_depoimentos,
             tem_equipe: row.tem_equipe,
+            limite_membros_equipe: row.limite_membros_equipe,
         };
 
         const tv = row.token_version ?? 1;
@@ -185,7 +187,8 @@ router.get('/me', authMiddleware, async (req, res, next) => {
                     p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar,
                     p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes,
                     p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario,
-                    p.tem_relatorios, p.tem_estoque, p.tem_depoimentos, p.tem_equipe
+                    p.tem_relatorios, p.tem_estoque, p.tem_depoimentos, p.tem_equipe,
+                    p.limite_membros_equipe
              FROM consultoras c
              LEFT JOIN assinaturas a ON a.consultora_id = c.id
              LEFT JOIN planos p ON a.plano = p.slug AND p.ativo = TRUE
@@ -205,6 +208,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
             tem_anamneses: row.tem_anamneses, tem_clientes: row.tem_clientes, tem_integracoes: row.tem_integracoes,
             tem_pipeline: row.tem_pipeline, tem_multiusuario: row.tem_multiusuario, tem_relatorios: row.tem_relatorios,
             tem_estoque: row.tem_estoque, tem_depoimentos: row.tem_depoimentos, tem_equipe: row.tem_equipe,
+            limite_membros_equipe: row.limite_membros_equipe,
         };
 
         const consultoraData = {

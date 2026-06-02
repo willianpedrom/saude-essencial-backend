@@ -874,6 +874,22 @@ const MIGRATIONS = [
             
             console.log('[021_equipe_push_historico] Tabelas de histórico e cliques de push criadas.');
         }
+    },
+    // ── 022: Limites e Acesso a Equipes por Plano ───────────────────────────────
+    {
+        name: '022_plano_limite_equipe',
+        async up(pool) {
+            await pool.query(`
+                ALTER TABLE planos ADD COLUMN IF NOT EXISTS limite_membros_equipe INTEGER DEFAULT NULL
+            `);
+            await pool.query(`
+                UPDATE planos SET limite_membros_equipe = 5 WHERE slug = 'pro'
+            `);
+            await pool.query(`
+                UPDATE planos SET limite_membros_equipe = 20 WHERE slug = 'enterprise'
+            `);
+            console.log('[022_plano_limite_equipe] Limites e acesso de equipe atualizados com sucesso.');
+        }
     }
 ];
 

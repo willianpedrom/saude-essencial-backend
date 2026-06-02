@@ -1,0 +1,758 @@
+[
+  {
+    "nome": "Lavanda (Lavender)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Hortelã-Pimenta (Peppermint)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Olíbano (Frankincense)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Melaleuca (Tea Tree)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Laranja Doce (Wild Orange)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Limão Siciliano (Lemon)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Copaíba",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Orégano",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Gengibre (Ginger)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Alecrim (Rosemary)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Bergamota",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Eucalipto",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Gerânio",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Helicriso (Helichrysum)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Canela (Cinnamon Bark)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Rosa (Rose)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Melissa",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Mirra (Myrrh)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Cedro (Cedarwood)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Pimenta Preta (Black Pepper)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Sálvia Esclareia (Clary Sage)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Ylang Ylang",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Vetiver",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Sândalo Havaiano (Hawaiian Sandalwood)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Cravo (Clove)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Toranja (Grapefruit)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Tangerina",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Capim-Limão (Lemongrass)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Erva Doce (Fennel)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Manjerona (Marjoram)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Patchouli",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Tomilho (Thyme)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Cipreste (Cypress)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Zimbro (Juniper Berry)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Arborvitae",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Basil (Manjericão)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Pinho Siberiano (Siberian Fir)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Coentro (Coriander)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Camomila Romana (Roman Chamomile)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "On Guard (Mix Protetor)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Breathe / Clarify (Mix Respiratório)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Deep Blue (Mix Suavizante)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "ZenGest / DigestZen (Mix Digestivo)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Serenity (Mix Repousante)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Balance (Mix Aterrador)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Citrus Bliss (Mix Revigorante)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Elevation (Mix Alegre)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Purify (Mix Purificador)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "AromaTouch",
+    "cat": "Blend"
+  },
+  {
+    "nome": "PastTense (Mix Tensão)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "InTune (Mix Foco)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "ClaryCalm (Mix Mensal Mulher)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Cheer (Mix Animador)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Motivate (Mix Encorajador)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Peace (Mix Tranquilizador)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Zendocrine (Mix Desintoxicante)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Adaptiv",
+    "cat": "Blend"
+  },
+  {
+    "nome": "MetaPWR Blend",
+    "cat": "Blend"
+  },
+  {
+    "nome": "TerraShield (Mix Repelente)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Whisper (Mix para Mulheres)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Passion (Mix Inspirador)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Forgive (Mix Renovador)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Console (Mix Consolador)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Anchor (Yoga)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Align (Yoga)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Arise (Yoga)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Island Mint",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Holiday Peace",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Holiday Joy",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Lavanda Touch",
+    "cat": "Roll-on (Touch)"
+  },
+  {
+    "nome": "Peppermint Touch",
+    "cat": "Roll-on (Touch)"
+  },
+  {
+    "nome": "Frankincense Touch",
+    "cat": "Roll-on (Touch)"
+  },
+  {
+    "nome": "Melaleuca Touch",
+    "cat": "Roll-on (Touch)"
+  },
+  {
+    "nome": "On Guard Touch",
+    "cat": "Roll-on (Touch)"
+  },
+  {
+    "nome": "Breathe Touch",
+    "cat": "Roll-on (Touch)"
+  },
+  {
+    "nome": "Deep Blue Touch",
+    "cat": "Roll-on (Touch)"
+  },
+  {
+    "nome": "ZenGest Touch",
+    "cat": "Roll-on (Touch)"
+  },
+  {
+    "nome": "Rose Touch",
+    "cat": "Roll-on (Touch)"
+  },
+  {
+    "nome": "Jasmine Touch",
+    "cat": "Roll-on (Touch)"
+  },
+  {
+    "nome": "Neroli Touch",
+    "cat": "Roll-on (Touch)"
+  },
+  {
+    "nome": "Magnolia Touch",
+    "cat": "Roll-on (Touch)"
+  },
+  {
+    "nome": "Thinker (Kids)",
+    "cat": "Linha Kids"
+  },
+  {
+    "nome": "Calmer (Kids)",
+    "cat": "Linha Kids"
+  },
+  {
+    "nome": "Stronger (Kids)",
+    "cat": "Linha Kids"
+  },
+  {
+    "nome": "Rescuer (Kids)",
+    "cat": "Linha Kids"
+  },
+  {
+    "nome": "Steady (Kids)",
+    "cat": "Linha Kids"
+  },
+  {
+    "nome": "Brave (Kids)",
+    "cat": "Linha Kids"
+  },
+  {
+    "nome": "Tamer (Kids)",
+    "cat": "Linha Kids"
+  },
+  {
+    "nome": "Lifelong Vitality Pack (LLV)",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "Microplex VMz",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "xEO Mega",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "Alpha CRS+",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "PB Assist+ (Probiótico)",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "TerraZyme",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "Beauty Power (Colágeno)",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "MetaPWR Advantage (Colágeno)",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "MetaPWR Assist",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "Deep Blue Polyphenol Complex",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "Peppermint Softgels",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "ZenGest Softgels",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "On Guard Softgels",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "Copaíba Softgels",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "Mito2Max",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "Pasta de Dente On Guard",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Enxaguante Bucal On Guard",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Sabonete Líquido On Guard",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Pomada Deep Blue Rub",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Bálsamo Labial Original",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Loção Mãos e Corpo",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Shampoo Salon Essentials",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Condicionador Salon Essentials",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Veráge Cleanser",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Veráge Toner",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Veráge Sérum",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Veráge Loção Hidratante",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Esfoliante Corporal Revel (Body Scrub)",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Manteiga Corporal Revel (Body Butter)",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Kit Brasil Living (10 óleos 5ml)",
+    "cat": "Kit"
+  },
+  {
+    "nome": "Kit Essencial para o Lar",
+    "cat": "Kit"
+  },
+  {
+    "nome": "Kit Kids Completo (7 unidades)",
+    "cat": "Kit"
+  },
+  {
+    "nome": "Kit Soluções Naturais",
+    "cat": "Kit"
+  },
+  {
+    "nome": "Difusor Pétala (Petal)",
+    "cat": "Difusor"
+  },
+  {
+    "nome": "Difusor Volo",
+    "cat": "Difusor"
+  },
+  {
+    "nome": "Difusor Pilot",
+    "cat": "Difusor"
+  },
+  {
+    "nome": "Difusor Roam",
+    "cat": "Difusor"
+  },
+  {
+    "nome": "Difusor Dawn (Umidificador)",
+    "cat": "Difusor"
+  },
+  {
+    "nome": "Laluz Diffuser",
+    "cat": "Difusor"
+  },
+  {
+    "nome": "Difusor Petal 2.0",
+    "cat": "Difusor"
+  },
+  {
+    "nome": "Difusor Pebble",
+    "cat": "Difusor"
+  },
+  {
+    "nome": "Óleo de Coco Fracionado (115ml)",
+    "cat": "Acessório"
+  },
+  {
+    "nome": "Cápsulas Vegetais (Vazias)",
+    "cat": "Acessório"
+  },
+  {
+    "nome": "Chaveiro doTERRA (Roxo/Preto)",
+    "cat": "Acessório"
+  },
+  {
+    "nome": "Estojo de Viagem Para Óleos",
+    "cat": "Acessório"
+  },
+  {
+    "nome": "Caixa de Madeira",
+    "cat": "Acessório"
+  },
+  {
+    "nome": "Copaíba (Copaiba)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Eucalipto Radiata (Eucalyptus)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Orégano (Oregano)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Gerânio (Geranium)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Wintergreen",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Cardamomo (Cardamom)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Limão Tahiti (Lime)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Cúrcuma (Turmeric)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Spearmint",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Cássia (Cassia)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Pimenta Rosa (Pink Pepper)",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Petitgrain",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Douglas Fir",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Spikenard",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Breu Branco",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Erva Baleeira",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Green Mandarin",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Guaiacwood",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Lemon Eucalyptus",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Madagascar Vanilla",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Cilantro",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Citronela",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Blue Tansy",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Yarrow Pom",
+    "cat": "Óleo Essencial"
+  },
+  {
+    "nome": "Motive (Mix Motivador)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Air-X",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Forest Bathing",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Hope",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Hygge",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Salubelle",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Citrus Bloom",
+    "cat": "Blend"
+  },
+  {
+    "nome": "HD Clear",
+    "cat": "Blend"
+  },
+  {
+    "nome": "DDR Prime",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Slim & Sassy (Mix Metabólico)",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Immortelle",
+    "cat": "Blend"
+  },
+  {
+    "nome": "Lifeshōt",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "TriEase",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "DDR Prime Cápsulas",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "Cúrcuma Cápsulas",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "ZenGest Cápsulas",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "VM Complex",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "MetaPWR FiberUP",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "TrimShake Vanilla",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "TrimShake Chocolate",
+    "cat": "Suplemento"
+  },
+  {
+    "nome": "On Guard Pastilhas",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "On Guard Beadlets",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Peppermint Beadlets",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "SuperMint Beadlets",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Balas Breathe",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Balas Ginger",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Balas On Guard",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Creme Dental On Guard",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Loção Spa Mãos e Corpo",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Sabonete Líquido Spa",
+    "cat": "Personal Care"
+  },
+  {
+    "nome": "Veráge Kit Skincare",
+    "cat": "Kit"
+  }
+]

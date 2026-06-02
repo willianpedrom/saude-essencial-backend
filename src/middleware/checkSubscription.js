@@ -22,7 +22,8 @@ module.exports = async function checkSubscription(req, res, next) {
                 tem_multiusuario: true,
                 tem_pagina_pessoal: true, tem_raiox: true, tem_minhas_vendas: true,
                 tem_radar: true, tem_agenda: true, tem_links: true, tem_anamneses: true, tem_clientes: true,
-                tem_equipe: true
+                tem_equipe: true,
+                limite_membros_equipe: null
             };
             return next();
         }
@@ -38,7 +39,8 @@ module.exports = async function checkSubscription(req, res, next) {
                         p.clientes_max, p.anamneses_mes_max,
                         p.tem_integracoes, p.tem_pipeline, p.tem_multiusuario,
                         p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas,
-                        p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes, p.tem_equipe
+                        p.tem_radar, p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes, p.tem_equipe,
+                        p.limite_membros_equipe
                  FROM assinaturas a
                  LEFT JOIN planos p ON p.slug = a.plano AND p.ativo = TRUE
                  WHERE a.consultora_id = $1
@@ -71,7 +73,8 @@ module.exports = async function checkSubscription(req, res, next) {
             tem_links: sub.tem_links ?? true,
             tem_anamneses: sub.tem_anamneses ?? true,
             tem_clientes: sub.tem_clientes ?? true,
-            tem_equipe: sub.tem_equipe ?? false
+            tem_equipe: sub.tem_equipe ?? false,
+            limite_membros_equipe: sub.limite_membros_equipe ?? null
         };
 
         // Trial: allow if within trial window

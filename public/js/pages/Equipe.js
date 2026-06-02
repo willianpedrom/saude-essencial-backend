@@ -957,6 +957,15 @@ async function loadMembrosList() {
 
     try {
         const membros = await api('GET', '/api/equipe/membros');
+
+        // Atualiza o texto da aba com o contador de membros e limite do plano
+        const limit = auth.current?.assinatura?.limite_membros_equipe ?? null;
+        const limitStr = limit !== null ? ` / ${limit}` : ' (∞)';
+        const tabBtn = document.querySelector('button[data-target="tab-membros"]');
+        if (tabBtn) {
+            tabBtn.innerHTML = `👥 Membros (${membros.length}${limitStr})`;
+        }
+
         if (membros.length === 0) {
             tbody.innerHTML = `
                 <tr>

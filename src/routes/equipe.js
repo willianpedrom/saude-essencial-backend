@@ -233,6 +233,41 @@ router.post('/entrar', async (req, res) => {
             return res.status(400).json({ error: 'Você já possui sua própria equipe e não pode entrar em outra.' });
         }
 
+        // 2.5. Verifica as permissões e limite de membros do plano do líder da equipe
+        const { rows: liderSubRows } = await pool.query(
+            `SELECT c.role, p.tem_equipe, p.limite_membros_equipe
+             FROM consultoras c
+             LEFT JOIN assinaturas a ON a.consultora_id = c.id
+             LEFT JOIN planos p ON p.slug = a.plano AND p.ativo = TRUE
+             WHERE c.id = $1
+             ORDER BY a.criado_em DESC LIMIT 1`,
+            [equipe.lider_id]
+        );
+
+        if (liderSubRows.length > 0) {
+            const liderSub = liderSubRows[0];
+            // Se o líder não for admin, validamos o plano dele
+            if (liderSub.role !== 'admin') {
+                if (!liderSub.tem_equipe) {
+                    return res.status(403).json({ error: 'A equipe associada a este código de convite não possui o recurso de equipe ativo em seu plano atual.' });
+                }
+
+                if (liderSub.limite_membros_equipe !== null) {
+                    // Conta quantos liderados ativos estão nesta equipe (excluindo o líder)
+                    const { rows: countRows } = await pool.query(
+                        'SELECT COUNT(*) as total FROM consultoras WHERE equipe_id = $1 AND id != $2',
+                        [equipe.id, equipe.lider_id]
+                    );
+                    const totalMembros = parseInt(countRows[0].total || 0);
+                    if (totalMembros >= liderSub.limite_membros_equipe) {
+                        return res.status(400).json({ 
+                            error: `O limite de membros configurado para esta equipe (${liderSub.limite_membros_equipe} pessoas) foi atingido. O líder da equipe precisa fazer um upgrade do plano.` 
+                        });
+                    }
+                }
+            }
+        }
+
         // 3. Atualiza o equipe_id da consultora liderada
         await pool.query(
             'UPDATE consultoras SET equipe_id = $1 WHERE id = $2',
