@@ -438,5 +438,24 @@ BEGIN
     EXECUTE 'DROP TRIGGER IF EXISTS trg_atualizado_em ON prospectos_plataforma; '
          || 'CREATE TRIGGER trg_atualizado_em BEFORE UPDATE ON prospectos_plataforma '
          || 'FOR EACH ROW EXECUTE FUNCTION set_atualizado_em();';
-  END IF;
+   END IF;
 END $$;
+
+-- ==========================================
+-- DESAFIOS E GAMIFICAÇÃO DA EQUIPE
+-- ==========================================
+CREATE TABLE IF NOT EXISTS equipe_desafios (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  equipe_id     UUID NOT NULL REFERENCES equipes(id) ON DELETE CASCADE,
+  titulo        VARCHAR(200) NOT NULL,
+  descricao     TEXT,
+  tipo_desafio  VARCHAR(20) NOT NULL DEFAULT 'individual', -- 'individual' ou 'coletivo'
+  objetivo_tipo VARCHAR(50) NOT NULL, -- 'vendas_valor', 'anamneses_qtd', 'clientes_qtd'
+  meta          NUMERIC(10,2) NOT NULL,
+  data_inicio   DATE NOT NULL,
+  data_fim      DATE NOT NULL,
+  criado_em     TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_equipe_desafios_eq ON equipe_desafios(equipe_id);
+

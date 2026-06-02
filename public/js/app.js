@@ -143,7 +143,7 @@ const router = new Router({
         renderInventory(router);
     }),
     '/equipe': guard(async () => {
-        const { renderEquipe } = await import('./pages/Equipe.js?v=1015');
+        const { renderEquipe } = await import('./pages/Equipe.js?v=1016');
         renderEquipe(router);
     }),
 

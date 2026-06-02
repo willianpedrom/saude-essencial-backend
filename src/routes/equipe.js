@@ -984,4 +984,293 @@ router.get('/push-historico', async (req, res) => {
     }
 });
 
+/**
+ * GET /api/equipe/leaderboard
+ * Retorna o pódio de pontuação de produtividade mensal dos membros da equipe
+ */
+router.get('/leaderboard', async (req, res) => {
+    try {
+        const userId = req.consultora.id;
+        
+        // 1. Busca a equipe da consultora logada
+        const { rows: userRows } = await pool.query(
+            'SELECT equipe_id FROM consultoras WHERE id = $1',
+            [userId]
+        );
+        
+        const equipeId = userRows[0]?.equipe_id;
+        if (!equipeId) {
+            return res.json({ leaderboard: [] });
+        }
+        
+        // 2. Calcula pontos e estatísticas dos membros no mês corrente
+        const { rows: leaderboard } = await pool.query(`
+            SELECT 
+                c.id, 
+                c.nome, 
+                c.foto_url, 
+                c.rank_doterra,
+                (c.id = e.lider_id) AS is_lider,
+                (COALESCE(cl.qtd, 0) * 10 + COALESCE(an.qtd, 0) * 15 + COALESCE(vd.qtd, 0) * 20 + COALESCE(es.qtd, 0) * 5) AS pontos,
+                COALESCE(cl.qtd, 0) AS clientes_qtd,
+                COALESCE(an.qtd, 0) AS anamneses_qtd,
+                COALESCE(vd.qtd, 0) AS vendas_qtd,
+                COALESCE(es.qtd, 0) AS estoque_qtd
+            FROM consultoras c
+            JOIN equipes e ON e.id = c.equipe_id
+            LEFT JOIN (
+                SELECT consultora_id, COUNT(*) as qtd 
+                FROM clientes 
+                WHERE criado_em >= DATE_TRUNC('month', CURRENT_DATE)
+                GROUP BY consultora_id
+            ) cl ON cl.consultora_id = c.id
+            LEFT JOIN (
+                SELECT consultora_id, COUNT(*) as qtd 
+                FROM anamneses 
+                WHERE preenchido = TRUE AND criado_em >= DATE_TRUNC('month', CURRENT_DATE)
+                GROUP BY consultora_id
+            ) an ON an.consultora_id = c.id
+            LEFT JOIN (
+                SELECT consultora_id, COUNT(*) as qtd 
+                FROM vendas 
+                WHERE criado_em >= DATE_TRUNC('month', CURRENT_DATE)
+                GROUP BY consultora_id
+            ) vd ON vd.consultora_id = c.id
+            LEFT JOIN (
+                SELECT consultora_id, COUNT(*) as qtd 
+                FROM estoque 
+                WHERE criado_em >= DATE_TRUNC('month', CURRENT_DATE)
+                GROUP BY consultora_id
+            ) es ON es.consultora_id = c.id
+            WHERE c.equipe_id = $1
+            ORDER BY pontos DESC, c.nome ASC
+        `, [equipeId]);
+        
+        res.json({ leaderboard });
+    } catch (err) {
+        console.error('[GetTeamLeaderboard] Error:', err.message);
+        res.status(500).json({ error: 'Erro ao buscar o leaderboard da equipe.' });
+    }
+});
+
+/**
+ * GET /api/equipe/conquistas
+ * Retorna as medalhas acumuladas/desbloqueadas da consultora autenticada
+ */
+router.get('/conquistas', async (req, res) => {
+    try {
+        const userId = req.consultora.id;
+        
+        // Coleta estatísticas gerais acumuladas do usuário
+        const { rows: stats } = await pool.query(`
+            SELECT 
+                (SELECT COUNT(*) FROM vendas WHERE consultora_id = $1) AS vendas_total,
+                (SELECT COUNT(*) FROM anamneses WHERE consultora_id = $1 AND preenchido = TRUE) AS anamneses_total,
+                (SELECT COUNT(*) FROM estoque WHERE consultora_id = $1) AS estoque_total,
+                (SELECT COUNT(*) FROM clientes WHERE consultora_id = $1) AS clientes_total,
+                (SELECT COUNT(*) FROM equipe_aviso_confirmacoes WHERE consultora_id = $1) AS rsvp_total
+        `, [userId]);
+        
+        const row = stats[0] || { vendas_total: 0, anamneses_total: 0, estoque_total: 0, clientes_total: 0, rsvp_total: 0 };
+        const v = parseInt(row.vendas_total || 0, 10);
+        const a = parseInt(row.anamneses_total || 0, 10);
+        const e = parseInt(row.estoque_total || 0, 10);
+        const c = parseInt(row.clientes_total || 0, 10);
+        const r = parseInt(row.rsvp_total || 0, 10);
+        
+        const conquistas = [
+            {
+                id: 'primeira_venda',
+                titulo: '💰 Primeira Venda',
+                descricao: 'Registre sua primeira venda no sistema para começar a lucrar.',
+                atual: v,
+                meta: 1,
+                desbloqueada: v >= 1
+            },
+            {
+                id: 'mestre_anamnese',
+                titulo: '📝 Mestre da Anamnese',
+                descricao: 'Realize pelo menos 10 atendimentos com fichas de anamnese completadas.',
+                atual: a,
+                meta: 10,
+                desbloqueada: a >= 10
+            },
+            {
+                id: 'organizador_estoque',
+                titulo: '📦 Organizador de Estoque',
+                descricao: 'Cadastre 10 ou mais itens em seu estoque pessoal para controle ágil.',
+                atual: e,
+                meta: 10,
+                desbloqueada: e >= 10
+            },
+            {
+                id: 'expandindo_rede',
+                titulo: '👥 Expandindo a Rede',
+                descricao: 'Adicione pelo menos 5 contatos ou clientes no seu CRM.',
+                atual: c,
+                meta: 5,
+                desbloqueada: c >= 5
+            },
+            {
+                id: 'consultor_focado',
+                titulo: '🎯 Consultor Focado',
+                descricao: 'Confirme presença RSVP em pelo menos 2 reuniões no mural da equipe.',
+                atual: r,
+                meta: 2,
+                desbloqueada: r >= 2
+            }
+        ];
+        
+        res.json({ conquistas });
+    } catch (err) {
+        console.error('[GetConquistas] Error:', err.message);
+        res.status(500).json({ error: 'Erro ao buscar conquistas.' });
+    }
+});
+
+/**
+ * GET /api/equipe/desafios
+ * Retorna a lista de desafios ativos com o respectivo progresso individual/coletivo
+ */
+router.get('/desafios', async (req, res) => {
+    try {
+        const userId = req.consultora.id;
+        
+        const { rows: userRows } = await pool.query(
+            'SELECT equipe_id FROM consultoras WHERE id = $1',
+            [userId]
+        );
+        const equipeId = userRows[0]?.equipe_id;
+        if (!equipeId) {
+            return res.json({ desafios: [] });
+        }
+        
+        const { rows: desafios } = await pool.query(
+            'SELECT * FROM equipe_desafios WHERE equipe_id = $1 ORDER BY data_fim ASC, criado_em DESC',
+            [equipeId]
+        );
+        
+        const { rows: memberRows } = await pool.query(
+            'SELECT id FROM consultoras WHERE equipe_id = $1',
+            [equipeId]
+        );
+        const teamMemberIds = memberRows.map(r => r.id);
+        
+        const desafiosWithProgress = [];
+        for (const d of desafios) {
+            const targetIds = d.tipo_desafio === 'coletivo' ? teamMemberIds : [userId];
+            let progress = 0;
+            
+            if (d.objetivo_tipo === 'vendas_valor') {
+                const { rows: pRes } = await pool.query(
+                    'SELECT COALESCE(SUM(valor), 0) as total FROM vendas WHERE consultora_id = ANY($1) AND data BETWEEN $2 AND $3',
+                    [targetIds, d.data_inicio, d.data_fim]
+                );
+                progress = parseFloat(pRes[0].total || 0);
+            } else if (d.objetivo_tipo === 'anamneses_qtd') {
+                const { rows: pRes } = await pool.query(
+                    'SELECT COUNT(*) as total FROM anamneses WHERE consultora_id = ANY($1) AND preenchido = TRUE AND criado_em::date BETWEEN $2 AND $3',
+                    [targetIds, d.data_inicio, d.data_fim]
+                );
+                progress = parseInt(pRes[0].total || 0, 10);
+            } else if (d.objetivo_tipo === 'clientes_qtd') {
+                const { rows: pRes } = await pool.query(
+                    'SELECT COUNT(*) as total FROM clientes WHERE consultora_id = ANY($1) AND criado_em::date BETWEEN $2 AND $3',
+                    [targetIds, d.data_inicio, d.data_fim]
+                );
+                progress = parseInt(pRes[0].total || 0, 10);
+            }
+            
+            desafiosWithProgress.push({
+                ...d,
+                progresso: progress,
+                concluido: progress >= parseFloat(d.meta)
+            });
+        }
+        
+        res.json({ desafios: desafiosWithProgress });
+    } catch (err) {
+        console.error('[GetDesafios] Error:', err.message);
+        res.status(500).json({ error: 'Erro ao listar desafios.' });
+    }
+});
+
+/**
+ * POST /api/equipe/desafios
+ * Cria um novo desafio (líder apenas)
+ */
+router.post('/desafios', async (req, res) => {
+    try {
+        const userId = req.consultora.id;
+        const { titulo, descricao, tipo_desafio, objetivo_tipo, meta, data_inicio, data_fim } = req.body;
+        
+        // Verifica se é líder e pega a equipe
+        const { rows: equipeRows } = await pool.query(
+            'SELECT id FROM equipes WHERE lider_id = $1',
+            [userId]
+        );
+        
+        if (equipeRows.length === 0) {
+            return res.status(403).json({ error: 'Apenas líderes podem criar desafios de equipe.' });
+        }
+        
+        const equipeId = equipeRows[0].id;
+        
+        // Validações básicas
+        if (!titulo || titulo.trim() === '') return res.status(400).json({ error: 'Título é obrigatório.' });
+        if (!tipo_desafio || !['individual', 'coletivo'].includes(tipo_desafio)) return res.status(400).json({ error: 'Tipo de desafio inválido.' });
+        if (!objetivo_tipo || !['vendas_valor', 'anamneses_qtd', 'clientes_qtd'].includes(objetivo_tipo)) return res.status(400).json({ error: 'Métrica de objetivo inválida.' });
+        if (!meta || parseFloat(meta) <= 0) return res.status(400).json({ error: 'Meta deve ser maior que 0.' });
+        if (!data_inicio || !data_fim) return res.status(400).json({ error: 'Período (datas) é obrigatório.' });
+        
+        const { rows: newChallenge } = await pool.query(`
+            INSERT INTO equipe_desafios (equipe_id, titulo, descricao, tipo_desafio, objetivo_tipo, meta, data_inicio, data_fim)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING *
+        `, [equipeId, titulo.trim(), descricao || '', tipo_desafio, objetivo_tipo, parseFloat(meta), data_inicio, data_fim]);
+        
+        res.status(201).json(newChallenge[0]);
+    } catch (err) {
+        console.error('[CreateDesafio] Error:', err.message);
+        res.status(500).json({ error: 'Erro ao criar desafio.' });
+    }
+});
+
+/**
+ * DELETE /api/equipe/desafios/:id
+ * Remove um desafio existente (líder apenas)
+ */
+router.delete('/desafios/:id', async (req, res) => {
+    try {
+        const userId = req.consultora.id;
+        const challengeId = req.params.id;
+        
+        // Verifica se é líder e pega a equipe
+        const { rows: equipeRows } = await pool.query(
+            'SELECT id FROM equipes WHERE lider_id = $1',
+            [userId]
+        );
+        
+        if (equipeRows.length === 0) {
+            return res.status(403).json({ error: 'Apenas líderes de equipe podem remover desafios.' });
+        }
+        
+        const equipeId = equipeRows[0].id;
+        
+        const { rowCount } = await pool.query(
+            'DELETE FROM equipe_desafios WHERE id = $1 AND equipe_id = $2',
+            [challengeId, equipeId]
+        );
+        
+        if (rowCount === 0) {
+            return res.status(404).json({ error: 'Desafio não encontrado ou não pertence a sua equipe.' });
+        }
+        
+        res.json({ ok: true });
+    } catch (err) {
+        console.error('[DeleteDesafio] Error:', err.message);
+        res.status(500).json({ error: 'Erro ao remover desafio.' });
+    }
+});
+
 module.exports = router;

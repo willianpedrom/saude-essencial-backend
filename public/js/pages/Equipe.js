@@ -335,6 +335,281 @@ async function renderLeaderDashboard(router, equipe) {
             .creation-tab-btn.active {
                 background: white !important;
             }
+            
+            /* Gamification Styles */
+            .podium-container {
+                display: flex;
+                justify-content: center;
+                align-items: flex-end;
+                gap: 16px;
+                margin: 12px 0 24px;
+                padding: 20px;
+                background: #f8fafc;
+                border-radius: var(--radius-lg);
+                border: 1px solid var(--border);
+            }
+            .podium-column {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                flex: 1;
+                max-width: 140px;
+            }
+            .podium-avatar {
+                position: relative;
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                background: var(--green-100);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                color: var(--green-700);
+                margin-bottom: 12px;
+                border: 3px solid transparent;
+                box-shadow: var(--shadow-sm);
+            }
+            .podium-column.gold .podium-avatar {
+                width: 72px;
+                height: 72px;
+                border-color: var(--gold-400);
+                box-shadow: 0 0 15px rgba(234, 179, 8, 0.3);
+            }
+            .podium-column.silver .podium-avatar {
+                border-color: #cbd5e1;
+            }
+            .podium-column.bronze .podium-avatar {
+                border-color: #b45309;
+            }
+            .podium-badge {
+                position: absolute;
+                bottom: -6px;
+                right: 50%;
+                transform: translateX(50%);
+                font-size: 1.1rem;
+            }
+            .podium-bar {
+                width: 100%;
+                border-radius: 8px 8px 0 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 10px 6px;
+                color: white;
+                font-weight: 700;
+                font-size: 0.85rem;
+                transition: height 0.5s ease;
+            }
+            .podium-column.gold .podium-bar {
+                height: 90px;
+                background: linear-gradient(135deg, var(--gold-500), #ca8a04);
+            }
+            .podium-column.silver .podium-bar {
+                height: 65px;
+                background: linear-gradient(135deg, #94a3b8, #64748b);
+            }
+            .podium-column.bronze .podium-bar {
+                height: 45px;
+                background: linear-gradient(135deg, #b45309, #78350f);
+            }
+            .podium-name {
+                font-size: 0.8rem;
+                font-weight: 700;
+                color: var(--green-950);
+                text-align: center;
+                margin-bottom: 4px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                width: 100%;
+            }
+            .podium-points {
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--text-muted);
+            }
+            .leaderboard-list {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                margin-top: 16px;
+            }
+            .leaderboard-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 16px;
+                background: white;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-md);
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .leaderboard-item:hover {
+                transform: translateY(-1px);
+                box-shadow: var(--shadow-sm);
+            }
+            .leaderboard-position {
+                font-weight: 800;
+                font-size: 0.9rem;
+                color: var(--text-muted);
+                width: 24px;
+                text-align: center;
+            }
+            .leaderboard-name {
+                font-weight: 700;
+                color: var(--green-950);
+                font-size: 0.85rem;
+                flex: 1;
+            }
+            .leaderboard-points {
+                font-weight: 700;
+                color: var(--green-600);
+                font-size: 0.85rem;
+            }
+            .desafios-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 16px;
+                margin-top: 16px;
+            }
+            .desafio-card {
+                background: white;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-lg);
+                padding: 18px;
+                box-shadow: var(--shadow-sm);
+                display: flex;
+                flex-direction: column;
+                position: relative;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .desafio-card:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-md);
+            }
+            .desafio-card.coletivo {
+                border-left: 4px solid var(--gold-500);
+            }
+            .desafio-card.individual {
+                border-left: 4px solid var(--green-600);
+            }
+            .desafio-badge {
+                align-self: flex-start;
+                font-size: 0.65rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                padding: 3px 8px;
+                border-radius: 12px;
+                margin-bottom: 8px;
+            }
+            .desafio-badge.coletivo {
+                background: #fef3c7;
+                color: #b45309;
+            }
+            .desafio-badge.individual {
+                background: #dcfce7;
+                color: #15803d;
+            }
+            .desafio-title {
+                font-size: 0.95rem;
+                font-weight: 700;
+                color: var(--green-950);
+                margin-bottom: 6px;
+            }
+            .desafio-desc {
+                font-size: 0.8rem;
+                color: var(--text-muted);
+                line-height: 1.4;
+                margin-bottom: 12px;
+            }
+            .desafio-meta-box {
+                background: #f8fafc;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 10px 12px;
+                margin-bottom: 12px;
+                font-size: 0.78rem;
+            }
+            .desafio-meta-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 4px;
+            }
+            .desafio-date {
+                font-size: 0.7rem;
+                color: var(--text-muted);
+                margin-top: auto;
+            }
+            .conquistas-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 16px;
+                margin-top: 16px;
+            }
+            .conquista-card {
+                background: white;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-lg);
+                padding: 18px;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                position: relative;
+                transition: transform 0.2s, box-shadow 0.2s;
+                filter: grayscale(100%);
+                opacity: 0.6;
+            }
+            .conquista-card.desbloqueada {
+                filter: none;
+                opacity: 1;
+                border-color: var(--gold-300);
+                box-shadow: 0 4px 12px rgba(234, 179, 8, 0.08);
+            }
+            .conquista-icon {
+                font-size: 2.2rem;
+                margin-bottom: 10px;
+            }
+            .conquista-title {
+                font-size: 0.9rem;
+                font-weight: 700;
+                color: var(--green-950);
+                margin-bottom: 6px;
+            }
+            .conquista-desc {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                line-height: 1.4;
+                margin-bottom: 10px;
+                flex: 1;
+            }
+            .conquista-progress-container {
+                width: 100%;
+                margin-top: auto;
+            }
+            .conquista-progress-bar {
+                width: 100%;
+                background: #e2e8f0;
+                height: 5px;
+                border-radius: 3px;
+                overflow: hidden;
+                margin-bottom: 4px;
+            }
+            .conquista-progress-fill {
+                height: 100%;
+                background: var(--green-600);
+                width: 0%;
+            }
+            .conquista-card.desbloqueada .conquista-progress-fill {
+                background: var(--gold-500);
+            }
+            .conquista-progress-text {
+                font-size: 0.7rem;
+                font-weight: 700;
+                color: var(--text-muted);
+            }
         </style>
 
         <div class="team-header">
@@ -359,6 +634,7 @@ async function renderLeaderDashboard(router, equipe) {
             <button class="tab-btn" data-target="tab-mural">📢 Mural & Compromissos</button>
             <button class="tab-btn" data-target="tab-biblioteca">📚 Biblioteca de Time</button>
             <button class="tab-btn" data-target="tab-delegados">🤝 Leads Compartilhados</button>
+            <button class="tab-btn" data-target="tab-gamificacao">🏆 Gamificação & Desafios</button>
         </nav>
 
         <!-- Tab 1: Members Evolution -->
@@ -384,6 +660,77 @@ async function renderLeaderDashboard(router, equipe) {
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Tab 5: Gamificação (Leader View) -->
+        <div id="tab-gamificacao" class="tab-content">
+            <div style="display:grid; grid-template-columns: 350px 1fr; gap:24px; align-items:start;">
+                <!-- Left: Create Challenge Form -->
+                <div class="card" style="padding:24px;">
+                    <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:16px;">🎯 Criar Novo Desafio</h3>
+                    <div class="form-group" style="margin-bottom:12px">
+                        <label class="form-label" style="color:var(--text-dark)">Título do Desafio</label>
+                        <input type="text" id="desafio-titulo" class="form-input" placeholder="Ex: Corrida de Vendas BOGO" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:12px">
+                        <label class="form-label" style="color:var(--text-dark)">Descrição (Instruções ou prêmio)</label>
+                        <textarea id="desafio-descricao" class="form-input" rows="3" placeholder="Ex: Quem atingir a meta ganha um óleo de Tangerina!" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; font-family:inherit;"></textarea>
+                    </div>
+                    <div class="form-group" style="margin-bottom:12px">
+                        <label class="form-label" style="color:var(--text-dark)">Tipo de Desafio</label>
+                        <select id="desafio-tipo" class="form-input" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;">
+                            <option value="individual">👤 Individual (Membro faz sua própria meta)</option>
+                            <option value="coletivo">👥 Coletivo (Toda a equipe soma pontos)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:12px">
+                        <label class="form-label" style="color:var(--text-dark)">Métrica de Objetivo</label>
+                        <select id="desafio-métrica" class="form-input" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;">
+                            <option value="vendas_valor">💰 Faturamento em Vendas (R$)</option>
+                            <option value="anamneses_qtd">📝 Quantidade de Anamneses Preenchidas</option>
+                            <option value="clientes_qtd">👥 Quantidade de Novos Clientes</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:12px">
+                        <label class="form-label" style="color:var(--text-dark)">Meta (Ex: 500 para faturamento, 5 para cadastros)</label>
+                        <input type="number" id="desafio-meta" class="form-input" placeholder="Ex: 500" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:12px">
+                        <label class="form-label" style="color:var(--text-dark)">Data de Início</label>
+                        <input type="date" id="desafio-inicio" class="form-input" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:16px">
+                        <label class="form-label" style="color:var(--text-dark)">Data de Término</label>
+                        <input type="date" id="desafio-fim" class="form-input" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;" />
+                    </div>
+                    <button id="btn-save-desafio" class="btn btn-primary" style="width:100%; background:var(--gold-500); color:var(--green-950)">✓ Publicar Desafio</button>
+                </div>
+                
+                <!-- Right: Leaderboard and Active Challenges -->
+                <div style="display:flex; flex-direction:column; gap:24px;">
+                    <!-- Leaderboard/Podium Section -->
+                    <div class="card" style="padding:24px;">
+                        <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:6px; border-bottom:1.5px solid var(--border); padding-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                            🏆 Ranking Mensal de Produtividade
+                            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">Calculado este mês</span>
+                        </h3>
+                        <div id="leaderboard-podium-container">
+                            <div style="text-align:center; color:var(--text-muted); padding:30px;">Carregando ranking...</div>
+                        </div>
+                        <div id="leaderboard-list-container"></div>
+                    </div>
+                    
+                    <!-- Active Challenges -->
+                    <div class="card" style="padding:24px;">
+                        <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:16px; border-bottom:1.5px solid var(--border); padding-bottom:12px;">
+                            🎯 Desafios Ativos da Equipe
+                        </h3>
+                        <div id="list-desafios-lider" class="desafios-container">
+                            <div style="text-align:center; color:var(--text-muted); padding:20px;">Carregando desafios...</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -761,6 +1108,58 @@ async function renderLeaderDashboard(router, equipe) {
     document.getElementById('btn-open-delegar')?.addEventListener('click', () => {
         openDelegarLeadModal(equipe.id);
     });
+
+    // ── Gamificação Lider ────────────────────────────────────
+    loadGamificacaoLider();
+
+    document.getElementById('btn-save-desafio')?.addEventListener('click', async () => {
+        const titulo = document.getElementById('desafio-titulo').value?.trim();
+        const descricao = document.getElementById('desafio-descricao').value?.trim();
+        const tipo_desafio = document.getElementById('desafio-tipo').value;
+        const objetivo_tipo = document.getElementById('desafio-métrica').value;
+        const meta = document.getElementById('desafio-meta').value;
+        const data_inicio = document.getElementById('desafio-inicio').value;
+        const data_fim = document.getElementById('desafio-fim').value;
+
+        if (!titulo) return toast('Título é obrigatório.', 'warning');
+        if (!meta || parseFloat(meta) <= 0) return toast('Meta deve ser maior que 0.', 'warning');
+        if (!data_inicio || !data_fim) return toast('As datas de início e fim são obrigatórias.', 'warning');
+
+        try {
+            const btn = document.getElementById('btn-save-desafio');
+            btn.disabled = true;
+            btn.textContent = 'Publicando...';
+
+            await api('POST', '/api/equipe/desafios', {
+                titulo,
+                descricao,
+                tipo_desafio,
+                objetivo_tipo,
+                meta: parseFloat(meta),
+                data_inicio,
+                data_fim
+            });
+
+            toast('Desafio publicado com sucesso!', 'success');
+
+            // Limpa campos
+            document.getElementById('desafio-titulo').value = '';
+            document.getElementById('desafio-descricao').value = '';
+            document.getElementById('desafio-meta').value = '';
+            document.getElementById('desafio-inicio').value = '';
+            document.getElementById('desafio-fim').value = '';
+            btn.disabled = false;
+            btn.textContent = '✓ Publicar Desafio';
+
+            // Recarrega desafios
+            loadDesafios('lider');
+        } catch (e) {
+            const btn = document.getElementById('btn-save-desafio');
+            btn.disabled = false;
+            btn.textContent = '✓ Publicar Desafio';
+            toast(e.message || 'Erro ao publicar desafio.', 'danger');
+        }
+    });
 }
 
 // ── Member Dashboard (Liderado) ──────────────────────────────
@@ -837,6 +1236,281 @@ async function renderMemberDashboard(router, equipe) {
             }
             .tab-content { display: none; }
             .tab-content.active { display: block; }
+            
+            /* Gamification Styles */
+            .podium-container {
+                display: flex;
+                justify-content: center;
+                align-items: flex-end;
+                gap: 16px;
+                margin: 12px 0 24px;
+                padding: 20px;
+                background: #f8fafc;
+                border-radius: var(--radius-lg);
+                border: 1px solid var(--border);
+            }
+            .podium-column {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                flex: 1;
+                max-width: 140px;
+            }
+            .podium-avatar {
+                position: relative;
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                background: var(--green-100);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                color: var(--green-700);
+                margin-bottom: 12px;
+                border: 3px solid transparent;
+                box-shadow: var(--shadow-sm);
+            }
+            .podium-column.gold .podium-avatar {
+                width: 72px;
+                height: 72px;
+                border-color: var(--gold-400);
+                box-shadow: 0 0 15px rgba(234, 179, 8, 0.3);
+            }
+            .podium-column.silver .podium-avatar {
+                border-color: #cbd5e1;
+            }
+            .podium-column.bronze .podium-avatar {
+                border-color: #b45309;
+            }
+            .podium-badge {
+                position: absolute;
+                bottom: -6px;
+                right: 50%;
+                transform: translateX(50%);
+                font-size: 1.1rem;
+            }
+            .podium-bar {
+                width: 100%;
+                border-radius: 8px 8px 0 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 10px 6px;
+                color: white;
+                font-weight: 700;
+                font-size: 0.85rem;
+                transition: height 0.5s ease;
+            }
+            .podium-column.gold .podium-bar {
+                height: 90px;
+                background: linear-gradient(135deg, var(--gold-500), #ca8a04);
+            }
+            .podium-column.silver .podium-bar {
+                height: 65px;
+                background: linear-gradient(135deg, #94a3b8, #64748b);
+            }
+            .podium-column.bronze .podium-bar {
+                height: 45px;
+                background: linear-gradient(135deg, #b45309, #78350f);
+            }
+            .podium-name {
+                font-size: 0.8rem;
+                font-weight: 700;
+                color: var(--green-950);
+                text-align: center;
+                margin-bottom: 4px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                width: 100%;
+            }
+            .podium-points {
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--text-muted);
+            }
+            .leaderboard-list {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                margin-top: 16px;
+            }
+            .leaderboard-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 16px;
+                background: white;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-md);
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .leaderboard-item:hover {
+                transform: translateY(-1px);
+                box-shadow: var(--shadow-sm);
+            }
+            .leaderboard-position {
+                font-weight: 800;
+                font-size: 0.9rem;
+                color: var(--text-muted);
+                width: 24px;
+                text-align: center;
+            }
+            .leaderboard-name {
+                font-weight: 700;
+                color: var(--green-950);
+                font-size: 0.85rem;
+                flex: 1;
+            }
+            .leaderboard-points {
+                font-weight: 700;
+                color: var(--green-600);
+                font-size: 0.85rem;
+            }
+            .desafios-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 16px;
+                margin-top: 16px;
+            }
+            .desafio-card {
+                background: white;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-lg);
+                padding: 18px;
+                box-shadow: var(--shadow-sm);
+                display: flex;
+                flex-direction: column;
+                position: relative;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .desafio-card:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-md);
+            }
+            .desafio-card.coletivo {
+                border-left: 4px solid var(--gold-500);
+            }
+            .desafio-card.individual {
+                border-left: 4px solid var(--green-600);
+            }
+            .desafio-badge {
+                align-self: flex-start;
+                font-size: 0.65rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                padding: 3px 8px;
+                border-radius: 12px;
+                margin-bottom: 8px;
+            }
+            .desafio-badge.coletivo {
+                background: #fef3c7;
+                color: #b45309;
+            }
+            .desafio-badge.individual {
+                background: #dcfce7;
+                color: #15803d;
+            }
+            .desafio-title {
+                font-size: 0.95rem;
+                font-weight: 700;
+                color: var(--green-950);
+                margin-bottom: 6px;
+            }
+            .desafio-desc {
+                font-size: 0.8rem;
+                color: var(--text-muted);
+                line-height: 1.4;
+                margin-bottom: 12px;
+            }
+            .desafio-meta-box {
+                background: #f8fafc;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 10px 12px;
+                margin-bottom: 12px;
+                font-size: 0.78rem;
+            }
+            .desafio-meta-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 4px;
+            }
+            .desafio-date {
+                font-size: 0.7rem;
+                color: var(--text-muted);
+                margin-top: auto;
+            }
+            .conquistas-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 16px;
+                margin-top: 16px;
+            }
+            .conquista-card {
+                background: white;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-lg);
+                padding: 18px;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                position: relative;
+                transition: transform 0.2s, box-shadow 0.2s;
+                filter: grayscale(100%);
+                opacity: 0.6;
+            }
+            .conquista-card.desbloqueada {
+                filter: none;
+                opacity: 1;
+                border-color: var(--gold-300);
+                box-shadow: 0 4px 12px rgba(234, 179, 8, 0.08);
+            }
+            .conquista-icon {
+                font-size: 2.2rem;
+                margin-bottom: 10px;
+            }
+            .conquista-title {
+                font-size: 0.9rem;
+                font-weight: 700;
+                color: var(--green-950);
+                margin-bottom: 6px;
+            }
+            .conquista-desc {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                line-height: 1.4;
+                margin-bottom: 10px;
+                flex: 1;
+            }
+            .conquista-progress-container {
+                width: 100%;
+                margin-top: auto;
+            }
+            .conquista-progress-bar {
+                width: 100%;
+                background: #e2e8f0;
+                height: 5px;
+                border-radius: 3px;
+                overflow: hidden;
+                margin-bottom: 4px;
+            }
+            .conquista-progress-fill {
+                height: 100%;
+                background: var(--green-600);
+                width: 0%;
+            }
+            .conquista-card.desbloqueada .conquista-progress-fill {
+                background: var(--gold-500);
+            }
+            .conquista-progress-text {
+                font-size: 0.7rem;
+                font-weight: 700;
+                color: var(--text-muted);
+            }
         </style>
 
         <div class="member-header">
@@ -861,6 +1535,7 @@ async function renderMemberDashboard(router, equipe) {
             <button class="tab-btn active" data-target="tab-mural-membro">📢 Mural & Reuniões</button>
             <button class="tab-btn" data-target="tab-biblioteca-membro">📚 Biblioteca do Time</button>
             <button class="tab-btn" data-target="tab-delegados-membro">🤝 Leads Recebidos</button>
+            <button class="tab-btn" data-target="tab-conquistas-membro">🏆 Conquistas & Desafios</button>
             <button class="tab-btn" data-target="tab-config-membro">⚙️ Configurações</button>
         </nav>
 
@@ -909,6 +1584,44 @@ async function renderMemberDashboard(router, equipe) {
                 <button id="btn-leave-team" class="btn btn-primary" style="background:#ef4444; color:white; border:none; width:100%">Sair da Equipe do Líder</button>
             </div>
         </div>
+
+        <!-- Tab 5: Conquistas & Desafios (Member View) -->
+        <div id="tab-conquistas-membro" class="tab-content">
+            <div style="display:flex; flex-direction:column; gap:24px;">
+                <!-- Leaderboard/Podium Section for Member -->
+                <div class="card" style="padding:24px;">
+                    <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:6px; border-bottom:1.5px solid var(--border); padding-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                        🏆 Nosso Pódio de Produtividade (Mês Atual)
+                        <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">Acumule pontos cadastrando clientes, vendas, estoques e anamneses</span>
+                    </h3>
+                    <div id="leaderboard-podium-membro-container">
+                        <div style="text-align:center; color:var(--text-muted); padding:30px;">Carregando ranking...</div>
+                    </div>
+                    <div id="leaderboard-list-membro-container"></div>
+                </div>
+
+                <!-- Challenges Grid -->
+                <div class="card" style="padding:24px;">
+                    <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:16px; border-bottom:1.5px solid var(--border); padding-bottom:12px;">
+                        🎯 Campanhas e Desafios de Equipe
+                    </h3>
+                    <div id="list-desafios-membro" class="desafios-container">
+                        <div style="text-align:center; color:var(--text-muted); padding:20px;">Carregando desafios...</div>
+                    </div>
+                </div>
+
+                <!-- Badges / Conquistas Grid -->
+                <div class="card" style="padding:24px;">
+                    <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:6px; border-bottom:1.5px solid var(--border); padding-bottom:12px;">
+                        🏅 Minhas Medalhas e Conquistas (Carreira)
+                    </h3>
+                    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:20px;">Desbloqueie conquistas exclusivas à medida que expande seu negócio doTERRA.</p>
+                    <div id="list-conquistas-membro" class="conquistas-grid">
+                        <div style="text-align:center; color:var(--text-muted); padding:20px;">Carregando conquistas...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     `;
 
     // ── Click bindings for Tabs ─────────────────────────────
@@ -926,6 +1639,7 @@ async function renderMemberDashboard(router, equipe) {
     loadAvisosMembro();
     loadBibliotecaMembro();
     loadDelegacoesMembro();
+    loadGamificacaoMembro();
 
     // ── Leave team trigger ──────────────────────────────────
     document.getElementById('btn-leave-team')?.addEventListener('click', async () => {
@@ -2072,5 +2786,273 @@ function openEditarNomeEquipeModal(currentName) {
             toast(err.message || 'Erro ao atualizar nome da equipe.', 'danger');
         }
     });
+}
+
+// ── Gamificação & Desafios Loader Helpers ─────────────────────
+
+async function loadGamificacaoLider() {
+    loadLeaderboard('lider');
+    loadDesafios('lider');
+}
+
+async function loadGamificacaoMembro() {
+    loadLeaderboard('membro');
+    loadDesafios('membro');
+    loadConquistas();
+}
+
+async function loadLeaderboard(type) {
+    const prefix = type === 'lider' ? '' : '-membro';
+    const podiumContainer = document.getElementById(`leaderboard-podium${prefix}-container`);
+    const listContainer = document.getElementById(`leaderboard-list${prefix}-container`);
+    if (!podiumContainer) return;
+
+    try {
+        const res = await api('GET', '/api/equipe/leaderboard');
+        const leaderboard = res.leaderboard || [];
+
+        if (leaderboard.length === 0) {
+            podiumContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:30px;">Nenhuma atividade registrada na equipe este mês.</div>`;
+            if (listContainer) listContainer.innerHTML = '';
+            return;
+        }
+
+        const top3 = leaderboard.slice(0, 3);
+        const others = leaderboard.slice(3);
+
+        let podiumHtml = `<div class="podium-container">`;
+        
+        // 2º Lugar
+        if (top3[1]) {
+            const m = top3[1];
+            const initials = (m.nome || '?').charAt(0).toUpperCase();
+            podiumHtml += `
+                <div class="podium-column silver">
+                    <div class="podium-avatar">
+                        ${m.foto_url ? `<img src="${m.foto_url}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />` : initials}
+                        <div class="podium-badge">🥈</div>
+                    </div>
+                    <div class="podium-name" title="${m.nome}">${m.nome.split(' ')[0]}</div>
+                    <div class="podium-bar">2º</div>
+                    <div class="podium-points">${m.pontos} pts</div>
+                </div>
+            `;
+        } else {
+            podiumHtml += `<div class="podium-column silver" style="visibility:hidden;"><div class="podium-bar"></div></div>`;
+        }
+
+        // 1º Lugar
+        if (top3[0]) {
+            const m = top3[0];
+            const initials = (m.nome || '?').charAt(0).toUpperCase();
+            podiumHtml += `
+                <div class="podium-column gold">
+                    <div class="podium-avatar">
+                        ${m.foto_url ? `<img src="${m.foto_url}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />` : initials}
+                        <div class="podium-badge">🥇</div>
+                    </div>
+                    <div class="podium-name" title="${m.nome}">${m.nome.split(' ')[0]}</div>
+                    <div class="podium-bar">1º</div>
+                    <div class="podium-points" style="font-weight:700; color:var(--gold-600);">${m.pontos} pts</div>
+                </div>
+            `;
+        }
+
+        // 3º Lugar
+        if (top3[2]) {
+            const m = top3[2];
+            const initials = (m.nome || '?').charAt(0).toUpperCase();
+            podiumHtml += `
+                <div class="podium-column bronze">
+                    <div class="podium-avatar">
+                        ${m.foto_url ? `<img src="${m.foto_url}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />` : initials}
+                        <div class="podium-badge">🥉</div>
+                    </div>
+                    <div class="podium-name" title="${m.nome}">${m.nome.split(' ')[0]}</div>
+                    <div class="podium-bar">3º</div>
+                    <div class="podium-points">${m.pontos} pts</div>
+                </div>
+            `;
+        } else {
+            podiumHtml += `<div class="podium-column bronze" style="visibility:hidden;"><div class="podium-bar"></div></div>`;
+        }
+
+        podiumHtml += `</div>`;
+        podiumContainer.innerHTML = podiumHtml;
+
+        if (listContainer) {
+            if (others.length === 0) {
+                listContainer.innerHTML = '';
+            } else {
+                let listHtml = `
+                    <div style="font-size:0.82rem; font-weight:700; color:var(--text-muted); margin-bottom:10px; padding-left:4px;">OUTROS MEMBROS</div>
+                    <div class="leaderboard-list">
+                `;
+                listHtml += others.map((m, idx) => {
+                    const pos = idx + 4;
+                    const initials = (m.nome || '?').charAt(0).toUpperCase();
+                    return `
+                        <div class="leaderboard-item">
+                            <div class="leaderboard-position">${pos}º</div>
+                            <div style="width:30px; height:30px; border-radius:50%; background:var(--green-100); color:var(--green-700); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8rem; overflow:hidden;">
+                                ${m.foto_url ? `<img src="${m.foto_url}" style="width:100%; height:100%; object-fit:cover;" />` : initials}
+                            </div>
+                            <div class="leaderboard-name">${m.nome}</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-right:12px; text-align:right; line-height:1.2;">
+                                <span style="display:block;">👤 ${m.clientes_qtd} Clientes</span>
+                                <span style="display:block;">📝 ${m.anamneses_qtd} Anamneses</span>
+                            </div>
+                            <div class="leaderboard-points">${m.pontos} pts</div>
+                        </div>
+                    `;
+                }).join('');
+                listHtml += `</div>`;
+                listContainer.innerHTML = listHtml;
+            }
+        }
+    } catch (e) {
+        podiumContainer.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar ranking: ${e.message}</div>`;
+    }
+}
+
+async function loadDesafios(type) {
+    const container = document.getElementById(`list-desafios-${type}`);
+    if (!container) return;
+
+    try {
+        const res = await api('GET', '/api/equipe/desafios');
+        const desafios = res.desafios || [];
+
+        if (desafios.length === 0) {
+            container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:20px; grid-column: 1 / -1;">Nenhum desafio ativo na equipe no momento.</div>`;
+            return;
+        }
+
+        container.innerHTML = desafios.map(d => {
+            const metaFloat = parseFloat(d.meta);
+            const progressoFloat = parseFloat(d.progresso);
+            const percentage = metaFloat > 0 ? Math.min(Math.round((progressoFloat / metaFloat) * 100), 100) : 0;
+            const isColetivo = d.tipo_desafio === 'coletivo';
+            
+            let metricaLabel = '';
+            let progressLabel = '';
+            let metaLabel = '';
+
+            if (d.objetivo_tipo === 'vendas_valor') {
+                metricaLabel = 'Faturamento em Vendas';
+                progressLabel = `R$ ${progressoFloat.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                metaLabel = `R$ ${metaFloat.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            } else if (d.objetivo_tipo === 'anamneses_qtd') {
+                metricaLabel = 'Anamneses Preenchidas';
+                progressLabel = `${progressoFloat}`;
+                metaLabel = `${metaFloat}`;
+            } else {
+                metricaLabel = 'Novos Clientes';
+                progressLabel = `${progressoFloat}`;
+                metaLabel = `${metaFloat}`;
+            }
+
+            const dataInicioStr = new Date(d.data_inicio).toLocaleDateString('pt-BR');
+            const dataFimStr = new Date(d.data_fim).toLocaleDateString('pt-BR');
+
+            return `
+                <div class="desafio-card ${d.tipo_desafio}">
+                    ${type === 'lider' ? `
+                        <button class="btn-delete-desafio" data-desafio-id="${d.id}" style="position:absolute; top:12px; right:12px; background:transparent; border:none; color:#ef4444; cursor:pointer; font-weight:bold; font-size:1.3rem; line-height:1;" title="Remover Desafio">×</button>
+                    ` : ''}
+                    <span class="desafio-badge ${d.tipo_desafio}">
+                        ${isColetivo ? '👥 Desafio Coletivo' : '👤 Desafio Individual'}
+                    </span>
+                    <h4 class="desafio-title">${d.titulo}</h4>
+                    ${d.descricao ? `<p class="desafio-desc">${d.descricao}</p>` : ''}
+                    
+                    <div class="desafio-meta-box">
+                        <div class="desafio-meta-row">
+                            <strong style="color:var(--green-950);">${metricaLabel}</strong>
+                            <span style="font-weight:700; color:${percentage === 100 ? 'var(--green-600)' : 'var(--text-dark)'};">
+                                ${percentage}%
+                            </span>
+                        </div>
+                        <div style="width:100%; background:#e2e8f0; height:8px; border-radius:4px; overflow:hidden; margin:8px 0;">
+                            <div style="width:${percentage}%; background:linear-gradient(90deg, ${isColetivo ? 'var(--gold-500), #ca8a04' : 'var(--green-600), var(--green-800)'}); height:100%; border-radius:4px; transition: width 0.4s ease;"></div>
+                        </div>
+                        <div class="desafio-meta-row" style="font-size:0.75rem; color:var(--text-muted);">
+                            <span>Progresso: ${progressLabel}</span>
+                            <span>Meta: ${metaLabel}</span>
+                        </div>
+                    </div>
+
+                    <div class="desafio-date">
+                        📅 Vigência: <strong>${dataInicioStr}</strong> até <strong>${dataFimStr}</strong>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        if (type === 'lider') {
+            container.querySelectorAll('.btn-delete-desafio').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.dataset.desafioId;
+                    if (!confirm('Deseja realmente excluir este desafio da equipe?')) return;
+                    try {
+                        await api('DELETE', `/api/equipe/desafios/${id}`);
+                        toast('Desafio removido com sucesso!', 'success');
+                        loadDesafios('lider');
+                    } catch (e) {
+                        toast(e.message || 'Erro ao remover desafio.', 'danger');
+                    }
+                });
+            });
+        }
+
+    } catch (e) {
+        container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px; grid-column: 1 / -1;">Erro ao carregar desafios: ${e.message}</div>`;
+    }
+}
+
+async function loadConquistas() {
+    const container = document.getElementById('list-conquistas-membro');
+    if (!container) return;
+
+    try {
+        const res = await api('GET', '/api/equipe/conquistas');
+        const conquistas = res.conquistas || [];
+
+        if (conquistas.length === 0) {
+            container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:20px;">Nenhuma conquista cadastrada.</div>`;
+            return;
+        }
+
+        container.innerHTML = conquistas.map(c => {
+            const actualFloat = parseFloat(c.atual);
+            const metaFloat = parseFloat(c.meta);
+            const percentage = metaFloat > 0 ? Math.min(Math.round((actualFloat / metaFloat) * 100), 100) : 0;
+            
+            let badgeEmoji = '🏅';
+            if (c.id === 'primeira_venda') badgeEmoji = '💰';
+            else if (c.id === 'mestre_anamnese') badgeEmoji = '📝';
+            else if (c.id === 'organizador_estoque') badgeEmoji = '📦';
+            else if (c.id === 'expandindo_rede') badgeEmoji = '👥';
+            else if (c.id === 'consultor_focado') badgeEmoji = '🎯';
+
+            return `
+                <div class="conquista-card ${c.desbloqueada ? 'desbloqueada' : ''}">
+                    <div class="conquista-icon">${badgeEmoji}</div>
+                    <h4 class="conquista-title">${c.titulo}</h4>
+                    <p class="conquista-desc">${c.descricao}</p>
+                    <div class="conquista-progress-container">
+                        <div class="conquista-progress-bar">
+                            <div class="conquista-progress-fill" style="width: ${percentage}%"></div>
+                        </div>
+                        <span class="conquista-progress-text">
+                            ${c.desbloqueada ? 'Concluído! 🎉' : `${c.atual} / ${c.meta}`}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (e) {
+        container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar conquistas: ${e.message}</div>`;
+    }
 }
 

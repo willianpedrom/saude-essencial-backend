@@ -890,6 +890,28 @@ const MIGRATIONS = [
             `);
             console.log('[022_plano_limite_equipe] Limites e acesso de equipe atualizados com sucesso.');
         }
+    },
+    // ── 023: Desafios e Gamificação por Equipe ──────────────────────────────────
+    {
+        name: '023_equipe_gamificacao',
+        async up(pool) {
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS equipe_desafios (
+                  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                  equipe_id     UUID NOT NULL REFERENCES equipes(id) ON DELETE CASCADE,
+                  titulo        VARCHAR(200) NOT NULL,
+                  descricao     TEXT,
+                  tipo_desafio  VARCHAR(20) NOT NULL DEFAULT 'individual',
+                  objetivo_tipo VARCHAR(50) NOT NULL,
+                  meta          NUMERIC(10,2) NOT NULL,
+                  data_inicio   DATE NOT NULL,
+                  data_fim      DATE NOT NULL,
+                  criado_em     TIMESTAMPTZ DEFAULT NOW()
+                )
+            `);
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_equipe_desafios_eq ON equipe_desafios(equipe_id)`);
+            console.log('[023_equipe_gamificacao] Tabela de desafios da equipe criada com sucesso.');
+        }
     }
 ];
 
