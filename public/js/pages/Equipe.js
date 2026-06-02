@@ -354,6 +354,11 @@ async function renderLeaderDashboard(router, equipe) {
                 align-items: center;
                 flex: 1;
                 max-width: 140px;
+                cursor: pointer;
+                transition: transform 0.2s ease;
+            }
+            .podium-column:hover {
+                transform: translateY(-4px);
             }
             .podium-avatar {
                 position: relative;
@@ -369,6 +374,20 @@ async function renderLeaderDashboard(router, equipe) {
                 margin-bottom: 12px;
                 border: 3px solid transparent;
                 box-shadow: var(--shadow-sm);
+                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .podium-column:hover .podium-avatar {
+                transform: scale(1.08);
+                box-shadow: 0 10px 20px rgba(16, 185, 129, 0.25);
+                border-color: var(--green-500);
+            }
+            .podium-column.gold:hover .podium-avatar {
+                box-shadow: 0 10px 25px rgba(234, 179, 8, 0.4);
+                border-color: var(--gold-400);
+            }
+            .podium-column:hover .podium-name {
+                color: var(--green-600);
+                text-decoration: underline;
             }
             .podium-column.gold .podium-avatar {
                 width: 72px;
@@ -1255,6 +1274,11 @@ async function renderMemberDashboard(router, equipe) {
                 align-items: center;
                 flex: 1;
                 max-width: 140px;
+                cursor: pointer;
+                transition: transform 0.2s ease;
+            }
+            .podium-column:hover {
+                transform: translateY(-4px);
             }
             .podium-avatar {
                 position: relative;
@@ -1270,6 +1294,20 @@ async function renderMemberDashboard(router, equipe) {
                 margin-bottom: 12px;
                 border: 3px solid transparent;
                 box-shadow: var(--shadow-sm);
+                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .podium-column:hover .podium-avatar {
+                transform: scale(1.08);
+                box-shadow: 0 10px 20px rgba(16, 185, 129, 0.25);
+                border-color: var(--green-500);
+            }
+            .podium-column.gold:hover .podium-avatar {
+                box-shadow: 0 10px 25px rgba(234, 179, 8, 0.4);
+                border-color: var(--gold-400);
+            }
+            .podium-column:hover .podium-name {
+                color: var(--green-600);
+                text-decoration: underline;
             }
             .podium-column.gold .podium-avatar {
                 width: 72px;
@@ -2870,7 +2908,7 @@ async function loadLeaderboard(type) {
             const m = top3[1];
             const initials = (m.nome || '?').charAt(0).toUpperCase();
             podiumHtml += `
-                <div class="podium-column silver" style="cursor:pointer;" onclick="const d = this.querySelector('.podium-details'); if(d) { d.style.display = d.style.display === 'block' ? 'none' : 'block'; event.stopPropagation(); }">
+                <div class="podium-column silver" onclick="window.showPodiumDetails('${prefix}', '${m.nome}', ${m.clientes_qtd}, ${m.anamneses_qtd}, ${m.vendas_qtd}, ${m.estoque_qtd}, ${m.pontos})">
                     <div class="podium-avatar">
                         ${m.foto_url ? `<img src="${m.foto_url}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />` : initials}
                         <div class="podium-badge">🥈</div>
@@ -2878,15 +2916,6 @@ async function loadLeaderboard(type) {
                     <div class="podium-name" title="${m.nome}">${m.nome.split(' ')[0]}</div>
                     <div class="podium-bar">2º</div>
                     <div class="podium-points">${m.pontos} pts</div>
-                    
-                    <div class="podium-details" style="display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%); background:white; border:1px solid var(--border); border-radius:8px; padding:12px; width:200px; z-index:20; box-shadow:var(--shadow-md); font-size:0.76rem; color:var(--text-dark); text-align:left; margin-top:8px;">
-                        <strong style="display:block;margin-bottom:6px;color:var(--green-950);">${m.nome}</strong>
-                        👥 ${m.clientes_qtd} Clientes (+${m.clientes_qtd * 10} pts)<br>
-                        📝 ${m.anamneses_qtd} Anamneses (+${m.anamneses_qtd * 15} pts)<br>
-                        💰 ${m.vendas_qtd} Vendas (+${m.vendas_qtd * 20} pts)<br>
-                        📦 ${m.estoque_qtd} Estoque (+${m.estoque_qtd * 5} pts)
-                        <div style="border-top:1px solid #cbd5e1; margin-top:6px; padding-top:4px; font-weight:700; color:var(--green-600);">Total: ${m.pontos} pts</div>
-                    </div>
                 </div>
             `;
         } else {
@@ -2898,7 +2927,7 @@ async function loadLeaderboard(type) {
             const m = top3[0];
             const initials = (m.nome || '?').charAt(0).toUpperCase();
             podiumHtml += `
-                <div class="podium-column gold" style="cursor:pointer;" onclick="const d = this.querySelector('.podium-details'); if(d) { d.style.display = d.style.display === 'block' ? 'none' : 'block'; event.stopPropagation(); }">
+                <div class="podium-column gold" onclick="window.showPodiumDetails('${prefix}', '${m.nome}', ${m.clientes_qtd}, ${m.anamneses_qtd}, ${m.vendas_qtd}, ${m.estoque_qtd}, ${m.pontos})">
                     <div class="podium-avatar">
                         ${m.foto_url ? `<img src="${m.foto_url}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />` : initials}
                         <div class="podium-badge">🥇</div>
@@ -2906,15 +2935,6 @@ async function loadLeaderboard(type) {
                     <div class="podium-name" title="${m.nome}">${m.nome.split(' ')[0]}</div>
                     <div class="podium-bar">1º</div>
                     <div class="podium-points" style="font-weight:700; color:var(--gold-600);">${m.pontos} pts</div>
-                    
-                    <div class="podium-details" style="display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%); background:white; border:1px solid var(--border); border-radius:8px; padding:12px; width:200px; z-index:20; box-shadow:var(--shadow-md); font-size:0.76rem; color:var(--text-dark); text-align:left; margin-top:8px;">
-                        <strong style="display:block;margin-bottom:6px;color:var(--green-950);">${m.nome}</strong>
-                        👥 ${m.clientes_qtd} Clientes (+${m.clientes_qtd * 10} pts)<br>
-                        📝 ${m.anamneses_qtd} Anamneses (+${m.anamneses_qtd * 15} pts)<br>
-                        💰 ${m.vendas_qtd} Vendas (+${m.vendas_qtd * 20} pts)<br>
-                        📦 ${m.estoque_qtd} Estoque (+${m.estoque_qtd * 5} pts)
-                        <div style="border-top:1px solid #cbd5e1; margin-top:6px; padding-top:4px; font-weight:700; color:var(--green-600);">Total: ${m.pontos} pts</div>
-                    </div>
                 </div>
             `;
         }
@@ -2924,7 +2944,7 @@ async function loadLeaderboard(type) {
             const m = top3[2];
             const initials = (m.nome || '?').charAt(0).toUpperCase();
             podiumHtml += `
-                <div class="podium-column bronze" style="cursor:pointer;" onclick="const d = this.querySelector('.podium-details'); if(d) { d.style.display = d.style.display === 'block' ? 'none' : 'block'; event.stopPropagation(); }">
+                <div class="podium-column bronze" onclick="window.showPodiumDetails('${prefix}', '${m.nome}', ${m.clientes_qtd}, ${m.anamneses_qtd}, ${m.vendas_qtd}, ${m.estoque_qtd}, ${m.pontos})">
                     <div class="podium-avatar">
                         ${m.foto_url ? `<img src="${m.foto_url}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />` : initials}
                         <div class="podium-badge">🥉</div>
@@ -2932,15 +2952,6 @@ async function loadLeaderboard(type) {
                     <div class="podium-name" title="${m.nome}">${m.nome.split(' ')[0]}</div>
                     <div class="podium-bar">3º</div>
                     <div class="podium-points">${m.pontos} pts</div>
-                    
-                    <div class="podium-details" style="display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%); background:white; border:1px solid var(--border); border-radius:8px; padding:12px; width:200px; z-index:20; box-shadow:var(--shadow-md); font-size:0.76rem; color:var(--text-dark); text-align:left; margin-top:8px;">
-                        <strong style="display:block;margin-bottom:6px;color:var(--green-950);">${m.nome}</strong>
-                        👥 ${m.clientes_qtd} Clientes (+${m.clientes_qtd * 10} pts)<br>
-                        📝 ${m.anamneses_qtd} Anamneses (+${m.anamneses_qtd * 15} pts)<br>
-                        💰 ${m.vendas_qtd} Vendas (+${m.vendas_qtd * 20} pts)<br>
-                        📦 ${m.estoque_qtd} Estoque (+${m.estoque_qtd * 5} pts)
-                        <div style="border-top:1px solid #cbd5e1; margin-top:6px; padding-top:4px; font-weight:700; color:var(--green-600);">Total: ${m.pontos} pts</div>
-                    </div>
                 </div>
             `;
         } else {
@@ -2948,6 +2959,10 @@ async function loadLeaderboard(type) {
         }
 
         podiumHtml += `</div>`;
+        
+        // Expansion panel for details below the podium (prevents clipping)
+        podiumHtml += `<div id="podium-details-display${prefix}" style="display:none; margin-top:20px; margin-bottom:20px; padding:16px; background:#f8fafc; border:1px solid var(--border); border-radius:var(--radius-md); box-shadow:var(--shadow-sm); transition:all 0.3s ease;"></div>`;
+        
         podiumContainer.innerHTML = podiumHtml;
 
         if (listContainer) {
@@ -3197,11 +3212,35 @@ async function loadConquistas() {
     }
 }
 
-// ── Native Canvas Confetti Animation & Popover dismisser ───────────
+// ── Native Canvas Confetti Animation & Popover displays ───────────
 
-window.addEventListener('click', () => {
-    document.querySelectorAll('.podium-details').forEach(el => el.style.display = 'none');
-});
+window.showPodiumDetails = function(prefix, nome, clientes, anamneses, vendas, estoque, pontos) {
+    const container = document.getElementById(`podium-details-display${prefix}`);
+    if (!container) return;
+
+    if (container.dataset.activeUser === nome && container.style.display === 'block') {
+        container.style.display = 'none';
+        return;
+    }
+
+    container.dataset.activeUser = nome;
+    container.style.display = 'block';
+    container.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #cbd5e1; padding-bottom:8px; margin-bottom:10px;">
+            <strong style="font-size:0.9rem; color:var(--green-950); display:flex; align-items:center; gap:6px;">📊 Métricas Detalhadas: ${nome}</strong>
+            <button onclick="document.getElementById('podium-details-display${prefix}').style.display='none'" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-weight:bold; font-size:1.25rem; line-height:1; padding:2px 8px;">×</button>
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:12px; font-size:0.82rem; color:var(--text-dark);">
+            <div style="display:flex; align-items:center; gap:6px;">👥 <strong>Clientes:</strong> ${clientes} (+${clientes * 10} pts)</div>
+            <div style="display:flex; align-items:center; gap:6px;">📝 <strong>Anamneses:</strong> ${anamneses} (+${anamneses * 15} pts)</div>
+            <div style="display:flex; align-items:center; gap:6px;">💰 <strong>Vendas:</strong> ${vendas} (+${vendas * 20} pts)</div>
+            <div style="display:flex; align-items:center; gap:6px;">📦 <strong>Estoque:</strong> ${estoque} (+${estoque * 5} pts)</div>
+        </div>
+        <div style="margin-top:12px; padding-top:8px; border-top:1px dashed #cbd5e1; text-align:right; font-weight:700; color:var(--green-600); font-size:0.85rem;">
+            Pontuação Mensal Acumulada: ${pontos} pts
+        </div>
+    `;
+};
 
 function triggerConfetti() {
     if (document.getElementById('confetti-canvas')) return;
