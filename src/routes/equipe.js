@@ -32,6 +32,174 @@ router.post('/push/track-click', async (req, res) => {
     }
 });
 
+// GET /api/equipe/invite-info/:code
+router.get('/invite-info/:code', async (req, res) => {
+    const { code } = req.params;
+    if (!code) return res.status(400).json({ error: 'Código de convite obrigatório' });
+
+    try {
+        const { rows } = await pool.query(`
+            SELECT e.nome_equipe, c.nome as lider_nome, c.foto_url as lider_foto_url
+            FROM equipes e
+            JOIN consultoras c ON e.lider_id = c.id
+            WHERE e.codigo_convite = $1
+        `, [code]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Equipe não encontrada para este código de convite.' });
+        }
+
+        res.json(rows[0]);
+    } catch (err) {
+        console.error('[GetTeamInviteInfo] Error:', err.message);
+        res.status(500).json({ error: 'Erro interno ao buscar convite.' });
+    }
+});
+
+/**
+ * GET /api/equipe/leaderboard
+ * Retorna o pódio de pontuação de produtividade mensal dos membros da equipe (Bypasses checkSub for Paywall display)
+ */
+router.get('/leaderboard', auth, async (req, res) => {
+    try {
+        const userId = req.consultora.id;
+        
+        // 1. Busca a equipe da consultora logada
+        const { rows: userRows } = await pool.query(
+            'SELECT equipe_id FROM consultoras WHERE id = $1',
+            [userId]
+        );
+        
+        const equipeId = userRows[0]?.equipe_id;
+        if (!equipeId) {
+            return res.json({ leaderboard: [] });
+        }
+        
+        // 2. Calcula pontos e estatísticas dos membros no mês corrente
+        const { rows: leaderboard } = await pool.query(`
+            SELECT 
+                c.id, 
+                c.nome, 
+                c.foto_url, 
+                c.rank_doterra,
+                (c.id = e.lider_id) AS is_lider,
+                (COALESCE(cl.qtd, 0) * 10 + COALESCE(an.qtd, 0) * 15 + COALESCE(vd.qtd, 0) * 20 + COALESCE(es.qtd, 0) * 5) AS pontos,
+                COALESCE(cl.qtd, 0) AS clientes_qtd,
+                COALESCE(an.qtd, 0) AS anamneses_qtd,
+                COALESCE(vd.qtd, 0) AS vendas_qtd,
+                COALESCE(es.qtd, 0) AS estoque_qtd
+            FROM consultoras c
+            JOIN equipes e ON e.id = c.equipe_id
+            LEFT JOIN (
+                SELECT consultora_id, COUNT(*) as qtd 
+                FROM clientes 
+                WHERE criado_em >= DATE_TRUNC('month', CURRENT_DATE)
+                GROUP BY consultora_id
+            ) cl ON cl.consultora_id = c.id
+            LEFT JOIN (
+                SELECT consultora_id, COUNT(*) as qtd 
+                FROM anamneses 
+                WHERE preenchido = TRUE AND criado_em >= DATE_TRUNC('month', CURRENT_DATE)
+                GROUP BY consultora_id
+            ) an ON an.consultora_id = c.id
+            LEFT JOIN (
+                SELECT consultora_id, COUNT(*) as qtd 
+                FROM vendas 
+                WHERE criado_em >= DATE_TRUNC('month', CURRENT_DATE)
+                GROUP BY consultora_id
+            ) vd ON vd.consultora_id = c.id
+            LEFT JOIN (
+                SELECT consultora_id, COUNT(*) as qtd 
+                FROM estoque 
+                WHERE criado_em >= DATE_TRUNC('month', CURRENT_DATE)
+                GROUP BY consultora_id
+            ) es ON es.consultora_id = c.id
+            WHERE c.equipe_id = $1
+            ORDER BY pontos DESC, c.nome ASC
+        `, [equipeId]);
+        
+        res.json({ leaderboard });
+    } catch (err) {
+        console.error('[GetTeamLeaderboard] Error:', err.message);
+        res.status(500).json({ error: 'Erro ao buscar o leaderboard da equipe.' });
+    }
+});
+
+/**
+ * GET /api/equipe/conquistas
+ * Retorna as medalhas acumuladas/desbloqueadas da consultora autenticada (Bypasses checkSub for Paywall display)
+ */
+router.get('/conquistas', auth, async (req, res) => {
+    try {
+        const userId = req.consultora.id;
+        
+        // Coleta estatísticas gerais acumuladas do usuário
+        const { rows: stats } = await pool.query(`
+            SELECT 
+                (SELECT COUNT(*) FROM vendas WHERE consultora_id = $1) AS vendas_total,
+                (SELECT COUNT(*) FROM anamneses WHERE consultora_id = $1 AND preenchido = TRUE) AS anamneses_total,
+                (SELECT COUNT(*) FROM estoque WHERE consultora_id = $1) AS estoque_total,
+                (SELECT COUNT(*) FROM clientes WHERE consultora_id = $1) AS clientes_total,
+                (SELECT COUNT(*) FROM equipe_aviso_confirmacoes WHERE consultora_id = $1) AS rsvp_total
+        `, [userId]);
+        
+        const row = stats[0] || { vendas_total: 0, anamneses_total: 0, estoque_total: 0, clientes_total: 0, rsvp_total: 0 };
+        const v = parseInt(row.vendas_total || 0, 10);
+        const a = parseInt(row.anamneses_total || 0, 10);
+        const e = parseInt(row.estoque_total || 0, 10);
+        const c = parseInt(row.clientes_total || 0, 10);
+        const r = parseInt(row.rsvp_total || 0, 10);
+        
+        const conquistas = [
+            {
+                id: 'primeira_venda',
+                titulo: '💰 Primeira Venda',
+                descricao: 'Registre sua primeira venda no sistema para começar a lucrar.',
+                atual: v,
+                meta: 1,
+                desbloqueada: v >= 1
+            },
+            {
+                id: 'mestre_anamnese',
+                titulo: '📝 Mestre da Anamnese',
+                descricao: 'Realize pelo menos 10 atendimentos com fichas de anamnese completadas.',
+                atual: a,
+                meta: 10,
+                desbloqueada: a >= 10
+            },
+            {
+                id: 'organizador_estoque',
+                titulo: '📦 Organizador de Estoque',
+                descricao: 'Cadastre 10 ou mais itens em seu estoque pessoal para controle ágil.',
+                atual: e,
+                meta: 10,
+                desbloqueada: e >= 10
+            },
+            {
+                id: 'expandindo_rede',
+                titulo: '👥 Expandindo a Rede',
+                descricao: 'Adicione pelo menos 5 contatos ou clientes no seu CRM.',
+                atual: c,
+                meta: 5,
+                desbloqueada: c >= 5
+            },
+            {
+                id: 'consultor_focado',
+                titulo: '🎯 Consultor Focado',
+                descricao: 'Confirme presença RSVP em pelo menos 2 reuniões no mural da equipe.',
+                atual: r,
+                meta: 2,
+                desbloqueada: r >= 2
+            }
+        ];
+        
+        res.json({ conquistas });
+    } catch (err) {
+        console.error('[GetConquistas] Error:', err.message);
+        res.status(500).json({ error: 'Erro ao buscar conquistas.' });
+    }
+});
+
 // Todos os endpoints necessitam de autenticação e assinatura ativa
 router.use(auth, checkSub);
 
@@ -350,10 +518,18 @@ router.get('/membros', async (req, res) => {
 
         // 2. Busca todos os liderados vinculados
         const { rows: membros } = await pool.query(
-            `SELECT id, nome, email, telefone, foto_url, rank_doterra, criado_em 
-             FROM consultoras 
-             WHERE equipe_id = $1 AND id != $2
-             ORDER BY nome ASC`,
+            `SELECT c.id, c.nome, c.email, c.telefone, c.foto_url, c.rank_doterra, c.criado_em,
+                    a.plano, a.status, a.trial_fim
+             FROM consultoras c
+             LEFT JOIN LATERAL (
+                 SELECT plano, status, trial_fim
+                 FROM assinaturas
+                 WHERE consultora_id = c.id
+                 ORDER BY criado_em DESC
+                 LIMIT 1
+             ) a ON TRUE
+             WHERE c.equipe_id = $1 AND c.id != $2
+             ORDER BY c.nome ASC`,
             [equipeId, userId]
         );
 
@@ -984,149 +1160,7 @@ router.get('/push-historico', async (req, res) => {
     }
 });
 
-/**
- * GET /api/equipe/leaderboard
- * Retorna o pódio de pontuação de produtividade mensal dos membros da equipe
- */
-router.get('/leaderboard', async (req, res) => {
-    try {
-        const userId = req.consultora.id;
-        
-        // 1. Busca a equipe da consultora logada
-        const { rows: userRows } = await pool.query(
-            'SELECT equipe_id FROM consultoras WHERE id = $1',
-            [userId]
-        );
-        
-        const equipeId = userRows[0]?.equipe_id;
-        if (!equipeId) {
-            return res.json({ leaderboard: [] });
-        }
-        
-        // 2. Calcula pontos e estatísticas dos membros no mês corrente
-        const { rows: leaderboard } = await pool.query(`
-            SELECT 
-                c.id, 
-                c.nome, 
-                c.foto_url, 
-                c.rank_doterra,
-                (c.id = e.lider_id) AS is_lider,
-                (COALESCE(cl.qtd, 0) * 10 + COALESCE(an.qtd, 0) * 15 + COALESCE(vd.qtd, 0) * 20 + COALESCE(es.qtd, 0) * 5) AS pontos,
-                COALESCE(cl.qtd, 0) AS clientes_qtd,
-                COALESCE(an.qtd, 0) AS anamneses_qtd,
-                COALESCE(vd.qtd, 0) AS vendas_qtd,
-                COALESCE(es.qtd, 0) AS estoque_qtd
-            FROM consultoras c
-            JOIN equipes e ON e.id = c.equipe_id
-            LEFT JOIN (
-                SELECT consultora_id, COUNT(*) as qtd 
-                FROM clientes 
-                WHERE criado_em >= DATE_TRUNC('month', CURRENT_DATE)
-                GROUP BY consultora_id
-            ) cl ON cl.consultora_id = c.id
-            LEFT JOIN (
-                SELECT consultora_id, COUNT(*) as qtd 
-                FROM anamneses 
-                WHERE preenchido = TRUE AND criado_em >= DATE_TRUNC('month', CURRENT_DATE)
-                GROUP BY consultora_id
-            ) an ON an.consultora_id = c.id
-            LEFT JOIN (
-                SELECT consultora_id, COUNT(*) as qtd 
-                FROM vendas 
-                WHERE criado_em >= DATE_TRUNC('month', CURRENT_DATE)
-                GROUP BY consultora_id
-            ) vd ON vd.consultora_id = c.id
-            LEFT JOIN (
-                SELECT consultora_id, COUNT(*) as qtd 
-                FROM estoque 
-                WHERE criado_em >= DATE_TRUNC('month', CURRENT_DATE)
-                GROUP BY consultora_id
-            ) es ON es.consultora_id = c.id
-            WHERE c.equipe_id = $1
-            ORDER BY pontos DESC, c.nome ASC
-        `, [equipeId]);
-        
-        res.json({ leaderboard });
-    } catch (err) {
-        console.error('[GetTeamLeaderboard] Error:', err.message);
-        res.status(500).json({ error: 'Erro ao buscar o leaderboard da equipe.' });
-    }
-});
-
-/**
- * GET /api/equipe/conquistas
- * Retorna as medalhas acumuladas/desbloqueadas da consultora autenticada
- */
-router.get('/conquistas', async (req, res) => {
-    try {
-        const userId = req.consultora.id;
-        
-        // Coleta estatísticas gerais acumuladas do usuário
-        const { rows: stats } = await pool.query(`
-            SELECT 
-                (SELECT COUNT(*) FROM vendas WHERE consultora_id = $1) AS vendas_total,
-                (SELECT COUNT(*) FROM anamneses WHERE consultora_id = $1 AND preenchido = TRUE) AS anamneses_total,
-                (SELECT COUNT(*) FROM estoque WHERE consultora_id = $1) AS estoque_total,
-                (SELECT COUNT(*) FROM clientes WHERE consultora_id = $1) AS clientes_total,
-                (SELECT COUNT(*) FROM equipe_aviso_confirmacoes WHERE consultora_id = $1) AS rsvp_total
-        `, [userId]);
-        
-        const row = stats[0] || { vendas_total: 0, anamneses_total: 0, estoque_total: 0, clientes_total: 0, rsvp_total: 0 };
-        const v = parseInt(row.vendas_total || 0, 10);
-        const a = parseInt(row.anamneses_total || 0, 10);
-        const e = parseInt(row.estoque_total || 0, 10);
-        const c = parseInt(row.clientes_total || 0, 10);
-        const r = parseInt(row.rsvp_total || 0, 10);
-        
-        const conquistas = [
-            {
-                id: 'primeira_venda',
-                titulo: '💰 Primeira Venda',
-                descricao: 'Registre sua primeira venda no sistema para começar a lucrar.',
-                atual: v,
-                meta: 1,
-                desbloqueada: v >= 1
-            },
-            {
-                id: 'mestre_anamnese',
-                titulo: '📝 Mestre da Anamnese',
-                descricao: 'Realize pelo menos 10 atendimentos com fichas de anamnese completadas.',
-                atual: a,
-                meta: 10,
-                desbloqueada: a >= 10
-            },
-            {
-                id: 'organizador_estoque',
-                titulo: '📦 Organizador de Estoque',
-                descricao: 'Cadastre 10 ou mais itens em seu estoque pessoal para controle ágil.',
-                atual: e,
-                meta: 10,
-                desbloqueada: e >= 10
-            },
-            {
-                id: 'expandindo_rede',
-                titulo: '👥 Expandindo a Rede',
-                descricao: 'Adicione pelo menos 5 contatos ou clientes no seu CRM.',
-                atual: c,
-                meta: 5,
-                desbloqueada: c >= 5
-            },
-            {
-                id: 'consultor_focado',
-                titulo: '🎯 Consultor Focado',
-                descricao: 'Confirme presença RSVP em pelo menos 2 reuniões no mural da equipe.',
-                atual: r,
-                meta: 2,
-                desbloqueada: r >= 2
-            }
-        ];
-        
-        res.json({ conquistas });
-    } catch (err) {
-        console.error('[GetConquistas] Error:', err.message);
-        res.status(500).json({ error: 'Erro ao buscar conquistas.' });
-    }
-});
+// Leaderboard e Conquistas rotas foram movidas para o início do arquivo (antes do checkSub) para exibição no Paywall
 
 /**
  * GET /api/equipe/desafios

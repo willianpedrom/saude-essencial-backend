@@ -59,7 +59,18 @@ export function renderLogin(router, params = {}) {
       <div id="panel-register" ${finalParams.register === 'true' ? 'style="display:block"' : 'style="display:none"'}>
         <div style="text-align:center;margin-bottom:16px;">
           <h2 style="margin:0;font-size:1.4rem;font-weight:700;">Criar Conta Gratuita</h2>
-          <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;">Comece seu trial de 7 dias agora</p>
+          <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;" id="reg-trial-desc">Comece seu trial de 7 dias agora</p>
+        </div>
+        <!-- BANNER DE CONVITE -->
+        <div id="convite-banner" style="display:none; background:rgba(22, 163, 74, 0.1); border: 1px solid rgba(22, 163, 74, 0.3); border-radius:12px; padding:16px; margin-bottom:20px; text-align:center; position:relative; overflow:hidden;">
+            <div style="position:absolute; top:-10px; right:-10px; width:40px; height:40px; background:rgba(22, 163, 74, 0.1); border-radius:50%;"></div>
+            <div style="font-size:1.5rem; margin-bottom:4px;">🤝</div>
+            <p style="margin:0; font-size:0.9rem; color:var(--text-color); line-height:1.4;" id="convite-banner-text">
+                Você foi convidado(a) para entrar na equipe!
+            </p>
+            <div style="margin-top:8px; display:inline-block; font-size:0.75rem; font-weight:700; color:#16a34a; background:#dcfce7; padding:4px 8px; border-radius:4px;">
+                ✦ BÔNUS: 30 DIAS TRIAL GRÁTIS
+            </div>
         </div>
         <form class="auth-form" id="register-form">
           <div class="form-group">
@@ -307,6 +318,41 @@ export function renderLogin(router, params = {}) {
     }
   });
 
+  // Fetch invite code info if present in query parameters
+  const conviteCode = urlParams.get('convite');
+  if (conviteCode) {
+    fetch(`/api/equipe/invite-info/${conviteCode}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Convite inválido');
+        return res.json();
+      })
+      .then(data => {
+        const banner = document.getElementById('convite-banner');
+        const bannerText = document.getElementById('convite-banner-text');
+        const trialDesc = document.getElementById('reg-trial-desc');
+        if (banner && bannerText) {
+          let fotoHtml = '';
+          if (data.lider_foto_url) {
+            fotoHtml = `<img src="${data.lider_foto_url}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; margin-right:8px; border:2px solid #16a34a; display:inline-block; vertical-align:middle;" />`;
+          }
+          bannerText.innerHTML = `
+            <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:6px;">
+              ${fotoHtml}
+              <strong style="font-weight:700; color:#16a34a;">${data.lider_nome}</strong>
+            </div>
+            Você foi convidado(a) por <strong style="font-weight:700; color:#16a34a;">${data.lider_nome}</strong> para entrar na equipe <strong style="font-weight:700;">${data.nome_equipe}</strong>! Cadastre-se e aproveite <strong>30 dias grátis completo</strong> no Gota App!
+          `;
+          banner.style.display = 'block';
+        }
+        if (trialDesc) {
+          trialDesc.textContent = 'Aproveite seus 30 dias grátis completo no Gota App!';
+        }
+      })
+      .catch(err => {
+        console.warn('[InviteInfo] Error:', err.message);
+      });
+  }
+
   // ── Register form ───────────────────────────────────────────────────────
   document.getElementById('register-form')?.addEventListener('submit', async e => {
     e.preventDefault();
@@ -321,10 +367,14 @@ export function renderLogin(router, params = {}) {
 
     btn.disabled = true; btn.textContent = 'Criando conta...';
     try {
+      const payload = { nome, email, telefone, senha };
+      if (conviteCode) {
+        payload.codigo_convite = conviteCode;
+      }
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, email, telefone, senha })
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erro ao criar conta.');
@@ -335,7 +385,8 @@ export function renderLogin(router, params = {}) {
       auth.current = data.consultora;
       auth.isLoggedIn = true;
 
-      toast('Conta criada com sucesso! Aproveite seus 7 dias trial. 🚀', 'success');
+      const trialDaysMsg = conviteCode ? '30 dias trial' : '7 dias trial';
+      toast(`Conta criada com sucesso! Aproveite seus ${trialDaysMsg}. 🚀`, 'success');
       router.navigate('/dashboard');
     } catch (err) {
       errEl.textContent = err.message;

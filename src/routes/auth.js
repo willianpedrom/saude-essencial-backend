@@ -24,7 +24,7 @@ function makeSlug(nome) {
 // POST /api/auth/register
 router.post('/register', validate(schemas.register), async (req, res, next) => {
     try {
-        const { nome, email, senha, telefone, genero } = req.body;
+        const { nome, email, senha, telefone, genero, codigo_convite } = req.body;
 
         if (!nome || !email || !senha) {
             return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios.' });
@@ -33,7 +33,6 @@ router.post('/register', validate(schemas.register), async (req, res, next) => {
             return res.status(400).json({ error: 'A senha deve ter no mínimo 8 caracteres.' });
         }
 
-
         // Check existing email
         const exists = await pool.query('SELECT id FROM consultoras WHERE email = $1', [email]);
         if (exists.rows.length > 0) {
@@ -41,21 +40,58 @@ router.post('/register', validate(schemas.register), async (req, res, next) => {
             return res.status(409).json({ error: 'Este e-mail já está cadastrado.' });
         }
 
+        // Validate invite code if provided
+        let equipeId = null;
+        let trialDays = 7;
+        if (codigo_convite) {
+            const { rows: equipeRows } = await pool.query(
+                `SELECT e.id, e.lider_id, p.limite_membros_equipe 
+                 FROM equipes e
+                 JOIN consultoras c_lider ON e.lider_id = c_lider.id
+                 LEFT JOIN assinaturas a ON a.consultora_id = c_lider.id
+                 LEFT JOIN planos p ON a.plano = p.slug AND p.ativo = TRUE
+                 WHERE e.codigo_convite = $1
+                 ORDER BY a.criado_em DESC LIMIT 1`,
+                [codigo_convite]
+            );
+
+            if (equipeRows.length > 0) {
+                const eq = equipeRows[0];
+                
+                // Verify team member limits
+                if (eq.limite_membros_equipe !== null) {
+                    const { rows: countRows } = await pool.query(
+                        'SELECT COUNT(*) as qtd FROM consultoras WHERE equipe_id = $1',
+                        [eq.id]
+                    );
+                    const currentCount = parseInt(countRows[0]?.qtd || 0, 10);
+                    if (currentCount >= eq.limite_membros_equipe) {
+                        return res.status(400).json({ error: 'A equipe de destino já atingiu o limite máximo de membros permitidos pelo plano do líder.' });
+                    }
+                }
+                
+                equipeId = eq.id;
+                trialDays = 30; // 30-day trial for invited team members!
+            } else {
+                return res.status(400).json({ error: 'Código de convite da equipe inválido.' });
+            }
+        }
+
         const senhaHash = await bcrypt.hash(senha, 10);
         const slug = makeSlug(nome);
 
-        // Insert consultora
+        // Insert consultora with equipeId association
         const { rows } = await pool.query(
-            `INSERT INTO consultoras (nome, email, senha_hash, telefone, slug, genero, termos_aceitos, termos_aceitos_em)
-       VALUES ($1, $2, $3, $4, $5, $6, TRUE, NOW())
-       RETURNING id, nome, email, slug, genero`,
-            [nome, email, senhaHash, telefone || null, slug, genero || 'feminino']
+            `INSERT INTO consultoras (nome, email, senha_hash, telefone, slug, genero, termos_aceitos, termos_aceitos_em, equipe_id)
+        VALUES ($1, $2, $3, $4, $5, $6, TRUE, NOW(), $7)
+        RETURNING id, nome, email, slug, genero, equipe_id`,
+            [nome, email, senhaHash, telefone || null, slug, genero || 'feminino', equipeId]
         );
         const consultora = rows[0];
 
-        // Create trial subscription (7 days)
+        // Create trial subscription (30 days if team invited, 7 days otherwise)
         await pool.query(
-            `INSERT INTO assinaturas (consultora_id, plano, status, trial_fim) VALUES ($1, 'starter', 'trial', NOW() + INTERVAL '7 days')`,
+            `INSERT INTO assinaturas (consultora_id, plano, status, trial_fim) VALUES ($1, 'starter', 'trial', NOW() + INTERVAL '${trialDays} days')`,
             [consultora.id]
         );
 

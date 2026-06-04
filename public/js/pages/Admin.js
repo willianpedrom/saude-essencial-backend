@@ -189,9 +189,9 @@ export async function renderAdmin(router) {
 
       <!-- Abas -->
       <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--border-light);overflow-x:auto">
-        ${['membros', 'funil', 'leads', 'planos', 'avisos', 'notificacoes', 'gateway'].map(tab => `
+        ${['membros', 'equipes', 'funil', 'leads', 'planos', 'avisos', 'notificacoes', 'gateway'].map(tab => `
           <button id="tab-${tab}" class="btn ${activeTab === tab ? 'btn-primary' : 'btn-secondary'}" style="border-radius:8px 8px 0 0;border-bottom:none;padding:8px 18px;font-size:0.85rem;white-space:nowrap" data-tab="${tab}">
-            ${{ membros: '👥 Membros', funil: '🚀 Funil Trial', leads: '📈 Funil de Vendas', planos: '📦 Planos', avisos: '🔔 Avisos', notificacoes: '📲 Notificações', gateway: '💳 Gateway' }[tab]}
+            ${{ membros: '👥 Membros', equipes: '🤝 Equipes', funil: '🚀 Funil Trial', leads: '📈 Funil de Vendas', planos: '📦 Planos', avisos: '🔔 Avisos', notificacoes: '📲 Notificações', gateway: '💳 Gateway' }[tab]}
           </button>`).join('')}
       </div>
 
@@ -220,6 +220,7 @@ export async function renderAdmin(router) {
 
     const tabContent = pc.querySelector('#tab-content');
     if (activeTab === 'membros') renderMembros(tabContent);
+    else if (activeTab === 'equipes') renderEquipesSection(tabContent);
     else if (activeTab === 'funil') renderFunil(tabContent);
     else if (activeTab === 'leads') renderLeadsSection(tabContent);
     else if (activeTab === 'planos') renderPlanosSection(tabContent);
@@ -1962,6 +1963,90 @@ export async function renderAdmin(router) {
             } catch(e) { toast('Erro na automação', 'error'); }
         });
     };
+
+    // ── Aba Equipes ────────────────────────────────────────────────
+    async function renderEquipesSection(container) {
+        container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">⏳ Carregando equipes...</div>`;
+        try {
+            const data = await api('GET', '/api/admin/equipes');
+            const equipes = data.equipes || [];
+            
+            if (equipes.length === 0) {
+                container.innerHTML = `
+                  <div class="card" style="padding:40px; text-align:center; color:var(--text-muted);">
+                      Nenhuma equipe ativa cadastrada no sistema.
+                  </div>
+                `;
+                return;
+            }
+
+            const html = `
+              <div class="card" style="padding: 0; overflow: hidden;">
+                <div style="padding:14px 18px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between">
+                  <h3 style="margin:0;font-size:0.95rem">🤝 Visão Geral das Equipes (${equipes.length})</h3>
+                </div>
+                <div style="overflow-x:auto">
+                  <table class="clients-table" style="width:100%; border-collapse:collapse; font-size:0.88rem;">
+                    <thead>
+                      <tr>
+                        <th style="padding:12px; text-align:left;">Equipe</th>
+                        <th style="padding:12px; text-align:left;">Líder</th>
+                        <th style="padding:12px; text-align:center;">Membros / Limite</th>
+                        <th style="padding:12px; text-align:center;">Pontos Mensais (Coletivo)</th>
+                        <th style="padding:12px; text-align:center;">Desafios Ativos</th>
+                        <th style="padding:12px; text-align:center;">Itens Biblioteca</th>
+                        <th style="padding:12px; text-align:left;">Criada em</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${equipes.map(eq => {
+                        const limit = eq.limite_membros_equipe === null ? '∞' : eq.limite_membros_equipe;
+                        const dateStr = eq.criado_em ? new Date(eq.criado_em).toLocaleDateString('pt-BR') : '-';
+                        
+                        return `
+                          <tr style="border-bottom:1px solid var(--border-light);">
+                            <td style="padding:12px;">
+                              <strong style="color:var(--primary-color);">${eq.nome_equipe}</strong><br>
+                              <span style="font-size:0.75rem; color:var(--text-muted); font-family:monospace;">Convite: ${eq.codigo_convite}</span>
+                            </td>
+                            <td style="padding:12px;">
+                              <strong>${eq.lider_nome}</strong><br>
+                              <a href="mailto:${eq.lider_email}" style="font-size:0.75rem; color:var(--text-muted); text-decoration:none;">📧 ${eq.lider_email}</a>
+                            </td>
+                            <td style="padding:12px; text-align:center;">
+                              <strong>${eq.membros_qtd}</strong> <span style="color:var(--text-muted)">/ ${limit}</span>
+                            </td>
+                            <td style="padding:12px; text-align:center; font-weight:800; color:#fbbf24;">
+                              🏆 ${eq.pontos_mensal} pts
+                            </td>
+                            <td style="padding:12px; text-align:center;">
+                              <span class="badge" style="background:rgba(234,179,8,0.1); color:#d97706; padding:2px 6px; border-radius:4px; font-weight:700;">
+                                  ${eq.desafios_ativos} ativos
+                              </span>
+                            </td>
+                            <td style="padding:12px; text-align:center; font-weight:700;">
+                              📚 ${eq.biblioteca_items} itens
+                            </td>
+                            <td style="padding:12px; color:var(--text-muted);">
+                              ${dateStr}
+                            </td>
+                          </tr>
+                        `;
+                      }).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            `;
+            container.innerHTML = html;
+        } catch (err) {
+            container.innerHTML = `
+              <div class="card" style="padding:30px; text-align:center; color:#ef4444">
+                  Erro ao carregar lista de equipes: ${err.message}
+              </div>
+            `;
+        }
+    }
 
     render();
   }

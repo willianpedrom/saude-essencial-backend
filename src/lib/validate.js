@@ -33,6 +33,7 @@ const register = z.object({
     senha: password,
     telefone: phone,
     genero: genero,
+    codigo_convite: z.string().max(50).optional().nullable(),
     termos_aceitos: z.literal(true, {
         errorMap: () => ({ message: 'Você precisa aceitar os Termos de Uso.' })
     }),

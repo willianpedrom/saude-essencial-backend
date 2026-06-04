@@ -639,12 +639,19 @@ async function renderLeaderDashboard(router, equipe) {
                 </h2>
                 <p>Gerencie seus consultores liderados, compartilhe leads e publique comunicados.</p>
             </div>
-            <div class="th-code">
-                <span>Código de Convite</span>
-                <strong>
-                    <span id="txt-convite-code">${equipe.codigo_convite}</span>
-                    <button class="btn-copy-code" id="btn-copy-convite" title="Copiar Código">📋</button>
-                </strong>
+            <div class="th-code" style="display:flex; flex-direction:column; gap:8px; align-items:center;">
+                <div>
+                    <span>Código de Convite</span>
+                    <strong style="justify-content:center;">
+                        <span id="txt-convite-code">${equipe.codigo_convite}</span>
+                        <button class="btn-copy-code" id="btn-copy-convite" title="Copiar Código">📋</button>
+                    </strong>
+                </div>
+                <div style="border-top: 1px solid rgba(255,255,255,0.15); width:100%; padding-top:6px; margin-top:2px;">
+                    <button class="btn-copy-code" id="btn-copy-trial-link" style="font-size:0.7rem; text-transform:uppercase; font-weight:700; letter-spacing:1px; display:inline-flex; align-items:center; gap:4px; color:var(--gold-300);" title="Copiar Link de Cadastro com 30 Dias Trial Grátis">
+                        🔗 Copiar Link Trial 30D 📋
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -938,6 +945,12 @@ async function renderLeaderDashboard(router, equipe) {
     document.getElementById('btn-copy-convite')?.addEventListener('click', () => {
         navigator.clipboard.writeText(equipe.codigo_convite);
         toast('Código copiado para a área de transferência!', 'success');
+    });
+
+    document.getElementById('btn-copy-trial-link')?.addEventListener('click', () => {
+        const link = `${window.location.origin}/#/login?register=true&convite=${equipe.codigo_convite}`;
+        navigator.clipboard.writeText(link);
+        toast('Link de convite (Trial 30 dias) copiado!', 'success');
     });
 
     // ── Edit Team Name ──────────────────────────────────────
@@ -1733,6 +1746,25 @@ async function loadMembrosList() {
             const hasAtrasados = m.metricas.followups_atrasados > 0;
             const zapLink = m.telefone ? `https://api.whatsapp.com/send?phone=55${m.telefone.replace(/\D/g, '')}&text=${encodeURIComponent(`Olá ${m.nome.split(' ')[0]}! Tudo bem? Passando para acompanhar seus resultados de hoje no Gota App.`)}` : null;
 
+            // Calculate subscription / trial status badge
+            let statusBadge = '';
+            if (m.status === 'trial') {
+                const now = new Date();
+                const trialEnd = new Date(m.trial_fim);
+                const diffTime = trialEnd - now;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays > 0) {
+                    statusBadge = `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#d97706; background:#fef3c7; border: 1px solid #fde68a; padding:2px 6px; border-radius:4px; margin-top:4px;">⏳ Trial - Restam ${diffDays} dia${diffDays > 1 ? 's' : ''}</span>`;
+                } else {
+                    statusBadge = `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#dc2626; background:#fee2e2; border: 1px solid #fca5a5; padding:2px 6px; border-radius:4px; margin-top:4px;">⚠️ Teste Expirado</span>`;
+                }
+            } else if (m.status === 'active') {
+                statusBadge = `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#16a34a; background:#dcfce7; border: 1px solid #bbf7d0; padding:2px 6px; border-radius:4px; margin-top:4px;">✅ Assinante Ativo</span>`;
+            } else {
+                statusBadge = `<span style="display:inline-block; font-size:0.68rem; font-weight:700; color:#64748b; background:#f1f5f9; border: 1px solid #e2e8f0; padding:2px 6px; border-radius:4px; margin-top:4px;">Sem Assinatura</span>`;
+            }
+
             return `
                 <tr>
                     <td>
@@ -1742,7 +1774,8 @@ async function loadMembrosList() {
                     </td>
                     <td>
                         <strong>${m.nome}</strong><br>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">${m.email}</span>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">${m.email}</span><br>
+                        ${statusBadge}
                     </td>
                     <td>${m.telefone || 'Não informado'}</td>
                     <td>${m.rank_doterra || 'Consultor'}</td>
