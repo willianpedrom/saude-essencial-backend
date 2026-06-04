@@ -37,7 +37,8 @@ export class Router {
 
     // Find matching route
     for (const [pattern, handler] of Object.entries(this._routes)) {
-      const regex = new RegExp('^' + pattern.replace(/:[^/]+/g, '([^/?]+)') + '$');
+      const regexPath = pattern === '*' ? '.*' : pattern.replace(/:[^/]+/g, '([^/?]+)');
+      const regex = new RegExp('^' + regexPath + '$');
       const match = pathPart.match(regex);
       if (match) {
         // Extract named params

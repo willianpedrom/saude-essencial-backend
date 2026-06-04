@@ -319,7 +319,7 @@ export function renderLogin(router, params = {}) {
   });
 
   // Fetch invite code info if present in query parameters
-  const conviteCode = urlParams.get('convite');
+  const conviteCode = params.convite || urlParams.get('convite');
   if (conviteCode) {
     fetch(`/api/equipe/invite-info/${conviteCode}`)
       .then(res => {
@@ -380,10 +380,10 @@ export function renderLogin(router, params = {}) {
       if (!res.ok) throw new Error(data.error || 'Erro ao criar conta.');
       
       // Auto-login
-      localStorage.setItem('gota_token', data.token);
-      localStorage.setItem('gota_csrf', data.csrfToken);
-      auth.current = data.consultora;
-      auth.isLoggedIn = true;
+      sessionStorage.setItem('se_token', data.token);
+      if (data.csrfToken) sessionStorage.setItem('se_csrf', data.csrfToken);
+      sessionStorage.setItem('se_user', JSON.stringify(data.consultora));
+      auth._current = data.consultora;
 
       const trialDaysMsg = conviteCode ? '30 dias trial' : '7 dias trial';
       toast(`Conta criada com sucesso! Aproveite seus ${trialDaysMsg}. 🚀`, 'success');
