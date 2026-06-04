@@ -342,7 +342,7 @@ export function renderLogin(router, params = {}) {
           bannerText.innerHTML = `
             ${fotoHtml}
             <div style="font-size:0.98rem; color:#e2e8f0; line-height:1.6; text-align:center;">
-              <strong style="color:#4ade80; font-weight:700;">${data.lider_nome}</strong> te convidou para entrar na equipe <strong style="color:#ffffff; font-weight:700;">${data.nome_equipe}</strong>! Ela está investindo do seu crescimento, te oferecendo <strong style="color:#fbbf24; font-weight:700;">30 dias de acesso GRATUITO</strong> ao sistema GOTA APP.
+              <strong style="color:#4ade80; font-weight:700;">${data.lider_nome}</strong> te convidou para entrar na equipe <strong style="color:#ffffff; font-weight:700;">${data.nome_equipe}</strong>! Junto com o convite, você ganha <strong style="color:#fbbf24; font-weight:700;">30 dias de acesso GRATUITO</strong> ao sistema GOTA APP.
             </div>
           `;
           banner.style.display = 'block';
