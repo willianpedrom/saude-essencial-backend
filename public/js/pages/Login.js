@@ -374,7 +374,7 @@ export function renderLogin(router, params = {}) {
 
     btn.disabled = true; btn.textContent = 'Criando conta...';
     try {
-      const payload = { nome, email, telefone, senha };
+      const payload = { nome, email, telefone, senha, termos_aceitos: true };
       if (conviteCode) {
         payload.codigo_convite = conviteCode;
       }
@@ -392,13 +392,14 @@ export function renderLogin(router, params = {}) {
       sessionStorage.setItem('se_user', JSON.stringify(data.consultora));
       auth._current = data.consultora;
 
-      const trialDaysMsg = conviteCode ? '30 dias trial' : '7 dias trial';
-      toast(`Conta criada com sucesso! Aproveite seus ${trialDaysMsg}. 🚀`, 'success');
+      const trialDaysMsg = conviteCode ? '30 dias' : '7 dias';
+      toast(`Conta criada com sucesso! Aproveite seus ${trialDaysMsg} grátis. 🚀`, 'success');
       router.navigate('/dashboard');
     } catch (err) {
       errEl.textContent = err.message;
       errEl.classList.add('show');
-      btn.disabled = false; btn.textContent = 'Criar minha conta agora! 🚀';
+      btn.disabled = false;
+      btn.textContent = conviteCode ? 'CADASTRE-SE PARA ENTRAR NA EQUIPE' : 'Criar minha conta agora! 🚀';
     }
   });
 }
