@@ -238,5 +238,42 @@ router.post('/express-protocol', async (req, res) => {
     }
 });
 
+router.get('/debug-equipes', async (req, res) => {
+    try {
+        const rawEquipes = await pool.query('SELECT * FROM equipes');
+        const rawConsultoras = await pool.query("SELECT id, nome, email, role, equipe_id FROM consultoras WHERE nome ILIKE '%Carla%' OR email ILIKE '%carla%' OR role = 'admin' OR equipe_id IS NOT NULL");
+        const rawAssinaturas = await pool.query("SELECT id, consultora_id, plano, status, criado_em, trial_fim FROM assinaturas");
+        
+        let queryResult = null;
+        let queryError = null;
+        try {
+            const testQuery = await pool.query(`
+                SELECT 
+                    e.id,
+                    e.nome_equipe,
+                    e.codigo_convite,
+                    e.criado_em,
+                    c_lider.nome AS lider_nome,
+                    c_lider.email AS lider_email
+                FROM equipes e
+                JOIN consultoras c_lider ON e.lider_id = c_lider.id
+            `);
+            queryResult = testQuery.rows;
+        } catch (e) {
+            queryError = e.message;
+        }
+
+        res.json({
+            rawEquipes: rawEquipes.rows,
+            rawConsultoras: rawConsultoras.rows,
+            rawAssinaturas: rawAssinaturas.rows,
+            queryResult,
+            queryError
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 router.publicCache = cache;
 module.exports = router;
