@@ -334,15 +334,15 @@ export function renderLogin(router, params = {}) {
           let fotoHtml = '';
           if (data.lider_foto_url) {
             fotoHtml = `
-              <div style="margin-bottom: 12px; display: flex; justify-content: center;">
-                <img src="${data.lider_foto_url}" style="width:68px; height:68px; border-radius:50%; object-fit:cover; border:3px solid #4ade80; box-shadow: 0 4px 15px rgba(74, 222, 128, 0.35);" />
+              <div style="margin-bottom: 16px; display: flex; justify-content: center;">
+                <img src="${data.lider_foto_url}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid #4ade80; box-shadow: 0 4px 20px rgba(74, 222, 128, 0.4);" />
               </div>
             `;
           }
           bannerText.innerHTML = `
             ${fotoHtml}
-            <div style="font-size:0.92rem; color:#e2e8f0; line-height:1.5; text-align:center;">
-              <strong style="color:#4ade80; font-weight:700;">${data.lider_nome}</strong> te convidou para entrar na equipe <strong style="color:#ffffff; font-weight:700;">${data.nome_equipe}</strong>! Ela está investindo no seu crescimento, te oferecendo <strong style="color:#fbbf24; font-weight:700;">30 dias de acesso GRATUITO</strong> ao sistema GOTA APP.
+            <div style="font-size:0.95rem; color:#e2e8f0; line-height:1.6; text-align:center;">
+              <strong style="color:#4ade80; font-weight:700;">${data.lider_nome}</strong> te convidou para entrar na equipe <strong style="color:#ffffff; font-weight:700;">${data.nome_equipe}</strong>! Ela está investindo do seu crescimento, te oferecendo <strong style="color:#fbbf24; font-weight:700;">30 dias de acesso GRATUITO</strong> ao sistema GOTA APP.
             </div>
           `;
           banner.style.display = 'block';
