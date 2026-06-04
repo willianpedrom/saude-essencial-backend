@@ -62,13 +62,13 @@ export function renderLogin(router, params = {}) {
           <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;" id="reg-trial-desc">Comece seu trial de 7 dias agora</p>
         </div>
         <!-- BANNER DE CONVITE -->
-        <div id="convite-banner" style="display:none; background:rgba(22, 163, 74, 0.1); border: 1px solid rgba(22, 163, 74, 0.3); border-radius:12px; padding:16px; margin-bottom:20px; text-align:center; position:relative; overflow:hidden;">
-            <div style="position:absolute; top:-10px; right:-10px; width:40px; height:40px; background:rgba(22, 163, 74, 0.1); border-radius:50%;"></div>
+        <div id="convite-banner" style="display:none; background:rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.25); border-radius:12px; padding:16px; margin-bottom:20px; text-align:center; position:relative; overflow:hidden;">
+            <div style="position:absolute; top:-10px; right:-10px; width:40px; height:40px; background:rgba(74, 222, 128, 0.05); border-radius:50%;"></div>
             <div style="font-size:1.5rem; margin-bottom:4px;">🤝</div>
-            <p style="margin:0; font-size:0.9rem; color:var(--text-color); line-height:1.4;" id="convite-banner-text">
+            <p style="margin:0; font-size:0.9rem; color:#e2e8f0; line-height:1.4;" id="convite-banner-text">
                 Você foi convidado(a) para entrar na equipe!
             </p>
-            <div style="margin-top:8px; display:inline-block; font-size:0.75rem; font-weight:700; color:#16a34a; background:#dcfce7; padding:4px 8px; border-radius:4px;">
+            <div style="margin-top:8px; display:inline-block; font-size:0.75rem; font-weight:700; color:#06120b; background:#fbbf24; padding:4px 10px; border-radius:6px; box-shadow: 0 2px 10px rgba(251, 191, 36, 0.25);">
                 ✦ BÔNUS: 30 DIAS TRIAL GRÁTIS
             </div>
         </div>
@@ -333,14 +333,14 @@ export function renderLogin(router, params = {}) {
         if (banner && bannerText) {
           let fotoHtml = '';
           if (data.lider_foto_url) {
-            fotoHtml = `<img src="${data.lider_foto_url}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; margin-right:8px; border:2px solid #16a34a; display:inline-block; vertical-align:middle;" />`;
+            fotoHtml = `<img src="${data.lider_foto_url}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; margin-right:8px; border:2px solid #4ade80; display:inline-block; vertical-align:middle;" />`;
           }
           bannerText.innerHTML = `
             <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:6px;">
               ${fotoHtml}
-              <strong style="font-weight:700; color:#16a34a;">${data.lider_nome}</strong>
+              <strong style="font-weight:700; color:#4ade80;">${data.lider_nome}</strong>
             </div>
-            Você foi convidado(a) por <strong style="font-weight:700; color:#16a34a;">${data.lider_nome}</strong> para entrar na equipe <strong style="font-weight:700;">${data.nome_equipe}</strong>! Cadastre-se e aproveite <strong>30 dias grátis completo</strong> no Gota App!
+            Você foi convidado(a) por <strong style="font-weight:700; color:#4ade80;">${data.lider_nome}</strong> para entrar na equipe <strong style="font-weight:700; color:#ffffff;">${data.nome_equipe}</strong>! Cadastre-se e aproveite <strong style="color:#fbbf24; font-weight:700;">30 dias grátis completo</strong> no Gota App!
           `;
           banner.style.display = 'block';
         }

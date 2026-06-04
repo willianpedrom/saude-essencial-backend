@@ -205,19 +205,29 @@ body {
 }
 
 .auth-card {
-  background: #202d23;
-  /* Fundo fosco mais claro que o fundo da página */
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  /* Borda muito sutil */
+  background: #18241d;
+  /* Fundo fosco um pouco mais escuro e aveludado para melhor contraste */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  /* Borda mais visível e elegante */
   border-radius: var(--radius-xl);
   padding: 48px 40px;
   width: 100%;
   max-width: 440px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-  /* Sombra mais limpa e escura */
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  /* Sombra mais marcante e premium */
   position: relative;
   z-index: 1;
   animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: #f8fafc;
+}
+
+.auth-card h2,
+.auth-card h3 {
+  color: #ffffff !important;
+}
+
+.auth-card p {
+  color: rgba(255, 255, 255, 0.85) !important;
 }
 
 @keyframes slideUp {
@@ -312,16 +322,16 @@ body {
 }
 
 .form-label {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.82rem;
-  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.85rem;
+  font-weight: 600;
   letter-spacing: 0.5px;
 }
 
 .form-input {
-  background: #314035;
-  /* Fundo dos inputs (um pouco mais claro que o card) */
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
+  /* Fundo dos inputs translúcido e elegante */
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-sm);
   padding: 12px 16px;
   color: white;
@@ -332,13 +342,13 @@ body {
 }
 
 .form-input::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .form-input:focus {
-  border-color: var(--gold-400);
-  background: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 0 0 3px rgba(201, 154, 34, 0.15);
+  border-color: #fbbf24;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
 }
 
 .form-hint {
