@@ -64,7 +64,6 @@ export function renderLogin(router, params = {}) {
         <!-- BANNER DE CONVITE -->
         <div id="convite-banner" style="display:none; background:rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.25); border-radius:12px; padding:16px; margin-bottom:20px; text-align:center; position:relative; overflow:hidden;">
             <div style="position:absolute; top:-10px; right:-10px; width:40px; height:40px; background:rgba(74, 222, 128, 0.05); border-radius:50%;"></div>
-            <div style="font-size:1.5rem; margin-bottom:4px;">🤝</div>
             <p style="margin:0; font-size:0.9rem; color:#e2e8f0; line-height:1.4;" id="convite-banner-text">
                 Você foi convidado(a) para entrar na equipe!
             </p>
@@ -334,19 +333,26 @@ export function renderLogin(router, params = {}) {
         if (banner && bannerText) {
           let fotoHtml = '';
           if (data.lider_foto_url) {
-            fotoHtml = `<img src="${data.lider_foto_url}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; margin-right:8px; border:2px solid #4ade80; display:inline-block; vertical-align:middle;" />`;
+            fotoHtml = `
+              <div style="margin-bottom: 12px; display: flex; justify-content: center;">
+                <img src="${data.lider_foto_url}" style="width:68px; height:68px; border-radius:50%; object-fit:cover; border:3px solid #4ade80; box-shadow: 0 4px 15px rgba(74, 222, 128, 0.35);" />
+              </div>
+            `;
           }
           bannerText.innerHTML = `
-            <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:6px;">
-              ${fotoHtml}
-              <strong style="font-weight:700; color:#4ade80;">${data.lider_nome}</strong>
+            ${fotoHtml}
+            <div style="font-size:0.92rem; color:#e2e8f0; line-height:1.5; text-align:center;">
+              <strong style="color:#4ade80; font-weight:700;">${data.lider_nome}</strong> te convidou para entrar na equipe <strong style="color:#ffffff; font-weight:700;">${data.nome_equipe}</strong>! Ela está investindo no seu crescimento, te oferecendo <strong style="color:#fbbf24; font-weight:700;">30 dias de acesso GRATUITO</strong> ao sistema GOTA APP.
             </div>
-            Você foi convidado(a) por <strong style="font-weight:700; color:#4ade80;">${data.lider_nome}</strong> para entrar na equipe <strong style="font-weight:700; color:#ffffff;">${data.nome_equipe}</strong>! Cadastre-se e aproveite <strong style="color:#fbbf24; font-weight:700;">30 dias grátis completo</strong> no Gota App!
           `;
           banner.style.display = 'block';
         }
         if (trialDesc) {
-          trialDesc.textContent = 'Aproveite seus 30 dias grátis completo no Gota App!';
+          trialDesc.textContent = 'Aproveite seus 30 dias grátis no Gota App!';
+        }
+        const regBtn = document.getElementById('register-btn');
+        if (regBtn) {
+          regBtn.textContent = 'CADASTRE-SE PARA ENTRAR NA EQUIPE';
         }
       })
       .catch(err => {
