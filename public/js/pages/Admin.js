@@ -1790,7 +1790,6 @@ export async function renderAdmin(router) {
   }
 
   await load();
-}
 
   // ── Aba Notificações ───────────────────────────────────────────
   async function renderNotificacoesSection(container) {
@@ -1963,6 +1962,9 @@ export async function renderAdmin(router) {
             } catch(e) { toast('Erro na automação', 'error'); }
         });
     };
+
+    render();
+  }
 
     // ── Aba Equipes ────────────────────────────────────────────────
     async function renderEquipesSection(container) {

@@ -237,7 +237,7 @@ const router = new Router({
         renderProfile(router);
     }),
     '/admin': guard(async () => {
-        const { renderAdmin } = await import('./pages/Admin.js?v=1020');
+        const { renderAdmin } = await import('./pages/Admin.js?v=1021');
         renderAdmin(router);
     }),
     '/pipeline': guard(async () => {
