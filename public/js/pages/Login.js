@@ -33,7 +33,7 @@ export function renderLogin(router, params = {}) {
       <div id="panel-login" ${resetToken || finalParams.register === 'true' ? 'style="display:none"' : ''}>
         <div style="text-align:center;margin-bottom:16px;">
           <h2 style="margin:0;font-size:1.4rem;font-weight:700;">Bem-vinda (o)</h2>
-          <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;">Faça login para continuar</p>
+          <p style="color:rgba(255,255,255,0.65);font-size:0.9rem;margin-top:4px;">Faça login para continuar</p>
         </div>
         <form class="auth-form" id="login-form">
           <div class="form-group">
@@ -50,7 +50,7 @@ export function renderLogin(router, params = {}) {
           <div class="auth-error" id="login-error"></div>
           <button class="btn-auth" type="submit" id="login-btn">Acessar minha área ✦</button>
           <p class="auth-link-area" style="display:flex;flex-direction:column;align-items:center;gap:12px;font-size:0.85rem;margin-top:20px;">
-            <span class="auth-link" id="link-forgot" style="color:var(--text-muted);cursor:pointer;">Esqueci minha senha</span>
+            <span class="auth-link" id="link-forgot" style="cursor:pointer;">Esqueci minha senha</span>
           </p>
         </form>
       </div>
@@ -59,7 +59,7 @@ export function renderLogin(router, params = {}) {
       <div id="panel-register" ${finalParams.register === 'true' ? 'style="display:block"' : 'style="display:none"'}>
         <div style="text-align:center;margin-bottom:16px;">
           <h2 style="margin:0;font-size:1.4rem;font-weight:700;">Criar Conta Gratuita</h2>
-          <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;" id="reg-trial-desc">Comece seu trial de 7 dias agora</p>
+          <p style="color:rgba(255,255,255,0.65);font-size:0.9rem;margin-top:4px;" id="reg-trial-desc">Comece seu trial de 7 dias agora</p>
         </div>
         <!-- BANNER DE CONVITE -->
         <div id="convite-banner" style="display:none; background:rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.25); border-radius:12px; padding:16px; margin-bottom:20px; text-align:center; position:relative; overflow:hidden;">
@@ -101,12 +101,13 @@ export function renderLogin(router, params = {}) {
       </div>
 
       <!-- TERMS ACCEPTANCE -->
+      <!-- TERMS ACCEPTANCE -->
   <!-- TERMS ACCEPTANCE -->
       <div id="panel-terms" style="display:none">
         <div style="text-align:center;margin-bottom:20px;padding:20px">
           <div style="font-size:2.5rem">📄</div>
           <h2 style="margin:8px 0 4px;font-size:1.1rem">Atualizamos nossos Termos</h2>
-          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px">
+          <p style="font-size:0.85rem;color:rgba(255,255,255,0.65);margin-bottom:16px">
             Para continuar acessando o Gota App, leia e aceite nossos novos Termos de Uso.
           </p>
           <a href="/termos.html" target="_blank" style="display:inline-block;padding:8px 16px;background:#f1f5f9;border-radius:6px;color:var(--primary-color);font-weight:600;text-decoration:none;margin-bottom:24px;border:1px solid #cbd5e1">
@@ -122,7 +123,7 @@ export function renderLogin(router, params = {}) {
         <div style="text-align:center;margin-bottom:20px">
           <div style="font-size:2.5rem">🔐</div>
           <h2 style="margin:8px 0 4px;font-size:1.1rem">Recuperar Senha</h2>
-          <p style="font-size:0.85rem;color:var(--text-muted);margin:0">Digite seu e-mail e enviaremos o link de recuperação.</p>
+          <p style="font-size:0.85rem;color:rgba(255,255,255,0.65);margin:0">Digite seu e-mail e enviaremos o link de recuperação.</p>
         </div>
         <form class="auth-form" id="forgot-form" style="display:block">
           <div class="form-group">
@@ -145,7 +146,7 @@ export function renderLogin(router, params = {}) {
         <div style="text-align:center;margin-bottom:20px">
           <div style="font-size:2.5rem">🔑</div>
           <h2 style="margin:8px 0 4px;font-size:1.1rem">Nova Senha</h2>
-          <p style="font-size:0.85rem;color:var(--text-muted);margin:0">Escolha uma senha forte para sua conta.</p>
+          <p style="font-size:0.85rem;color:rgba(255,255,255,0.65);margin:0">Escolha uma senha forte para sua conta.</p>
         </div>
         <form class="auth-form" id="reset-form" style="display:block">
           <div class="form-group">
@@ -166,7 +167,7 @@ export function renderLogin(router, params = {}) {
         <div id="reset-success" style="display:none;text-align:center;padding:20px">
           <div style="font-size:3rem">✅</div>
           <h3 style="color:#16a34a;margin:12px 0 8px">Senha redefinida!</h3>
-          <p style="color:var(--text-muted);font-size:0.9rem">Agora faça login com sua nova senha.</p>
+          <p style="color:rgba(255,255,255,0.65);font-size:0.9rem">Agora faça login com sua nova senha.</p>
           <button class="btn-auth" id="btn-go-login" style="margin-top:16px">Ir para o Login</button>
         </div>
       </div>
@@ -419,7 +420,7 @@ export function renderResetPassword(router) {
         <div style="text-align:center;padding:24px">
           <div style="font-size:2.5rem">❌</div>
           <h3 style="color:#dc2626">Link inválido</h3>
-          <p style="color:var(--text-muted);font-size:0.9rem">Este link de recuperação é inválido ou expirou.</p>
+          <p style="color:rgba(255,255,255,0.65);font-size:0.9rem">Este link de recuperação é inválido ou expirou.</p>
           <button class="btn-auth" id="btn-go-login" style="margin-top:16px">← Voltar para o login</button>
         </div>
       ` : `
@@ -427,7 +428,7 @@ export function renderResetPassword(router) {
           <div style="text-align:center;margin-bottom:20px">
             <div style="font-size:2.5rem">🔑</div>
             <h2 style="margin:8px 0 4px;font-size:1.1rem">Nova Senha</h2>
-            <p style="font-size:0.85rem;color:var(--text-muted);margin:0">Escolha uma senha forte para sua conta.</p>
+            <p style="font-size:0.85rem;color:rgba(255,255,255,0.65);margin:0">Escolha uma senha forte para sua conta.</p>
           </div>
           <form id="reset-form">
             <div class="form-group">
@@ -449,7 +450,7 @@ export function renderResetPassword(router) {
         <div id="reset-success" style="display:none;text-align:center;padding:20px">
           <div style="font-size:3rem">✅</div>
           <h3 style="color:#16a34a;margin:12px 0 8px">Senha redefinida!</h3>
-          <p style="color:var(--text-muted);font-size:0.9rem">Faça login com sua nova senha.</p>
+          <p style="color:rgba(255,255,255,0.65);font-size:0.9rem">Faça login com sua nova senha.</p>
           <button class="btn-auth" id="btn-go-login-ok" style="margin-top:16px">Ir para o Login</button>
         </div>
       `}
