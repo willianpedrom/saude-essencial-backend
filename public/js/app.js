@@ -194,12 +194,12 @@ window.addEventListener('subscription:required', () => {
 const router = new Router({
     '/': async (p) => {
         if (auth.isLoggedIn) return router.navigate('/dashboard');
-        const { renderLogin } = await import('./pages/Login.js?v=1025');
+        const { renderLogin } = await import('./pages/Login.js?v=1026');
         renderLogin(router);
     },
     '/login': async (params) => {
         if (auth.isLoggedIn) return router.navigate('/dashboard');
-        const { renderLogin } = await import('./pages/Login.js?v=1025');
+        const { renderLogin } = await import('./pages/Login.js?v=1026');
         renderLogin(router, params);
     },
     '/dashboard': guard(async (params) => {
@@ -242,7 +242,7 @@ const router = new Router({
         renderProfile(router);
     }),
     '/admin': guard(async () => {
-        const { renderAdmin } = await import('./pages/Admin.js?v=1025');
+        const { renderAdmin } = await import('./pages/Admin.js?v=1026');
         renderAdmin(router);
     }),
     '/pipeline': guard(async () => {
@@ -312,13 +312,13 @@ const router = new Router({
         renderLandingPage(router);
     },
     '/reset-password': async () => {
-        const { renderResetPassword } = await import('./pages/Login.js?v=1025');
+        const { renderResetPassword } = await import('./pages/Login.js?v=1026');
         renderResetPassword(router);
     },
 
     '*': async () => {
         if (auth.isLoggedIn) return router.navigate('/dashboard');
-        const { renderLogin } = await import('./pages/Login.js?v=1025');
+        const { renderLogin } = await import('./pages/Login.js?v=1026');
         renderLogin(router);
     },
 });
