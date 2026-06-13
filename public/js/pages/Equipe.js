@@ -919,9 +919,12 @@ async function renderLeaderDashboard(router, equipe) {
         <!-- Tab 4: Leads Delegados -->
         <div id="tab-delegados" class="tab-content">
             <div class="card" style="padding:24px">
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
                     <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin:0;">Leads Delegados para a Rede</h3>
-                    <button id="btn-open-delegar" class="btn btn-primary" style="background:var(--gold-500); color:var(--green-950)">🤝 Compartilhar Lead com Membro</button>
+                    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                        <input type="text" id="search-delegacoes-lider" class="form-input" placeholder="🔍 Buscar lead ou consultor..." style="width:240px; margin:0; padding:6px 12px; font-size:0.85rem; background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; height:34px; border-radius:6px;" />
+                        <button id="btn-open-delegar" class="btn btn-primary" style="background:var(--gold-500); color:var(--green-950); margin:0; height:34px; display:inline-flex; align-items:center;">🤝 Compartilhar Lead com Membro</button>
+                    </div>
                 </div>
                 <div id="list-delegacoes-lider">
                     <div style="text-align:center; color:var(--text-muted); padding:30px;">Carregando delegações...</div>
@@ -1015,6 +1018,9 @@ async function renderLeaderDashboard(router, equipe) {
     loadAvisosLider();
     loadBibliotecaLider();
     loadDelegacoesLider();
+    document.getElementById('search-delegacoes-lider')?.addEventListener('input', () => {
+        renderDelegacoesLider();
+    });
     loadPushHistorico();
 
     // ── Actions: cadastrar aviso ─────────────────────────────
@@ -1620,7 +1626,10 @@ async function renderMemberDashboard(router, equipe) {
         <!-- Tab 3: Leads Recebidos -->
         <div id="tab-delegados-membro" class="tab-content">
             <div class="card" style="padding:24px">
-                <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin-bottom:16px;">Clientes Recebidos do Líder para Devolutiva</h3>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+                    <h3 style="font-size:1.15rem; font-weight:700; color:var(--green-950); margin:0;">Clientes Recebidos do Líder para Devolutiva</h3>
+                    <input type="text" id="search-delegacoes-membro" class="form-input" placeholder="🔍 Buscar cliente/lead..." style="width:240px; margin:0; padding:6px 12px; font-size:0.85rem; background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; height:34px; border-radius:6px;" />
+                </div>
                 <div id="list-delegacoes-membro">
                     <div style="text-align:center; color:var(--text-muted); padding:30px;">Carregando clientes recebidos...</div>
                 </div>
@@ -1690,6 +1699,9 @@ async function renderMemberDashboard(router, equipe) {
     loadAvisosMembro();
     loadBibliotecaMembro();
     loadDelegacoesMembro();
+    document.getElementById('search-delegacoes-membro')?.addEventListener('input', () => {
+        renderDelegacoesMembro();
+    });
     loadGamificacaoMembro();
 
     // ── Leave team trigger ──────────────────────────────────
@@ -2130,48 +2142,70 @@ async function loadDelegacoesLider() {
     if (!container) return;
 
     try {
-        const delegacoes = await api('GET', '/api/equipe/delegacoes');
-        if (delegacoes.length === 0) {
-            container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:30px;">Nenhum lead compartilhado com a equipe ainda.</div>`;
-            return;
-        }
-
-        container.innerHTML = `
-            <table class="team-table">
-                <thead>
-                    <tr>
-                        <th>Cliente / Lead</th>
-                        <th>WhatsApp</th>
-                        <th>Consultor Responsável</th>
-                        <th>Status da Devolutiva</th>
-                        <th style="text-align:center">Data Envio</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${delegacoes.map(d => {
-                        const statusLabel = d.status_devolutiva === 'concluido' ? '<span class="badge-ok">Concluída 🎉</span>' :
-                                            d.status_devolutiva === 'em_andamento' ? '<span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:12px; font-size:0.76rem; font-weight:700;">Atendendo...</span>' :
-                                            '<span class="badge-warn">Pendente ⏳</span>';
-                        
-                        return `
-                            <tr>
-                                <td>
-                                    <strong>${d.cliente_nome}</strong><br>
-                                    <span style="font-size:0.75rem; color:var(--text-muted);">${d.cliente_email || 'Sem email'}</span>
-                                </td>
-                                <td>${d.cliente_telefone || 'Sem celular'}</td>
-                                <td><strong>${d.liderado_nome}</strong></td>
-                                <td>${statusLabel}</td>
-                                <td style="text-align:center; font-size:0.8rem; color:var(--text-muted);">${formatDate(d.criado_em)}</td>
-                            </tr>
-                        `;
-                    }).join('')}
-                </tbody>
-            </table>
-        `;
+        cachedDelegacoesLider = await api('GET', '/api/equipe/delegacoes');
+        renderDelegacoesLider();
     } catch (e) {
         container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar leads delegados: ${e.message}</div>`;
     }
+}
+
+function renderDelegacoesLider() {
+    const container = document.getElementById('list-delegacoes-lider');
+    if (!container) return;
+
+    if (!cachedDelegacoesLider || cachedDelegacoesLider.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:30px;">Nenhum lead compartilhado com a equipe ainda.</div>`;
+        return;
+    }
+
+    const searchInput = document.getElementById('search-delegacoes-lider');
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+    const filtered = cachedDelegacoesLider.filter(d => {
+        return (d.cliente_nome || '').toLowerCase().includes(query) ||
+               (d.cliente_email || '').toLowerCase().includes(query) ||
+               (d.cliente_telefone || '').replace(/\D/g, '').includes(query.replace(/\D/g, '')) ||
+               (d.liderado_nome || '').toLowerCase().includes(query);
+    });
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:30px;">Nenhum lead correspondente encontrado.</div>`;
+        return;
+    }
+
+    container.innerHTML = `
+        <table class="team-table">
+            <thead>
+                <tr>
+                    <th>Cliente / Lead</th>
+                    <th>WhatsApp</th>
+                    <th>Consultor Responsável</th>
+                    <th>Status da Devolutiva</th>
+                    <th style="text-align:center">Data Envio</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${filtered.map(d => {
+                    const statusLabel = d.status_devolutiva === 'concluido' ? '<span class="badge-ok">Concluída 🎉</span>' :
+                                        d.status_devolutiva === 'em_andamento' ? '<span style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:12px; font-size:0.76rem; font-weight:700;">Atendendo...</span>' :
+                                        '<span class="badge-warn">Pendente ⏳</span>';
+                    
+                    return `
+                        <tr>
+                            <td>
+                                <strong>${d.cliente_nome}</strong><br>
+                                <span style="font-size:0.75rem; color:var(--text-muted);">${d.cliente_email || 'Sem email'}</span>
+                            </td>
+                            <td>${d.cliente_telefone || 'Sem celular'}</td>
+                            <td><strong>${d.liderado_nome}</strong></td>
+                            <td>${statusLabel}</td>
+                            <td style="text-align:center; font-size:0.8rem; color:var(--text-muted);">${formatDate(d.criado_em)}</td>
+                        </tr>
+                    `;
+                }).join('')}
+            </tbody>
+        </table>
+    `;
 }
 
 // ── Helper: Load Mural (Member View) ──────────────────────────
@@ -2388,93 +2422,113 @@ async function loadDelegacoesMembro() {
     if (!container) return;
 
     try {
-        const delegacoes = await api('GET', '/api/equipe/delegacoes');
-        if (delegacoes.length === 0) {
-            container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:30px;">Nenhum cliente compartilhado pelo líder com você.</div>`;
-            return;
-        }
-
-        container.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:16px;">
-                ${delegacoes.map(d => {
-                    const isDone = d.status_devolutiva === 'concluido';
-                    const isProgress = d.status_devolutiva === 'em_andamento';
-
-                    return `
-                        <div class="card" style="padding:20px; border:1px solid ${isDone ? '#86efac' : isProgress ? '#93c5fd' : '#cbd5e1'}; background:white;">
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
-                                <div>
-                                    <h4 style="font-size:1.05rem; font-weight:700; color:var(--green-950); margin:0;">👤 ${d.cliente_nome}</h4>
-                                    <p style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">Email: ${d.cliente_email || 'Não informado'} | Celular: ${d.cliente_telefone || 'Não informado'}</p>
-                                </div>
-                                <div>
-                                    ${isDone ? `
-                                        <span class="badge-ok">Concluída 🎉</span>
-                                    ` : isProgress ? `
-                                        <span style="background:#e0f2fe; color:#0369a1; padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:700;">Atendendo...</span>
-                                    ` : `
-                                        <span class="badge-warn">Pendente ⏳</span>
-                                    `}
-                                </div>
-                            </div>
-                            
-                            ${d.notas_lider ? `
-                                <div style="background:#f8fafc; border-left:3px solid var(--gold-400); padding:10px 14px; border-radius:4px; font-size:0.83rem; color:var(--text-dark); margin-bottom:16px; font-style:italic;">
-                                    <strong>Notas do Líder:</strong> "${d.notas_lider}"
-                                </div>
-                            ` : ''}
-
-                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                <a href="https://api.whatsapp.com/send?phone=55${(d.cliente_telefone || '').replace(/\D/g, '')}" target="_blank" class="btn btn-secondary btn-sm" style="background:#25d366; color:white; border:none; display:inline-flex; align-items:center; gap:6px;">
-                                    💬 Chamar Cliente no Zap
-                                </a>
-                                <button class="btn-ver-anamneses-del btn btn-secondary btn-sm" data-cliente-id="${d.cliente_id}" style="font-weight:600;">
-                                    📋 Fichas de Anamnese
-                                </button>
-                                
-                                ${!isDone ? `
-                                    <button class="btn-update-status-del btn btn-primary btn-sm" data-del-id="${d.id}" data-status="concluido" style="background:var(--green-600); border:none; color:white; font-weight:600;">
-                                        ✓ Marcar Devolutiva Concluída
-                                    </button>
-                                    ${!isProgress ? `
-                                        <button class="btn-update-status-del btn btn-secondary btn-sm" data-del-id="${d.id}" data-status="em_andamento" style="font-weight:600;">
-                                            Atendendo...
-                                        </button>
-                                    ` : ''}
-                                ` : ''}
-                            </div>
-                        </div>
-                    `;
-                }).join('')}
-            </div>
-        `;
-
-        // Bind update status
-        container.querySelectorAll('.btn-update-status-del').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.dataset.delId;
-                const status = btn.dataset.status;
-                try {
-                    await api('PUT', `/api/equipe/delegacoes/${id}`, { status_devolutiva: status });
-                    toast('Status atualizado com sucesso!', 'success');
-                    loadDelegacoesMembro();
-                } catch (e) {
-                    toast(e.message || 'Erro ao atualizar delegação.', 'danger');
-                }
-            });
-        });
-
-        // Bind view anamneses
-        container.querySelectorAll('.btn-ver-anamneses-del').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const clienteId = btn.dataset.clienteId;
-                window.location.hash = `#/clients?searchId=${clienteId}`;
-            });
-        });
-
+        cachedDelegacoesMembro = await api('GET', '/api/equipe/delegacoes');
+        renderDelegacoesMembro();
     } catch (e) {
         container.innerHTML = `<div style="text-align:center; color:#ef4444; padding:20px;">Erro ao carregar leads recebidos: ${e.message}</div>`;
     }
+}
+
+function renderDelegacoesMembro() {
+    const container = document.getElementById('list-delegacoes-membro');
+    if (!container) return;
+
+    if (!cachedDelegacoesMembro || cachedDelegacoesMembro.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:30px;">Nenhum cliente compartilhado pelo líder com você.</div>`;
+        return;
+    }
+
+    const searchInput = document.getElementById('search-delegacoes-membro');
+    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+    const filtered = cachedDelegacoesMembro.filter(d => {
+        return (d.cliente_nome || '').toLowerCase().includes(query) ||
+               (d.cliente_email || '').toLowerCase().includes(query) ||
+               (d.cliente_telefone || '').replace(/\D/g, '').includes(query.replace(/\D/g, ''));
+    });
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:30px;">Nenhum cliente correspondente encontrado.</div>`;
+        return;
+    }
+
+    container.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:16px;">
+            ${filtered.map(d => {
+                const isDone = d.status_devolutiva === 'concluido';
+                const isProgress = d.status_devolutiva === 'em_andamento';
+
+                return `
+                    <div class="card" style="padding:20px; border:1px solid ${isDone ? '#86efac' : isProgress ? '#93c5fd' : '#cbd5e1'}; background:white;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+                            <div>
+                                <h4 style="font-size:1.05rem; font-weight:700; color:var(--green-950); margin:0;">👤 ${d.cliente_nome}</h4>
+                                <p style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">Email: ${d.cliente_email || 'Não informado'} | Celular: ${d.cliente_telefone || 'Não informado'}</p>
+                            </div>
+                            <div>
+                                ${isDone ? `
+                                    <span class="badge-ok">Concluída 🎉</span>
+                                ` : isProgress ? `
+                                    <span style="background:#e0f2fe; color:#0369a1; padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:700;">Atendendo...</span>
+                                ` : `
+                                    <span class="badge-warn">Pendente ⏳</span>
+                                `}
+                            </div>
+                        </div>
+                        
+                        ${d.notas_lider ? `
+                            <div style="background:#f8fafc; border-left:3px solid var(--gold-400); padding:10px 14px; border-radius:4px; font-size:0.83rem; color:var(--text-dark); margin-bottom:16px; font-style:italic;">
+                                <strong>Notas do Líder:</strong> "${d.notas_lider}"
+                            </div>
+                        ` : ''}
+
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <a href="https://api.whatsapp.com/send?phone=55${(d.cliente_telefone || '').replace(/\D/g, '')}" target="_blank" class="btn btn-secondary btn-sm" style="background:#25d366; color:white; border:none; display:inline-flex; align-items:center; gap:6px;">
+                                💬 Chamar Cliente no Zap
+                            </a>
+                            <button class="btn-ver-anamneses-del btn btn-secondary btn-sm" data-cliente-id="${d.cliente_id}" style="font-weight:600;">
+                                📋 Fichas de Anamnese
+                            </button>
+                            
+                            ${!isDone ? `
+                                <button class="btn-update-status-del btn btn-primary btn-sm" data-del-id="${d.id}" data-status="concluido" style="background:var(--green-600); border:none; color:white; font-weight:600;">
+                                    ✓ Marcar Devolutiva Concluída
+                                </button>
+                                ${!isProgress ? `
+                                    <button class="btn-update-status-del btn btn-secondary btn-sm" data-del-id="${d.id}" data-status="em_andamento" style="font-weight:600;">
+                                        Atendendo...
+                                    </button>
+                                ` : ''}
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+
+    // Bind update status
+    container.querySelectorAll('.btn-update-status-del').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const id = btn.dataset.delId;
+            const status = btn.dataset.status;
+            try {
+                await api('PUT', `/api/equipe/delegacoes/${id}`, { status_devolutiva: status });
+                toast('Status atualizado com sucesso!', 'success');
+                loadDelegacoesMembro();
+            } catch (e) {
+                toast(e.message || 'Erro ao atualizar delegação.', 'danger');
+            }
+        });
+    });
+
+    // Bind view anamneses
+    container.querySelectorAll('.btn-ver-anamneses-del').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const clienteId = btn.dataset.clienteId;
+            window.location.hash = `#/clients?searchId=${clienteId}`;
+        });
+    });
 }
 
 // ── Helper: Open Modal to Delegate a Lead ────────────────────
@@ -2502,6 +2556,7 @@ async function openDelegarLeadModal(equipeId) {
             <div style="padding:10px 0">
                 <div class="form-group" style="margin-bottom:12px">
                     <label class="form-label" style="color:var(--text-dark)">Selecione o Cliente / Lead</label>
+                    <input type="text" id="del-search-cliente" class="form-input" placeholder="🔍 Buscar lead por nome ou celular..." style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; margin-bottom:8px; height: 36px; padding: 6px 12px; font-size: 0.85rem;" />
                     <select id="del-select-cliente" class="form-input" style="background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a;">
                         ${activeClients.map(c => `<option value="${c.id}">${c.nome} (${c.telefone || 'Sem Celular'})</option>`).join('')}
                     </select>
@@ -2519,6 +2574,25 @@ async function openDelegarLeadModal(equipeId) {
                 <button class="btn btn-primary" id="btn-submit-delegacao" style="width:100%; background:var(--gold-500); color:var(--green-950)">🤝 Compartilhar Cliente</button>
             </div>
         `);
+
+        const searchInput = m.el.querySelector('#del-search-cliente');
+        const selectCliente = m.el.querySelector('#del-select-cliente');
+
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase().trim();
+            const filtered = activeClients.filter(c => 
+                c.nome.toLowerCase().includes(query) || 
+                (c.telefone && c.telefone.replace(/\D/g, '').includes(query.replace(/\D/g, '')))
+            );
+            
+            if (filtered.length === 0) {
+                selectCliente.innerHTML = `<option value="">Nenhum lead encontrado</option>`;
+            } else {
+                selectCliente.innerHTML = filtered.map(c => 
+                    `<option value="${c.id}">${c.nome} (${c.telefone || 'Sem Celular'})</option>`
+                ).join('');
+            }
+        });
 
         m.el.querySelector('#btn-submit-delegacao').addEventListener('click', async () => {
             const cliente_id = m.el.querySelector('#del-select-cliente').value;
@@ -2662,6 +2736,9 @@ let cachedBibliotecaMembro = [];
 let currentSubTabMembro = 'video';
 let currentDiscFinalidadeMembro = 'vendas';
 let currentDiscPerfilMembro = 'dominante';
+
+let cachedDelegacoesLider = [];
+let cachedDelegacoesMembro = [];
 
 const DISC_TEMPLATES = [
     {

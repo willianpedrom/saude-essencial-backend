@@ -244,9 +244,10 @@ export async function renderAdmin(router) {
       container.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
           <h4 style="margin:0">📈 Gestão de Leads (Prospectos)</h4>
-          <div style="display:flex;gap:10px">
-             <button class="btn btn-secondary btn-sm" id="btn-config-sales">⚙️ Perguntas do Form</button>
-             <button class="btn btn-primary btn-sm" id="btn-copy-sales-funnel" data-link="${publicLink}">📋 Copiar Link de Captura</button>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+             <input type="text" id="search-leads-admin" class="form-input" placeholder="🔍 Buscar lead..." style="width:200px; margin:0; padding:6px 12px; font-size:0.82rem; background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; height:34px; border-radius:6px;" />
+             <button class="btn btn-secondary btn-sm" id="btn-config-sales" style="height:34px; display:inline-flex; align-items:center;">⚙️ Perguntas do Form</button>
+             <button class="btn btn-primary btn-sm" id="btn-copy-sales-funnel" data-link="${publicLink}" style="height:34px; display:inline-flex; align-items:center;">📋 Copiar Link de Captura</button>
           </div>
         </div>
 
@@ -262,32 +263,65 @@ export async function renderAdmin(router) {
                   <th style="padding:12px;text-align:right;font-size:0.7rem;text-transform:uppercase;color:#64748b;font-weight:700">Ações</th>
                 </tr>
               </thead>
-              <tbody>
-                ${leads.length === 0 ? '<tr><td colspan="5" style="padding:60px;text-align:center;color:var(--text-muted)">Nenhum prospecto captado ainda. Divulgue seu link!</td></tr>' : 
-                  leads.map(l => `
-                  <tr style="border-bottom:1px solid #f1f5f9">
-                    <td style="padding:12px">
-                      <div style="font-weight:600;color:var(--text-main);font-size:0.9rem">${l.nome}</div>
-                      <div style="font-size:0.75rem;color:var(--text-muted)">${l.email} | ${l.telefone || '-'}</div>
-                    </td>
-                    <td style="padding:12px;font-size:0.85rem">${l.cidade || '-'}</td>
-                    <td style="padding:12px;text-align:center;font-size:0.8rem;color:var(--text-muted)">${formatDate(l.criado_em)}</td>
-                    <td style="padding:12px;text-align:center">
-                      <span class="badge" style="background:${getLeadStatusColor(l.status)};color:white;font-size:0.7rem;padding:3px 8px;border-radius:12px">${l.status.toUpperCase()}</span>
-                    </td>
-                    <td style="padding:12px;text-align:right">
-                      <div style="display:flex;justify-content:flex-end;gap:8px">
-                        <button class="btn btn-secondary btn-sm btn-view-lead" data-id="${l.id}" style="padding:5px 10px;font-size:0.75rem">👁️ Ver Detalhes</button>
-                        <button class="btn btn-sm btn-delete-lead" data-id="${l.id}" style="padding:5px 10px;font-size:0.75rem;background:#fee2e2;color:#dc2626;border:1px solid #fecaca" title="Excluir Lead">🗑️</button>
-                      </div>
-                    </td>
-                  </tr>
-                `).join('')}
+              <tbody id="leads-admin-tbody">
               </tbody>
             </table>
           </div>
         </div>
       `;
+
+      function renderTable(filtered) {
+        const tbody = container.querySelector('#leads-admin-tbody');
+        if (!tbody) return;
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="padding:60px;text-align:center;color:var(--text-muted)">Nenhum prospecto encontrado.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = filtered.map(l => `
+          <tr style="border-bottom:1px solid #f1f5f9">
+            <td style="padding:12px">
+              <div style="font-weight:600;color:var(--text-main);font-size:0.9rem">${l.nome}</div>
+              <div style="font-size:0.75rem;color:var(--text-muted)">${l.email} | ${l.telefone || '-'}</div>
+            </td>
+            <td style="padding:12px;font-size:0.85rem">${l.cidade || '-'}</td>
+            <td style="padding:12px;text-align:center;font-size:0.8rem;color:var(--text-muted)">${formatDate(l.criado_em)}</td>
+            <td style="padding:12px;text-align:center">
+              <span class="badge" style="background:${getLeadStatusColor(l.status)};color:white;font-size:0.7rem;padding:3px 8px;border-radius:12px">${l.status.toUpperCase()}</span>
+            </td>
+            <td style="padding:12px;text-align:right">
+              <div style="display:flex;justify-content:flex-end;gap:8px">
+                <button class="btn btn-secondary btn-sm btn-view-lead" data-id="${l.id}" style="padding:5px 10px;font-size:0.75rem">👁️ Ver Detalhes</button>
+                <button class="btn btn-sm btn-delete-lead" data-id="${l.id}" style="padding:5px 10px;font-size:0.75rem;background:#fee2e2;color:#dc2626;border:1px solid #fecaca" title="Excluir Lead">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+
+        tbody.querySelectorAll('.btn-view-lead').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const lead = leads.find(x => x.id === btn.dataset.id);
+            showLeadDetailsModal(lead, template, () => renderLeadsSection(container));
+          });
+        });
+
+        tbody.querySelectorAll('.btn-delete-lead').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            if (!confirm('Tem certeza que deseja excluir este lead permanentemente?')) return;
+            try {
+              await salesApi.deleteLead(btn.dataset.id);
+              toast('Lead excluído!', 'success');
+              renderLeadsSection(container);
+            } catch (err) {
+              toast('Erro ao excluir: ' + err.message, 'error');
+            }
+          });
+        });
+      }
+
+      // Initial render
+      renderTable(leads);
 
       // Event listeners
       container.querySelector('#btn-copy-sales-funnel').addEventListener('click', (e) => {
@@ -297,24 +331,16 @@ export async function renderAdmin(router) {
 
       container.querySelector('#btn-config-sales').addEventListener('click', () => showConfigSalesModal(template));
 
-      container.querySelectorAll('.btn-view-lead').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const lead = leads.find(x => x.id === btn.dataset.id);
-          showLeadDetailsModal(lead, template, () => renderLeadsSection(container));
-        });
-      });
-
-      container.querySelectorAll('.btn-delete-lead').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          if (!confirm('Tem certeza que deseja excluir este lead permanentemente?')) return;
-          try {
-            await salesApi.deleteLead(btn.dataset.id);
-            toast('Lead excluído!', 'success');
-            renderLeadsSection(container);
-          } catch (err) {
-            toast('Erro ao excluir: ' + err.message, 'error');
-          }
-        });
+      // Search event listener
+      container.querySelector('#search-leads-admin').addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        const filtered = leads.filter(l => 
+          (l.nome || '').toLowerCase().includes(query) ||
+          (l.email || '').toLowerCase().includes(query) ||
+          (l.telefone || '').replace(/\D/g, '').includes(query.replace(/\D/g, '')) ||
+          (l.cidade || '').toLowerCase().includes(query)
+        );
+        renderTable(filtered);
       });
 
     } catch (err) {
