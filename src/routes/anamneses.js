@@ -906,4 +906,5 @@ router.post('/:id/hash', auth, async (req, res) => {
     }
 });
 
+router.publicCache = cache;
 module.exports = router;

@@ -327,6 +327,35 @@ router.put('/profile', authMiddleware, async (req, res, next) => {
                 genero || 'feminino', doterra_nivel || null, tema_cor || '#16a34a', link_afiliada || null, video_apresentacao || null, video_headline || null, video_cta_texto || null, video_cta_link || null, perfil_cta_texto || null, perfil_cta_link || null, subheadline_1 || null, subheadline_2 || null, exibir_escassez !== false, req.consultora.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });
+
+        // Clear caches to reflect changes immediately on public pages
+        try {
+            // 1. Clear public profile cache in publico.js
+            const publicoRouter = require('./publico');
+            if (publicoRouter.publicCache) {
+                const slug = rows[0].slug;
+                if (slug) {
+                    publicoRouter.publicCache.del(`perfil_${slug}`);
+                }
+            }
+
+            // 2. Clear public anamneses cache in anamneses.js
+            const anamnesesRouter = require('./anamneses');
+            if (anamnesesRouter.publicCache) {
+                const { rows: tokens } = await pool.query(
+                    'SELECT token_publico FROM anamneses WHERE consultora_id = $1',
+                    [req.consultora.id]
+                );
+                tokens.forEach(t => {
+                    if (t.token_publico) {
+                        anamnesesRouter.publicCache.del(`public_anamnese_${t.token_publico}`);
+                    }
+                });
+            }
+        } catch (cacheErr) {
+            console.error('Failed to clear public caches:', cacheErr.message);
+        }
+
         return res.json({ success: true, consultora: rows[0] });
     } catch (err) {
         console.error('Erro no PUT /profile:', err.message);
