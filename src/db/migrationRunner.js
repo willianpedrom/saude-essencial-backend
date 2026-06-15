@@ -912,6 +912,16 @@ const MIGRATIONS = [
             await pool.query(`CREATE INDEX IF NOT EXISTS idx_equipe_desafios_eq ON equipe_desafios(equipe_id)`);
             console.log('[023_equipe_gamificacao] Tabela de desafios da equipe criada com sucesso.');
         }
+    },
+    // ── 024: Deixar a faixa de escassez (ultimas vagas) opcional para as consultoras ────────────────
+    {
+        name: '024_exibir_escassez_consultoras',
+        async up(pool) {
+            await pool.query(`
+                ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS exibir_escassez BOOLEAN DEFAULT TRUE
+            `);
+            console.log('[024_exibir_escassez_consultoras] Coluna exibir_escassez adicionada à tabela consultoras.');
+        }
     }
 ];
 
