@@ -111,6 +111,7 @@ ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS doterra_nivel VARCHAR(60);
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS rastreamento  JSONB;
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS subheadline_1  VARCHAR(255);
 ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS subheadline_2  VARCHAR(255);
+ALTER TABLE consultoras ADD COLUMN IF NOT EXISTS exibir_escassez BOOLEAN DEFAULT TRUE;
 ALTER TABLE clientes    ADD COLUMN IF NOT EXISTS genero         VARCHAR(10) DEFAULT 'feminino';
 -- Auto-promote the first registered consultora to admin
 UPDATE consultoras SET role = 'admin'

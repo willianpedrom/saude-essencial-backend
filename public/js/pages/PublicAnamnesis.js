@@ -204,7 +204,8 @@ export async function renderPublicAnamnesis(router, token) {
     let sectionTitle = section.title.replace('{nome}', firstName);
 
     // Timer Logic for Scarcity
-    if (!window.anamnesisScarcityTimer) {
+    const showScarcity = !isBusiness && anamneseData.consultora_exibir_escassez !== false;
+    if (showScarcity && !window.anamnesisScarcityTimer) {
        window.anamnesisScarcityTimer = Date.now() + 14 * 60 * 1000 + 59 * 1000; // 14:59
     }
     
@@ -308,7 +309,7 @@ export async function renderPublicAnamnesis(router, token) {
     </style>
 
     <div class="anamnesis-public-page">
-      ${!isBusiness ? `
+      ${showScarcity ? `
       <div class="scarcity-banner">
          ⚡ ÚLTIMAS VAGAS: O seu atendimento gratuito está reservado por <span id="timer-display">14:59</span>
       </div>
@@ -356,7 +357,7 @@ export async function renderPublicAnamnesis(router, token) {
       </div>
     </div>`;
 
-    if (!isBusiness) {
+    if (showScarcity) {
         if(stepTimerInterval) clearInterval(stepTimerInterval);
         stepTimerInterval = setInterval(() => {
             const now = Date.now();

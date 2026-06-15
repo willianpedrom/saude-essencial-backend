@@ -263,7 +263,22 @@ export async function renderProfile(router) {
               <div style="margin-bottom:20px;margin-top:24px;border-top:1px dashed #bbf7d0;padding-top:20px">
                 <label style="font-size:1rem;font-weight:700;color:#166534;display:block;margin-bottom:4px">🎨 Arquétipos & Temáticas</label>
                 <p style="font-size:0.8rem;color:#166534;opacity:0.8;margin-bottom:16px">A página será inteiramente customizada (fundo e botões) de acordo com o arquétipo escolhido.</p>
-                
+
+                <!-- Configuração de Escassez -->
+                <div style="margin-bottom:24px; background:rgba(255,255,255,0.5); padding:16px; border-radius:12px; border:1px solid #bbf7d0">
+                  <div style="font-weight:700; font-size:0.85rem; color:#166534; margin-bottom:12px">
+                    ⚡ Faixa de Urgência (Escassez)
+                  </div>
+                  <div class="form-group">
+                    <label class="field-label" style="font-size:0.75rem">Exibir faixa vermelha de "Últimas Vagas" *</label>
+                    <select class="field-select" id="p-exibir-escassez" style="padding:8px 12px; font-size:0.85rem">
+                      <option value="true" ${profile.exibir_escassez !== false ? 'selected' : ''}>Sim (Urgência ativada — Recomendado para conversão)</option>
+                      <option value="false" ${profile.exibir_escassez === false ? 'selected' : ''}>Não (Design limpo sem faixa e timer no topo)</option>
+                    </select>
+                    <div style="font-size:0.7rem; color:#166534; margin-top:4px; opacity:0.8">Gera senso de escassez no topo do formulário com um timer regressivo de 15 minutos.</div>
+                  </div>
+                </div>
+
                 <!-- Frases Personalizadas e CTA -->
                 <div style="margin-bottom:24px; background:rgba(255,255,255,0.5); padding:16px; border-radius:12px; border:1px solid #bbf7d0">
                   <div style="font-weight:700; font-size:0.85rem; color:#166534; margin-bottom:12px; display:flex; align-items:center; gap:6px">
@@ -664,6 +679,7 @@ export async function renderProfile(router) {
         perfil_cta_link: pc.querySelector('#p-perfil-cta-link')?.value?.trim(),
         subheadline_1: pc.querySelector('#p-subheadline-1')?.value?.trim(),
         subheadline_2: pc.querySelector('#p-subheadline-2')?.value?.trim(),
+        exibir_escassez: pc.querySelector('#p-exibir-escassez')?.value === 'true',
       };
 
       if (!data.nome) {
@@ -678,6 +694,7 @@ export async function renderProfile(router) {
           auth.current.nome = data.nome;
           auth.current.genero = data.genero;
           auth.current.foto_url = data.foto_url;
+          auth.current.exibir_escassez = data.exibir_escassez;
           sessionStorage.setItem('se_user', JSON.stringify(auth.current));
         }
         restore(true);

@@ -122,6 +122,7 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
         const { rows } = await pool.query(
             `SELECT c.id, c.nome, c.email, c.senha_hash, c.slug, c.role, c.genero,
                     c.telefone, c.foto_url, c.link_afiliada, c.termos_aceitos, c.token_version,
+                    c.exibir_escassez,
                     a.plano AS sub_plano, a.status AS sub_status, a.trial_fim, a.periodo_fim,
                     p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar,
                     p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes,
@@ -199,6 +200,7 @@ router.post('/login', validate(schemas.login), async (req, res, next) => {
             role, genero: row.genero, telefone: row.telefone,
             foto_url: row.foto_url, link_afiliada: row.link_afiliada,
             termos_aceitos: row.termos_aceitos,
+            exibir_escassez: row.exibir_escassez,
         };
 
         logger.info({ event: 'login_success', consultora_id: row.id, email: row.email, ip: req.ip });
@@ -219,6 +221,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
                     c.genero, c.doterra_nivel, c.tema_cor, c.criado_em,
                     c.video_apresentacao, c.video_headline, c.video_cta_texto, c.video_cta_link,
                     c.perfil_cta_texto, c.perfil_cta_link, c.subheadline_1, c.subheadline_2,
+                    c.exibir_escassez,
                     a.plano AS sub_plano, a.status AS sub_status, a.trial_fim, a.periodo_fim,
                     p.tem_pagina_pessoal, p.tem_raiox, p.tem_minhas_vendas, p.tem_radar,
                     p.tem_agenda, p.tem_links, p.tem_anamneses, p.tem_clientes,
@@ -256,6 +259,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
             video_cta_texto: row.video_cta_texto, video_cta_link: row.video_cta_link,
             perfil_cta_texto: row.perfil_cta_texto, perfil_cta_link: row.perfil_cta_link,
             subheadline_1: row.subheadline_1, subheadline_2: row.subheadline_2,
+            exibir_escassez: row.exibir_escassez,
         };
 
         return res.json({ ...consultoraData, assinatura });
@@ -270,7 +274,7 @@ router.get('/profile', authMiddleware, async (req, res, next) => {
     try {
         const { rows } = await pool.query(
             `SELECT id, nome, email, telefone, slug, foto_url,
-              endereco, bio, instagram, youtube, facebook, linkedin, genero, doterra_nivel, tema_cor, rastreamento, link_afiliada, video_apresentacao, video_headline, video_cta_texto, video_cta_link, perfil_cta_texto, perfil_cta_link, subheadline_1, subheadline_2
+              endereco, bio, instagram, youtube, facebook, linkedin, genero, doterra_nivel, tema_cor, rastreamento, link_afiliada, video_apresentacao, video_headline, video_cta_texto, video_cta_link, perfil_cta_texto, perfil_cta_link, subheadline_1, subheadline_2, exibir_escassez
              FROM consultoras WHERE id = $1`,
             [req.consultora.id]
         );
@@ -305,7 +309,7 @@ router.put('/tracking', authMiddleware, checkSubscription, checkFeature('tem_int
 
 // PUT /api/auth/profile — update profile fields
 router.put('/profile', authMiddleware, async (req, res, next) => {
-    const { nome, telefone, endereco, bio, foto_url, instagram, youtube, facebook, linkedin, genero, doterra_nivel, tema_cor, link_afiliada, video_apresentacao, video_headline, video_cta_texto, video_cta_link, perfil_cta_texto, perfil_cta_link, subheadline_1, subheadline_2 } = req.body;
+    const { nome, telefone, endereco, bio, foto_url, instagram, youtube, facebook, linkedin, genero, doterra_nivel, tema_cor, link_afiliada, video_apresentacao, video_headline, video_cta_texto, video_cta_link, perfil_cta_texto, perfil_cta_link, subheadline_1, subheadline_2, exibir_escassez } = req.body;
     if (!nome) return res.status(400).json({ error: 'Nome é obrigatório.' });
 
     try {
@@ -314,13 +318,13 @@ router.put('/profile', authMiddleware, async (req, res, next) => {
              SET nome=$1, telefone=$2, endereco=$3, bio=$4, foto_url=$5,
                  instagram=$6, youtube=$7, facebook=$8, linkedin=$9,
                  genero=$10, doterra_nivel=$11, tema_cor=$12, link_afiliada=$13, video_apresentacao=$14, video_headline=$15, video_cta_texto=$16, video_cta_link=$17, 
-                 perfil_cta_texto=$18, perfil_cta_link=$19, subheadline_1=$20, subheadline_2=$21, atualizado_em=NOW()
-             WHERE id=$22
+                 perfil_cta_texto=$18, perfil_cta_link=$19, subheadline_1=$20, subheadline_2=$21, exibir_escassez=$22, atualizado_em=NOW()
+             WHERE id=$23
              RETURNING id, nome, email, telefone, slug, foto_url,
-                       endereco, bio, instagram, youtube, facebook, linkedin, genero, doterra_nivel, tema_cor, link_afiliada, video_apresentacao, video_headline, video_cta_texto, video_cta_link, perfil_cta_texto, perfil_cta_link, subheadline_1, subheadline_2`,
+                       endereco, bio, instagram, youtube, facebook, linkedin, genero, doterra_nivel, tema_cor, link_afiliada, video_apresentacao, video_headline, video_cta_texto, video_cta_link, perfil_cta_texto, perfil_cta_link, subheadline_1, subheadline_2, exibir_escassez`,
             [nome, telefone || null, endereco || null, bio || null, foto_url || null,
                 instagram || null, youtube || null, facebook || null, linkedin || null,
-                genero || 'feminino', doterra_nivel || null, tema_cor || '#16a34a', link_afiliada || null, video_apresentacao || null, video_headline || null, video_cta_texto || null, video_cta_link || null, perfil_cta_texto || null, perfil_cta_link || null, subheadline_1 || null, subheadline_2 || null, req.consultora.id]
+                genero || 'feminino', doterra_nivel || null, tema_cor || '#16a34a', link_afiliada || null, video_apresentacao || null, video_headline || null, video_cta_texto || null, video_cta_link || null, perfil_cta_texto || null, perfil_cta_link || null, subheadline_1 || null, subheadline_2 || null, exibir_escassez !== false, req.consultora.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'Consultora não encontrada.' });
         return res.json({ success: true, consultora: rows[0] });

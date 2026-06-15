@@ -25,7 +25,8 @@ router.get('/public/:token', async (req, res) => {
               c.nome AS consultora_nome, c.slug AS consultora_slug, c.genero AS consultora_genero,
               c.foto_url AS consultora_foto, c.telefone AS consultora_telefone,
               c.id AS consultora_id, c.rastreamento AS consultora_rastreamento,
-              c.link_afiliada AS consultora_link_afiliada
+              c.link_afiliada AS consultora_link_afiliada,
+              c.exibir_escassez AS consultora_exibir_escassez
        FROM anamneses a
        JOIN consultoras c ON c.id = a.consultora_id
        WHERE a.token_publico = $1`,
