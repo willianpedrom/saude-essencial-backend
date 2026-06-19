@@ -518,6 +518,27 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
     });
   }
 
+  const getSerializedState = () => {
+    syncState();
+    return JSON.stringify({
+      editProtocols,
+      customNotes,
+      customMessage,
+      customUnlock,
+      morningText,
+      afternoonText,
+      nightText,
+      budgetInclude,
+      budgetShipping
+    });
+  };
+
+  const initialState = getSerializedState();
+
+  const hasChanges = () => {
+    return initialState !== getSerializedState();
+  };
+
   function render() {
     syncState();
     const body = overlay.querySelector('#pe-body');
@@ -825,10 +846,18 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
 
   render();
 
-  function close() { overlay.remove(); }
-  overlay.querySelector('#pe-close').addEventListener('click', close);
-  overlay.querySelector('#pe-cancel').addEventListener('click', close);
-  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  function close(force = false) {
+    if (!force && hasChanges()) {
+      if (confirm('Você tem alterações não salvas. Deseja realmente sair e descartar as alterações?')) {
+        overlay.remove();
+      }
+    } else {
+      overlay.remove();
+    }
+  }
+  overlay.querySelector('#pe-close').addEventListener('click', () => close(false));
+  overlay.querySelector('#pe-cancel').addEventListener('click', () => close(false));
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(false); });
 
   overlay.querySelector('#pe-save').addEventListener('click', async (e) => {
     const btn = e.target;
@@ -853,7 +882,7 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
       toast('✅ Protocolo personalizado salvo!', 'success');
       // Store in anamnese object so re-opening the editor shows the saved state
       anamnese.protocolo_customizado = { protocols: editProtocols, customNotes, customMessage, customRoutine: updatedRoutine, customUnlock, budgetInclude, budgetShipping };
-      close();
+      close(true);
     } catch (err) {
       toast('Erro ao salvar: ' + err.message, 'error');
       btn.disabled = false; btn.textContent = '💾 Salvar Protocolo';
