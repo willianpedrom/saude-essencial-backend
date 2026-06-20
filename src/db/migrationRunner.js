@@ -922,6 +922,27 @@ const MIGRATIONS = [
             `);
             console.log('[024_exibir_escassez_consultoras] Coluna exibir_escassez adicionada à tabela consultoras.');
         }
+    },
+    // ── 025: Ajuste de preço do Grapefruit/Toranja no estoque ────────────────────────
+    {
+        name: '025_fix_grapefruit_toranja_prices_2026',
+        async up(pool) {
+            // Update 5ml prices
+            await pool.query(
+                `UPDATE estoque 
+                 SET preco_venda = 73.00, preco_custo = 55.00 
+                 WHERE (nome_produto ILIKE '%toranja%' OR nome_produto ILIKE '%grapefruit%')
+                   AND (ml_tamanho ILIKE '%5ml%' OR ml_tamanho ILIKE '%5 ml%')`
+            );
+            // Update 15ml prices
+            await pool.query(
+                `UPDATE estoque 
+                 SET preco_venda = 187.00, preco_custo = 140.00 
+                 WHERE (nome_produto ILIKE '%toranja%' OR nome_produto ILIKE '%grapefruit%')
+                   AND (ml_tamanho ILIKE '%15ml%' OR ml_tamanho ILIKE '%15 ml%')`
+            );
+            console.log('[025_fix_grapefruit_toranja_prices_2026] Preço de Grapefruit / Toranja ajustado no estoque.');
+        }
     }
 ];
 

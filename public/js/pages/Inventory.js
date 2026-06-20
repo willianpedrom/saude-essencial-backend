@@ -429,9 +429,11 @@ export const DOTERRA_PRICES = {
     },
     'Toranja (Grapefruit)': {
         '15ml': { r: 187, m: 140 },
+        '5ml': { r: 73, m: 55 },
     },
     'Toranja': {
         '15ml': { r: 187, m: 140 },
+        '5ml': { r: 73, m: 55 },
     },
     'Green Mandarin': {
         '15ml': { r: 280, m: 210 },
