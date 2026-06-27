@@ -13,7 +13,7 @@ export function analyzeAnamnesis(answers) {
     const problems = [];
     const protocols = [];
 
-    const allSymptoms = [
+    let rawSymptoms = [
         ...(answers.general_symptoms || []),
         ...(answers.emotional_symptoms || []),
         ...(answers.digestive_symptoms || []),
@@ -28,6 +28,48 @@ export function analyzeAnamnesis(answers) {
         ...(answers.child_routine || []),
         ...(answers.child_goals || []),
     ];
+
+    if (answers.is_express) {
+        const EXPRESS_PROBLEMS_MAP = {
+            'Ansiedade': 'Ansiedade',
+            'Depressão': 'Depressão',
+            'Insônia': 'Insônia (dificuldade de adormecer)',
+            'Fadiga/cansaço físico e mental': 'Fadiga/cansaço físico e mental',
+            'Fadiga / Cansaço físico e mental': 'Fadiga/cansaço físico e mental',
+            'Autismo': 'Autismo',
+            'Dores de cabeça': 'Dores de cabeça frequentes',
+            'Dores de cabeça frequentes': 'Dores de cabeça frequentes',
+            'Dores na coluna': 'Dores na coluna',
+            'Dores lombar': 'Dores lombar',
+            'Dores articulares': 'Dores articulares',
+            'Dores crônicas': 'Dores em Geral no corpo',
+            'Dores em Geral no corpo': 'Dores em Geral no corpo',
+            'Fibromialgia': 'Fibromialgia',
+            'Imunidade': 'Imunidade',
+            'Baixa Imunidade': 'Imunidade',
+            'Gripe e resfriado': 'Gripe e resfriado',
+            'Rinite': 'Rinite',
+            'Sinusite': 'Sinusite',
+            'Infecção de garganta': 'Infecção de garganta',
+            'Psoríase': 'Psoríase',
+            'Dermatite atópica': 'Dermatite atópica',
+            'Alergia na pele': 'Alergia na pele',
+            'Queda capilar': 'Queda capilar',
+            'Pele com manchas melasma': 'Pele com manchas melasma',
+            'Pele com manchas (Melasma)': 'Pele com manchas melasma',
+            'Rugas e linhas de expressão': 'Rugas e linhas de expressão',
+            'Envelhecimento do corpo': 'Envelhecimento do corpo',
+            'Pressão alta': 'Pressão alta',
+            'Colesterol alto': 'Colesterol alto',
+            'Emagrecimento': 'Emagrecimento',
+            'Cálculo renal': 'Cálculo renal',
+            'Cálculo vesícula': 'Cálculo vesícula',
+            'Lúpus': 'Lúpus'
+        };
+        rawSymptoms = rawSymptoms.map(s => EXPRESS_PROBLEMS_MAP[s] || s);
+    }
+
+    const allSymptoms = rawSymptoms;
 
     allSymptoms.forEach(symptom => {
         if (PROTOCOLS[symptom]) {
