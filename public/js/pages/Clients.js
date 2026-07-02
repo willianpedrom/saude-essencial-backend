@@ -409,11 +409,14 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
   const existingCustom = anamnese.protocolo_customizado || null;
   let editProtocols = existingCustom?.protocols
     ? JSON.parse(JSON.stringify(existingCustom.protocols)).map((cp, i) => {
+        const baseProto = protocols.find(bp => bp.symptom === cp.symptom) || protocols[i] || {};
         if (!cp.specificProtocol && cp.specificProtocol !== null) {
-            const baseProto = protocols.find(bp => bp.symptom === cp.symptom) || protocols[i];
-            if (baseProto && baseProto.specificProtocol) {
+            if (baseProto.specificProtocol) {
                 cp.specificProtocol = JSON.parse(JSON.stringify(baseProto.specificProtocol));
             }
+        }
+        if (cp.therapeuticObjective === undefined) {
+            cp.therapeuticObjective = baseProto.therapeuticObjective || '';
         }
         return cp;
       })
@@ -421,6 +424,7 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
         symptom: p.symptom, 
         icon: p.icon || '🌿', 
         oils: [...(p.oils || [])],
+        therapeuticObjective: p.therapeuticObjective || '',
         specificProtocol: p.specificProtocol ? JSON.parse(JSON.stringify(p.specificProtocol)) : undefined
       }));
   let customNotes = existingCustom?.customNotes || analysisResultados;
@@ -516,6 +520,13 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
         editProtocols[pIdx].specificProtocol.instructions = ta.value.split('\n');
       }
     });
+
+    overlay.querySelectorAll('input.pe-therapeutic-objective').forEach(inp => {
+      const pIdx = parseInt(inp.dataset.idx, 10);
+      if (editProtocols[pIdx]) {
+        editProtocols[pIdx].therapeuticObjective = inp.value;
+      }
+    });
   }
 
   const getSerializedState = () => {
@@ -562,6 +573,10 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
           <div style="font-weight:700;font-size:0.88rem;color:#1e293b;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
              <span>${p.icon} ${p.symptom} ${blockPriceHtml}</span>
              <button class="pe-remove-protocol" data-idx="${pIdx}" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:0.85rem" title="Excluir queixa inteira (e seus óleos)">❌ Remover</button>
+          </div>
+          <div style="margin-bottom:12px">
+            <label style="font-size:0.75rem; font-weight:700; color:#475569; display:block; margin-bottom:4px;">🎯 Objetivo Terapêutico:</label>
+            <input type="text" class="pe-therapeutic-objective" data-idx="${pIdx}" value="${p.therapeuticObjective || ''}" placeholder="Ex: Modular resposta ao estresse, reduzir cortisol..." style="width:100%;padding:8px;border-radius:6px;border:1px solid #cbd5e1;font-size:0.82rem;box-sizing:border-box">
           </div>
           <div style="display:flex;flex-wrap:wrap">
             ${(p.oils || []).map((oil, oIdx) => oilChip(oil, pIdx, oIdx)).join('')}
@@ -790,7 +805,7 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
     body.querySelector('#pe-new-symptom')?.addEventListener('click', () => {
       const title = prompt('Qual o título ou foco deste novo bloco/queixa? (Ex: Imunidade, Dores no Joelho)');
       if (title && title.trim()) {
-        editProtocols.push({ symptom: title.trim(), icon: '✨', focus: 'Tratamento Personalizado', oils: [] });
+        editProtocols.push({ symptom: title.trim(), icon: '✨', focus: 'Tratamento Personalizado', oils: [], therapeuticObjective: '' });
         render();
       }
     });
@@ -804,6 +819,7 @@ function openProtocolEditor(client, anamnese, protocols, analysisResultados) {
           icon: '📝',
           focus: 'Tratamento Personalizado',
           oils: [],
+          therapeuticObjective: '',
           specificProtocol: { title: title.trim().toUpperCase(), instructions: ['(Escreva suas instruções linha por linha)'] }
         });
         render();
