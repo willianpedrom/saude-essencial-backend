@@ -654,8 +654,17 @@ export function openClientOffcanvas(client) {
          // Fetch fresh data or use existing to preserve other fields
          const atual = { ...client };
          atual.tipo_cadastro = val;
+         if (e.target.value === 'lead') {
+            atual.status = 'lead';
+         } else if (client.status === 'lead') {
+            atual.status = 'active';
+         }
          
          await store.updateClient(client.id, atual);
+         
+         // Sync local in-memory reference
+         client.tipo_cadastro = atual.tipo_cadastro;
+         client.status = atual.status;
          
          // UI Feedback
          if (tipoIcon) {

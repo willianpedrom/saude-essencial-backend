@@ -984,7 +984,24 @@ export async function renderClients(router, params) {
           <td>${city}</td>
           <td>
             ${c.ativo === false ? '<span class="status-badge" style="background:#f1f5f9;color:#64748b;border-color:#cbd5e1">🗂️ Arquivado</span>' : 
-              `<span class="status-badge status-${c.status || 'active'}">${{ active: 'Ativo', inactive: 'Inativo', lead: 'Prospecto' }[c.status] || 'Ativo'}</span>`
+              (() => {
+                if (c.status === 'lead') {
+                  return '<span class="status-badge status-lead">Prospecto</span>';
+                }
+                if (c.status === 'inactive') {
+                  return '<span class="status-badge status-inactive">Inativo</span>';
+                }
+                if (c.tipo_cadastro === 'preferencial') {
+                  return '<span class="status-badge status-active">Preferencial</span>';
+                }
+                if (c.tipo_cadastro === 'varejo') {
+                  return '<span class="status-badge status-active">Cliente Varejo</span>';
+                }
+                if (c.tipo_cadastro === 'consultora') {
+                  return '<span class="status-badge status-active">Consultora</span>';
+                }
+                return '<span class="status-badge status-active">Ativo</span>';
+              })()
             }
           </td>
           <td>
