@@ -269,6 +269,11 @@ const router = new Router({
         const { renderEquipe } = await import('./pages/Equipe.js?v=1020');
         renderEquipe(router);
     }),
+    '/aulas': guard(async () => {
+        const { renderAulas } = await import('./pages/Aulas.js?v=1010');
+        renderAulas(router);
+    }),
+
 
     // Public routes (no auth required)
     '/anamnese/:token': async ({ token }) => {

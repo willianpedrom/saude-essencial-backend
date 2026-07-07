@@ -460,3 +460,25 @@ CREATE TABLE IF NOT EXISTS equipe_desafios (
 
 CREATE INDEX IF NOT EXISTS idx_equipe_desafios_eq ON equipe_desafios(equipe_id);
 
+-- ==========================================
+-- AULAS E ESTRATÉGIAS
+-- ==========================================
+CREATE TABLE IF NOT EXISTS aulas_modulos (
+  id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  titulo    VARCHAR(255) NOT NULL,
+  ordem     INT DEFAULT 0,
+  criado_em TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS aulas_conteudo (
+  id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  modulo_id UUID NOT NULL REFERENCES aulas_modulos(id) ON DELETE CASCADE,
+  titulo    VARCHAR(255) NOT NULL,
+  descricao TEXT,
+  video_url TEXT NOT NULL,
+  duracao   VARCHAR(50),
+  ordem     INT DEFAULT 0,
+  criado_em TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_aulas_conteudo_modulo ON aulas_conteudo(modulo_id);

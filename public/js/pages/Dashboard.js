@@ -116,7 +116,9 @@ export function renderLayout(router, pageTitle, pageContent, activeNav) {
     { id: 'dashboard', icon: '📊', label: 'Dashboard' },
     { id: 'equipe', icon: '🤝', label: 'Minha Equipe' },
     { id: 'insights', icon: '⚡', label: 'Raio-X de Vendas' },
+    { id: 'aulas', icon: '🎓', label: 'Aulas e estratégias' },
     { id: 'clients', icon: '👥', label: 'Clientes' },
+
     { id: 'pipeline', icon: '📈', label: 'Fluxo de Vendas' },
     { id: 'anamnesis', icon: '📋', label: 'Anamneses' },
     { id: 'links', icon: '🔗', label: 'Links de Captação' },

@@ -69,6 +69,158 @@ router.get('/migrate-plan-features', async (req, res) => {
     }
 });
 
+// Migration Helper for Aulas e Estratégias
+router.get('/migrate-aulas', async (req, res) => {
+    try {
+        const sql = `
+        CREATE TABLE IF NOT EXISTS aulas_modulos (
+          id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          titulo    VARCHAR(255) NOT NULL,
+          ordem     INT DEFAULT 0,
+          criado_em TIMESTAMPTZ DEFAULT NOW()
+        );
+
+        CREATE TABLE IF NOT EXISTS aulas_conteudo (
+          id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          modulo_id UUID NOT NULL REFERENCES aulas_modulos(id) ON DELETE CASCADE,
+          titulo    VARCHAR(255) NOT NULL,
+          descricao TEXT,
+          video_url TEXT NOT NULL,
+          duracao   VARCHAR(50),
+          ordem     INT DEFAULT 0,
+          criado_em TIMESTAMPTZ DEFAULT NOW()
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_aulas_conteudo_modulo ON aulas_conteudo(modulo_id);
+        `;
+        await pool.query(sql);
+        res.json({ success: true, message: 'Tabelas de aulas criadas com sucesso.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET /api/admin/modulos - list all modules with their lessons (for admin)
+router.get('/modulos', async (req, res) => {
+    try {
+        const { rows: modulos } = await pool.query(
+            'SELECT * FROM aulas_modulos ORDER BY ordem ASC, criado_em ASC'
+        );
+        const { rows: aulas } = await pool.query(
+            'SELECT * FROM aulas_conteudo ORDER BY ordem ASC, criado_em ASC'
+        );
+        
+        const result = modulos.map(m => ({
+            ...m,
+            aulas: aulas.filter(a => a.modulo_id === m.id)
+        }));
+        
+        res.json(result);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao buscar módulos e aulas.' });
+    }
+});
+
+// POST /api/admin/modulos - create module
+router.post('/modulos', async (req, res) => {
+    const { titulo, ordem } = req.body;
+    if (!titulo) return res.status(400).json({ error: 'Título do módulo é obrigatório.' });
+    try {
+        const { rows } = await pool.query(
+            'INSERT INTO aulas_modulos (titulo, ordem) VALUES ($1, $2) RETURNING *',
+            [titulo, parseInt(ordem || 0)]
+        );
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao criar módulo.' });
+    }
+});
+
+// PUT /api/admin/modulos/:id - update module
+router.put('/modulos/:id', async (req, res) => {
+    const { id } = req.params;
+    const { titulo, ordem } = req.body;
+    try {
+        const { rows } = await pool.query(
+            'UPDATE aulas_modulos SET titulo = $1, ordem = $2 WHERE id = $3 RETURNING *',
+            [titulo, parseInt(ordem || 0), id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Módulo não encontrado.' });
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao atualizar módulo.' });
+    }
+});
+
+// DELETE /api/admin/modulos/:id - delete module (cascades to lessons)
+router.delete('/modulos/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { rowCount } = await pool.query('DELETE FROM aulas_modulos WHERE id = $1', [id]);
+        if (rowCount === 0) return res.status(404).json({ error: 'Módulo não encontrado.' });
+        res.json({ success: true, message: 'Módulo excluído com sucesso.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao excluir módulo.' });
+    }
+});
+
+// POST /api/admin/aulas - create lesson
+router.post('/aulas', async (req, res) => {
+    const { modulo_id, titulo, descricao, video_url, duracao, ordem } = req.body;
+    if (!modulo_id || !titulo || !video_url) {
+        return res.status(400).json({ error: 'Módulo, título e URL do vídeo são obrigatórios.' });
+    }
+    try {
+        const { rows } = await pool.query(
+            `INSERT INTO aulas_conteudo (modulo_id, titulo, descricao, video_url, duracao, ordem)
+             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+            [modulo_id, titulo, descricao || '', video_url, duracao || '', parseInt(ordem || 0)]
+        );
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao criar aula.' });
+    }
+});
+
+// PUT /api/admin/aulas/:id - update lesson
+router.put('/aulas/:id', async (req, res) => {
+    const { id } = req.params;
+    const { modulo_id, titulo, descricao, video_url, duracao, ordem } = req.body;
+    try {
+        const { rows } = await pool.query(
+            `UPDATE aulas_conteudo 
+             SET modulo_id = $1, titulo = $2, descricao = $3, video_url = $4, duracao = $5, ordem = $6
+             WHERE id = $7 RETURNING *`,
+            [modulo_id, titulo, descricao || '', video_url, duracao || '', parseInt(ordem || 0), id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Aula não encontrada.' });
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao atualizar aula.' });
+    }
+});
+
+// DELETE /api/admin/aulas/:id - delete lesson
+router.delete('/aulas/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { rowCount } = await pool.query('DELETE FROM aulas_conteudo WHERE id = $1', [id]);
+        if (rowCount === 0) return res.status(404).json({ error: 'Aula não encontrada.' });
+        res.json({ success: true, message: 'Aula excluída com sucesso.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao excluir aula.' });
+    }
+});
+
+
 // GET /api/admin/users — list all consultoras with subscription info
 router.get('/users', async (req, res) => {
     try {

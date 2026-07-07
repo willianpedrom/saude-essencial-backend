@@ -36,6 +36,14 @@ const adminApi = {
   addToNotifPool: (data) => api('POST', '/api/admin-notifications/pool', data),
   deleteFromNotifPool: (id) => api('DELETE', `/api/admin-notifications/pool/${id}`),
   triggerNotifAutomation: () => api('POST', '/api/admin-notifications/trigger-automation', {}),
+  // Aulas e estratégias
+  getModulos: () => api('GET', '/api/admin/modulos'),
+  createModulo: (data) => api('POST', '/api/admin/modulos', data),
+  updateModulo: (id, data) => api('PUT', `/api/admin/modulos/${id}`, data),
+  deleteModulo: (id) => api('DELETE', `/api/admin/modulos/${id}`),
+  createAula: (data) => api('POST', '/api/admin/aulas', data),
+  updateAula: (id, data) => api('PUT', `/api/admin/aulas/${id}`, data),
+  deleteAula: (id) => api('DELETE', `/api/admin/aulas/${id}`),
 };
 
 const salesApi = {
@@ -189,9 +197,9 @@ export async function renderAdmin(router) {
 
       <!-- Abas -->
       <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--border-light);overflow-x:auto">
-        ${['membros', 'equipes', 'funil', 'leads', 'planos', 'avisos', 'notificacoes', 'gateway'].map(tab => `
+        ${['membros', 'equipes', 'funil', 'leads', 'planos', 'aulas', 'avisos', 'notificacoes', 'gateway'].map(tab => `
           <button id="tab-${tab}" class="btn ${activeTab === tab ? 'btn-primary' : 'btn-secondary'}" style="border-radius:8px 8px 0 0;border-bottom:none;padding:8px 18px;font-size:0.85rem;white-space:nowrap" data-tab="${tab}">
-            ${{ membros: '👥 Membros', equipes: '🤝 Equipes', funil: '🚀 Funil Trial', leads: '📈 Funil de Vendas', planos: '📦 Planos', avisos: '🔔 Avisos', notificacoes: '📲 Notificações', gateway: '💳 Gateway' }[tab]}
+            ${{ membros: '👥 Membros', equipes: '🤝 Equipes', funil: '🚀 Funil Trial', leads: '📈 Funil de Vendas', planos: '📦 Planos', aulas: '🎓 Aulas', avisos: '🔔 Avisos', notificacoes: '📲 Notificações', gateway: '💳 Gateway' }[tab]}
           </button>`).join('')}
       </div>
 
@@ -224,6 +232,7 @@ export async function renderAdmin(router) {
     else if (activeTab === 'funil') renderFunil(tabContent);
     else if (activeTab === 'leads') renderLeadsSection(tabContent);
     else if (activeTab === 'planos') renderPlanosSection(tabContent);
+    else if (activeTab === 'aulas') renderAulasSection(tabContent);
     else if (activeTab === 'avisos') renderAvisosSection(tabContent);
     else if (activeTab === 'notificacoes') renderNotificacoesSection(tabContent);
     else if (activeTab === 'gateway') renderGatewaySection(tabContent);
@@ -2076,5 +2085,245 @@ export async function renderAdmin(router) {
         }
     }
 
+  // ── Aba Aulas e estratégias (CRUD) ──────────────────────────────
+  async function renderAulasSection(container) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted)">⏳ Carregando módulos e aulas...</div>`;
+    let list = [];
+    try {
+      list = await adminApi.getModulos();
+    } catch (err) {
+      container.innerHTML = `<div class="card" style="padding:30px;text-align:center;color:#ef4444">Erro ao carregar aulas: ${err.message}</div>`;
+      return;
+    }
+
+    const render = () => {
+      container.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h3 style="margin:0;font-size:1.1rem">🎓 Gestão de Aulas e Estratégias</h3>
+          <button class="btn btn-primary" id="btn-novo-modulo">+ Novo Módulo</button>
+        </div>
+
+        ${list.length === 0 ? `
+          <div class="card" style="padding:40px;text-align:center;color:var(--text-muted)">
+            Nenhum módulo cadastrado ainda. Comece criando um novo módulo!
+          </div>
+        ` : list.map(modulo => `
+          <div class="card" style="margin-bottom:20px;border:1px solid var(--border)">
+            <div style="padding:14px 18px;border-bottom:1px solid var(--border-light);background:var(--ivory);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div>
+                <strong style="font-size:1rem;color:var(--text-dark)">${modulo.titulo}</strong>
+                <span style="font-size:0.75rem;color:var(--text-muted);margin-left:8px;background:rgba(0,0,0,0.05);padding:2px 8px;border-radius:10px">Ordem: ${modulo.ordem || 0}</span>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-secondary btn-sm" id="btn-nova-aula-${modulo.id}" style="padding:6px 12px">+ Add Aula</button>
+                <button class="btn btn-secondary btn-sm" id="btn-edit-modulo-${modulo.id}" title="Editar Módulo">✏️</button>
+                <button class="btn btn-danger btn-sm" id="btn-del-modulo-${modulo.id}" title="Excluir Módulo">🗑️</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="clients-table">
+                <thead>
+                  <tr>
+                    <th style="width:60px">Ordem</th>
+                    <th>Título da Aula</th>
+                    <th>URL do Vídeo</th>
+                    <th>Duração</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${modulo.aulas.length === 0 ? `
+                    <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">Nenhuma aula cadastrada neste módulo.</td></tr>
+                  ` : modulo.aulas.map(aula => `
+                    <tr>
+                      <td style="text-align:center;font-weight:700">${aula.ordem || 0}</td>
+                      <td>
+                        <strong>${aula.titulo}</strong>
+                        ${aula.descricao ? `<div style="font-size:0.75rem;color:var(--text-muted);max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${aula.descricao}">${aula.descricao}</div>` : ''}
+                      </td>
+                      <td style="font-size:0.8rem;color:var(--text-muted);font-family:monospace">${aula.video_url}</td>
+                      <td>${aula.duracao || '—'}</td>
+                      <td>
+                        <div style="display:flex;gap:4px">
+                          <button class="btn btn-secondary btn-sm" id="btn-edit-aula-${aula.id}" title="Editar Aula">✏️</button>
+                          <button class="btn btn-danger btn-sm" id="btn-del-aula-${aula.id}" title="Excluir Aula">🗑️</button>
+                        </div>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `).join('')}
+      `;
+
+      setupEvents();
+    };
+
+    function setupEvents() {
+      // Criar Módulo
+      document.getElementById('btn-novo-modulo')?.addEventListener('click', () => {
+        showModuloModal();
+      });
+
+      list.forEach(modulo => {
+        // Criar Aula no Módulo
+        document.getElementById(`btn-nova-aula-${modulo.id}`)?.addEventListener('click', () => {
+          showAulaModal(null, modulo.id);
+        });
+
+        // Editar Módulo
+        document.getElementById(`btn-edit-modulo-${modulo.id}`)?.addEventListener('click', () => {
+          showModuloModal(modulo);
+        });
+
+        // Excluir Módulo
+        document.getElementById(`btn-del-modulo-${modulo.id}`)?.addEventListener('click', async () => {
+          if (confirm(`Deseja realmente excluir o módulo "${modulo.titulo}" e todas as suas aulas?`)) {
+            try {
+              await adminApi.deleteModulo(modulo.id);
+              toast('Módulo excluído com sucesso!', 'success');
+              renderAulasSection(container);
+            } catch (err) {
+              toast(err.message, 'error');
+            }
+          }
+        });
+
+        modulo.aulas.forEach(aula => {
+          // Editar Aula
+          document.getElementById(`btn-edit-aula-${aula.id}`)?.addEventListener('click', () => {
+            showAulaModal(aula);
+          });
+
+          // Excluir Aula
+          document.getElementById(`btn-del-aula-${aula.id}`)?.addEventListener('click', async () => {
+            if (confirm(`Deseja realmente excluir a aula "${aula.titulo}"?`)) {
+              try {
+                await adminApi.deleteAula(aula.id);
+                toast('Aula excluída com sucesso!', 'success');
+                renderAulasSection(container);
+              } catch (err) {
+                toast(err.message, 'error');
+              }
+            }
+          });
+        });
+      });
+    }
+
+    function showModuloModal(modulo = null) {
+      const isEdit = !!modulo;
+      const mData = modulo || { titulo: '', ordem: list.length + 1 };
+      
+      const m = modal(isEdit ? '✏️ Editar Módulo' : '➕ Novo Módulo', `
+        <div class="form-grid">
+          <div class="form-group form-field-full">
+            <label class="field-label">Título do Módulo *</label>
+            <input class="field-input" id="mod_titulo" value="${mData.titulo}" placeholder="Ex: Módulo 1: Introdução" />
+          </div>
+          <div class="form-group">
+            <label class="field-label">Ordem de Exibição</label>
+            <input class="field-input" type="number" id="mod_ordem" value="${mData.ordem}" />
+          </div>
+          <div class="form-group form-field-full" style="margin-top:12px">
+            <button class="btn btn-primary" id="btn-save-modulo" style="width:100%">Salvar Módulo</button>
+          </div>
+        </div>
+      `);
+
+      m.el.querySelector('#btn-save-modulo').addEventListener('click', async () => {
+        const titulo = m.el.querySelector('#mod_titulo').value.trim();
+        const ordem = m.el.querySelector('#mod_ordem').value;
+        if (!titulo) return toast('O título é obrigatório.', 'error');
+
+        try {
+          if (isEdit) {
+            await adminApi.updateModulo(modulo.id, { titulo, ordem });
+            toast('Módulo atualizado com sucesso!', 'success');
+          } else {
+            await adminApi.createModulo({ titulo, ordem });
+            toast('Módulo criado com sucesso!', 'success');
+          }
+          m.close();
+          renderAulasSection(container);
+        } catch (err) {
+          toast(err.message, 'error');
+        }
+      });
+    }
+
+    function showAulaModal(aula = null, defaultModuloId = null) {
+      const isEdit = !!aula;
+      const aData = aula || { titulo: '', video_url: '', descricao: '', duracao: '', ordem: 1, modulo_id: defaultModuloId };
+
+      const m = modal(isEdit ? '✏️ Editar Aula' : '➕ Nova Aula', `
+        <div class="form-grid">
+          <div class="form-group form-field-full">
+            <label class="field-label">Módulo Pertencente *</label>
+            <select class="field-select" id="aula_modulo_id">
+              ${list.map(mod => `<option value="${mod.id}" ${mod.id === aData.modulo_id ? 'selected' : ''}>${mod.titulo}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group form-field-full">
+            <label class="field-label">Título da Aula *</label>
+            <input class="field-input" id="aula_titulo" value="${aData.titulo}" placeholder="Ex: Como cadastrar um cliente" />
+          </div>
+          <div class="form-group form-field-full">
+            <label class="field-label">URL do Vídeo (YouTube) *</label>
+            <input class="field-input" id="aula_video_url" value="${aData.video_url}" placeholder="Ex: https://www.youtube.com/watch?v=..." />
+          </div>
+          <div class="form-group">
+            <label class="field-label">Duração (Ex: 10:15 ou 10 min)</label>
+            <input class="field-input" id="aula_duracao" value="${aData.duracao}" placeholder="Ex: 08:30" />
+          </div>
+          <div class="form-group">
+            <label class="field-label">Ordem de Exibição</label>
+            <input class="field-input" type="number" id="aula_ordem" value="${aData.ordem}" />
+          </div>
+          <div class="form-group form-field-full">
+            <label class="field-label">Descrição</label>
+            <textarea class="field-textarea" id="aula_descricao" rows="3" placeholder="Insira o texto complementar para esta aula...">${aData.descricao || ''}</textarea>
+          </div>
+          <div class="form-group form-field-full" style="margin-top:12px">
+            <button class="btn btn-primary" id="btn-save-aula" style="width:100%">Salvar Aula</button>
+          </div>
+        </div>
+      `);
+
+      m.el.querySelector('#btn-save-aula').addEventListener('click', async () => {
+        const modulo_id = m.el.querySelector('#aula_modulo_id').value;
+        const titulo = m.el.querySelector('#aula_titulo').value.trim();
+        const video_url = m.el.querySelector('#aula_video_url').value.trim();
+        const duracao = m.el.querySelector('#aula_duracao').value.trim();
+        const ordem = m.el.querySelector('#aula_ordem').value;
+        const descricao = m.el.querySelector('#aula_descricao').value.trim();
+
+        if (!modulo_id) return toast('Selecione um módulo.', 'error');
+        if (!titulo) return toast('O título é obrigatório.', 'error');
+        if (!video_url) return toast('A URL do vídeo é obrigatória.', 'error');
+
+        try {
+          const payload = { modulo_id, titulo, video_url, duracao, ordem, descricao };
+          if (isEdit) {
+            await adminApi.updateAula(aula.id, payload);
+            toast('Aula atualizada com sucesso!', 'success');
+          } else {
+            await adminApi.createAula(payload);
+            toast('Aula criada com sucesso!', 'success');
+          }
+          m.close();
+          renderAulasSection(container);
+        } catch (err) {
+          toast(err.message, 'error');
+        }
+      });
+    }
+
     render();
   }
+
+    render();
+  }
+

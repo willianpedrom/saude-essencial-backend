@@ -198,6 +198,8 @@ app.use('/api/avisos', require('./routes/avisos'));
 app.use('/api/followups', require('./routes/followups'));
 app.use('/api/prospects', require('./routes/prospects'));
 app.use('/api/estoque', require('./routes/estoque'));
+app.use('/api/aulas', require('./routes/aulas'));
+
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/admin-notifications', require('./routes/admin_notifications'));
 app.use('/api/compras', require('./routes/compras'));
