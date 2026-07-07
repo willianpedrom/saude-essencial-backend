@@ -118,6 +118,7 @@ export async function renderAdmin(router) {
   sessionStorage.removeItem('admin_active_tab');
   let filterStatus = '';
   let filterPlano = '';
+  let funilSearchQuery = '';
   let planos = [];
   let avisos = [];
 
@@ -498,7 +499,7 @@ export async function renderAdmin(router) {
       renderList();
     });
 
-    document.getElementById('btn-save-tpl').addEventListener('click', async () => {
+    document.getElementById('btn-save-tpl').click = async () => {
       try {
         await salesApi.updateTemplate({ perguntas: questions });
         toast('Questionário atualizado!', 'success');
@@ -506,7 +507,7 @@ export async function renderAdmin(router) {
       } catch (err) {
         toast('Erro ao salvar template: ' + err.message, 'error');
       }
-    });
+    };
   }
 
   // ── Aba Funil (Kanban) ─────────────────────────────────────────
@@ -517,7 +518,15 @@ export async function renderAdmin(router) {
     };
 
     const now = new Date();
+    const query = funilSearchQuery.toLowerCase().trim();
+    
+    // Filter and distribute users
     users.forEach(u => {
+      if (query) {
+        const matches = (u.nome || '').toLowerCase().includes(query) || (u.email || '').toLowerCase().includes(query);
+        if (!matches) return;
+      }
+
       if (u.plano_status === 'active') { groups.assinante.push(u); return; }
       if (u.plano_status === 'cancelled' || u.plano_status === 'overdue') { groups.perdido.push(u); return; }
 
@@ -526,7 +535,6 @@ export async function renderAdmin(router) {
       const daysSinceCreation = (now - createdAt) / 86400000;
       const hasActivity = (u.total_clientes > 0 || u.total_anamneses_mes > 0);
 
-      // Status 'expired' mapped directly or caught by trial_fim
       if (u.plano_status === 'expired' || isExpired) {
         if (isExpired && u.trial_fim && (now - new Date(u.trial_fim))/86400000 > 15) {
           groups.perdido.push(u);
@@ -536,7 +544,6 @@ export async function renderAdmin(router) {
         return;
       }
 
-      // Default Trial processing
       if (hasActivity) groups.engajado.push(u);
       else if (daysSinceCreation <= 2) groups.lead.push(u);
       else groups.trial.push(u);
@@ -545,96 +552,190 @@ export async function renderAdmin(router) {
     const renderCard = (u) => {
       const phone = u.telefone ? u.telefone.replace(/\D/g, '') : '';
       const waLink = phone.length >= 10 ? `https://wa.me/55${phone}?text=Ol%C3%A1%2C%20%2A${encodeURIComponent((u.nome || '').split(' ')[0])}%2A%21` : '';
-      
       const initials = (u.nome || '').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase() || '?';
+      
+      // Calculate remaining trial days
+      let trialBadge = '';
+      if (u.plano_status === 'trial' || !u.plano_status) {
+        if (u.trial_fim) {
+          const trialEnd = new Date(u.trial_fim);
+          const daysLeft = Math.ceil((trialEnd - now) / 86400000);
+          if (daysLeft > 0) {
+            trialBadge = `<span style="background:rgba(234,179,8,0.1); color:#d97706; font-size:0.72rem; padding:2px 6px; border-radius:4px; font-weight:600">⏳ ${daysLeft}d</span>`;
+          } else {
+            trialBadge = `<span style="background:#fee2e2; color:#dc2626; font-size:0.72rem; padding:2px 6px; border-radius:4px; font-weight:600">❌ Expirado</span>`;
+          }
+        }
+      }
+
       return `
-        <div class="card" style="padding:12px; margin-bottom:10px; cursor:default">
+        <div class="kanban-card" style="background:var(--white); border:1px solid rgba(45,122,69,0.08); border-radius:var(--radius-md); padding:12px; margin-bottom:10px; box-shadow:var(--shadow-sm); transition:var(--transition); position:relative" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.transform='none'; this.style.boxShadow='var(--shadow-sm)'">
           <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px">
-            <div class="client-avatar-sm">${u.foto_url ? `<img src="${u.foto_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : initials}</div>
+            <div class="client-avatar-sm" style="width:32px; height:32px; font-size:0.8rem; background:var(--green-50); color:var(--green-700)">
+              ${u.foto_url ? `<img src="${u.foto_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : initials}
+            </div>
             <div style="flex:1; min-width:0">
-              <div style="font-weight:700; font-size:0.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${u.nome || '—'}</div>
-              <div style="font-size:0.75rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${u.email || '—'}</div>
+              <div style="font-weight:700; font-size:0.85rem; color:var(--text-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${u.nome || '—'}</div>
+              <div style="font-size:0.72rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${u.email || '—'}</div>
             </div>
           </div>
-          <div style="display:flex; gap:6px; margin-bottom:12px">
-             ${u.total_clientes > 0 ? `<span style="background:#eff6ff; color:#1d4ed8; font-size:0.7rem; padding:2px 6px; border-radius:4px">${u.total_clientes} clientes</span>` : ''}
-             ${u.total_anamneses_mes > 0 ? `<span style="background:#f3e8ff; color:#7e22ce; font-size:0.7rem; padding:2px 6px; border-radius:4px">${u.total_anamneses_mes} anamneses</span>` : ''}
+          <div style="display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap">
+             ${u.total_clientes > 0 ? `<span style="background:#eff6ff; color:#1d4ed8; font-size:0.68rem; padding:2px 6px; border-radius:4px; font-weight:600">👥 ${u.total_clientes} clis</span>` : ''}
+             ${u.total_anamneses_mes > 0 ? `<span style="background:#f3e8ff; color:#7e22ce; font-size:0.68rem; padding:2px 6px; border-radius:4px; font-weight:600">📋 ${u.total_anamneses_mes} anam</span>` : ''}
+             ${trialBadge}
           </div>
-          <div style="display:grid; grid-template-columns:1fr ${waLink ? '1fr' : ''}; gap:6px">
-             <button class="btn btn-secondary btn-sm" data-cortesia-id="${u.id}" style="width:100%; padding:6px; font-size:0.75rem">🎁 Dar Trial</button>
-             ${waLink ? `<button class="btn btn-primary btn-sm" onclick="window.open('${waLink}', '_blank')" style="background:#25D366; border:none; width:100%; padding:6px; font-size:0.75rem">💬 Chamar</button>` : ''}
+          <div style="display:flex; gap:6px; justify-content:space-between">
+             <button class="btn btn-secondary btn-sm" data-cortesia-id="${u.id}" style="flex:1; padding:5px; font-size:0.7rem; font-weight:600; display:flex; align-items:center; justify-content:center; gap:4px">
+               🎁 Cortesia
+             </button>
+             ${waLink ? `
+               <button class="btn btn-primary btn-sm" onclick="window.open('${waLink}', '_blank')" style="background:#25D366; border:none; color:white; flex:1; padding:5px; font-size:0.7rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:4px">
+                 💬 Chamar
+               </button>` : ''}
           </div>
         </div>`;
     };
 
-    container.innerHTML = `
-      <div style="display:flex; gap:16px; overflow-x:auto; padding-bottom:20px; align-items:flex-start">
-        <!-- Coluna Lead Novo -->
-        <div style="min-width:280px; width:280px; background:#f8fafc; border-radius:12px; padding:12px; border:1px solid #e2e8f0; flex-shrink:0; max-height:calc(100vh - 250px); overflow-y:auto; display:flex; flex-direction:column">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
-             <h4 style="margin:0; font-size:0.9rem; color:#0f172a; display:flex; align-items:center; gap:6px"><span style="color:#10b981">🟢</span> Novos Leads</h4>
-             <span style="background:#e2e8f0; color:#475569; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.lead.length}</span>
-          </div>
-          ${groups.lead.map(renderCard).join('') || '<div style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:20px 0">Sem leads hoje</div>'}
+    const renderBoard = () => {
+      container.innerHTML = `
+        <!-- Top Search Bar for Kanban -->
+        <div style="background:var(--white); border:1px solid var(--border); border-radius:var(--radius-lg); padding:10px 16px; margin-bottom:16px; display:flex; align-items:center; gap:12px; box-shadow:var(--shadow-sm)">
+          <span style="font-size:1.1rem">🔍</span>
+          <input 
+            type="text" 
+            id="funil-search" 
+            class="field-input" 
+            style="border:none; padding:4px 8px; font-size:0.88rem; flex:1; background:transparent; outline:none" 
+            value="${funilSearchQuery}" 
+            placeholder="Pesquisar por nome ou e-mail de membro no funil..."
+          />
+          ${funilSearchQuery ? `
+            <button id="clear-funil-search" style="background:transparent; border:none; font-size:0.8rem; color:var(--text-muted); cursor:pointer; font-weight:600">Limpar</button>
+          ` : ''}
         </div>
 
-        <!-- Coluna Trial Ativo -->
-        <div style="min-width:280px; width:280px; background:#f8fafc; border-radius:12px; padding:12px; border:1px solid #e2e8f0; flex-shrink:0; max-height:calc(100vh - 250px); overflow-y:auto; display:flex; flex-direction:column">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
-             <h4 style="margin:0; font-size:0.9rem; color:#0f172a; display:flex; align-items:center; gap:6px"><span style="color:#3b82f6">⏳</span> Trial Ativo</h4>
-             <span style="background:#e2e8f0; color:#475569; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.trial.length}</span>
+        <!-- Kanban Board -->
+        <div class="kanban-board" style="display:flex; gap:16px; overflow-x:auto; padding-bottom:12px; align-items:flex-start">
+          
+          <!-- Coluna Lead Novo -->
+          <div class="kanban-column" style="min-width:290px; width:290px; background:#f8fafc; border-radius:var(--radius-lg); padding:14px; border:1px solid #e2e8f0; flex-shrink:0; height:600px; display:flex; flex-direction:column">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+               <h4 style="margin:0; font-size:0.88rem; color:#0f172a; display:flex; align-items:center; gap:6px; font-weight:700"><span style="color:#10b981">🟢</span> Novos Leads</h4>
+               <span style="background:#e2e8f0; color:#475569; font-size:0.72rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.lead.length}</span>
+            </div>
+            <div class="kanban-cards-list" style="flex:1; overflow-y:auto; padding-right:2px">
+              ${groups.lead.map(renderCard).join('') || '<div style="text-align:center;color:var(--text-muted);font-size:0.78rem;padding:30px 0">Sem novos leads</div>'}
+            </div>
           </div>
-          ${groups.trial.map(renderCard).join('') || '<div style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:20px 0">Zero</div>'}
+
+          <!-- Coluna Trial Ativo -->
+          <div class="kanban-column" style="min-width:290px; width:290px; background:#f0fdfa; border-radius:var(--radius-lg); padding:14px; border:1px solid #99f6e4; flex-shrink:0; height:600px; display:flex; flex-direction:column">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+               <h4 style="margin:0; font-size:0.88rem; color:#0d9488; display:flex; align-items:center; gap:6px; font-weight:700"><span style="color:#0d9488">⏳</span> Trial Ativo</h4>
+               <span style="background:#ccfbf1; color:#0f766e; font-size:0.72rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.trial.length}</span>
+            </div>
+            <div class="kanban-cards-list" style="flex:1; overflow-y:auto; padding-right:2px">
+              ${groups.trial.map(renderCard).join('') || '<div style="text-align:center;color:#0f766e;font-size:0.78rem;padding:30px 0">Nenhum trial ativo</div>'}
+            </div>
+          </div>
+
+          <!-- Coluna Engajados -->
+          <div class="kanban-column" style="min-width:290px; width:290px; background:#fffbeb; border-radius:var(--radius-lg); padding:14px; border:1px solid #fcd34d; flex-shrink:0; height:600px; display:flex; flex-direction:column">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px">
+               <h4 style="margin:0; font-size:0.88rem; color:#92400e; display:flex; align-items:center; gap:6px; font-weight:700"><span style="color:#f59e0b">🔥</span> Engajados (Hot)</h4>
+               <span style="background:#fde68a; color:#b45309; font-size:0.72rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.engajado.length}</span>
+            </div>
+            <p style="font-size:0.72rem; color:#92400e; margin-bottom:12px; opacity:0.85">Ações realizadas no sistema</p>
+            <div class="kanban-cards-list" style="flex:1; overflow-y:auto; padding-right:2px">
+              ${groups.engajado.map(renderCard).join('') || '<div style="text-align:center;color:#b45309;font-size:0.78rem;padding:30px 0">Nenhum no momento</div>'}
+            </div>
+          </div>
+
+          <!-- Coluna Trial Expirado -->
+          <div class="kanban-column" style="min-width:290px; width:290px; background:#fef2f2; border-radius:var(--radius-lg); padding:14px; border:1px solid #fca5a5; flex-shrink:0; height:600px; display:flex; flex-direction:column">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px">
+               <h4 style="margin:0; font-size:0.88rem; color:#991b1b; display:flex; align-items:center; gap:6px; font-weight:700"><span style="color:#ef4444">⏰</span> Trial Expirado</h4>
+               <span style="background:#fecaca; color:#b91c1c; font-size:0.72rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.expirado.length}</span>
+            </div>
+            <p style="font-size:0.72rem; color:#991b1b; margin-bottom:12px; opacity:0.85">Estenda o trial p/ recuperar</p>
+            <div class="kanban-cards-list" style="flex:1; overflow-y:auto; padding-right:2px">
+              ${groups.expirado.map(renderCard).join('') || '<div style="text-align:center;color:#b91c1c;font-size:0.78rem;padding:30px 0">Tudo em dia!</div>'}
+            </div>
+          </div>
+
+          <!-- Coluna Assinantes -->
+          <div class="kanban-column" style="min-width:290px; width:290px; background:#f0fdf4; border-radius:var(--radius-lg); padding:14px; border:1px solid #a7f3d0; flex-shrink:0; height:600px; display:flex; flex-direction:column">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+               <h4 style="margin:0; font-size:0.88rem; color:#166534; display:flex; align-items:center; gap:6px; font-weight:700"><span style="color:#10b981">💎</span> Assinantes</h4>
+               <span style="background:#bbf7d0; color:#15803d; font-size:0.72rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.assinante.length}</span>
+            </div>
+            <div class="kanban-cards-list" style="flex:1; overflow-y:auto; padding-right:2px">
+              ${groups.assinante.map(renderCard).join('') || '<div style="text-align:center;color:#15803d;font-size:0.78rem;padding:30px 0">Nenhum assinante</div>'}
+            </div>
+          </div>
+
+          <!-- Coluna Inativo/Perdido -->
+          <div class="kanban-column" style="min-width:290px; width:290px; background:#f8fafc; border-radius:var(--radius-lg); padding:14px; border:1px solid #cbd5e1; flex-shrink:0; height:600px; display:flex; flex-direction:column">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+               <h4 style="margin:0; font-size:0.88rem; color:#334155; display:flex; align-items:center; gap:6px; font-weight:700"><span style="color:#64748b">❌</span> Perdidos (15d+)</h4>
+               <span style="background:#e2e8f0; color:#475569; font-size:0.72rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.perdido.length}</span>
+            </div>
+            <div class="kanban-cards-list" style="flex:1; overflow-y:auto; padding-right:2px">
+              ${groups.perdido.map(renderCard).join('') || '<div style="text-align:center;color:#475569;font-size:0.78rem;padding:30px 0">Nenhum inativo</div>'}
+            </div>
+          </div>
         </div>
 
-        <!-- Coluna Engajados -->
-        <div style="min-width:280px; width:280px; background:#fffbeb; border-radius:12px; padding:12px; border:1px solid #fcd34d; flex-shrink:0; max-height:calc(100vh - 250px); overflow-y:auto; display:flex; flex-direction:column">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
-             <h4 style="margin:0; font-size:0.9rem; color:#92400e; display:flex; align-items:center; gap:6px"><span style="color:#f59e0b">🔥</span> Engajados (Hot)</h4>
-             <span style="background:#fde68a; color:#b45309; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.engajado.length}</span>
-          </div>
-          <p style="font-size:0.75rem; color:#92400e; margin-top:-6px; margin-bottom:12px">Usaram clientes/anamneses. Chame no WhatsApp!</p>
-          ${groups.engajado.map(renderCard).join('') || '<div style="text-align:center;color:#b45309;font-size:0.8rem;padding:20px 0">Nenhum no momento</div>'}
-        </div>
+        <!-- CSS Scrollbars customized -->
+        <style>
+          .kanban-cards-list::-webkit-scrollbar {
+            width: 4px;
+          }
+          .kanban-cards-list::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .kanban-cards-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+          }
+          .kanban-cards-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+          }
+        </style>
+      `;
 
-        <!-- Coluna Trial Expirado -->
-        <div style="min-width:280px; width:280px; background:#fef2f2; border-radius:12px; padding:12px; border:1px solid #fca5a5; flex-shrink:0; max-height:calc(100vh - 250px); overflow-y:auto; display:flex; flex-direction:column">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
-             <h4 style="margin:0; font-size:0.9rem; color:#991b1b; display:flex; align-items:center; gap:6px"><span style="color:#ef4444">⏰</span> Trial Expirado</h4>
-             <span style="background:#fecaca; color:#b91c1c; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.expirado.length}</span>
-          </div>
-          <p style="font-size:0.75rem; color:#991b1b; margin-top:-6px; margin-bottom:12px">Estenda o trial p/ recapturar.</p>
-          ${groups.expirado.map(renderCard).join('') || '<div style="text-align:center;color:#b91c1c;font-size:0.8rem;padding:20px 0">Limpo!</div>'}
-        </div>
-
-        <!-- Coluna Assinantes -->
-        <div style="min-width:280px; width:280px; background:#f0fdf4; border-radius:12px; padding:12px; border:1px solid #86efac; flex-shrink:0; max-height:calc(100vh - 250px); overflow-y:auto; display:flex; flex-direction:column">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
-             <h4 style="margin:0; font-size:0.9rem; color:#166534; display:flex; align-items:center; gap:6px"><span style="color:#10b981">💎</span> Assinantes</h4>
-             <span style="background:#bbf7d0; color:#15803d; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.assinante.length}</span>
-          </div>
-          ${groups.assinante.map(renderCard).join('') || '<div style="text-align:center;color:#15803d;font-size:0.8rem;padding:20px 0">Ainda não</div>'}
-        </div>
-
-        <!-- Coluna Inativo/Perdido -->
-        <div style="min-width:280px; width:280px; background:#f1f5f9; border-radius:12px; padding:12px; border:1px solid #cbd5e1; flex-shrink:0; opacity:0.8">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
-             <h4 style="margin:0; font-size:0.9rem; color:#334155; display:flex; align-items:center; gap:6px"><span style="color:#64748b">❌</span> Perdidos (15d+)</h4>
-             <span style="background:#e2e8f0; color:#475569; font-size:0.75rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.perdido.length}</span>
-          </div>
-          ${groups.perdido.map(renderCard).join('') || '<div style="text-align:center;color:#475569;font-size:0.8rem;padding:20px 0">Zero</div>'}
-        </div>
-      </div>
-    `;
-
-    // Bind events for "Dar Cortesia" bubbles
-    container.querySelectorAll('[data-cortesia-id]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const u = users.find(x => x.id === btn.dataset.cortesiaId);
-        if (!u) return;
-        showCortesiaModal(u);
+      // Event listeners
+      const searchInput = container.querySelector('#funil-search');
+      searchInput?.addEventListener('input', () => {
+        funilSearchQuery = searchInput.value;
+        renderBoard();
+        // Manter o foco no input após re-renderizar
+        const newSearch = document.getElementById('funil-search');
+        if (newSearch) {
+          newSearch.focus();
+          const val = newSearch.value;
+          newSearch.value = '';
+          newSearch.value = val;
+        }
       });
-    });
+
+      // Clear search button
+      container.querySelector('#clear-funil-search')?.addEventListener('click', () => {
+        funilSearchQuery = '';
+        renderBoard();
+      });
+
+      // Bind events for "Dar Cortesia" bubbles
+      container.querySelectorAll('[data-cortesia-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const u = users.find(x => x.id === btn.dataset.cortesiaId);
+          if (!u) return;
+          showCortesiaModal(u);
+        });
+      });
+    };
+
+    renderBoard();
   }
 
   // ── Aba Membros ────────────────────────────────────────────────
