@@ -3,7 +3,7 @@
    ============================================================ */
 
 import { renderLayout } from './Dashboard.js?v=1010';
-import { api } from '../store.js?v=1010';
+import { auth, api } from '../store.js?v=1010';
 import { toast } from '../utils.js?v=1010';
 
 export async function renderAulas(router) {
@@ -38,19 +38,37 @@ export async function renderAulas(router) {
         const pc = document.getElementById('page-content');
         if (!pc) return;
 
+        let adminBanner = '';
+        if (auth.isAdmin) {
+            adminBanner = `
+                <div style="background:linear-gradient(135deg, var(--green-900), var(--green-700)); border-radius:var(--radius-lg); padding:16px 20px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; color:white; box-shadow:var(--shadow-sm); flex-wrap:wrap; gap:12px">
+                    <div>
+                        <h4 style="margin:0; font-size:1.05rem; font-weight:700">Painel de Conteúdo (Admin)</h4>
+                        <p style="margin:2px 0 0; font-size:0.8rem; color:rgba(255,255,255,0.85)">Você pode gerenciar os módulos, aulas e estratégias no painel administrativo.</p>
+                    </div>
+                    <button class="btn btn-primary btn-sm" id="btn-ir-admin-aulas" style="background:var(--white); color:var(--green-800); border:none; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer">
+                        ⚙️ Gerenciar Aulas
+                    </button>
+                </div>
+            `;
+        }
+
         if (modulos.length === 0) {
             pc.innerHTML = `
+                ${adminBanner}
                 <div class="empty-state" style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:4rem 2rem;text-align:center;box-shadow:var(--shadow-sm)">
                     <div style="font-size:4rem;margin-bottom:1.5rem">🎓</div>
                     <h3 style="margin-bottom:0.5rem;color:var(--text-dark)">Nenhuma aula disponível</h3>
                     <p style="color:var(--text-muted);max-width:400px;margin:0 auto 1.5rem">Nossas aulas e estratégias estão sendo preparadas pela equipe. Volte em breve!</p>
                 </div>
             `;
+            setupEventListeners();
             return;
         }
 
         // Layout estrutural
         pc.innerHTML = `
+            ${adminBanner}
             <div class="aulas-container" style="display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:start">
                 
                 <!-- Coluna Esquerda: Lista de Módulos e Aulas -->
@@ -200,6 +218,15 @@ export async function renderAulas(router) {
                 toast(done ? 'Aula concluída! Parabéns!' : 'Aula pendente.', 'success');
                 // Re-renderizar apenas a barra lateral de módulos para atualizar o ícone de concluída
                 render();
+            });
+        }
+
+        // Redirecionamento para gerenciar aulas no Admin
+        const btnAdmin = document.getElementById('btn-ir-admin-aulas');
+        if (btnAdmin) {
+            btnAdmin.addEventListener('click', () => {
+                sessionStorage.setItem('admin_active_tab', 'aulas');
+                router.navigate('/admin');
             });
         }
     }

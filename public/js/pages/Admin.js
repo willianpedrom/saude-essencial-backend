@@ -114,7 +114,8 @@ export async function renderAdmin(router) {
     render();
   }
 
-  let activeTab = 'membros';
+  let activeTab = sessionStorage.getItem('admin_active_tab') || 'membros';
+  sessionStorage.removeItem('admin_active_tab');
   let filterStatus = '';
   let filterPlano = '';
   let planos = [];
