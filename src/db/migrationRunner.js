@@ -941,7 +941,37 @@ const MIGRATIONS = [
                  WHERE (nome_produto ILIKE '%toranja%' OR nome_produto ILIKE '%grapefruit%')
                    AND (ml_tamanho ILIKE '%15ml%' OR ml_tamanho ILIKE '%15 ml%')`
             );
-            console.log('[025_fix_grapefruit_toranja_prices_2026] Preço de Grapefruit / Toranja ajustado no estoque.');
+            console.log('[025_fix_grapefruit_toranja_prices_2026] Preço de Grapefruit / Toranja adjusted in estoque.');
+        }
+    },
+    // ── 026: Criar tabelas para Aulas e Estratégias ──────────────────────────
+    {
+        name: '026_aulas_estrategias_schema',
+        async up(pool) {
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS aulas_modulos (
+                  id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                  titulo    VARCHAR(255) NOT NULL,
+                  ordem     INT DEFAULT 0,
+                  criado_em TIMESTAMPTZ DEFAULT NOW()
+                )
+            `);
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS aulas_conteudo (
+                  id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                  modulo_id UUID NOT NULL REFERENCES aulas_modulos(id) ON DELETE CASCADE,
+                  titulo    VARCHAR(255) NOT NULL,
+                  descricao TEXT,
+                  video_url TEXT NOT NULL,
+                  duracao   VARCHAR(50),
+                  ordem     INT DEFAULT 0,
+                  criado_em TIMESTAMPTZ DEFAULT NOW()
+                )
+            `);
+            await pool.query(`
+                CREATE INDEX IF NOT EXISTS idx_aulas_conteudo_modulo ON aulas_conteudo(modulo_id)
+            `);
+            console.log('[026_aulas_estrategias_schema] Tabelas de aulas e estratégias criadas.');
         }
     }
 ];
