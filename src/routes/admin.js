@@ -225,7 +225,7 @@ router.delete('/aulas/:id', async (req, res) => {
 router.get('/users', async (req, res) => {
     try {
         const { rows } = await pool.query(
-            `SELECT c.id, c.nome, c.email, c.telefone, c.role, c.foto_url,
+            `SELECT c.id, c.nome, c.email, c.telefone, c.role, c.foto_url, c.slug,
               c.criado_em, c.atualizado_em,
               a.id AS assinatura_id, a.plano, a.status AS plano_status, a.trial_fim, a.periodo_fim,
               a.hotmart_transaction_id, a.hotmart_subscription_id, a.gateway,

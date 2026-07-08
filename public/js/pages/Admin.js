@@ -118,6 +118,8 @@ export async function renderAdmin(router) {
   sessionStorage.removeItem('admin_active_tab');
   let filterStatus = '';
   let filterPlano = '';
+  let filterClientes = '';
+  let sortMembros = 'data-asc';
   let funilSearchQuery = '';
   let planos = [];
   let avisos = [];
@@ -745,7 +747,7 @@ export async function renderAdmin(router) {
       <div class="card">
         <div style="padding:14px 18px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <h3 style="margin:0;font-size:0.95rem;flex:1">👥 Membros do Sistema</h3>
-          <select class="field-select" id="filter-status" style="width:160px;padding:6px 10px;font-size:0.82rem">
+          <select class="field-select" id="filter-status" style="width:145px;padding:6px 10px;font-size:0.82rem">
             <option value="">Todos os status</option>
             <option value="trial">⏳ Trial</option>
             <option value="active">✅ Ativo</option>
@@ -753,12 +755,27 @@ export async function renderAdmin(router) {
             <option value="cancelled">❌ Cancelado</option>
             <option value="expired">🔴 Expirado</option>
           </select>
-          <select class="field-select" id="filter-plano" style="width:150px;padding:6px 10px;font-size:0.82rem">
+          <select class="field-select" id="filter-plano" style="width:130px;padding:6px 10px;font-size:0.82rem">
             <option value="">Todos os planos</option>
             ${planOptions}
           </select>
-          <input class="field-input" id="admin-search" placeholder="🔍 Buscar nome/email..." style="width:200px;padding:6px 12px;font-size:0.82rem" />
-          <button class="btn btn-primary btn-sm" id="btn-add-member" style="padding:6px 12px;font-size:0.82rem">+ Novo Membro</button>
+          <select class="field-select" id="filter-clientes" style="width:145px;padding:6px 10px;font-size:0.82rem">
+            <option value="">Qtd. de Clientes</option>
+            <option value="sem">Sem clientes (0)</option>
+            <option value="com">Com clientes (>= 1)</option>
+            <option value="mais-10">Mais de 10 clis</option>
+            <option value="mais-50">Mais de 50 clis</option>
+            <option value="mais-100">Mais de 100 clis</option>
+          </select>
+          <select class="field-select" id="sort-membros" style="width:150px;padding:6px 10px;font-size:0.82rem">
+            <option value="data-asc">Ord: Antigos</option>
+            <option value="data-desc">Ord: Recentes</option>
+            <option value="nome-asc">Ord: Nome A-Z</option>
+            <option value="clientes-desc">Ord: Mais Clientes</option>
+            <option value="clientes-asc">Ord: Menos Clientes</option>
+          </select>
+          <input class="field-input" id="admin-search" placeholder="🔍 Buscar nome/email..." style="width:180px;padding:6px 12px;font-size:0.82rem" />
+          <button class="btn btn-primary btn-sm" id="btn-add-member" style="padding:6px 12px;font-size:0.82rem">+ Novo</button>
         </div>
         <div style="overflow-x:auto">
           <table class="clients-table">
@@ -770,8 +787,17 @@ export async function renderAdmin(router) {
               <th>Vence em</th>
               <th>Cargo</th>
               <th>Ações</th>
-            </tr></thead>
-            <tbody id="admin-tbody">${renderRows(applyFilters(users))}</tbody>
+             </tr></thead>
+            <tbody id="admin-tbody">${renderRows(
+              applyFilters(users).sort((a, b) => {
+                if (sortMembros === 'data-asc') return new Date(a.criado_em) - new Date(b.criado_em);
+                if (sortMembros === 'data-desc') return new Date(b.criado_em) - new Date(a.criado_em);
+                if (sortMembros === 'nome-asc') return (a.nome || '').localeCompare(b.nome || '');
+                if (sortMembros === 'clientes-desc') return (b.total_clientes || 0) - (a.total_clientes || 0);
+                if (sortMembros === 'clientes-asc') return (a.total_clientes || 0) - (b.total_clientes || 0);
+                return 0;
+              })
+            )}</tbody>
           </table>
         </div>
       </div>`;
@@ -779,23 +805,43 @@ export async function renderAdmin(router) {
     // Restore filter values
     const fs = container.querySelector('#filter-status');
     const fp = container.querySelector('#filter-plano');
+    const fc = container.querySelector('#filter-clientes');
+    const sm = container.querySelector('#sort-membros');
     const se = container.querySelector('#admin-search');
     if (fs) fs.value = filterStatus;
     if (fp) fp.value = filterPlano;
+    if (fc) fc.value = filterClientes;
+    if (sm) sm.value = sortMembros;
 
     function applyAndRender() {
       filterStatus = fs?.value || '';
       filterPlano = fp?.value || '';
+      filterClientes = fc?.value || '';
+      sortMembros = sm?.value || 'data-asc';
+      
       const q = (se?.value || '').toLowerCase();
-      const filtered = applyFilters(users).filter(u =>
+      let filtered = applyFilters(users).filter(u =>
         !q || (u.nome || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q)
       );
+
+      // Sort
+      filtered.sort((a, b) => {
+        if (sortMembros === 'data-asc') return new Date(a.criado_em) - new Date(b.criado_em);
+        if (sortMembros === 'data-desc') return new Date(b.criado_em) - new Date(a.criado_em);
+        if (sortMembros === 'nome-asc') return (a.nome || '').localeCompare(b.nome || '');
+        if (sortMembros === 'clientes-desc') return (b.total_clientes || 0) - (a.total_clientes || 0);
+        if (sortMembros === 'clientes-asc') return (a.total_clientes || 0) - (b.total_clientes || 0);
+        return 0;
+      });
+
       document.getElementById('admin-tbody').innerHTML = renderRows(filtered);
       bindRowEvents();
     }
 
     fs?.addEventListener('change', applyAndRender);
     fp?.addEventListener('change', applyAndRender);
+    fc?.addEventListener('change', applyAndRender);
+    sm?.addEventListener('change', applyAndRender);
     se?.addEventListener('input', applyAndRender);
     container.querySelector('#btn-add-member')?.addEventListener('click', showCreateUserModal);
     bindRowEvents();
@@ -815,6 +861,17 @@ export async function renderAdmin(router) {
       
       if (filterStatus && computedStatus !== filterStatus) return false;
       if (filterPlano && u.plano !== filterPlano) return false;
+      
+      // Filter by client count
+      if (filterClientes) {
+        const total = parseInt(u.total_clientes || 0, 10);
+        if (filterClientes === 'sem' && total !== 0) return false;
+        if (filterClientes === 'com' && total < 1) return false;
+        if (filterClientes === 'mais-10' && total <= 10) return false;
+        if (filterClientes === 'mais-50' && total <= 50) return false;
+        if (filterClientes === 'mais-100' && total <= 100) return false;
+      }
+      
       return true;
     });
   }
@@ -860,6 +917,7 @@ export async function renderAdmin(router) {
               <div>
                 <div style="font-weight:600;font-size:0.88rem">${u.nome || '—'} ${isMe ? '<span style="font-size:0.7rem;color:var(--text-muted)">(você)</span>' : ''}</div>
                 <div style="font-size:0.72rem;color:var(--text-muted)">${u.email || '—'}</div>
+                ${u.slug ? `<a href="/#/p/${u.slug}" target="_blank" style="font-size:0.7rem;color:#0d9488;text-decoration:none;display:inline-flex;align-items:center;gap:3px;margin-top:2.5px;font-weight:700" title="Ver página de captura pública do membro">🔗 Página Pública</a>` : ''}
               </div>
             </div>
           </td>
