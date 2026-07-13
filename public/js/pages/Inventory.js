@@ -255,6 +255,8 @@ export const DOTERRA_PRODUCTS = [
     { nome: "Coleção Collector's", cat: "Kit" },
     { nome: "doTERRA Pūr Homme", cat: "Personal Care" },
     { nome: "doTERRA Pūr Femme", cat: "Personal Care" },
+    { nome: "Abeto Negro (Black Spruce)", cat: "Óleo Essencial" },
+    { nome: "Lavender Fields Body Splash", cat: "Personal Care" },
 ];
 
 // ── Tabela de Preços Oficiais doTERRA (por produto + tamanho) ──────────────
@@ -471,6 +473,13 @@ export const DOTERRA_PRICES = {
     'Lavanda': {
         '15ml': { r: 197, m: 148 },
         '5ml': { r: 103, m: 77.5 },
+    },
+    'Abeto Negro (Black Spruce)': {
+        '5ml': { r: 180, m: 135 },
+    },
+    'Lavender Fields Body Splash': {
+        '100ml': { r: 191, m: 142.88 },
+        'Unidade / Kit': { r: 191, m: 142.88 },
     },
     'Limão Siciliano (Lemon)': {
         '15ml': { r: 115, m: 86.25 },
@@ -892,6 +901,7 @@ export const DOTERRA_PRICES = {
     },
     'Whisper Touch': {
         '10ml Touch': { r: 119, m: 89 },
+        '5ml': { r: 150, m: 112.5 },
     },
     'Frankincense Touch': {
         '10ml Touch': { r: 500, m: 375 },
@@ -1386,6 +1396,9 @@ const DOTERRA_ALIASES = {
     'doterra pur femme': 'doTERRA Pūr Femme',
     'perfume pur homme': 'doTERRA Pūr Homme',
     'perfume pur femme': 'doTERRA Pūr Femme',
+    'abeto negro (black spruce)': 'Abeto Negro (Black Spruce)',
+    'lavender fields body splash': 'Lavender Fields Body Splash',
+    'whisper touch': 'Whisper Touch',
 };
 
 /** Retorna preços doTERRA para produto+tamanho: { r, m } ou null se o tamanho não existe para este produto */

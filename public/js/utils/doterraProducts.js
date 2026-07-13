@@ -38,7 +38,7 @@ export const doterraProducts = [
     { nome: "Pimenta Preta (Black Pepper)", categoria: "Óleo Essencial" },
     { nome: "Cipreste (Cypress)", categoria: "Óleo Essencial" },
     { nome: "Pinho Siberiano (Siberian Fir)", categoria: "Óleo Essencial" },
-    { nome: "Pinho Negro (Black Spruce)", categoria: "Óleo Essencial" },
+    { nome: "Abeto Negro (Black Spruce)", categoria: "Óleo Essencial" },
     { nome: "Rosa (Rose)", categoria: "Óleo Essencial" },
     { nome: "Sândalo Havaiano (Hawaiian Sandalwood)", categoria: "Óleo Essencial" },
     { nome: "Sálvia Esclareia (Clary Sage)", categoria: "Óleo Essencial" },
@@ -100,6 +100,7 @@ export const doterraProducts = [
     { nome: "Jasmine Touch", categoria: "Roll-on (Touch)" },
     { nome: "Neroli Touch", categoria: "Roll-on (Touch)" },
     { nome: "Magnolia Touch", categoria: "Roll-on (Touch)" },
+    { nome: "Whisper Touch", categoria: "Roll-on (Touch)" },
 
     // Cuidados Pessoais / Cosméticos (Personal Care)
     { nome: "Pasta de Dente On Guard", categoria: "Personal Care" },
@@ -122,6 +123,7 @@ export const doterraProducts = [
     { nome: "Condicionador Suavizante doTERRA", categoria: "Personal Care" },
     { nome: "doTERRA Pūr Homme", categoria: "Personal Care" },
     { nome: "doTERRA Pūr Femme", categoria: "Personal Care" },
+    { nome: "Lavender Fields Body Splash", categoria: "Personal Care" },
 
     // Suplementos & Nutrição
     { nome: "Lifelong Vitality Pack (LLV) - Kit", categoria: "Suplemento" },
