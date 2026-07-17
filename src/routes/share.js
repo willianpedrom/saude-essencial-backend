@@ -28,7 +28,7 @@ router.get('/:slug', async (req, res) => {
         (async () => {
             try {
                 let nome = "Gota App";
-                let foto = "https://gotaessencial.com.br/og-share.jpg";
+                let foto = "https://gotaessencial.com.br/img/logo_premium.png";
 
                 let qr = await pool.query(
                     "SELECT nome, foto_url FROM consultoras WHERE slug = $1 LIMIT 1",
@@ -62,13 +62,13 @@ router.get('/:slug', async (req, res) => {
         })();
 
         // Use fallback values for this request
-        cachedMeta = { nome: "Gota App", foto: "https://gotaessencial.com.br/og-share.jpg" };
+        cachedMeta = { nome: "Gota App", foto: "https://gotaessencial.com.br/img/logo_premium.png" };
     }
 
     const { nome, foto } = cachedMeta;
-    const isDefaultOg = foto.includes('og-share.jpg');
+    const isDefaultOg = foto.includes('logo_premium.png');
     const imageSizeTags = isDefaultOg 
-        ? `\n    <meta property="og:image:width" content="1200">\n    <meta property="og:image:height" content="630">`
+        ? `\n    <meta property="og:image:width" content="1024">\n    <meta property="og:image:height" content="341">`
         : '';
     const twitterCardType = isDefaultOg ? 'summary_large_image' : 'summary';
 
