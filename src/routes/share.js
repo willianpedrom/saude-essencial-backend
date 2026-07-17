@@ -28,7 +28,7 @@ router.get('/:slug', async (req, res) => {
         (async () => {
             try {
                 let nome = "Gota App";
-                let foto = "https://gotaessencial.com.br/logo.jpg";
+                let foto = "https://gotaessencial.com.br/og-share.jpg";
 
                 let qr = await pool.query(
                     "SELECT nome, foto_url FROM consultoras WHERE slug = $1 LIMIT 1",
@@ -62,10 +62,16 @@ router.get('/:slug', async (req, res) => {
         })();
 
         // Use fallback values for this request
-        cachedMeta = { nome: "Gota App", foto: "https://gotaessencial.com.br/logo.jpg" };
+        cachedMeta = { nome: "Gota App", foto: "https://gotaessencial.com.br/og-share.jpg" };
     }
 
     const { nome, foto } = cachedMeta;
+    const isDefaultOg = foto.includes('og-share.jpg');
+    const imageSizeTags = isDefaultOg 
+        ? `\n    <meta property="og:image:width" content="1200">\n    <meta property="og:image:height" content="630">`
+        : '';
+    const twitterCardType = isDefaultOg ? 'summary_large_image' : 'summary';
+
     const titulo = `Saúde, disposição e Foco de forma natural com ${nome}`;
     const descricao = "Descubra como eu posso te ajudar e resolver seus problemas de saúde. Gere seu protocolo personalizado gratuitamente agora!";
 
@@ -82,16 +88,14 @@ router.get('/:slug', async (req, res) => {
     <meta property="og:description" content="${descricao}">
     <meta property="og:image" content="${foto}">
     <meta property="og:image:secure_url" content="${foto}">
-    <meta property="og:image:type" content="image/jpeg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/jpeg">${imageSizeTags}
     <meta property="og:image:alt" content="Foto de ${nome}">
     <meta property="og:url" content="https://gotaessencial.com.br/convite/${slug}">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Gota App">
 
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:card" content="${twitterCardType}">
     <meta name="twitter:title" content="${titulo}">
     <meta name="twitter:description" content="${descricao}">
     <meta name="twitter:image" content="${foto}">
