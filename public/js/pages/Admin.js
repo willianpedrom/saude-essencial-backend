@@ -551,9 +551,62 @@ export async function renderAdmin(router) {
       else groups.trial.push(u);
     });
 
-    const renderCard = (u) => {
+    const getWhatsAppLink = (u, stage) => {
       const phone = u.telefone ? u.telefone.replace(/\D/g, '') : '';
-      const waLink = phone.length >= 10 ? `https://wa.me/55${phone}?text=Ol%C3%A1%2C%20%2A${encodeURIComponent((u.nome || '').split(' ')[0])}%2A%21` : '';
+      if (phone.length < 10) return '';
+      
+      const formattedPhone = phone.startsWith('55') && phone.length > 10 ? phone : `55${phone}`;
+      const firstName = (u.nome || '').trim().split(' ')[0] || 'daí';
+      
+      const greetings = [
+        `Olá, *${firstName}*!`,
+        `Oi, *${firstName}*! Tudo bem com você?`,
+        `E aí, *${firstName}*! Tudo certinho por aí?`
+      ];
+      
+      let bodyOptions = [];
+      if (stage === 'lead' || stage === 'trial') {
+        bodyOptions = [
+          `Vi que você começou seu teste no Gota! O segredo de quem está tendo mais resultado logo de cara (como a Carla, que captou 5 clientes novos nos primeiros 3 dias) é ir direto na aba de "Aulas e Estratégias" e aplicar o passo a passo. Você já conseguiu assistir à primeira aula?`,
+          `Seja muito bem-vindo(a) ao Gota! Para te ajudar a decolar, preparamos algumas aulas rápidas e práticas na aba de "Aulas e Estratégias" do seu painel. O pessoal que assiste e coloca em prática costuma fechar os primeiros clientes pagantes em menos de 48 horas! Vamos começar hoje?`,
+          `Passando para te desejar as boas-vindas e te dar uma dica de ouro: acesse a aba "Aulas e Estratégias" no seu painel. Ali tem o mapa exato que nossos membros usam para lotar a agenda. Vários começaram do absoluto zero e hoje já estão faturando alto. Consegue tirar 10 minutinhos para assistir à primeira aula hoje?`
+        ];
+      } else if (stage === 'engajado') {
+        bodyOptions = [
+          `Notei que você está super ativo(a) na plataforma, cadastrando clientes e usando as anamneses. Como tem sido sua experiência? Está conseguindo ter bons resultados com as suas captações?`,
+          `Vi aqui no painel que você está utilizando bastante o sistema! Isso é excelente. Me conta: como está o retorno das suas clientes? Tem alguma sugestão ou ponto em que eu possa te ajudar a otimizar seus resultados?`,
+          `Parabéns pelo engajamento no sistema! Você já está rodando a plataforma a todo vapor. Queria muito saber de você: como estão os resultados e o feedback das suas clientes usando as nossas ferramentas?`
+        ];
+      } else if (stage === 'expirado') {
+        bodyOptions = [
+          `Seu período de teste no Gota expirou recentemente. Para que você não perca o acesso ao seu painel e às suas fichas de anamnese, conseguimos liberar um desconto exclusivo de transição pelo link: https://www.gotaapp.com.br/plano-vitrine. Dá uma olhada!`,
+          `Percebi que seu trial terminou e suas ferramentas estão pausadas. Não queremos que você pare de captar clientes! Por isso, preparamos uma condição super especial com desconto para você continuar conosco. Você pode conferir e assinar por aqui: https://www.gotaapp.com.br/plano-vitrine`,
+          `Seu acesso de teste expirou, mas você pode reativá-lo agora mesmo com um desconto exclusivo para novos membros. Garanta sua licença promocional neste link: https://www.gotaapp.com.br/plano-vitrine. Ficou com alguma dúvida?`
+        ];
+      } else if (stage === 'perdido') {
+        bodyOptions = [
+          `Passando para entender se você ainda tem interesse em alavancar seus atendimentos e captação. O seu acesso ficou inativo, mas queria te propor uma condição especial ou entender se você gostaria de estender seu trial por mais alguns dias para testar melhor. O que acha?`,
+          `Sentimos sua falta por aqui! Suas ferramentas de captação e anamnese estão desativadas há alguns dias. Se o motivo foi falta de tempo, posso reativar um acesso cortesia temporário para você testar com calma. Qual seria a melhor forma de te ajudar hoje?`,
+          `Estamos atualizando nossa base e notei que seu acesso expirou há algum tempo. Gostaria de entender o que faltou para o Gota fazer sentido para você. Se quiser voltar, temos opções de parcelamento facilitado ou extensão de trial. Topa bater um papo rápido?`
+        ];
+      } else {
+        bodyOptions = [
+          `Passando para saber como estão as coisas por aí! Está gostando de utilizar nossa plataforma no seu dia a dia? Se precisar de qualquer suporte, estou à disposição.`,
+          `Como está sendo a sua jornada com o Gota? Espero que o sistema esteja facilitando seus atendimentos e te ajudando a crescer! Se tiver qualquer feedback ou dúvida, conta comigo.`,
+          `Tudo bem? Passando para lembrar que estamos sempre trabalhando em melhorias. Como está o uso da plataforma para os seus atendimentos? Se precisar de algo, só chamar!`
+        ];
+      }
+      
+      const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+      const randomBody = bodyOptions[Math.floor(Math.random() * bodyOptions.length)];
+      
+      const fullMessage = `${randomGreeting} ${randomBody}`;
+      return `https://wa.me/${formattedPhone}?text=${encodeURIComponent(fullMessage)}`;
+    };
+
+    const renderCard = (u, stage) => {
+      const phone = u.telefone ? u.telefone.replace(/\D/g, '') : '';
+      const waLink = getWhatsAppLink(u, stage);
       const initials = (u.nome || '').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase() || '?';
       
       // Calculate remaining trial days
@@ -626,7 +679,7 @@ export async function renderAdmin(router) {
                <span style="background:#e2e8f0; color:#475569; font-size:0.72rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.lead.length}</span>
             </div>
             <div class="kanban-cards-list" style="flex:1; overflow-y:auto; padding-right:2px">
-              ${groups.lead.map(renderCard).join('') || '<div style="text-align:center;color:var(--text-muted);font-size:0.78rem;padding:30px 0">Sem novos leads</div>'}
+              ${groups.lead.map(u => renderCard(u, 'lead')).join('') || '<div style="text-align:center;color:var(--text-muted);font-size:0.78rem;padding:30px 0">Sem novos leads</div>'}
             </div>
           </div>
 
@@ -637,7 +690,7 @@ export async function renderAdmin(router) {
                <span style="background:#ccfbf1; color:#0f766e; font-size:0.72rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.trial.length}</span>
             </div>
             <div class="kanban-cards-list" style="flex:1; overflow-y:auto; padding-right:2px">
-              ${groups.trial.map(renderCard).join('') || '<div style="text-align:center;color:#0f766e;font-size:0.78rem;padding:30px 0">Nenhum trial ativo</div>'}
+              ${groups.trial.map(u => renderCard(u, 'trial')).join('') || '<div style="text-align:center;color:#0f766e;font-size:0.78rem;padding:30px 0">Nenhum trial ativo</div>'}
             </div>
           </div>
 
@@ -649,7 +702,7 @@ export async function renderAdmin(router) {
             </div>
             <p style="font-size:0.72rem; color:#92400e; margin-bottom:12px; opacity:0.85">Ações realizadas no sistema</p>
             <div class="kanban-cards-list" style="flex:1; overflow-y:auto; padding-right:2px">
-              ${groups.engajado.map(renderCard).join('') || '<div style="text-align:center;color:#b45309;font-size:0.78rem;padding:30px 0">Nenhum no momento</div>'}
+              ${groups.engajado.map(u => renderCard(u, 'engajado')).join('') || '<div style="text-align:center;color:#b45309;font-size:0.78rem;padding:30px 0">Nenhum no momento</div>'}
             </div>
           </div>
 
@@ -661,7 +714,7 @@ export async function renderAdmin(router) {
             </div>
             <p style="font-size:0.72rem; color:#991b1b; margin-bottom:12px; opacity:0.85">Estenda o trial p/ recuperar</p>
             <div class="kanban-cards-list" style="flex:1; overflow-y:auto; padding-right:2px">
-              ${groups.expirado.map(renderCard).join('') || '<div style="text-align:center;color:#b91c1c;font-size:0.78rem;padding:30px 0">Tudo em dia!</div>'}
+              ${groups.expirado.map(u => renderCard(u, 'expirado')).join('') || '<div style="text-align:center;color:#b91c1c;font-size:0.78rem;padding:30px 0">Tudo em dia!</div>'}
             </div>
           </div>
 
@@ -672,7 +725,7 @@ export async function renderAdmin(router) {
                <span style="background:#bbf7d0; color:#15803d; font-size:0.72rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.assinante.length}</span>
             </div>
             <div class="kanban-cards-list" style="flex:1; overflow-y:auto; padding-right:2px">
-              ${groups.assinante.map(renderCard).join('') || '<div style="text-align:center;color:#15803d;font-size:0.78rem;padding:30px 0">Nenhum assinante</div>'}
+              ${groups.assinante.map(u => renderCard(u, 'assinante')).join('') || '<div style="text-align:center;color:#15803d;font-size:0.78rem;padding:30px 0">Nenhum assinante</div>'}
             </div>
           </div>
 
@@ -683,9 +736,10 @@ export async function renderAdmin(router) {
                <span style="background:#e2e8f0; color:#475569; font-size:0.72rem; padding:2px 8px; border-radius:10px; font-weight:700">${groups.perdido.length}</span>
             </div>
             <div class="kanban-cards-list" style="flex:1; overflow-y:auto; padding-right:2px">
-              ${groups.perdido.map(renderCard).join('') || '<div style="text-align:center;color:#475569;font-size:0.78rem;padding:30px 0">Nenhum inativo</div>'}
+              ${groups.perdido.map(u => renderCard(u, 'perdido')).join('') || '<div style="text-align:center;color:#475569;font-size:0.78rem;padding:30px 0">Nenhum inativo</div>'}
             </div>
           </div>
+        </div>
         </div>
 
         <!-- CSS Scrollbars customized -->
