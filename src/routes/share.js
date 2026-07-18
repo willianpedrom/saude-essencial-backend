@@ -72,8 +72,14 @@ router.get('/:slug', async (req, res) => {
         : '';
     const twitterCardType = isDefaultOg ? 'summary_large_image' : 'summary';
 
-    const titulo = `Saúde, disposição e Foco de forma natural com ${nome}`;
-    const descricao = "Descubra como eu posso te ajudar e resolver seus problemas de saúde. Gere seu protocolo personalizado gratuitamente agora!";
+    let titulo, descricao;
+    if (isUUID) {
+        titulo = `Avaliação de Saúde Integrativa – ${nome}`;
+        descricao = `Preencha esta avaliação rápida para receber o seu Relatório de Saúde Integrativa Personalizado gratuitamente.`;
+    } else {
+        titulo = `Saúde, disposição e Foco de forma natural com ${nome}`;
+        descricao = `Descubra como eu posso te ajudar e resolver seus problemas de saúde. Gere seu protocolo personalizado gratuitamente agora!`;
+    }
 
     // ─── 3. Enviar HTML com redirect instantâneo + loading screen premium ────
     const html = `<!DOCTYPE html>
