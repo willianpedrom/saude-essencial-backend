@@ -23,46 +23,40 @@ router.get('/:slug', async (req, res) => {
     let cachedMeta = shareCache.get(slug);
 
     if (!cachedMeta) {
-        // Fire-and-forget: busca OG metadata em paralelo, sem bloquear o response
-        // O response já sai; o cache será populado para próximos bots/crawlers
-        (async () => {
-            try {
-                let nome = "Gota App";
-                let foto = "https://gotaessencial.com.br/img/og-health-banner.png";
+        let nome = "Gota App";
+        let foto = "https://gotaessencial.com.br/img/og-health-banner.png";
 
-                let qr = await pool.query(
-                    "SELECT nome, foto_url FROM consultoras WHERE slug = $1 LIMIT 1",
+        try {
+            let qr = await pool.query(
+                "SELECT nome, foto_url FROM consultoras WHERE slug = $1 LIMIT 1",
+                [slug]
+            );
+
+            if (qr.rows.length === 0 && isUUID) {
+                qr = await pool.query(
+                    `SELECT c.nome, c.foto_url 
+                     FROM anamneses a 
+                     JOIN consultoras c ON a.consultora_id = c.id 
+                     WHERE a.token_publico = $1 LIMIT 1`,
                     [slug]
                 );
-
-                if (qr.rows.length === 0 && isUUID) {
-                    qr = await pool.query(
-                        `SELECT c.nome, c.foto_url 
-                         FROM anamneses a 
-                         JOIN consultoras c ON a.consultora_id = c.id 
-                         WHERE a.token_publico = $1 LIMIT 1`,
-                        [slug]
-                    );
-                }
-
-                if (qr.rows.length > 0) {
-                    const row = qr.rows[0];
-                    nome = row.nome || nome;
-                    if (row.foto_url && row.foto_url.trim() !== '') {
-                        foto = row.foto_url.startsWith('http')
-                            ? row.foto_url
-                            : `https://gotaessencial.com.br${row.foto_url.startsWith('/') ? '' : '/'}${row.foto_url}`;
-                    }
-                }
-
-                shareCache.set(slug, { nome, foto });
-            } catch (e) {
-                // ignore — next request will try again
             }
-        })();
 
-        // Use fallback values for this request
-        cachedMeta = { nome: "Gota App", foto: "https://gotaessencial.com.br/img/og-health-banner.png" };
+            if (qr.rows.length > 0) {
+                const row = qr.rows[0];
+                nome = row.nome || nome;
+                if (row.foto_url && row.foto_url.trim() !== '') {
+                    foto = row.foto_url.startsWith('http')
+                        ? row.foto_url
+                        : `https://gotaessencial.com.br${row.foto_url.startsWith('/') ? '' : '/'}${row.foto_url}`;
+                }
+            }
+
+            cachedMeta = { nome, foto };
+            shareCache.set(slug, cachedMeta);
+        } catch (e) {
+            cachedMeta = { nome, foto };
+        }
     }
 
     const { nome, foto } = cachedMeta;
