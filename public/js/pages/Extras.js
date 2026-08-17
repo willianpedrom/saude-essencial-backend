@@ -628,27 +628,60 @@ export async function renderPurchases(router) {
         return { ...c, purchaseCount: count };
       }).filter(c => c && (c.nome || c.name));
 
+      // Extract product base name (without size) for OILS_DATABASE lookup
+      const productBaseName = activeProductFilter.replace(/\s*\(.*?\)\s*/g, '').trim();
+      let productBenefit = '';
+      if (typeof OILS_DATABASE === 'object' && OILS_DATABASE !== null) {
+        // Try exact match, then case-insensitive partial
+        const oilEntry = OILS_DATABASE[productBaseName]
+          || Object.entries(OILS_DATABASE).find(([k]) => normalize(k).includes(normalize(productBaseName)))?.[1]
+          || Object.entries(OILS_DATABASE).find(([k]) => normalize(productBaseName).includes(normalize(k)))?.[1];
+        if (oilEntry) {
+          productBenefit = oilEntry.uses || oilEntry.fn || '';
+        }
+      }
+
       summaryHtml = `
         <div class="card" style="margin-bottom:20px;border:1px solid var(--green-200);background:var(--green-50)">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
             <div>
               <h4 style="margin:0;color:var(--green-800)">👥 Clientes que compraram este produto (${filteredClientsList.length})</h4>
-              <p style="font-size:0.8rem;color:var(--green-700);margin:4px 0 0">Total de ${sorted.length} vendas filtradas</p>
+              <p style="font-size:0.8rem;color:var(--green-700);margin:4px 0 0">Total de ${sorted.length} vendas filtradas — Toque no WhatsApp para enviar promoção</p>
             </div>
             <div style="display:flex;gap:8px">
               <button class="btn btn-secondary btn-sm" id="btn-export-csv" style="background:white">📥 Baixar Lista (CSV)</button>
               <button class="btn btn-primary btn-sm" id="btn-copy-phones">📋 Copiar Números</button>
             </div>
           </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;max-height:150px;overflow-y:auto;padding:4px">
+          <div style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto;padding:4px">
             ${filteredClientsList.map(c => {
               const cleanPhone = (c.telefone || c.phone || '').replace(/\D/g, '');
-              const waLink = cleanPhone ? `https://wa.me/${cleanPhone.startsWith('55') ? cleanPhone : '55' + cleanPhone}` : '#';
+              const phoneWithPrefix = cleanPhone ? (cleanPhone.startsWith('55') ? cleanPhone : '55' + cleanPhone) : '';
+              const firstName = (c.nome || c.name || '').split(' ')[0];
+              const benefitText = productBenefit
+                ? `que ajuda com *${productBenefit.split(',').slice(0, 2).join(' e ').trim()}*`
+                : `que você já conhece e adora`;
+              const waMsg = `Oi ${firstName}! 😊 Tudo bem? Vi aqui que você já usou o *${productBaseName}*, ${benefitText}. E tenho uma ótima notícia: ele está em *promoção especial* hoje! 🎉 Quer aproveitar essa condição? Posso te contar os detalhes!`;
+              const waLink = phoneWithPrefix ? `https://wa.me/${phoneWithPrefix}?text=${encodeURIComponent(waMsg)}` : '#';
               return `
-                <div style="background:white;border:1px solid var(--green-200);border-radius:20px;padding:4px 12px;display:flex;align-items:center;gap:8px;font-size:0.85rem">
-                  <span style="font-weight:600">${c.nome || c.name}</span>
-                  ${c.purchaseCount > 1 ? `<span class="badge" style="background:var(--green-100);color:var(--green-700);font-size:0.7rem;padding:2px 6px">${c.purchaseCount}x</span>` : ''}
-                  ${cleanPhone ? `<a href="${waLink}" target="_blank" title="Enviar WhatsApp" style="text-decoration:none;font-size:1rem">💬</a>` : ''}
+                <div style="background:white;border:1px solid var(--green-200);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;transition:box-shadow 0.2s"
+                     onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.06)'" onmouseout="this.style.boxShadow=''">
+                  <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+                    <div style="width:36px;height:36px;border-radius:50%;background:var(--green-100);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--green-700);font-size:0.85rem;flex-shrink:0">
+                      ${firstName.charAt(0).toUpperCase()}
+                    </div>
+                    <div style="min-width:0">
+                      <div style="font-weight:600;font-size:0.92rem;color:var(--text-dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.nome || c.name}</div>
+                      <div style="font-size:0.75rem;color:var(--text-muted)">${cleanPhone ? cleanPhone.replace(/(\d{2})(\d{2})(\d{5})(\d{4})/, '+$1 ($2) $3-$4') : 'Sem telefone'}${c.purchaseCount > 1 ? ` · ${c.purchaseCount} compras` : ''}</div>
+                    </div>
+                  </div>
+                  ${phoneWithPrefix
+                    ? `<a href="${waLink}" target="_blank" style="display:flex;align-items:center;gap:6px;background:#25D366;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:0.82rem;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;transition:background 0.2s"
+                         onmouseover="this.style.background='#1DA851'" onmouseout="this.style.background='#25D366'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        WhatsApp
+                      </a>`
+                    : `<span style="font-size:0.75rem;color:var(--text-muted);padding:8px 12px;background:#f1f5f9;border-radius:8px">Sem contato</span>`}
                 </div>
               `;
             }).join('')}
