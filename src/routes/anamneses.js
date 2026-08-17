@@ -529,13 +529,69 @@ router.get('/insights', async (req, res) => {
             WHERE a.consultora_id = $1 AND a.preenchido = TRUE AND a.dados IS NOT NULL
         `, [req.consultora.id]);
 
-        // Dicionário Sintoma -> Óleo
+        // Dicionário Sintoma -> Óleo (expandido — cobre TODOS os sintomas das anamneses)
         const mapping = [
-            { id: 'lavanda', nome: 'Lavanda / Serenity', categoria: 'Emocional', ticket: 130, rgb: '139, 92, 246', sintomas: ['Ansiedade', 'Insônia', 'Estresse', 'Agitação', 'Dificuldade para dormir', 'Nervosismo'] },
-            { id: 'peppermint', nome: 'Peppermint / PastTense', categoria: 'Energia & Foco', ticket: 145, rgb: '34, 197, 94', sintomas: ['Dor de cabeça', 'Enxaqueca', 'Falta de energia', 'Fadiga', 'Dores musculares', 'Falta de foco'] },
-            { id: 'balance', nome: 'Balance / Adaptiv', categoria: 'Emocional', ticket: 160, rgb: '14, 165, 233', sintomas: ['Mudanças de humor', 'Sobrecarga Emocional', 'Traumas', 'Luto', 'Tensão'] },
-            { id: 'onguard', nome: 'On Guard / Copaíba', categoria: 'Imunidade', ticket: 180, rgb: '245, 158, 11', sintomas: ['Baixa imunidade', 'Infecções frequentes', 'Problemas respiratórios', 'Alergias', 'Rinite', 'Dor nas articulações'] },
-            { id: 'zengest', nome: 'ZenGest / Lemon', categoria: 'Digestivo', ticket: 110, rgb: '234, 179, 8', sintomas: ['Azia', 'Refluxo', 'Má digestão', 'Intestino preso', 'Gases', 'Retenção de líquido'] }
+            // ── Emocional ──────────────────────────────────────────────
+            { id: 'adaptiv-balance', nome: 'Adaptiv / Balance', categoria: 'Emocional', ticket: 160, rgb: '14, 165, 233',
+              sintomas: ['Ansiedade', 'Estresse crônico', 'Pensamentos acelerados', 'Dificuldade para relaxar', 'Ataques de pânico', 'Esgotamento emocional (burnout)'] },
+            { id: 'elevation-bergamota', nome: 'Elevation / Bergamota', categoria: 'Emocional', ticket: 155, rgb: '251, 146, 60',
+              sintomas: ['Depressão', 'Tristeza frequente', 'Falta de motivação', 'Baixa autoestima', 'Sensação de vazio'] },
+            { id: 'wild-orange', nome: 'Wild Orange / Citrus Bliss', categoria: 'Emocional', ticket: 120, rgb: '249, 115, 22',
+              sintomas: ['Irritabilidade', 'Raiva reprimida'] },
+
+            // ── Sono ───────────────────────────────────────────────────
+            { id: 'serenity-lavanda', nome: 'Serenity / Lavanda', categoria: 'Sono', ticket: 140, rgb: '139, 92, 246',
+              sintomas: ['Insônia (dificuldade de adormecer)', 'Acorda no meio da noite', 'Sono leve', 'Acorda sem disposição', 'Sonolência durante o dia', 'Dependência de remédio para dormir', 'Bruxismo', 'Apneia do sono'] },
+
+            // ── Energia & Foco ────────────────────────────────────────
+            { id: 'peppermint-pasttense', nome: 'Peppermint / PastTense', categoria: 'Energia & Foco', ticket: 145, rgb: '34, 197, 94',
+              sintomas: ['Dores de cabeça frequentes', 'Enxaqueca', 'Fadiga crônica / cansaço constante', 'Esgotamento após pequenos esforços', 'Dependência de cafeína', 'Falta de força/energia para exercícios'] },
+            { id: 'intune-vetiver', nome: 'InTune / Vetiver', categoria: 'Energia & Foco', ticket: 160, rgb: '16, 185, 129',
+              sintomas: ['Dificuldade de concentração', 'Confusão mental', 'Esquecimento', 'Procrastinação excessiva'] },
+
+            // ── Imunidade ─────────────────────────────────────────────
+            { id: 'onguard', nome: 'On Guard / Frankincense', categoria: 'Imunidade', ticket: 180, rgb: '245, 158, 11',
+              sintomas: ['Gripes frequentes', 'Infecções frequentes', 'Resfriados frequentes', 'Viroses de repetição', 'Febre frequente', 'Aumentar a imunidade (prevenir doenças)'] },
+            { id: 'melaleuca', nome: 'Melaleuca / Oregano', categoria: 'Imunidade', ticket: 150, rgb: '5, 150, 105',
+              sintomas: ['Infecções frequentes', 'Gripes frequentes', 'Acne / Espinhas frequentes', 'Eczema / Dermatite', 'Dermatite / Assaduras', 'Cuidar da pele naturalmente'] },
+
+            // ── Respiratório ──────────────────────────────────────────
+            { id: 'breathe', nome: 'Breathe / Air-X', categoria: 'Respiratório', ticket: 150, rgb: '56, 189, 248',
+              sintomas: ['Sinusite / Rinite', 'Falta de ar', 'Alergias frequentes', 'Asma', 'Alergias respiratórias (rinite/asma)', 'Aliviar problemas respiratórios'] },
+
+            // ── Digestivo ─────────────────────────────────────────────
+            { id: 'zengest', nome: 'ZenGest / Ginger', categoria: 'Digestivo', ticket: 140, rgb: '234, 179, 8',
+              sintomas: ['Refluxo / Azia', 'Gastrite', 'Inchaço abdominal', 'Gases excessivos', 'Constipação', 'Diarreia frequente', 'Intestino irritável', 'Náuseas', 'Melhorar a digestão / aliviar cólicas', 'Cólicas (bebês)', 'Constipação / Intestino preso', 'Refluxo'] },
+
+            // ── Dor & Músculo ─────────────────────────────────────────
+            { id: 'deepblue-copaiba', nome: 'Deep Blue / Copaíba', categoria: 'Dor & Músculo', ticket: 180, rgb: '239, 68, 68',
+              sintomas: ['Dores musculares', 'Dores nas articulações', 'Dor nas costas', 'Fibromialgia', 'Artrite / Artrose', 'Pressão baixa', 'Aumentar performance física', 'Acelerar recuperação muscular'] },
+
+            // ── Hormonal ──────────────────────────────────────────────
+            { id: 'clarycalm', nome: 'ClaryCalm / Clary Sage', categoria: 'Hormonal', ticket: 160, rgb: '236, 72, 153',
+              sintomas: ['Cólicas menstruais intensas', 'TPM intensa', 'Ciclo irregular', 'Menopausa em curso', 'Fogachos / Calores', 'SOP', 'Endometriose', 'Dificuldade para engravidar'] },
+            { id: 'whisper-ylang', nome: 'Whisper / Ylang Ylang', categoria: 'Hormonal', ticket: 150, rgb: '244, 114, 182',
+              sintomas: ['Baixa libido', 'Hipotireoidismo', 'Hipertireoidismo', 'Resistência à insulina'] },
+
+            // ── Pele & Beleza ─────────────────────────────────────────
+            { id: 'rosemary-cedarwood', nome: 'Rosemary / Cedarwood', categoria: 'Pele & Beleza', ticket: 130, rgb: '168, 85, 247',
+              sintomas: ['Queda de cabelo', 'Queda excessiva', 'Cabelo fraco e quebradiço', 'Caspa', 'Couro cabeludo oleoso', 'Cabelo sem brilho', 'Alopecia / Calvície', 'Unhas fracas'] },
+            { id: 'immortelle-frank', nome: 'Immortelle / Frankincense', categoria: 'Pele & Beleza', ticket: 200, rgb: '217, 70, 239',
+              sintomas: ['Rugas precoces', 'Flacidez', 'Manchas na pele', 'Pele opaca / sem brilho', 'Pele muito seca'] },
+            { id: 'hdclear-melaleuca', nome: 'HD Clear / Melaleuca', categoria: 'Pele & Beleza', ticket: 140, rgb: '192, 132, 252',
+              sintomas: ['Acne / Espinhas frequentes', 'Pele oleosa', 'Psoríase'] },
+
+            // ── Detox & Metabolismo ───────────────────────────────────
+            { id: 'metapwr', nome: 'MetaPWR / Slim & Sassy', categoria: 'Detox & Metabolismo', ticket: 150, rgb: '20, 184, 166',
+              sintomas: ['Compulsão alimentar / Vontade de doces', 'Emagrecer / metabolismo', 'Diabetes'] },
+            { id: 'zendocrine-lemon', nome: 'Zendocrine / Lemon', categoria: 'Detox & Metabolismo', ticket: 130, rgb: '13, 148, 136',
+              sintomas: ['Fígado sobrecarregado', 'Colesterol alto', 'Intolerância à lactose', 'Sensibilidade ao glúten', 'Desintoxicar o organismo'] },
+            { id: 'cypress-grapefruit', nome: 'Cypress / Toranja', categoria: 'Detox & Metabolismo', ticket: 130, rgb: '45, 212, 191',
+              sintomas: ['Inchaço nas pernas', 'Celulite', 'Pressão alta'] },
+
+            // ── Infantil (Kids) ───────────────────────────────────────
+            { id: 'kids-calmer', nome: 'Calmer / Steady', categoria: 'Infantil', ticket: 150, rgb: '251, 191, 36',
+              sintomas: ['Agitação noturna', 'Dificuldade para pegar no sono', 'Acorda muito de madrugada / Terror noturno', 'Birras extremas / Irritabilidade', 'Ansiedade de separação', 'Adaptação escolar difícil', 'Hiperatividade / Dificuldade de foco', 'Espectro autista / TDAH', 'Acalmar agitação e ansiedade', 'Melhorar a qualidade do sono', 'Apoio emocional e comportamental'] },
         ];
 
         // buckets
@@ -549,7 +605,8 @@ router.get('/insights', async (req, res) => {
             const chavesDeSintomas = [
                 'general_symptoms', 'digestive_symptoms', 'hormonal_female', 'chronic_conditions',
                 'emotional_symptoms', 'sleep_symptoms', 'low_energy_symptoms',
-                'skin_symptoms', 'hair_symptoms', 'sintomas_emocionais', 'sintomas_fisicos'
+                'skin_symptoms', 'hair_symptoms', 'sintomas_emocionais', 'sintomas_fisicos',
+                'child_health_symptoms', 'child_emotional_symptoms', 'child_goals', 'goals'
             ];
 
             for (const ch of chavesDeSintomas) {
