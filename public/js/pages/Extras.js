@@ -660,9 +660,26 @@ export async function renderPurchases(router) {
               const firstName = (c.nome || c.name || '').split(' ')[0];
               const benefitText = productBenefit
                 ? `que ajuda com *${productBenefit.split(',').slice(0, 2).join(' e ').trim()}*`
-                : `que você já conhece e adora`;
-              const waMsg = `Oi ${firstName}! 😊 Tudo bem? Vi aqui que você já usou o *${productBaseName}*, ${benefitText}. E tenho uma ótima notícia: ele está em *promoção especial* hoje! 🎉 Quer aproveitar essa condição? Posso te contar os detalhes!`;
-              const waLink = phoneWithPrefix ? `https://wa.me/${phoneWithPrefix}?text=${encodeURIComponent(waMsg)}` : '#';
+                : `que voce ja conhece e adora`;
+              
+              const e1 = String.fromCodePoint(0x1F60A); // 😊
+              const e2 = String.fromCodePoint(0x1F389); // 🎉
+              const e3 = String.fromCodePoint(0x1F600); // 😀
+              const e4 = String.fromCodePoint(0x1F680); // 🚀
+              const e5 = String.fromCodePoint(0x2728);  // ✨
+              const e6 = String.fromCodePoint(0x1F60D); // 😍
+
+              const templates = [
+                `Oi ${firstName}! ${e1} Tudo bem? Vi aqui que voce ja usou o *${productBaseName}*, ${benefitText}. E tenho uma otima noticia: ele esta em *promocao especial* hoje! ${e2} Quer aproveitar essa condicao? Posso te contar os detalhes!`,
+                
+                `Ola ${firstName}, como voce esta? ${e3} Lembrei de voce porque o *${productBaseName}* (que e otimo para ${productBenefit ? '*' + productBenefit.split(',').slice(0, 2).join(' e ').trim() + '*' : 'o seu bem-estar'}) entrou em uma *promocao incrivel* hoje! ${e4} Me avisa se quiser garantir o seu com desconto.`,
+                
+                `Oie ${firstName}! ${e5} Passando para avisar rapidamente que o *${productBaseName}* esta com um valor *super especial* hoje! ${e6} ${productBenefit ? 'Como sei que ele e perfeito para *' + productBenefit.split(',').slice(0, 2).join(' e ').trim() + '*, achei que ia gostar de saber.' : 'Achei que ia adorar a novidade.'} Quer que eu te mande os valores?`
+              ];
+              
+              // Remove accents from the generated message to ensure WhatsApp receives it perfectly without any encoding issues
+              const waMsg = templates[Math.floor(Math.random() * templates.length)];
+              const waLink = phoneWithPrefix ? \`https://wa.me/\${phoneWithPrefix}?text=\${encodeURIComponent(waMsg)}\` : '#';
               return `
                 <div style="background:white;border:1px solid var(--green-200);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;transition:box-shadow 0.2s"
                      onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.06)'" onmouseout="this.style.boxShadow=''">
