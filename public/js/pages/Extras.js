@@ -679,7 +679,7 @@ export async function renderPurchases(router) {
               
               // Remove accents from the generated message to ensure WhatsApp receives it perfectly without any encoding issues
               const waMsg = templates[Math.floor(Math.random() * templates.length)];
-              const waLink = phoneWithPrefix ? \`https://wa.me/\${phoneWithPrefix}?text=\${encodeURIComponent(waMsg)}\` : '#';
+              const waLink = phoneWithPrefix ? `https://wa.me/${phoneWithPrefix}?text=${encodeURIComponent(waMsg)}` : '#';
               return `
                 <div style="background:white;border:1px solid var(--green-200);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;transition:box-shadow 0.2s"
                      onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.06)'" onmouseout="this.style.boxShadow=''">
