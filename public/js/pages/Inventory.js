@@ -152,6 +152,7 @@ export const DOTERRA_PRODUCTS = [
     { nome: "Enxaguante Bucal On Guard", cat: "Personal Care" },
     { nome: "Sabonete Líquido On Guard", cat: "Personal Care" },
     { nome: "Pomada Deep Blue Rub", cat: "Personal Care" },
+    { nome: "Deep Blue Stick + Copaíba", cat: "Personal Care" },
     { nome: "Bálsamo Labial Original", cat: "Personal Care" },
     { nome: "Loção Mãos e Corpo", cat: "Personal Care" },
     { nome: "Shampoo Salon Essentials", cat: "Personal Care" },
@@ -950,6 +951,9 @@ export const DOTERRA_PRICES = {
     },
     'Pomada Deep Blue Rub': {
         'Unidade / Kit': { r: 297, m: 222.75 },
+    },
+    'Deep Blue Stick + Copaíba': {
+        'Unidade / Kit': { r: 185, m: 139 },
     },
     'Correct-X': {
         'Unidade / Kit': { r: 140, m: 105 },

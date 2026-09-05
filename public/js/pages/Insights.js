@@ -91,7 +91,20 @@ export async function renderInsights(router) {
                                     const parsedPhone = phoneClean ? `${prefix}${phoneClean}` : null;
                                     const firstName = c.nome.split(' ')[0];
                                     
-                                    const msg = `Oi ${firstName}, vi na sua ficha de bem-estar que você marcou *${c.match_sintoma}*. O óleo essencial de ${bucket.nome.split('/')[0].trim()} acabou de chegar e é o mais recomendado pra isso! Posso te mostrar como ele age na raiz disso de forma natural?`;
+                                    const e1 = String.fromCodePoint(0x1F60A); // 😊
+                                    const e2 = String.fromCodePoint(0x1F33F); // 🌿
+                                    const e3 = String.fromCodePoint(0x2728);  // ✨
+                                    const e4 = String.fromCodePoint(0x1F64C); // 🙌
+
+                                    const templates = [
+                                        `Oi ${firstName}! ${e1} Vi na sua ficha de bem-estar que voce marcou *${c.match_sintoma}*. O oleo essencial de ${bucket.nome.split('/')[0].trim()} e o mais recomendado para isso! Posso te mostrar como ele age na raiz desse desconforto de forma natural?`,
+                                        
+                                        `Ola ${firstName}, tudo bem? ${e3} Analisando suas respostas, percebi sua necessidade de suporte com *${c.match_sintoma}*. Lembrei de voce pois o ${bucket.nome.split('/')[0].trim()} tem resultados maravilhosos pra isso! ${e2} Posso te enviar mais detalhes?`,
+                                        
+                                        `Oie ${firstName}! ${e4} Estudando seu perfil, notei que voce destacou *${c.match_sintoma}*. O protocolo com ${bucket.nome.split('/')[0].trim()} pode transformar sua rotina em relacao a isso. Quer que eu te conte como funciona de forma 100% natural?`
+                                    ];
+
+                                    const msg = templates[Math.floor(Math.random() * templates.length)];
                                     const waLink = parsedPhone ? `https://wa.me/${parsedPhone}?text=${encodeURIComponent(msg)}` : '#';
 
                                     return `

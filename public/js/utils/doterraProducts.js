@@ -107,6 +107,7 @@ export const doterraProducts = [
     { nome: "Enxaguante Bucal On Guard", categoria: "Personal Care" },
     { nome: "Sabonete Líquido On Guard", categoria: "Personal Care" },
     { nome: "Pomada Deep Blue Rub", categoria: "Personal Care" },
+    { nome: "Deep Blue Stick + Copaíba", categoria: "Personal Care" },
     { nome: "Correct-X", categoria: "Personal Care" },
     { nome: "Bálsamo Labial Original", categoria: "Personal Care" },
     { nome: "Bálsamo Labial Herbal", categoria: "Personal Care" },
