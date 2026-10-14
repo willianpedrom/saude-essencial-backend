@@ -1518,27 +1518,83 @@ export async function renderInventory(router) {
             </div>
         </div>
 
-        <!-- KPIs -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:14px; margin-bottom:20px;">
-            <div class="card" style="text-align:center; padding:16px;">
-                <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.5px;">Total em Prateleira</div>
-                <div id="kpi-total" style="font-size:1.8rem; font-weight:800; color:var(--green-600); margin-top:4px;">—</div>
+        <!-- Cenário de Venda e Preços -->
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:14px; background:white; padding:12px 18px; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <span style="font-size:0.8rem; font-weight:700; color:var(--text-dark); text-transform:uppercase; letter-spacing:0.5px;">🎯 Cenário de Venda:</span>
+                <div style="display:inline-flex; background:#f1f5f9; border-radius:10px; padding:3px; gap:4px;">
+                    <button type="button" id="toggle-price-reg" class="price-toggle-btn active"
+                        style="border:none; border-radius:8px; padding:6px 14px; font-size:0.8rem; font-weight:700; cursor:pointer; background:#10b981; color:white; box-shadow:0 2px 4px rgba(16,185,129,0.25); transition:all .15s;">
+                        🟢 Venda Preço Regular (Varejo)
+                    </button>
+                    <button type="button" id="toggle-price-mem" class="price-toggle-btn"
+                        style="border:none; border-radius:8px; padding:6px 14px; font-size:0.8rem; font-weight:700; cursor:pointer; background:transparent; color:#64748b; transition:all .15s;">
+                        🔵 Venda Preço Membro (-25%)
+                    </button>
+                </div>
             </div>
-            <div class="card" style="text-align:center; padding:16px; border-left:4px solid #f59e0b;">
-                <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.5px;">Baixo / Zerado</div>
-                <div id="kpi-low" style="font-size:1.8rem; font-weight:800; color:#f59e0b; margin-top:4px;">—</div>
-            </div>
-            <div class="card" style="text-align:center; padding:16px; border-left:4px solid #a78bfa;">
-                <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.5px;">Vencendo em 30 dias</div>
-                <div id="kpi-expiring" style="font-size:1.8rem; font-weight:800; color:#7c3aed; margin-top:4px;">—</div>
-            </div>
-            <div class="card" style="text-align:center; padding:16px; border-left:4px solid #10b981;">
-                <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.5px;">Total Investido</div>
-                <div id="kpi-invested" style="font-size:1.4rem; font-weight:800; color:#059669; margin-top:4px;">—</div>
+            <div style="font-size:0.82rem; color:var(--text-muted); display:flex; align-items:center; gap:6px;">
+                <span>💡 <em>Preços sincronizados com a tabela oficial doTERRA Brasil</em></span>
             </div>
         </div>
 
-        <!-- Barra de Filtros -->
+        <!-- KPIs / Painel Financeiro e de Lucro -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-bottom:20px;">
+            <!-- Total Prateleira -->
+            <div class="card" style="padding:16px; border-radius:14px; display:flex; flex-direction:column; justify-content:space-between;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.5px;">Total em Estoque</div>
+                    <span style="font-size:1.1rem;">📦</span>
+                </div>
+                <div id="kpi-total" style="font-size:1.8rem; font-weight:800; color:var(--text-dark); margin:6px 0 2px;">—</div>
+                <div id="kpi-sub-total" style="font-size:0.75rem; color:var(--text-muted);">—</div>
+            </div>
+
+            <!-- Total Investido (Venda) -->
+            <div class="card" style="padding:16px; border-radius:14px; border-left:4px solid #6366f1; display:flex; flex-direction:column; justify-content:space-between;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.5px;">Investimento (Venda)</div>
+                    <span style="font-size:1.1rem;">💵</span>
+                </div>
+                <div id="kpi-invested" style="font-size:1.55rem; font-weight:800; color:#4338ca; margin:6px 0 2px;">—</div>
+                <div id="kpi-sub-invested" style="font-size:0.75rem; color:var(--text-muted);">—</div>
+            </div>
+
+            <!-- Faturamento Previsto -->
+            <div class="card" style="padding:16px; border-radius:14px; border-left:4px solid #0284c7; display:flex; flex-direction:column; justify-content:space-between;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.5px;">Faturamento Previsto</div>
+                    <span style="font-size:1.1rem;">📈</span>
+                </div>
+                <div id="kpi-revenue" style="font-size:1.55rem; font-weight:800; color:#0369a1; margin:6px 0 2px;">—</div>
+                <div id="kpi-sub-revenue" style="font-size:0.75rem; color:var(--text-muted);">Venda a Preço Regular</div>
+            </div>
+
+            <!-- Lucro Estimado no Bolso -->
+            <div class="card" style="padding:16px; border-radius:14px; border-left:4px solid #10b981; background:linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 4px 12px rgba(16,185,129,0.12);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="font-size:0.72rem; color:#15803d; font-weight:800; text-transform:uppercase; letter-spacing:.5px;">💰 Lucro no Bolso</div>
+                    <span id="kpi-profit-badge" style="background:#dcfce7; color:#15803d; font-size:0.72rem; font-weight:800; padding:2px 8px; border-radius:12px;">+0% ROI</span>
+                </div>
+                <div id="kpi-profit" style="font-size:1.75rem; font-weight:900; color:#15803d; margin:6px 0 2px;">—</div>
+                <div style="font-size:0.75rem; color:#166534; font-weight:600;">Retorno líquido estimado</div>
+            </div>
+
+            <!-- Alertas e Giro -->
+            <div class="card" style="padding:16px; border-radius:14px; border-left:4px solid #f59e0b; display:flex; flex-direction:column; justify-content:space-between;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="font-size:0.72rem; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:.5px;">Avisos do Estoque</div>
+                    <span style="font-size:1.1rem;">🔔</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin:8px 0 4px; flex-wrap:wrap;">
+                    <span id="kpi-low" style="background:#fef3c7; color:#b45309; font-size:0.82rem; font-weight:800; padding:3px 8px; border-radius:8px;">0 zerados</span>
+                    <span id="kpi-expiring" style="background:#f3e8ff; color:#7e22ce; font-size:0.82rem; font-weight:800; padding:3px 8px; border-radius:8px;">0 vencendo</span>
+                </div>
+                <div style="font-size:0.73rem; color:var(--text-muted);">Reposição e validade</div>
+            </div>
+        </div>
+
+        <!-- Barra de Filtros e Ordenação -->
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; align-items:center;">
             <input type="search" id="inv-search" placeholder="🔍 Buscar produto..." 
                 style="flex:1; min-width:180px; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; outline:none;">
@@ -1556,8 +1612,16 @@ export async function renderInventory(router) {
             </select>
             <select id="inv-filter-uso" style="padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.85rem; background:white; cursor:pointer;">
                 <option value="">Todos os usos</option>
-                <option value="venda">Para Venda</option>
-                <option value="pessoal">Uso Pessoal</option>
+                <option value="venda">🛒 Para Venda</option>
+                <option value="pessoal">🏠 Uso Pessoal</option>
+            </select>
+            <select id="inv-sort" style="padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.85rem; background:white; cursor:pointer; font-weight:600; color:var(--text-dark);">
+                <option value="alpha">🔤 Ordem Alfabética (A-Z)</option>
+                <option value="profit-desc">💰 Maior Lucro Total ($)</option>
+                <option value="margin-desc">📈 Maior Margem de Lucro (%)</option>
+                <option value="qty-desc">📦 Maior Quantidade</option>
+                <option value="qty-asc">⚠️ Menor Quantidade (Repor)</option>
+                <option value="valid-asc">⏰ Validade mais próxima</option>
             </select>
         </div>
 
@@ -1568,7 +1632,8 @@ export async function renderInventory(router) {
                     <tr>
                         <th style="padding:11px 16px; text-align:left; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Produto</th>
                         <th style="padding:11px 8px; text-align:left; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Tam.</th>
-                        <th style="padding:11px 8px; text-align:left; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Preços (Custo / Regular / Membro / Lucro)</th>
+                        <th style="padding:11px 8px; text-align:left; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Preços de Tabela</th>
+                        <th style="padding:11px 8px; text-align:left; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Retorno & Lucro Estimado</th>
                         <th style="padding:11px 8px; text-align:left; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Validade</th>
                         <th style="padding:11px 8px; text-align:left; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Uso</th>
                         <th style="padding:11px 8px; text-align:center; font-size:0.75rem; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Qtd.</th>
@@ -1576,7 +1641,7 @@ export async function renderInventory(router) {
                     </tr>
                 </thead>
                 <tbody id="inv-tbody">
-                    <tr><td colspan="7" style="text-align:center; padding:40px; color:var(--text-muted);">Carregando...</td></tr>
+                    <tr><td colspan="8" style="text-align:center; padding:40px; color:var(--text-muted);">Carregando...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -1651,8 +1716,7 @@ export async function renderInventory(router) {
             margin-bottom: 2px;
           }
           .inv-card-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr 52px 52px;
+            display: flex;
             gap: 8px;
             align-items: center;
           }
@@ -1660,10 +1724,10 @@ export async function renderInventory(router) {
             display: flex;
             align-items: center;
             gap: 0;
-            grid-column: 1 / 3;
             background: #f1f5f9;
             border-radius: 10px;
             overflow: hidden;
+            flex: 1;
           }
           .inv-card-qty-btn {
             flex: 1;
@@ -1687,6 +1751,7 @@ export async function renderInventory(router) {
           }
           .inv-card-btn {
             height: 42px;
+            width: 42px;
             border-radius: 10px;
             border: none;
             cursor: pointer;
@@ -1786,6 +1851,83 @@ export async function renderInventory(router) {
                 </form>
             </div>
         </div>
+
+        <!-- Modal Venda Rápida -->
+        <div id="inv-sell-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; padding:16px;">
+            <div style="background:white; border-radius:16px; width:100%; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.3); overflow:hidden;">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--border); background:var(--green-50);">
+                    <div>
+                        <h3 style="margin:0; font-size:1.05rem; color:#166534; display:flex; align-items:center; gap:6px;">🛍️ Registrar Venda Rápida</h3>
+                        <p style="margin:2px 0 0; font-size:0.78rem; color:var(--text-muted);">Baixa automática no estoque e registro do lucro</p>
+                    </div>
+                    <button id="inv-sell-close" style="background:none; border:none; font-size:1.6rem; cursor:pointer; color:var(--text-muted); line-height:1;">&times;</button>
+                </div>
+                <form id="inv-sell-form" style="padding:20px; display:flex; flex-direction:column; gap:14px;">
+                    <input type="hidden" id="sell-item-id">
+                    
+                    <div style="background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div id="sell-prod-name" style="font-weight:700; font-size:0.95rem; color:var(--text-dark);">—</div>
+                            <div id="sell-prod-meta" style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">—</div>
+                        </div>
+                        <div id="sell-stock-badge" style="background:#dcfce7; color:#166534; font-weight:800; font-size:0.85rem; padding:4px 10px; border-radius:20px; white-space:nowrap;">
+                            0 em estoque
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div>
+                            <label style="display:block; font-size:0.82rem; font-weight:600; margin-bottom:5px; color:var(--text-dark);">Qtd. a Vender *</label>
+                            <input type="number" id="sell-qty" value="1" min="1" max="999" required
+                                style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.82rem; font-weight:600; margin-bottom:5px; color:var(--text-dark);">Preço Unit. Venda (R$) *</label>
+                            <input type="number" id="sell-price" step="0.01" min="0" required
+                                style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; box-sizing:border-box; font-weight:700; color:#15803d;">
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div>
+                            <label style="display:block; font-size:0.82rem; font-weight:600; margin-bottom:5px; color:var(--text-dark);">Cliente (Opcional)</label>
+                            <select id="sell-client" style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.85rem; background:white;">
+                                <option value="">👤 Cliente Avulso</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.82rem; font-weight:600; margin-bottom:5px; color:var(--text-dark);">Data da Venda</label>
+                            <input type="date" id="sell-date"
+                                style="width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.85rem; box-sizing:border-box;">
+                        </div>
+                    </div>
+
+                    <!-- Resumo Financeiro da Venda -->
+                    <div id="sell-calc-box" style="background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:12px;">
+                        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; color:#166534; margin-bottom:6px;">💵 Retorno Financeiro desta Venda</div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1.2fr; gap:8px; text-align:center;">
+                            <div style="background:white; border-radius:8px; padding:8px 6px; border:1px solid #bbf7d0;">
+                                <div style="font-size:0.68rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Faturamento</div>
+                                <div id="sell-calc-rev" style="font-size:0.92rem; font-weight:800; color:#15803d; margin-top:2px;">R$ 0,00</div>
+                            </div>
+                            <div style="background:white; border-radius:8px; padding:8px 6px; border:1px solid #e2e8f0;">
+                                <div style="font-size:0.68rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Custo Total</div>
+                                <div id="sell-calc-cost" style="font-size:0.92rem; font-weight:700; color:#475569; margin-top:2px;">R$ 0,00</div>
+                            </div>
+                            <div style="background:#dcfce7; border-radius:8px; padding:8px 6px; border:1px solid #86efac;">
+                                <div style="font-size:0.68rem; color:#166534; font-weight:800; text-transform:uppercase;">💰 Lucro no Bolso</div>
+                                <div id="sell-calc-profit" style="font-size:0.95rem; font-weight:900; color:#15803d; margin-top:2px;">R$ 0,00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:4px;">
+                        <button type="button" id="sell-cancel-btn" class="btn btn-secondary">Cancelar</button>
+                        <button type="submit" id="sell-submit-btn" class="btn btn-primary" style="background:#10b981; border-color:#10b981;">Confirmar Venda 🚀</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     `;
 
     renderLayout(router, '📦 Meu Estoque', pageContent, 'estoque');
@@ -1807,11 +1949,35 @@ export async function renderInventory(router) {
     const searchEl  = document.getElementById('inv-search');
     const filterCat = document.getElementById('inv-filter-cat');
     const filterUso = document.getElementById('inv-filter-uso');
+    const sortEl    = document.getElementById('inv-sort');
+    const toggleReg = document.getElementById('toggle-price-reg');
+    const toggleMem = document.getElementById('toggle-price-mem');
     const pricePreview = document.getElementById('inv-price-preview');
 
-    let db = [];
+    // Modal Venda Rápida refs
+    const sellModal      = document.getElementById('inv-sell-modal');
+    const sellForm       = document.getElementById('inv-sell-form');
+    const sellItemIdEl   = document.getElementById('sell-item-id');
+    const sellProdNameEl = document.getElementById('sell-prod-name');
+    const sellProdMetaEl = document.getElementById('sell-prod-meta');
+    const sellStockBadgeEl = document.getElementById('sell-stock-badge');
+    const sellQtyEl      = document.getElementById('sell-qty');
+    const sellPriceEl    = document.getElementById('sell-price');
+    const sellClientEl   = document.getElementById('sell-client');
+    const sellDateEl     = document.getElementById('sell-date');
+    const sellCalcRevEl  = document.getElementById('sell-calc-rev');
+    const sellCalcCostEl = document.getElementById('sell-calc-cost');
+    const sellCalcProfitEl = document.getElementById('sell-calc-profit');
 
-    /** Atualiza o painel de preços e lucro estimado no modal */
+    let db = [];
+    let priceMode = 'regular'; // 'regular' ou 'membro'
+    let clientsList = [];
+    let activeSellItem = null;
+
+    // Carrega clientes para o select da venda rápida
+    store.getClients().then(c => { clientsList = Array.isArray(c) ? c : []; }).catch(() => { clientsList = []; });
+
+    /** Atualiza o painel de preços e lucro estimado no modal de adicionar/editar */
     function updatePricePreview() {
         const nome = nameEl.value.trim();
         const size = sizeEl.value;
@@ -1821,7 +1987,6 @@ export async function renderInventory(router) {
         if (!pricePreview) return;
 
         if (!prices) {
-            // Se o produto existe na tabela mas o tamanho específico não tem preço, mostra aviso
             if (allSizes) {
                 const sizesDisponiveis = Object.keys(allSizes).join(', ');
                 pricePreview.style.display = 'block';
@@ -1846,12 +2011,12 @@ export async function renderInventory(router) {
           <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#059669;margin-bottom:8px">💰 Preços Oficiais doTERRA (${esc(size)})</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
             <div style="background:#f0fdf4;border-radius:8px;padding:10px">
-              <div style="font-size:0.68rem;color:var(--text-muted);font-weight:700;text-transform:uppercase">Preço Regular</div>
+              <div style="font-size:0.68rem;color:var(--text-muted);font-weight:700;text-transform:uppercase">Preço Regular (Venda)</div>
               <div style="font-size:1.1rem;font-weight:800;color:#15803d">${fmt_brl(prices.r)}</div>
               ${custo > 0 ? `<div style="font-size:0.72rem;color:${lucroReg >= 0 ? '#059669' : '#dc2626'};font-weight:600">Lucro: ${fmt_brl(lucroReg)} ${pctReg !== null ? `(${pctReg}%)` : ''}</div>` : ''}
             </div>
             <div style="background:#eff6ff;border-radius:8px;padding:10px">
-              <div style="font-size:0.68rem;color:var(--text-muted);font-weight:700;text-transform:uppercase">Preço Membro</div>
+              <div style="font-size:0.68rem;color:var(--text-muted);font-weight:700;text-transform:uppercase">Preço Membro (-25%)</div>
               <div style="font-size:1.1rem;font-weight:800;color:#1d4ed8">${fmt_brl(prices.m)}</div>
               ${custo > 0 ? `<div style="font-size:0.72rem;color:${lucroMem >= 0 ? '#059669' : '#dc2626'};font-weight:600">Lucro: ${fmt_brl(lucroMem)} ${pctMem !== null ? `(${pctMem}%)` : ''}</div>` : ''}
             </div>
@@ -1859,7 +2024,60 @@ export async function renderInventory(router) {
         `;
     }
 
-    // ── Modal helpers ─────────────────────────────────────────
+    // ── Modal Venda Rápida helpers ────────────────────────────
+    function updateSellCalc() {
+        if (!activeSellItem) return;
+        const qty = parseInt(sellQtyEl.value, 10) || 0;
+        const price = parseFloat(sellPriceEl.value) || 0;
+        const unitCost = activeSellItem.preco_custo || 0;
+        const faturamento = qty * price;
+        const custoTotal = qty * unitCost;
+        const lucro = faturamento - custoTotal;
+        const pct = custoTotal > 0 ? ((lucro / custoTotal) * 100).toFixed(0) : (faturamento > 0 ? 100 : 0);
+
+        if (sellCalcRevEl) sellCalcRevEl.textContent = fmt_brl(faturamento);
+        if (sellCalcCostEl) sellCalcCostEl.textContent = fmt_brl(custoTotal);
+        if (sellCalcProfitEl) {
+            sellCalcProfitEl.innerHTML = `<span style="color:${lucro >= 0 ? '#15803d' : '#dc2626'}">${fmt_brl(lucro)}</span> <span style="font-size:0.75rem;font-weight:700;color:${lucro >= 0 ? '#166534' : '#991b1b'}">(${pct}%)</span>`;
+        }
+    }
+
+    function openSellModal(item) {
+        if (!item || item.quantidade <= 0) {
+            toast('Produto sem estoque disponível para venda.', 'warning');
+            return;
+        }
+        activeSellItem = item;
+        sellItemIdEl.value = item.id;
+        sellProdNameEl.textContent = item.nome_produto;
+        sellProdMetaEl.textContent = `${item.categoria || ''} ${item.ml_tamanho ? '· ' + item.ml_tamanho : ''} ${item.preco_custo ? '· Custo: ' + fmt_brl(item.preco_custo) : ''}`;
+        sellStockBadgeEl.textContent = `${item.quantidade} un. em estoque`;
+
+        sellQtyEl.value = 1;
+        sellQtyEl.max = item.quantidade;
+
+        const dp = getDotPrices(item.nome_produto, item.ml_tamanho);
+        const defaultSellPrice = dp ? (priceMode === 'regular' ? dp.r : dp.m) : (item.preco_venda || (item.preco_custo ? item.preco_custo * 1.33 : 0));
+        sellPriceEl.value = defaultSellPrice ? defaultSellPrice.toFixed(2) : '';
+
+        sellDateEl.value = new Date().toISOString().slice(0, 10);
+
+        if (sellClientEl) {
+            sellClientEl.innerHTML = `<option value="">👤 Cliente Avulso (Não cadastrado)</option>` +
+                clientsList.map(c => `<option value="${c.id}">${esc(c.nome || 'Cliente')}${c.telefone ? ` (${c.telefone})` : ''}</option>`).join('');
+        }
+
+        updateSellCalc();
+        sellModal.style.display = 'flex';
+        setTimeout(() => sellQtyEl.focus(), 50);
+    }
+
+    function closeSellModal() {
+        if (sellModal) sellModal.style.display = 'none';
+        activeSellItem = null;
+    }
+
+    // ── Modal Produto helpers ─────────────────────────────────
     const openModal = (item = null) => {
         form.reset();
         editIdEl.value = '';
@@ -1917,11 +2135,9 @@ export async function renderInventory(router) {
             : ['Suplemento'].includes(c) ? 'Cápsulas'
             : '15ml';
         acEl.style.display = 'none';
-        // Atualiza preview de preços após selecionar do autocomplete
         updatePricePreview();
     });
 
-    // Também atualiza preview ao trocar tamanho ou digitar custo
     sizeEl.addEventListener('change', updatePricePreview);
     custoEl.addEventListener('input', updatePricePreview);
     nameEl.addEventListener('change', updatePricePreview);
@@ -1930,33 +2146,182 @@ export async function renderInventory(router) {
         if (!nameEl.contains(e.target) && !acEl.contains(e.target)) acEl.style.display = 'none';
     }, { capture: true });
 
-    // ── KPIs ──────────────────────────────────────────────────
+    // ── Cenário de Preço Toggle ───────────────────────────────
+    toggleReg?.addEventListener('click', () => {
+        priceMode = 'regular';
+        toggleReg.style.background = '#10b981';
+        toggleReg.style.color = 'white';
+        toggleReg.style.boxShadow = '0 2px 4px rgba(16,185,129,0.25)';
+        toggleMem.style.background = 'transparent';
+        toggleMem.style.color = '#64748b';
+        toggleMem.style.boxShadow = 'none';
+        render();
+    });
+
+    toggleMem?.addEventListener('click', () => {
+        priceMode = 'membro';
+        toggleMem.style.background = '#2563eb';
+        toggleMem.style.color = 'white';
+        toggleMem.style.boxShadow = '0 2px 4px rgba(37,99,235,0.25)';
+        toggleReg.style.background = 'transparent';
+        toggleReg.style.color = '#64748b';
+        toggleReg.style.boxShadow = 'none';
+        render();
+    });
+
+    // ── Venda Rápida Listeners ────────────────────────────────
+    sellQtyEl?.addEventListener('input', updateSellCalc);
+    sellPriceEl?.addEventListener('input', updateSellCalc);
+    document.getElementById('inv-sell-close')?.addEventListener('click', closeSellModal);
+    document.getElementById('sell-cancel-btn')?.addEventListener('click', closeSellModal);
+    sellModal?.addEventListener('click', e => { if (e.target === sellModal) closeSellModal(); });
+
+    sellForm?.addEventListener('submit', async e => {
+        e.preventDefault();
+        if (!activeSellItem) return;
+        const submitBtn = document.getElementById('sell-submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Registrando...';
+
+        const qtyToSell = parseInt(sellQtyEl.value, 10) || 1;
+        const unitPrice = parseFloat(sellPriceEl.value) || 0;
+        const clienteId = sellClientEl.value || null;
+        const sellDate = sellDateEl.value || new Date().toISOString().slice(0, 10);
+
+        if (qtyToSell > activeSellItem.quantidade) {
+            toast(`Quantidade excede o estoque disponível (${activeSellItem.quantidade} un.)`, 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Confirmar Venda 🚀';
+            return;
+        }
+
+        try {
+            const newStockQty = Math.max(0, activeSellItem.quantidade - qtyToSell);
+            const faturamento = qtyToSell * unitPrice;
+            const unitCost = activeSellItem.preco_custo || 0;
+            const lucroTotal = faturamento - (qtyToSell * unitCost);
+
+            // 1. Atualizar quantidade no estoque
+            await store.updateEstoque(activeSellItem.id, { quantidade: newStockQty });
+
+            // 2. Registrar na tabela de compras / vendas
+            const prodLabel = `${activeSellItem.nome_produto}${activeSellItem.ml_tamanho ? ` (${activeSellItem.ml_tamanho})` : ''} [${qtyToSell} un]`;
+            await store.addCompra({
+                cliente_id: clienteId,
+                produto: prodLabel,
+                valor: faturamento,
+                data: sellDate,
+                observacao: `Venda direta do Estoque (Custo: ${fmt_brl(qtyToSell * unitCost)} · Lucro estimado: ${fmt_brl(lucroTotal)})`
+            }).catch(err => {
+                console.warn('[Venda rápida] Compra registrada com aviso:', err);
+            });
+
+            toast(`Venda registrada com sucesso! +${fmt_brl(lucroTotal)} de lucro no bolso! 🎉`);
+            closeSellModal();
+            load();
+        } catch (err) {
+            toast('Erro ao registrar venda: ' + (err.message || 'Erro inesperado'), 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Confirmar Venda 🚀';
+        }
+    });
+
+    // ── KPIs / Totais Financeiros ─────────────────────────────
     const updateKPIs = (data) => {
-        let total = 0, low = 0, expiring = 0, invested = 0;
+        let total = 0, vendaQty = 0, pessoalQty = 0;
+        let low = 0, expiring = 0;
+        let investedVenda = 0, investedPessoal = 0;
+        let faturamento = 0;
+
         data.forEach(it => {
-            total += it.quantidade;
-            if (it.quantidade <= 1) low++;
+            const qty = it.quantidade || 0;
+            total += qty;
+            const isVenda = it.uso_tipo !== 'pessoal';
+            if (isVenda) vendaQty += qty; else pessoalQty += qty;
+
+            if (qty <= 1) low++;
             const d = days_until(it.validade);
             if (d !== null && d <= 30 && d >= 0) expiring++;
-            if (it.preco_custo) invested += it.preco_custo * it.quantidade;
+
+            const custo = it.preco_custo || 0;
+            if (isVenda) {
+                investedVenda += custo * qty;
+            } else {
+                investedPessoal += custo * qty;
+            }
+
+            if (isVenda && qty > 0) {
+                const dp = getDotPrices(it.nome_produto, it.ml_tamanho);
+                const sellPrice = dp ? (priceMode === 'regular' ? dp.r : dp.m) : (it.preco_venda || custo);
+                faturamento += sellPrice * qty;
+            }
         });
-        document.getElementById('kpi-total').textContent     = String(total);
-        document.getElementById('kpi-low').textContent       = String(low);
-        document.getElementById('kpi-expiring').textContent  = String(expiring);
-        document.getElementById('kpi-invested').textContent  = fmt_brl(invested);
+
+        const lucroTotal = Math.max(0, faturamento - investedVenda);
+        const roi = investedVenda > 0 ? ((lucroTotal / investedVenda) * 100).toFixed(0) : (faturamento > 0 ? 100 : 0);
+
+        document.getElementById('kpi-total').textContent = `${total} un.`;
+        document.getElementById('kpi-sub-total').textContent = `${vendaQty} para venda · ${pessoalQty} uso pessoal`;
+
+        document.getElementById('kpi-invested').textContent = fmt_brl(investedVenda);
+        document.getElementById('kpi-sub-invested').textContent = investedPessoal > 0 
+            ? `+ ${fmt_brl(investedPessoal)} em uso pessoal`
+            : '100% destinado para revenda';
+
+        document.getElementById('kpi-revenue').textContent = fmt_brl(faturamento);
+        document.getElementById('kpi-sub-revenue').textContent = priceMode === 'regular'
+            ? 'Venda a Preço Regular'
+            : 'Venda a Preço Membro (-25%)';
+
+        document.getElementById('kpi-profit').textContent = `+ ${fmt_brl(lucroTotal)}`;
+        document.getElementById('kpi-profit-badge').textContent = `+${roi}% retorno`;
+
+        document.getElementById('kpi-low').textContent = `${low} zerados/baixos`;
+        document.getElementById('kpi-expiring').textContent = `${expiring} vencendo`;
     };
 
     // ── Render table ──────────────────────────────────────────
     const render = () => {
-        const q   = (searchEl.value || '').toLowerCase();
-        const cat = filterCat.value;
-        const uso = filterUso.value;
+        const q       = (searchEl.value || '').toLowerCase();
+        const cat     = filterCat.value;
+        const uso     = filterUso.value;
+        const sortVal = sortEl?.value || 'alpha';
 
         const visible = db.filter(it =>
             (!q || it.nome_produto.toLowerCase().includes(q)) &&
             (!cat || it.categoria === cat) &&
             (!uso || it.uso_tipo === uso)
         ).sort((a,b) => {
+            const getProfit = (item) => {
+                const dp = getDotPrices(item.nome_produto, item.ml_tamanho);
+                const sp = dp ? (priceMode === 'regular' ? dp.r : dp.m) : (item.preco_venda || 0);
+                const cost = item.preco_custo || 0;
+                return (sp - cost) * (item.quantidade || 0);
+            };
+            const getMargin = (item) => {
+                const dp = getDotPrices(item.nome_produto, item.ml_tamanho);
+                const sp = dp ? (priceMode === 'regular' ? dp.r : dp.m) : (item.preco_venda || 0);
+                const cost = item.preco_custo || 0;
+                return cost > 0 ? ((sp - cost) / cost) : (sp > 0 ? 999 : 0);
+            };
+
+            if (sortVal === 'profit-desc') {
+                return getProfit(b) - getProfit(a);
+            }
+            if (sortVal === 'margin-desc') {
+                return getMargin(b) - getMargin(a);
+            }
+            if (sortVal === 'qty-desc') {
+                return (b.quantidade || 0) - (a.quantidade || 0);
+            }
+            if (sortVal === 'qty-asc') {
+                return (a.quantidade || 0) - (b.quantidade || 0);
+            }
+            if (sortVal === 'valid-asc') {
+                return (a.validade || '9999').localeCompare(b.validade || '9999');
+            }
+            // default alpha
             if (a.nome_produto !== b.nome_produto) return a.nome_produto.localeCompare(b.nome_produto);
             if (a.ml_tamanho !== b.ml_tamanho) return (a.ml_tamanho || '').localeCompare(b.ml_tamanho || '');
             return (a.validade || '9999').localeCompare(b.validade || '9999');
@@ -1965,7 +2330,7 @@ export async function renderInventory(router) {
         updateKPIs(db);
 
         if (!visible.length) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:48px; color:var(--text-muted);">
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:48px; color:var(--text-muted);">
                 ${db.length ? '❌ Nenhum produto encontrado com esses filtros.' : 'Estoque vazio 📭 — clique em "+ Adicionar Produto" para começar'}
             </td></tr>`;
             return;
@@ -1992,23 +2357,60 @@ export async function renderInventory(router) {
                 ? `<span style="background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:0.72rem;">🏠 Pessoal</span>`
                 : `<span style="background:#f0fdf4;color:#166534;padding:2px 8px;border-radius:10px;font-size:0.72rem;">🛒 Venda</span>`;
 
-            // Célula de preços com custo, regular, membro e lucro estimado
             const dp = getDotPrices(it.nome_produto, it.ml_tamanho);
-            const custo = it.preco_custo || null;
+            const custo = it.preco_custo !== null && it.preco_custo !== undefined ? it.preco_custo : null;
+
+            // Coluna de Preços de Tabela
             const priceCell = (() => {
                 const parts = [];
-                if (custo) parts.push(`<span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:6px;font-size:0.72rem;font-weight:600;white-space:nowrap;">💵 ${fmt_brl(custo)}</span>`);
-                if (dp) {
-                    parts.push(`<span style="background:#f0fdf4;color:#15803d;padding:2px 7px;border-radius:6px;font-size:0.72rem;font-weight:700;white-space:nowrap;" title="Preço Regular doTERRA">🟢 ${fmt_brl(dp.r)}</span>`);
-                    parts.push(`<span style="background:#eff6ff;color:#1d4ed8;padding:2px 7px;border-radius:6px;font-size:0.72rem;font-weight:700;white-space:nowrap;" title="Preço Membro doTERRA">🔵 ${fmt_brl(dp.m)}</span>`);
-                    if (custo) {
-                        const lucro = dp.r - custo;
-                        const pct = ((lucro / custo) * 100).toFixed(0);
-                        parts.push(`<span style="background:${lucro >= 0 ? '#fef9c3' : '#fee2e2'};color:${lucro >= 0 ? '#854d0e' : '#991b1b'};padding:2px 7px;border-radius:6px;font-size:0.72rem;font-weight:700;white-space:nowrap;" title="Lucro estimado (venda regular)">💰 ${fmt_brl(lucro)} (${pct}%)</span>`);
-                    }
+                if (custo !== null) {
+                    parts.push(`<span style="background:#f1f5f9;color:#475569;padding:2px 7px;border-radius:6px;font-size:0.72rem;font-weight:600;white-space:nowrap;" title="Preço de Custo">💵 Custo: ${fmt_brl(custo)}</span>`);
+                } else {
+                    parts.push(`<span style="background:#f8fafc;color:#94a3b8;padding:2px 7px;border-radius:6px;font-size:0.72rem;font-style:italic;white-space:nowrap;">💵 Custo não inf.</span>`);
                 }
-                if (!parts.length) return `<span style="color:var(--text-muted);font-size:0.8rem;">—</span>`;
-                return `<div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;">${parts.join('')}</div>`;
+                if (dp) {
+                    parts.push(`<span style="background:#f0fdf4;color:#15803d;padding:2px 7px;border-radius:6px;font-size:0.72rem;font-weight:700;white-space:nowrap;" title="Preço Regular doTERRA (Venda ao Consumidor)">🟢 Reg: ${fmt_brl(dp.r)}</span>`);
+                    parts.push(`<span style="background:#eff6ff;color:#1d4ed8;padding:2px 7px;border-radius:6px;font-size:0.72rem;font-weight:700;white-space:nowrap;" title="Preço Membro doTERRA (-25%)">🔵 Mem: ${fmt_brl(dp.m)}</span>`);
+                }
+                return `<div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start;">${parts.join('')}</div>`;
+            })();
+
+            // Coluna de Retorno & Lucro Estimado
+            const profitCell = (() => {
+                if (it.uso_tipo === 'pessoal') {
+                    return `<span style="color:var(--text-muted);font-size:0.76rem;font-style:italic;">🏠 Uso Pessoal (Consumo)</span>`;
+                }
+
+                const sellPrice = dp ? (priceMode === 'regular' ? dp.r : dp.m) : (it.preco_venda || 0);
+                const unitCost = custo || 0;
+
+                if (custo === 0) {
+                    const lucroUnit = sellPrice;
+                    const lucroTotal = lucroUnit * it.quantidade;
+                    return `
+                        <div style="display:flex;flex-direction:column;gap:2px;">
+                            <span style="background:#dcfce7;color:#166534;padding:2px 7px;border-radius:6px;font-size:0.72rem;font-weight:700;white-space:nowrap;width:fit-content;">🎁 100% Lucro (Brinde)</span>
+                            <div style="font-size:0.83rem;font-weight:800;color:#15803d;margin-top:1px;">+ ${fmt_brl(lucroUnit)}/un.</div>
+                            ${it.quantidade > 1 ? `<div style="font-size:0.72rem;color:#059669;font-weight:700;">🔥 Lote: <strong>${fmt_brl(lucroTotal)}</strong> (${it.quantidade} un.)</div>` : ''}
+                        </div>
+                    `;
+                }
+
+                if (sellPrice > 0) {
+                    const lucroUnit = sellPrice - unitCost;
+                    const pct = unitCost > 0 ? ((lucroUnit / unitCost) * 100).toFixed(0) : null;
+                    const lucroTotal = lucroUnit * it.quantidade;
+                    return `
+                        <div style="display:flex;flex-direction:column;gap:2px;">
+                            <span style="background:${lucroUnit >= 0 ? '#fef9c3' : '#fee2e2'};color:${lucroUnit >= 0 ? '#854d0e' : '#991b1b'};padding:2px 7px;border-radius:6px;font-size:0.74rem;font-weight:700;white-space:nowrap;width:fit-content;">
+                                💰 +${fmt_brl(lucroUnit)} ${pct !== null ? `(${pct}%)` : ''}
+                            </span>
+                            ${it.quantidade > 1 && lucroTotal > 0 ? `<div style="font-size:0.72rem;color:#059669;font-weight:700;margin-top:2px;">🔥 Lote: <strong style="color:#15803d;font-size:0.82rem;">${fmt_brl(lucroTotal)}</strong> (${it.quantidade} un.)</div>` : ''}
+                        </div>
+                    `;
+                }
+
+                return `<span style="color:var(--text-muted);font-size:0.78rem;">—</span>`;
             })();
 
             return `<tr style="border-bottom:1px solid var(--border); transition:background .1s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background=''">
@@ -2019,13 +2421,18 @@ export async function renderInventory(router) {
                 </td>
                 <td style="padding:11px 8px; color:var(--text-muted); font-size:0.85rem; white-space:nowrap;">${esc(it.ml_tamanho || '—')}</td>
                 <td style="padding:11px 8px;">${priceCell}</td>
+                <td style="padding:11px 8px;">${profitCell}</td>
                 <td style="padding:11px 8px; white-space:nowrap;">${validBadge || '<span style="color:var(--text-muted);font-size:0.8rem;">—</span>'}</td>
                 <td style="padding:11px 8px;">${usoBadge}</td>
                 <td style="padding:11px 8px; text-align:center;">
                     <span style="display:inline-block; background:${qtyColor}; padding:3px 14px; border-radius:20px; font-weight:700; font-size:1rem;">${it.quantidade}</span>
                 </td>
                 <td style="padding:11px 16px;">
-                    <div style="display:flex; gap:5px; align-items:center; justify-content:center;">
+                    <div style="display:flex; gap:5px; align-items:center; justify-content:center; flex-wrap:nowrap;">
+                        <button data-id="${it.id}" data-act="sell" 
+                            style="background:#10b981; color:white; border:none; border-radius:6px; padding:4px 9px; font-size:0.75rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:3px; transition:all .15s;" 
+                            onmouseover="this.style.filter='brightness(0.9)'" onmouseout="this.style.filter=''"
+                            title="Registrar Venda Imediata" ${it.quantidade <= 0 ? 'disabled style="opacity:0.35;cursor:not-allowed;background:#94a3b8;color:white;border:none;border-radius:6px;padding:4px 9px;font-size:0.75rem;"' : ''}>🛍️ Vender</button>
                         <button data-id="${it.id}" data-act="dec"
                             style="width:28px;height:28px;border:1px solid var(--border);background:white;border-radius:6px;cursor:pointer;font-size:1rem;font-weight:700;" ${it.quantidade<=0?'disabled':''}>−</button>
                         <button data-id="${it.id}" data-act="inc"
@@ -2063,6 +2470,13 @@ export async function renderInventory(router) {
                 : it.quantidade === 1 ? 'background:#fef3c7;color:#92400e'
                 : 'background:#dcfce7;color:#166534';
 
+            const dp = getDotPrices(it.nome_produto, it.ml_tamanho);
+            const custo = it.preco_custo || 0;
+            const sellPrice = dp ? (priceMode === 'regular' ? dp.r : dp.m) : (it.preco_venda || 0);
+            const lucroUnit = sellPrice - custo;
+            const lucroTotal = lucroUnit * (it.quantidade || 0);
+            const pct = custo > 0 ? ((lucroUnit / custo) * 100).toFixed(0) : null;
+
             return `<div class="inv-card">
               <div class="inv-card-header">
                 <div>
@@ -2083,34 +2497,40 @@ export async function renderInventory(router) {
                 ${it.preco_custo ? `
                 <div class="inv-card-meta-item">
                   <div class="inv-card-meta-label">Custo/un.</div>
-                  <div style="font-size:0.82rem;color:#059669;font-weight:600">${fmt_brl(it.preco_custo)}</div>
+                  <div style="font-size:0.82rem;color:#475569;font-weight:600">${fmt_brl(it.preco_custo)}</div>
                 </div>` : ''}
-                ${(() => {
-                    const dp = getDotPrices(it.nome_produto, it.ml_tamanho);
-                    if (!dp) return '';
-                    const lucroReg = dp.r - (it.preco_custo || 0);
-                    return `
-                    <div class="inv-card-meta-item">
-                      <div class="inv-card-meta-label">venda regular</div>
-                      <div style="font-size:0.82rem;color:#15803d;font-weight:700">${fmt_brl(dp.r)}</div>
+                ${dp ? `
+                <div class="inv-card-meta-item">
+                  <div class="inv-card-meta-label">${priceMode === 'regular' ? 'Venda Regular' : 'Venda Membro'}</div>
+                  <div style="font-size:0.82rem;color:${priceMode === 'regular' ? '#15803d' : '#1d4ed8'};font-weight:700">${fmt_brl(sellPrice)}</div>
+                </div>` : ''}
+
+                ${it.uso_tipo !== 'pessoal' && sellPrice > 0 ? `
+                <div class="inv-card-meta-item" style="grid-column:1 / 3; background:#f0fdf4; border:1px solid #bbf7d0;">
+                  <div class="inv-card-meta-label" style="color:#166534;">💰 Lucro Estimado (${priceMode === 'regular' ? 'Preço Regular' : 'Preço Membro'})</div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+                    <div style="font-size:0.88rem; font-weight:800; color:${lucroUnit >= 0 ? '#15803d' : '#dc2626'}">
+                      +${fmt_brl(lucroUnit)}/un. ${pct !== null ? `(${pct}%)` : ''}
                     </div>
-                    <div class="inv-card-meta-item">
-                      <div class="inv-card-meta-label">venda membro</div>
-                      <div style="font-size:0.82rem;color:#1d4ed8;font-weight:700">${fmt_brl(dp.m)}</div>
-                    </div>
-                    ${it.preco_custo ? `<div class="inv-card-meta-item" style="grid-column:1 / 3;background:#fef9c3;">
-                      <div class="inv-card-meta-label">💰 Lucro Estimado (regular)</div>
-                      <div style="font-size:0.85rem;font-weight:800;color:${lucroReg >= 0 ? '#16a34a' : '#dc2626'}">${fmt_brl(lucroReg)} (${it.preco_custo > 0 ? ((lucroReg / it.preco_custo)*100).toFixed(0) + '%' : 'n/a'})</div>
-                    </div>` : ''}`;
-                })()}
+                    ${it.quantidade > 1 && lucroTotal > 0 ? `
+                    <div style="font-size:0.82rem; font-weight:800; color:#15803d; background:white; padding:2px 8px; border-radius:6px; border:1px solid #86efac;">
+                      🔥 Total: ${fmt_brl(lucroTotal)}
+                    </div>` : ''}
+                  </div>
+                </div>` : ''}
+
                 ${it.notas ? `
-                <div class="inv-card-meta-item" style="grid-column:${it.preco_custo ? 'auto' : '1 / 3'}">
+                <div class="inv-card-meta-item" style="grid-column:1 / 3;">
                   <div class="inv-card-meta-label">Notas</div>
                   <div style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(it.notas)}</div>
                 </div>` : ''}
               </div>
-              <div class="inv-card-actions">
-                <div class="inv-card-qty-controls">
+              <div class="inv-card-actions" style="display:flex; gap:8px; align-items:center;">
+                <button class="btn btn-primary" data-id="${it.id}" data-act="sell" 
+                  style="flex:1; height:42px; background:#10b981; border-color:#10b981; border-radius:10px; font-weight:700; font-size:0.88rem; display:flex; align-items:center; justify-content:center; gap:4px;" ${it.quantidade <= 0 ? 'disabled style="opacity:0.4;cursor:not-allowed;background:#94a3b8;flex:1;height:42px;"' : ''}>
+                  🛍️ Vender
+                </button>
+                <div class="inv-card-qty-controls" style="flex:1;">
                   <button class="inv-card-qty-btn" data-id="${it.id}" data-act="dec" ${it.quantidade <= 0 ? 'disabled' : ''}>−</button>
                   <div class="inv-card-qty-num">${it.quantidade}</div>
                   <button class="inv-card-qty-btn" data-id="${it.id}" data-act="inc">+</button>
@@ -2125,13 +2545,14 @@ export async function renderInventory(router) {
     // ── Load data ─────────────────────────────────────────────
     const load = async () => {
         try { db = await store.getEstoque(); render(); }
-        catch { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:#ef4444;">Falha ao carregar estoque.</td></tr>`; }
+        catch { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:32px;color:#ef4444;">Falha ao carregar estoque.</td></tr>`; }
     };
 
     // ── Filtros inline ────────────────────────────────────────
     searchEl.addEventListener('input', render);
     filterCat.addEventListener('change', render);
     filterUso.addEventListener('change', render);
+    sortEl.addEventListener('change', render);
 
     // ── Form submit ───────────────────────────────────────────
     form.addEventListener('submit', async e => {
@@ -2174,6 +2595,7 @@ export async function renderInventory(router) {
         const item = db.find(x => x.id === id);
         if (!item) return;
 
+        if (act === 'sell') { openSellModal(item); return; }
         if (act === 'edit') { openModal(item); return; }
         if (act === 'del') {
             if (!confirm(`Apagar "${item.nome_produto}" do estoque?`)) return;
@@ -2200,6 +2622,7 @@ export async function renderInventory(router) {
         const item = db.find(x => x.id === id);
         if (!item) return;
 
+        if (act === 'sell') { openSellModal(item); return; }
         if (act === 'edit') { openModal(item); return; }
         if (act === 'del') {
             if (!confirm(`Apagar "${item.nome_produto}" do estoque?`)) return;
@@ -2220,7 +2643,14 @@ export async function renderInventory(router) {
 
     // ── Exportar PDF ──────────────────────────────────────────
     document.getElementById('btn-export-pdf').addEventListener('click', () => {
-        const rows = db.map(it => `
+        const rows = db.map(it => {
+            const dp = getDotPrices(it.nome_produto, it.ml_tamanho);
+            const sellPrice = dp ? (priceMode === 'regular' ? dp.r : dp.m) : (it.preco_venda || 0);
+            const custo = it.preco_custo || 0;
+            const lucroUnit = sellPrice - custo;
+            const lucroTotal = lucroUnit * (it.quantidade || 0);
+
+            return `
             <tr>
                 <td>${esc(it.nome_produto)}</td>
                 <td>${esc(it.categoria || '')}</td>
@@ -2228,15 +2658,26 @@ export async function renderInventory(router) {
                 <td style="text-align:center; font-weight:bold; color:${it.quantidade === 0 ? '#dc2626' : it.quantidade === 1 ? '#d97706' : '#15803d'}">${it.quantidade}</td>
                 <td>${it.uso_tipo === 'pessoal' ? 'Uso Pessoal' : 'Para Venda'}</td>
                 <td>${fmt_date(it.validade)}</td>
-                <td>${it.notas || ''}</td>
-                <td>${it.preco_custo ? fmt_brl(it.preco_custo) : ''}</td>
+                <td>${it.preco_custo ? fmt_brl(it.preco_custo) : '—'}</td>
+                <td>${sellPrice > 0 ? fmt_brl(sellPrice) : '—'}</td>
+                <td style="font-weight:bold; color:${lucroTotal >= 0 ? '#15803d' : '#dc2626'}">
+                    ${it.uso_tipo === 'pessoal' ? '—' : (sellPrice > 0 ? `+${fmt_brl(lucroTotal)}` : '—')}
+                </td>
             </tr>
-        `).join('');
+            `;
+        }).join('');
 
-        const totalInvested = db.reduce((acc, it) => acc + (it.preco_custo ? it.preco_custo * it.quantidade : 0), 0);
+        const totalInvestedVenda = db.filter(it => it.uso_tipo !== 'pessoal').reduce((acc, it) => acc + (it.preco_custo ? it.preco_custo * it.quantidade : 0), 0);
+        const totalRevenue = db.filter(it => it.uso_tipo !== 'pessoal').reduce((acc, it) => {
+            const dp = getDotPrices(it.nome_produto, it.ml_tamanho);
+            const sp = dp ? (priceMode === 'regular' ? dp.r : dp.m) : (it.preco_venda || 0);
+            return acc + (sp * it.quantidade);
+        }, 0);
+        const totalProfit = Math.max(0, totalRevenue - totalInvestedVenda);
+
         const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Meu Estoque doTerra</title>
         <style>body{font-family:Arial,sans-serif;padding:32px;color:#111}h1{color:#166534;margin-bottom:4px}
-        .sub{color:#6b7280;font-size:0.85rem;margin-bottom:24px}
+        .sub{color:#374151;font-size:0.85rem;margin-bottom:24px}
         table{width:100%;border-collapse:collapse;font-size:0.88rem}
         th{background:#f0fdf4;color:#166534;font-weight:700;text-transform:uppercase;font-size:0.72rem;padding:10px;text-align:left;border-bottom:2px solid #bbf7d0}
         td{padding:9px 10px;border-bottom:1px solid #e5e7eb}
@@ -2244,9 +2685,14 @@ export async function renderInventory(router) {
         .footer{margin-top:24px;font-size:0.8rem;color:#6b7280;border-top:1px solid #e5e7eb;padding-top:12px}
         </style></head><body>
         <h1>📦 Meu Estoque doTerra</h1>
-        <div class="sub">Gerado em ${new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'})} · Total Investido Estimado: <strong>${fmt_brl(totalInvested)}</strong></div>
+        <div class="sub" style="display:flex;gap:20px;flex-wrap:wrap;background:#f0fdf4;padding:12px 16px;border-radius:8px;border:1px solid #bbf7d0;margin-bottom:20px;">
+            <div>📅 Gerado em: <strong>${new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'})}</strong></div>
+            <div>💵 Total Investido (Venda): <strong>${fmt_brl(totalInvestedVenda)}</strong></div>
+            <div>📈 Faturamento Estimado: <strong>${fmt_brl(totalRevenue)}</strong></div>
+            <div>💰 Lucro Total Projetado: <strong style="color:#15803d;">+${fmt_brl(totalProfit)}</strong></div>
+        </div>
         <table><thead><tr>
-            <th>Produto</th><th>Categoria</th><th>Tamanho</th><th>Qtd.</th><th>Uso</th><th>Validade</th><th>Notas</th><th>Custo/un.</th>
+            <th>Produto</th><th>Categoria</th><th>Tamanho</th><th>Qtd.</th><th>Uso</th><th>Validade</th><th>Custo/un.</th><th>Preço Venda</th><th>Lucro Estimado</th>
         </tr></thead><tbody>${rows}</tbody></table>
         <div class="footer">Gota App — Sistema de Gestão de Relacionamento</div>
         </body></html>`;
